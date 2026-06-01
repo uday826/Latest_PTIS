@@ -1,0 +1,82 @@
+"use client";
+
+import { usePathname, useRouter } from "next/navigation";
+import { AssetStepper } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetStepper";
+import { AssetFormFooter } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetFormFooter";
+import { getFilteredSteps, getCurrentAssetStep } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetFormSteps";
+import { User, X, Home, ArrowLeft } from "lucide-react";
+
+import { AssetFormProvider, useAssetForm } from "@/components/modules/assets/municipal-Asset/add-New-Asset/AssetFormContext";
+
+interface AssetFormHeaderProps {
+  children: React.ReactNode;
+}
+
+export function AssetFormHeader({ children }: AssetFormHeaderProps) {
+  return (
+    <AssetFormProvider>
+      <AssetFormHeaderContent>{children}</AssetFormHeaderContent>
+    </AssetFormProvider>
+  );
+}
+
+function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { formData } = useAssetForm();
+
+  const steps = getFilteredSteps(formData.category, formData.assetType, formData.parentBuildingId);
+  const currentStep = getCurrentAssetStep(pathname, formData.category, formData.assetType, formData.parentBuildingId);
+
+  const handleBackToDashboard = () => {
+    const segments = pathname.split("/").filter(Boolean);
+    const locale = segments[0] || "en";
+    router.push(`/${locale}/asset/municipal-Asset`);
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-slate-50/50 rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      {/* Top Premium Dark Header */}
+      <div className="bg-[#0f172a] text-white px-4 py-2 flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="bg-[#1e293b] p-1.5 rounded-lg border border-slate-700/50 flex items-center justify-center shadow-inner">
+            <Home className="size-4 text-blue-400" />
+          </div>
+          <div>
+            <h1 className="text-sm font-extrabold tracking-tight text-white leading-none">Add New Municipal Asset</h1>
+            <p className="text-[9px] text-amber-500 font-extrabold uppercase tracking-wider mt-0.5">
+              Step {currentStep?.id ?? 1} of {steps.length} | {currentStep?.label ?? "Basic Info"}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleBackToDashboard}
+            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-red-400 rounded-lg border border-slate-700 hover:border-slate-600 transition-all cursor-pointer shadow-sm flex items-center justify-center"
+            title="Close Wizard"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Stepper container */}
+      <div className="px-4 py-1.5 bg-white border-b border-slate-100 shrink-0">
+        <AssetStepper
+          currentStepId={currentStep?.id ?? 1}
+          steps={steps}
+        />
+      </div>
+
+      {/* Main wizard step content */}
+      <div className="flex-1 p-2 bg-slate-50/30 overflow-y-auto custom-scrollbar">
+        {children}
+      </div>
+
+      {/* Full-Width Footer container */}
+      <div className="px-4 py-2 bg-white border-t border-slate-200 shrink-0">
+        <AssetFormFooter />
+      </div>
+    </div>
+  );
+}

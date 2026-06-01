@@ -1,0 +1,152 @@
+'use server';
+
+import { valuationApiService } from "@/lib/api/asset/valuation.service";
+
+/**
+ * Server Action to load all valuation-related data for a specific assetId
+ */
+export async function getAssetValuationDataAction(assetId: number, isBuildingClient?: boolean) {
+  try {
+    const [assetRes, inventoryRes] = await Promise.all([
+      valuationApiService.getAssetDetails(assetId),
+      valuationApiService.getInventoryBatchesByAsset(assetId)
+    ]);
+
+    // Robustly extract the asset object
+    let assetObj: any = null;
+    if (assetRes.success && assetRes.data) {
+      const data = assetRes.data as any;
+      if (data && typeof data === "object") {
+        assetObj = data.items?.[0] ?? data.Items?.[0] ?? data.data?.[0] ?? data.Data?.[0] ?? data.result ?? data.Result ?? data;
+      }
+    }
+
+    // Determine category
+    const assetCategoryId = Number(assetObj?.assetCategoryId ?? assetObj?.categoryId ?? 0);
+    const category = String(assetObj?.categoryName ?? assetObj?.category ?? assetObj?.assetCategoryName ?? assetObj?.assetCategory ?? "").toLowerCase().trim();
+    
+    const isBuilding =
+      isBuildingClient === true ||
+      assetCategoryId === 1 ||
+      category.includes("building") ||
+      category.includes("infra") ||
+      assetObj?.categoryId === 1;
+
+    const isLand =
+      assetCategoryId === 2 ||
+      category.includes("land") ||
+      category.includes("plot");
+
+    console.log("[DEBUG getAssetValuationDataAction] assetId:", assetId);
+    console.log("[DEBUG getAssetValuationDataAction] assetObj categoryName/category/categoryId/assetCategoryId:", assetObj?.categoryName, assetObj?.category, assetObj?.categoryId, assetObj?.assetCategoryId);
+    console.log("[DEBUG getAssetValuationDataAction] isBuildingClient:", isBuildingClient, "isBuilding:", isBuilding, "isLand:", isLand);
+
+    let floorsList: any[] = [];
+    let buildingCVData: any = null;
+    let plotCVData: any = null;
+
+    if (isBuilding) {
+      // Call Building CV Calculation Endpoint
+      console.log("[DEBUG getAssetValuationDataAction] Calling calculateBuildingCV for assetId:", assetId);
+      const cvRes = await valuationApiService.calculateBuildingCV(assetId);
+      console.log("[DEBUG getAssetValuationDataAction] calculateBuildingCV response success:", cvRes.success, "statusCode:", cvRes.statusCode, "error:", cvRes.error);
+      
+      if (cvRes.success && cvRes.data) {
+        buildingCVData = cvRes.data;
+        console.log("[DEBUG getAssetValuationDataAction] calculateBuildingCV data received:", JSON.stringify(cvRes.data).slice(0, 500));
+        // Use buildingFloorDetails from calculation response as floorsList
+        floorsList = cvRes.data.buildingFloorDetails ?? [];
+        console.log("[DEBUG getAssetValuationDataAction] floorsList extracted count:", floorsList.length);
+      } else {
+        console.warn("Building CV Calculation endpoint failed, falling back to standard floors fetch:", cvRes.error);
+        const floorsRes = await valuationApiService.getFloorsByAsset(assetId);
+        if (floorsRes.success && floorsRes.data) {
+          const data = floorsRes.data as any;
+          if (Array.isArray(data)) {
+            floorsList = data;
+          } else if (data && typeof data === "object") {
+            const candidateArray = data.floorDetails ?? data.FloorDetails ?? data.items ?? data.Items ?? data.data ?? data.Data ?? data.result ?? data.Result;
+            floorsList = Array.isArray(candidateArray) ? candidateArray : [];
+          }
+        }
+      }
+    } else if (isLand) {
+      // Call Plot CV Calculation Endpoint
+      console.log("[DEBUG getAssetValuationDataAction] Calling calculatePlotCV for assetId:", assetId);
+      const cvRes = await valuationApiService.calculatePlotCV(assetId);
+      console.log("[DEBUG getAssetValuationDataAction] calculatePlotCV response success:", cvRes.success, "statusCode:", cvRes.statusCode, "error:", cvRes.error);
+      
+      if (cvRes.success && cvRes.data) {
+        plotCVData = cvRes.data;
+        console.log("[DEBUG getAssetValuationDataAction] calculatePlotCV data received:", JSON.stringify(cvRes.data).slice(0, 500));
+      } else {
+        console.warn("Plot CV Calculation endpoint failed:", cvRes.error);
+      }
+
+      // Load standard floors for land if any
+      const floorsRes = await valuationApiService.getFloorsByAsset(assetId);
+      if (floorsRes.success && floorsRes.data) {
+        const data = floorsRes.data as any;
+        if (Array.isArray(data)) {
+          floorsList = data;
+        } else if (data && typeof data === "object") {
+          const candidateArray = data.floorDetails ?? data.FloorDetails ?? data.items ?? data.Items ?? data.data ?? data.Data ?? data.result ?? data.Result;
+          floorsList = Array.isArray(candidateArray) ? candidateArray : [];
+        }
+      }
+    } else {
+      // Non-building, non-land assets: fetch standard floors
+      const floorsRes = await valuationApiService.getFloorsByAsset(assetId);
+      if (floorsRes.success && floorsRes.data) {
+        const data = floorsRes.data as any;
+        if (Array.isArray(data)) {
+          floorsList = data;
+        } else if (data && typeof data === "object") {
+          const candidateArray = data.floorDetails ?? data.FloorDetails ?? data.items ?? data.Items ?? data.data ?? data.Data ?? data.result ?? data.Result;
+          if (Array.isArray(candidateArray)) {
+            floorsList = candidateArray;
+          } else {
+            const arrays = Object.values(data).filter(Array.isArray);
+            if (arrays.length > 0) {
+              floorsList = arrays[0];
+            }
+          }
+        }
+      }
+    }
+
+    // Robustly extract the inventories list
+    let inventoriesList: any[] = [];
+    if (inventoryRes.success && inventoryRes.data) {
+      const data = inventoryRes.data as any;
+      if (Array.isArray(data)) {
+        inventoriesList = data;
+      } else if (data && typeof data === "object") {
+        const candidateArray = data.batches ?? data.Batches ?? data.items ?? data.Items ?? data.data ?? data.Data ?? data.result ?? data.Result;
+        if (Array.isArray(candidateArray)) {
+          inventoriesList = candidateArray;
+        } else {
+          const arrays = Object.values(data).filter(Array.isArray);
+          if (arrays.length > 0) {
+            inventoriesList = arrays[0];
+          }
+        }
+      }
+    }
+
+    return {
+      success: true,
+      asset: assetObj,
+      floors: floorsList,
+      inventories: inventoriesList,
+      buildingCV: buildingCVData,
+      plotCV: plotCVData
+    };
+  } catch (error) {
+    console.error("Error in getAssetValuationDataAction server action:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to load valuation data from server"
+    };
+  }
+}
