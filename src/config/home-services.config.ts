@@ -90,7 +90,7 @@ const DEPARTMENT_CONFIG: Record<string, DepartmentConfig> = {
     'asset management': {
         id: 3,
         code: 'am',
-        route: 'assets',
+        route: 'asset/dashboard',
         icon: Landmark,
         iconClassName: 'w-8 h-8 text-teal-700',
     },
