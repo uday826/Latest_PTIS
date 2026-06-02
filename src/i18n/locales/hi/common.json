@@ -318,8 +318,9 @@
     }
   },
   "sidebar": {
-    "brandTitle": "Property Tax",
-    "brandSubtitle": "संपत्ति कर विभाग",
+    "brandTitle": "संपत्ति प्रबंधन",
+    "brandSubtitle": "संपत्ति प्रबंधन विभाग",
+
     "backToDashboard": "डैशबोर्ड पर वापस जाएं",
     "backToDashboardSecondary": "डैशबोर्ड",
     "footerCopyright": "© NTIS",

@@ -319,8 +319,9 @@
     }
   },
   "sidebar": {
-    "brandTitle": "Property Tax",
-    "brandSubtitle": "मालमत्ता कर विभाग",
+    "brandTitle": "मालमत्ता व्यवस्थापन",
+    "brandSubtitle": "मालमत्ता व्यवस्थापन विभाग",
+
     "backToDashboard": "डॅशबोर्डवर परत जा",
     "backToDashboardSecondary": "डॅशबोर्ड",
     "footerCopyright": "© NTIS",

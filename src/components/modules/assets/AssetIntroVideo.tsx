@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Landmark, Sparkles } from 'lucide-react';
 
@@ -23,10 +24,12 @@ export function AssetIntroVideo({ displayUlbName }: AssetIntroVideoProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [canSkip, setCanSkip] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     setMounted(true);
+    setPortalTarget(document.body);
 
     // Check if window is available (client-side only)
     if (typeof window === 'undefined') {
@@ -117,7 +120,7 @@ export function AssetIntroVideo({ displayUlbName }: AssetIntroVideoProps) {
 
   if (!mounted) return null;
 
-  return (
+  const introContent = (
     <>
       {isVisible && (
         <style dangerouslySetInnerHTML={{
@@ -258,4 +261,6 @@ export function AssetIntroVideo({ displayUlbName }: AssetIntroVideoProps) {
       </AnimatePresence>
     </>
   );
+
+  return portalTarget ? createPortal(introContent, portalTarget) : introContent;
 }
