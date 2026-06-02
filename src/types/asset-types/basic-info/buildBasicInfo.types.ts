@@ -20,6 +20,9 @@ export interface BuildingPropertyDetailsFormData {
   mouja: string;
   propertyNumber: string;
   surveyNumber: string;
+  condition?: string;
+  isRevenueGenerating?: string;
+  landArea?: string;
 }
 
 // ─── Section B: Ownership & Address Details ───────────────────────────────────

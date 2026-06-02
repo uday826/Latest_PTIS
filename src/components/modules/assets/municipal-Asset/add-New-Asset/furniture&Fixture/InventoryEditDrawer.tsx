@@ -96,7 +96,7 @@ export function InventoryEditDrawer({
           <Select
             label="Type"
             value={editForm.type}
-            onChange={handleEditTypeChange}
+            onChange={(_, val) => handleEditTypeChange(val)}
             options={dynamicCategoryOptions}
             placeholder="Select type"
           />
@@ -121,7 +121,7 @@ export function InventoryEditDrawer({
             <Select
               label={editLabels.itemName}
               value={editForm.itemName}
-              onChange={handleEditItemNameChange}
+              onChange={(_, val) => handleEditItemNameChange(val)}
               options={editNameOptions}
               placeholder="-- Select --"
             />
@@ -138,7 +138,7 @@ export function InventoryEditDrawer({
             <Select
               label={editLabels.modelName}
               value={editForm.modelName}
-              onChange={(value) => updateEditForm("modelName", value)}
+              onChange={(_, val) => updateEditForm("modelName", val)}
               options={editModelOptions}
               placeholder="-- Select --"
               disabled={!editForm.itemName}
@@ -171,7 +171,7 @@ export function InventoryEditDrawer({
           <Select
             label={editLabels.condition}
             value={editForm.condition}
-            onChange={(value) => updateEditForm("condition", value)}
+            onChange={(_, val) => updateEditForm("condition", val)}
             options={editConditionOptions}
             placeholder="Select condition"
           />
@@ -179,7 +179,7 @@ export function InventoryEditDrawer({
           <Select
             label="Owning Department"
             value={editForm.owningDepartment}
-            onChange={(value) => updateEditForm("owningDepartment", value)}
+            onChange={(_, val) => updateEditForm("owningDepartment", val)}
             options={[
               { label: "Estate Management", value: "Estate Management" },
               { label: "Public Works (PWD)", value: "Public Works (PWD)" },

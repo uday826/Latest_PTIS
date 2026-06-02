@@ -1,5 +1,5 @@
 import { getFilteredSteps } from '../add-New-Asset/assetFormSteps';
-import type { AssetDetailRecord, AssetDetailTabConfig, AssetDetailTabKey } from './types';
+import type { AssetDetailRecord, AssetDetailTabConfig, AssetDetailTabKey } from '@/types/municipal-asset/detail-tabs.types';
 
 const STEP_TO_DETAIL_TAB: Record<string, AssetDetailTabConfig> = {
   'basic-info': { key: 'overview', label: 'Overview' },
@@ -52,6 +52,10 @@ export function getAssetDetailTabs(
   if (category === 'BUILDING' && !asset.parentAssetId && !hasTab(tabs, 'sub-units')) {
     const floorIndex = tabs.findIndex((tab) => tab.key === 'floor-details');
     tabs.splice(floorIndex >= 0 ? floorIndex + 1 : 1, 0, { key: 'sub-units', label: 'Sub-Units' });
+  }
+
+  if (!hasTab(tabs, 'documents')) {
+    tabs.push({ key: 'documents', label: 'Documents' });
   }
 
   return tabs.length > 0 ? tabs : [{ key: 'overview', label: 'Overview' }];

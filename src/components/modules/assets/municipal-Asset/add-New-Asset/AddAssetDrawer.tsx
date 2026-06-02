@@ -11,7 +11,7 @@ import {
   fetchZones,
   fetchWards,
   fetchAssetsByFilter,
-} from "@/app/[locale]/asset/actions";
+} from "@/app/[locale]/asset/municipal-Asset/actions";
 import { AssetCategory, AssetType } from "@/lib/api/asset/category-type.service";
 import { Zone } from "@/lib/api/asset/zone.service";
 import { Ward } from "@/lib/api/asset/ward.service";
@@ -293,11 +293,10 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
           <button
             onClick={mode === "new" ? handleNewRegisterSubmit : handleExistingAssetSubmit}
             disabled={mode === "new" ? !canSubmitNew : !canSubmitExisting}
-            className={`flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold transition-all shadow-md ml-auto ${
-              (mode === "new" ? canSubmitNew : canSubmitExisting)
+            className={`flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold transition-all shadow-md ml-auto ${(mode === "new" ? canSubmitNew : canSubmitExisting)
                 ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-95 shadow-blue-200"
                 : "cursor-not-allowed bg-slate-100 text-slate-400 shadow-none"
-            }`}
+              }`}
           >
             {mode === "new" ? "Start Registration" : "Continue"}
             <ChevronRight className="size-4" />
@@ -545,18 +544,16 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
 function StepBadge({ step, done, locked }: { step: number; done: boolean; locked?: boolean }) {
   return (
     <div className="flex items-center gap-2 mb-1">
-      <span className={`inline-flex size-5 items-center justify-center rounded-full text-[10px] font-black transition-colors ${
-        done
+      <span className={`inline-flex size-5 items-center justify-center rounded-full text-[10px] font-black transition-colors ${done
           ? "bg-emerald-500 text-white"
           : locked
-          ? "bg-slate-200 text-slate-400"
-          : "bg-blue-600 text-white"
-      }`}>
+            ? "bg-slate-200 text-slate-400"
+            : "bg-blue-600 text-white"
+        }`}>
         {done ? "✓" : step}
       </span>
-      <span className={`text-[10px] font-bold uppercase tracking-widest ${
-        done ? "text-emerald-600" : locked ? "text-slate-400" : "text-slate-500"
-      }`}>
+      <span className={`text-[10px] font-bold uppercase tracking-widest ${done ? "text-emerald-600" : locked ? "text-slate-400" : "text-slate-500"
+        }`}>
         {step === 1 ? "Select Zone" : step === 2 ? "Select Ward" : "Search Asset Code"}
       </span>
     </div>
@@ -577,9 +574,8 @@ function ModeTab({
   return (
     <button
       onClick={onClick}
-      className={`flex-1 flex items-start gap-3 rounded-xl border-2 p-3.5 text-left transition-all ${
-        active ? activeClasses : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
-      }`}
+      className={`flex-1 flex items-start gap-3 rounded-xl border-2 p-3.5 text-left transition-all ${active ? activeClasses : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+        }`}
     >
       <div className={`mt-0.5 flex-shrink-0 rounded-lg p-1.5 transition-colors ${active ? iconActive : "bg-slate-100 text-slate-400"}`}>
         {icon}
@@ -614,11 +610,10 @@ function AssetResultRow({
   return (
     <button
       onClick={onSelect}
-      className={`w-full flex items-start justify-between rounded-xl border px-3.5 py-3 text-left transition-all group ${
-        selected
+      className={`w-full flex items-start justify-between rounded-xl border px-3.5 py-3 text-left transition-all group ${selected
           ? "border-violet-400 bg-violet-50 shadow-sm"
           : "border-slate-200 bg-white hover:border-violet-300 hover:bg-violet-50/40"
-      }`}
+        }`}
     >
       <div className="min-w-0 flex-1">
         {/* Asset Code + Category badge */}

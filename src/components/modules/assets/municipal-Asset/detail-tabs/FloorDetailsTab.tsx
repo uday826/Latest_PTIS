@@ -1,39 +1,39 @@
+/* eslint-disable i18next/no-literal-string */
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import React from 'react';
-import { AlertCircle, BadgeIndianRupee, Building2, Layers, Ruler } from 'lucide-react';
-import type { AssetDetailRecord, AssetFloorDetailItem } from './types';
+import React, { useMemo, useState } from 'react';
+import { AlertCircle, BadgeIndianRupee, Layers } from 'lucide-react';
+import { MasterTable } from '@/components/common';
+import type { AssetDetailRecord, AssetFloorDetailItem } from '@/types/municipal-asset/detail-tabs.types';
+import { getFloorDetailsColumns, blank, formatCurrency } from './detailcolumn';
 
-function blank(value?: string | number | null) {
-  return value === null || value === undefined || value === '' ? '-' : String(value);
-}
-
-function formatNumber(value?: string | number | null) {
-  if (value === null || value === undefined || value === '') return '-';
-  const parsed = typeof value === 'number' ? value : Number(value);
-  if (Number.isNaN(parsed)) return String(value);
-  return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(parsed);
-}
-
-function formatCurrency(value?: string | number | null) {
-  if (value === null || value === undefined || value === '') return '-';
-  const parsed = typeof value === 'number' ? value : Number(value);
-  if (Number.isNaN(parsed)) return String(value);
-  return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(parsed);
-}
-
-function areaText(floor: AssetFloorDetailItem) {
-  const builtUp = floor.builtUpAreaSqMeter ?? floor.builtUpAreaSqFeet;
-  const carpet = floor.carpetAreaSqMeter ?? floor.carpetAreaSqFeet;
-  return {
-    builtUp: formatNumber(builtUp),
-    carpet: formatNumber(carpet),
-  };
-}
+type FloorTableRow = AssetFloorDetailItem & Record<string, unknown>;
 
 export function FloorDetailsTab({ asset }: { asset: AssetDetailRecord }) {
   const summary = asset.floorSummary;
-  const floors = summary?.floorDetails ?? [];
+  const floors = useMemo(() => summary?.floorDetails ?? [], [summary?.floorDetails]);
+  const [pageNumber, setPageNumber] = useState(1);
+  const pageSize = 10;
+  const totalCount = floors.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  const paginatedFloors = useMemo(
+    () => floors.slice((pageNumber - 1) * pageSize, pageNumber * pageSize),
+    [floors, pageNumber]
+  );
+
+  React.useEffect(() => {
+    if (pageNumber > totalPages) {
+      setPageNumber(totalPages);
+    }
+  }, [pageNumber, totalPages]);
+
+  React.useEffect(() => {
+    setPageNumber(1);
+  }, [summary?.totalFloors]);
+
+  const columns = useMemo(() => getFloorDetailsColumns(), []);
 
   if (asset.floorSummaryError) {
     return (
@@ -78,53 +78,23 @@ export function FloorDetailsTab({ asset }: { asset: AssetDetailRecord }) {
           <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-600">{floors.length} floors</span>
         </div>
 
-        {floors.length === 0 ? (
-          <div className="p-8 text-center text-sm text-slate-500">No floor details available for this asset.</div>
-        ) : (
-          <div className="grid grid-cols-1 gap-3 p-4 lg:grid-cols-2">
-            {floors.map((floor) => {
-              const area = areaText(floor);
-              return (
-                <div key={floor.id} className="rounded-lg border border-slate-200 bg-slate-50/40 p-4 shadow-sm">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-slate-900">{blank(floor.floorName || `Floor ${floor.floorId || floor.id}`)}</p>
-                      <p className="mt-1 text-xs font-medium text-slate-500">{blank(floor.constructionTypeName)}</p>
-                    </div>
-                    <Building2 className="h-5 w-5 shrink-0 text-blue-500" />
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-500">Use Type</p>
-                      <p className="font-semibold text-slate-800">{blank(floor.typeOfUseName)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-500">Construction Year</p>
-                      <p className="font-semibold text-slate-800">{blank(floor.constructionYear)}</p>
-                    </div>
-                    <div>
-                      <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Ruler className="h-3 w-3" /> Built-up</p>
-                      <p className="font-semibold text-slate-800">{area.builtUp}</p>
-                    </div>
-                    <div>
-                      <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Ruler className="h-3 w-3" /> Carpet</p>
-                      <p className="font-semibold text-slate-800">{area.carpet}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-500">Rooms</p>
-                      <p className="font-semibold text-slate-800">{blank(floor.noOfRooms)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-500">Capital Value</p>
-                      <p className="font-semibold text-slate-800">{formatCurrency(floor.capitalValue)}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <MasterTable<FloorTableRow>
+          columns={columns}
+          data={paginatedFloors as FloorTableRow[]}
+          getRowKey={(row) => row.id}
+          pageNumber={pageNumber}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          totalPages={totalPages}
+          onPageChange={setPageNumber}
+          paginationConfig={{ enabled: true }}
+          emptyText="No floor details available for this asset."
+          headerTitle=""
+          headerSubtitle=""
+          tableClassName="min-w-[1280px]"
+          maxBodyHeightClassName="max-h-[calc(100vh-360px)]"
+          containerClassName="overflow-hidden"
+        />
       </div>
     </div>
   );

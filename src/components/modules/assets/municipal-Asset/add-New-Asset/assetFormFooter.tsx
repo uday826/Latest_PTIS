@@ -9,7 +9,7 @@ import {
   getFilteredSteps,
 } from "./assetFormSteps";
 import { useAssetForm } from "./AssetFormContext";
-import { submitAssetForm, activateAssetAction } from "@/app/[locale]/asset/actions";
+import { submitAssetForm, activateAssetAction } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
 import AssetSuccessModal from "./AssetSuccessModal";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";

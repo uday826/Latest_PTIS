@@ -1,8 +1,8 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
-import { fetchAssetMasterById } from '@/app/[locale]/asset/actions';
+import { fetchAssetMasterById } from '@/app/[locale]/asset/municipal-Asset/asset-detail/actions';
 import { PrintReportButton } from './PrintReportButton';
 import './estate-report.css';
 
@@ -198,12 +198,12 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
   return (
     <div className="estate-report-page font-sans text-slate-900">
       <div className="estate-report-shell max-w-319.5 mx-auto no-print">
-          <div className="flex justify-end mb-6 pt-4 px-2">
-            <PrintReportButton locale={locale} id={id} />
-          </div>
+        <div className="flex justify-end mb-6 pt-4 px-2">
+          <PrintReportButton locale={locale} id={id} />
         </div>
-        <div className="estate-report-shell">
-          <div className="w-full overflow-x-auto print:p-0 flex justify-center custom-scrollbar">
+      </div>
+      <div className="estate-report-shell">
+        <div className="w-full overflow-x-auto print:p-0 flex justify-center custom-scrollbar">
           <div
             id="printable-report"
             className="estate-report-card bg-white border border-gray-300 shadow-xl print:shadow-none print:border-none relative overflow-hidden box-border"
@@ -449,18 +449,18 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
                                   const itemValue = getField(item, ['value', 'marketValue', 'purchaseValue', 'currentBookValue']) ?? '-';
 
                                   return (
-                                  <tr key={`${category}-${idx}`} className="border-b border-[#e2e8f0] hover:bg-gray-50">
-                                    <td className="px-3 py-0.5 align-middle">
-                                      <div className="flex items-center gap-1.5">
-                                        <div className="w-4.5 h-3.5 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-xs overflow-hidden shrink-0">
-                                          <span className="text-[8px]">•</span>
+                                    <tr key={`${category}-${idx}`} className="border-b border-[#e2e8f0] hover:bg-gray-50">
+                                      <td className="px-3 py-0.5 align-middle">
+                                        <div className="flex items-center gap-1.5">
+                                          <div className="w-4.5 h-3.5 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-xs overflow-hidden shrink-0">
+                                            <span className="text-[8px]">•</span>
+                                          </div>
+                                          <span className="truncate max-w-32.5" title={itemName}>{itemName}</span>
                                         </div>
-                                        <span className="truncate max-w-32.5" title={itemName}>{itemName}</span>
-                                      </div>
-                                    </td>
-                                    <td className="px-2 py-0.5 align-middle text-center border-l border-[#e2e8f0] font-black">{toMarathiDigits(itemQty)}</td>
-                                    <td className="px-3 py-0.5 align-middle text-right border-l border-[#e2e8f0] font-black">{formatCurrencyINR(itemValue)}</td>
-                                  </tr>
+                                      </td>
+                                      <td className="px-2 py-0.5 align-middle text-center border-l border-[#e2e8f0] font-black">{toMarathiDigits(itemQty)}</td>
+                                      <td className="px-3 py-0.5 align-middle text-right border-l border-[#e2e8f0] font-black">{formatCurrencyINR(itemValue)}</td>
+                                    </tr>
                                   );
                                 }) : (
                                   <tr>

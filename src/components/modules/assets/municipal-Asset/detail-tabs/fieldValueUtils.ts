@@ -1,4 +1,4 @@
-import type { AssetDetailRecord } from './types';
+import type { AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
 
 export type DisplayField = {
   key: string;

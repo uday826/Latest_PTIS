@@ -1,6 +1,9 @@
 "use server";
 
 import { assetMasterService } from "@/lib/api/asset/asset-master.service";
+import { categoryTypeService } from "@/lib/api/asset/category-type.service";
+import { zoneService } from "@/lib/api/asset/zone.service";
+import { wardService } from "@/lib/api/asset/ward.service";
 
 export async function fetchAssetRegisterPage(
   categoryId: number,
@@ -36,3 +39,72 @@ export async function fetchAssetRegisterPage(
 
   return { items: [], totalCount: 0 };
 }
+
+export async function fetchAssetTypesByCategory(categoryId: number) {
+  try {
+    const response = await categoryTypeService.getTypesByCategory(categoryId);
+    if (response.success && response.data) {
+      return response.data
+        .filter((type) => type && type.id != null)
+        .map((type) => ({
+          id: type.id,
+          label: type.typeName || type.assetTypeName || `Type ${type.id}`,
+        }));
+    }
+  } catch (err) {
+    console.error("Failed to fetch asset types by category:", err);
+  }
+  return [];
+}
+
+export async function fetchZones() {
+  try {
+    const response = await zoneService.getZones();
+    if (response.success && response.data) {
+      return response.data
+        .filter((zone) => zone && zone.id != null)
+        .map((zone) => ({
+          id: Number(zone.id),
+          label: `${zone.description || zone.zoneNo || zone.zoneName || `Zone ${zone.id}`}${zone.zoneNo ? ` (${zone.zoneNo})` : ""}`,
+        }));
+    }
+  } catch (err) {
+    console.error("Failed to fetch zones:", err);
+  }
+  return [];
+}
+
+export async function fetchWards() {
+  try {
+    const response = await wardService.getWards();
+    if (response.success && response.data) {
+      return response.data
+        .filter((ward) => ward && ward.id != null)
+        .map((ward) => ({
+          id: Number(ward.id),
+          zoneId: ward.zoneId == null ? null : Number(ward.zoneId),
+          label: `${(ward as any).description || ward.wardNo || ward.wardName || ward.name || `Ward ${ward.id}`}${ward.wardNo ? ` (${ward.wardNo})` : ""}`,
+        }));
+    }
+  } catch (err) {
+    console.error("Failed to fetch wards:", err);
+  }
+  return [];
+}
+
+/**
+ * Fetch category name by ID — wraps categoryTypeService so pages don't import services directly
+ */
+export async function fetchCategoryNameById(categoryId: number): Promise<string> {
+  try {
+    const response = await categoryTypeService.getCategories();
+    if (response.success && response.data) {
+      const match = response.data.find((item) => item.id === categoryId);
+      return match?.categoryName || '';
+    }
+  } catch (err) {
+    console.error("Failed to fetch category name:", err);
+  }
+  return '';
+}
+

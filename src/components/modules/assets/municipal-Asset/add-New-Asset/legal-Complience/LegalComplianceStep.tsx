@@ -41,7 +41,7 @@ export default function LegalCompliancePage() {
 
   const handleView = useCallback(async (definitionId: number, state?: DocumentUploadState) => {
     if (!state) return;
-    
+
     // Case 1: File is locally staged (offline/memory state before save)
     if (state.file) {
       try {
@@ -57,7 +57,7 @@ export default function LegalCompliancePage() {
     if (state.uploadedDoc?.id) {
       setViewingDocId(definitionId);
       try {
-        const { fetchAssetDocumentFile } = await import("@/app/[locale]/asset/actions");
+        const { fetchAssetDocumentFile } = await import("@/app/[locale]/asset/municipal-Asset/asset-detail/actions");
         const result = await fetchAssetDocumentFile(state.uploadedDoc.id);
 
         if (result.error || !result.base64) {
@@ -279,7 +279,7 @@ export default function LegalCompliancePage() {
       // 2. Validate required documents are present (either on server or staged in context)
       const missingRequired = definitions.filter(def => {
         if (!def.isRequired) return false;
-        
+
         // Either it's already uploaded on server or staged in uploadStates/context
         const localState = uploadStates[def.id];
         const isPresent = localState && (localState.status === "uploaded" || localState.status === "uploading" || localState.uploadedDoc !== undefined);

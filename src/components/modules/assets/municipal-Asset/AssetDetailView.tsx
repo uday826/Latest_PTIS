@@ -24,7 +24,7 @@ import { DocumentsTab } from './detail-tabs/DocumentsTab';
 import { FurnitureFixturesTab } from './detail-tabs/FurnitureFixturesTab';
 import { FloorDetailsTab } from './detail-tabs/FloorDetailsTab';
 import { SubUnitsTab } from './detail-tabs/SubUnitsTab';
-import type { AssetDetailRecord, AssetDetailTabConfig, AssetDetailTabKey } from './detail-tabs/types';
+import type { AssetDetailRecord, AssetDetailTabConfig, AssetDetailTabKey } from '@/types/municipal-asset/detail-tabs.types';
 
 interface AssetDetailProps {
   asset: AssetDetailRecord;
@@ -169,7 +169,7 @@ export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: 
               <SubUnitsTab asset={asset} />
             </Tabs.TabPanel>
             <Tabs.TabPanel value="furniture-fixtures">
-              <FurnitureFixturesTab asset={asset} inventoryData={asset.inventoryData} inventoryError={asset.inventoryError} />
+              <FurnitureFixturesTab asset={asset} />
             </Tabs.TabPanel>
           </CardContent>
         </Tabs>
@@ -178,4 +178,4 @@ export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: 
   );
 }
 
-export type { AssetDetailRecord } from './detail-tabs/types';
+export type { AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';

@@ -72,6 +72,33 @@ export async function deleteDocument(id: number) {
 }
 
 export async function uploadDocument(formData: FormData) {
-  return apiClient.post<unknown>('/AssetDocument/upload', formData);
+  try {
+    const url = `${getBaseUrl()}/AssetDocument/upload`;
+    const headers = await getBinaryFetchHeaders();
+    // Do NOT set Content-Type header so fetch automatically handles multipart boundary.
+
+    const response = await documentServerFetch(url, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      let errorMsg = response.statusText || "Upload failed";
+      try {
+        const parsed = JSON.parse(text);
+        errorMsg = parsed.message || parsed.error || errorMsg;
+      } catch {
+        if (text) errorMsg = text;
+      }
+      return { success: false, error: errorMsg };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to upload document" };
+  }
 }
 

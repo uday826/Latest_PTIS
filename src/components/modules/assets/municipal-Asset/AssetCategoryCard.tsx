@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, Layers, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/common';
 import { AssetCategory, AssetType } from '@/lib/api/asset/category-type.service';
 
 interface AssetCategoryCardProps {
@@ -113,40 +114,49 @@ export function AssetCategoryCard({
             <div className={`text-[10px] font-medium text-slate-400 italic`}>No types found</div>
           )}
           {examples.length > visibleCount && (
-            <button
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 onVisibleCountChange(examples.length);
               }}
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-white bg-slate-800 hover:opacity-90 transition-all duration-150 cursor-pointer shadow-sm`}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-white bg-slate-800 hover:opacity-90 transition-all duration-150 shadow-sm border-0"
             >
               +{examples.length - visibleCount} more
-            </button>
+            </Button>
           )}
         </div>
 
         <div className="flex items-center justify-between mt-auto pt-1" onClick={(e) => e.stopPropagation()}>
           {visibleCount > 5 && examples.length > 5 ? (
-            <span
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 onVisibleCountChange(5);
               }}
-              className={`inline-flex items-center gap-1 text-[10px] font-bold ${t.statLabel} hover:underline cursor-pointer`}
+              className={`inline-flex items-center gap-1 text-[10px] font-bold ${t.statLabel} hover:underline p-0 h-auto border-0`}
             >
               Show less
-            </span>
+            </Button>
           ) : (
             <span />
           )}
-          <span
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={onSelectCategory}
-            className={`inline-flex items-center gap-1 text-[10px] font-bold ${t.statLabel} hover:underline cursor-pointer ml-auto`}
+            className={`inline-flex items-center gap-1 text-[10px] font-bold ${t.statLabel} hover:underline ml-auto p-0 h-auto border-0`}
           >
             View all assets <ArrowRight className="w-3 h-3" />
-          </span>
+          </Button>
         </div>
       </div>
     </motion.div>

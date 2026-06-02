@@ -92,7 +92,7 @@ export function InventoryFormSection({
         <Select
           label="Type"
           value={form.type}
-          onChange={handleTypeChange}
+          onChange={(_, val) => handleTypeChange(val)}
           options={dynamicCategoryOptions}
           placeholder="Select type"
           required={true}
@@ -118,7 +118,7 @@ export function InventoryFormSection({
           <Select
             label={addLabels.itemName}
             value={form.itemName}
-            onChange={handleItemNameChange}
+            onChange={(_, val) => handleItemNameChange(val)}
             options={addNameOptions}
             placeholder="-- Select --"
             disabled={!form.type}
@@ -139,7 +139,7 @@ export function InventoryFormSection({
           <Select
             label={addLabels.modelName}
             value={form.modelName}
-            onChange={(value) => updateForm("modelName", value)}
+            onChange={(_, val) => updateForm("modelName", val)}
             options={addModelOptions}
             placeholder="-- Select --"
             disabled={!form.itemName}
@@ -175,7 +175,7 @@ export function InventoryFormSection({
         <Select
           label={addLabels.condition}
           value={form.condition}
-          onChange={(value) => updateForm("condition", value)}
+          onChange={(_, val) => updateForm("condition", val)}
           options={addConditionOptions}
           placeholder="Select condition"
           required={true}
@@ -184,7 +184,7 @@ export function InventoryFormSection({
         <Select
           label="Owning Department"
           value={form.owningDepartment}
-          onChange={(value) => updateForm("owningDepartment", value)}
+          onChange={(_, val) => updateForm("owningDepartment", val)}
           options={[
             { label: "Estate Management", value: "Estate Management" },
             { label: "Public Works (PWD)", value: "Public Works (PWD)" },

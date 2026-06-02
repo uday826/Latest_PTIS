@@ -1,35 +1,19 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { CircleAlert, Eye, FileText, Hash, Layers3, Package2, SquareStack } from 'lucide-react';
-import { Badge, Button, Card, CardContent, Drawer, MasterTable, type Column } from '@/components/common';
-import type { AssetDetailRecord } from './types';
-import type { InventoryBatchDetail, InventoryUnitResponse } from './furniture-fixtures.types';
-
-function formatMoney(value?: number | null): string {
-  if (value === null || value === undefined) return '-';
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value);
-}
-
-function formatDate(value?: string | null): string {
-  if (!value) return '-';
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? value
-    : new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
-}
-
-function textOrDash(value?: string | number | boolean | null): string {
-  if (value === null || value === undefined || value === '') return '-';
-  return String(value);
-}
+import { Button, Card, CardContent, Drawer, MasterTable } from '@/components/common';
+import type { AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
+import type { InventoryBatchDetail, InventoryUnitResponse } from '@/types/municipal-asset/furniture-fixtures.types';
+import { getInventoryBatchColumns, getInventoryUnitColumns, formatMoney, formatDate, blank } from './detailcolumn';
 
 interface FurnitureFixturesTabProps {
   asset: AssetDetailRecord;
 }
 
-type InventoryRow = InventoryBatchDetail;
+type InventoryRow = Record<string, unknown> & InventoryBatchDetail;
+type InventoryUnitRow = Record<string, unknown> & InventoryUnitResponse;
 
 export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): React.JSX.Element {
   const inventoryData = asset.inventoryData;
@@ -54,31 +38,8 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
     displayUnitPage * unitPageSize
   );
 
-  const columns: Column<InventoryRow>[] = [
-    { key: 'batchId', label: 'Batch ID', width: '110px' },
-    { key: 'inventoryType', label: 'Inventory Type', width: '160px' },
-    { key: 'itemName', label: 'Item Name', width: '180px' },
-    { key: 'modelBrand', label: 'Model / Brand', width: '190px' },
-    {
-      key: 'quantity',
-      label: 'Qty',
-      width: '90px',
-      render: (value) => <span className="font-semibold">{textOrDash(value)}</span>,
-    },
-    {
-      key: 'condition',
-      label: 'Condition',
-      width: '140px',
-      render: (value) => (
-        <Badge variant="secondary" size="sm" className="border-emerald-200 bg-emerald-50 text-emerald-700">
-          {textOrDash(value)}
-        </Badge>
-      ),
-    },
-    { key: 'unitValue', label: 'Unit Value', width: '120px', render: (value) => formatMoney(Number(value ?? 0)) },
-    { key: 'totalBatchValue', label: 'Purchase Value', width: '140px', render: (value) => formatMoney(Number(value ?? 0)) },
-    { key: 'totalBatchCV', label: 'Capital Value', width: '140px', render: (value) => formatMoney(Number(value ?? 0)) },
-  ];
+  const columns = useMemo(() => getInventoryBatchColumns(), []);
+  const unitColumns = useMemo(() => getInventoryUnitColumns(), []);
 
   if (!inventoryData && !inventoryError) {
     return (
@@ -140,7 +101,7 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
 
         <MasterTable<InventoryRow>
           columns={columns}
-          data={paginatedBatches}
+          data={paginatedBatches as InventoryRow[]}
           getRowKey={(row) => row.batchId}
           pageNumber={displayPage}
           pageSize={pageSize}
@@ -191,7 +152,7 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div className="rounded-xl border border-black/10 bg-black/[0.03] p-4">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-black/60">Condition</p>
-                <p className="mt-1 text-sm font-semibold text-black">{textOrDash(selectedBatch.condition)}</p>
+                <p className="mt-1 text-sm font-semibold text-black">{blank(selectedBatch.condition)}</p>
               </div>
               <div className="rounded-xl border border-black/10 bg-black/[0.03] p-4">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-black/60">Quantity</p>
@@ -199,7 +160,7 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
               </div>
               <div className="rounded-xl border border-black/10 bg-black/[0.03] p-4">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-black/60">Owning Department</p>
-                <p className="mt-1 text-sm font-semibold text-black">{textOrDash(selectedBatch.owningDepartment)}</p>
+                <p className="mt-1 text-sm font-semibold text-black">{blank(selectedBatch.owningDepartment)}</p>
               </div>
             </div>
 
@@ -211,11 +172,11 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
                     Batch Information
                   </div>
                   <div className="grid grid-cols-1 gap-3 text-sm">
-                    <div><span className="font-semibold text-black/60">Inventory Type:</span> <span className="text-black">{textOrDash(selectedBatch.inventoryType)}</span></div>
-                    <div><span className="font-semibold text-black/60">Model / Brand:</span> <span className="text-black">{textOrDash(selectedBatch.modelBrand)}</span></div>
-                    <div><span className="font-semibold text-black/60">Specifications:</span> <span className="text-black">{textOrDash(selectedBatch.specifications)}</span></div>
+                    <div><span className="font-semibold text-black/60">Inventory Type:</span> <span className="text-black">{blank(selectedBatch.inventoryType)}</span></div>
+                    <div><span className="font-semibold text-black/60">Model / Brand:</span> <span className="text-black">{blank(selectedBatch.modelBrand)}</span></div>
+                    <div><span className="font-semibold text-black/60">Specifications:</span> <span className="text-black">{blank(selectedBatch.specifications)}</span></div>
                     <div><span className="font-semibold text-black/60">Purchase Date:</span> <span className="text-black">{formatDate(selectedBatch.purchaseDate)}</span></div>
-                    <div><span className="font-semibold text-black/60">Invoice No:</span> <span className="text-black">{textOrDash(selectedBatch.invoiceNumber)}</span></div>
+                    <div><span className="font-semibold text-black/60">Invoice No:</span> <span className="text-black">{blank(selectedBatch.invoiceNumber)}</span></div>
                     <div><span className="font-semibold text-black/60">Invoice Date:</span> <span className="text-black">{formatDate(selectedBatch.invoiceDate)}</span></div>
                     <div><span className="font-semibold text-black/60">Registered:</span> <span className="text-black">{selectedBatch.isRegistered ? 'Yes' : 'No'}</span></div>
                     <div><span className="font-semibold text-black/60">Registered Date:</span> <span className="text-black">{formatDate(selectedBatch.registeredDate)}</span></div>
@@ -234,8 +195,8 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
                     <div><span className="font-semibold text-black/60">Total Purchase Value:</span> <span className="text-black">{formatMoney(selectedBatch.totalBatchValue)}</span></div>
                     <div><span className="font-semibold text-black/60">Total Capital Value:</span> <span className="text-black">{formatMoney(selectedBatch.totalBatchCV)}</span></div>
                     <div><span className="font-semibold text-black/60">Created Date:</span> <span className="text-black">{formatDate(selectedBatch.createdDate)}</span></div>
-                    <div><span className="font-semibold text-black/60">Invoice File:</span> <span className="text-black">{textOrDash(selectedBatch.invoiceFileName)}</span></div>
-                    <div><span className="font-semibold text-black/60">Photo File:</span> <span className="text-black">{textOrDash(selectedBatch.photoFileName)}</span></div>
+                    <div><span className="font-semibold text-black/60">Invoice File:</span> <span className="text-black">{blank(selectedBatch.invoiceFileName)}</span></div>
+                    <div><span className="font-semibold text-black/60">Photo File:</span> <span className="text-black">{blank(selectedBatch.photoFileName)}</span></div>
                   </div>
                 </CardContent>
               </Card>
@@ -251,36 +212,10 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
                   <span className="text-xs font-semibold text-black/60">{unitTotalCount} units</span>
                 </div>
 
-                <MasterTable<InventoryUnitResponse>
-                  columns={[
-                    { key: 'assetNo', label: 'Asset No', width: '200px', cellClassName: 'font-semibold text-blue-600' },
-                    { key: 'assetName', label: 'Asset Name', width: '360px' },
-                    { key: 'unitNumber', label: 'Unit #', width: '100px' },
-                    {
-                      key: 'condition',
-                      label: 'Condition',
-                      width: '140px',
-                      render: (value) => (
-                        <Badge variant="secondary" size="sm" className="border-emerald-200 bg-emerald-50 text-emerald-700">
-                          {textOrDash(value)}
-                        </Badge>
-                      ),
-                    },
-                    {
-                      key: 'unitPurchaseValue',
-                      label: 'Purchase Value',
-                      width: '160px',
-                      render: (value) => <span className="font-medium text-slate-700">{formatMoney(Number(value ?? 0))}</span>,
-                    },
-                    {
-                      key: 'unitCapitalValue',
-                      label: 'Capital Value',
-                      width: '160px',
-                      render: (value) => <span className="font-semibold text-emerald-700">{formatMoney(Number(value ?? 0))}</span>,
-                    },
-                  ]}
-                  data={paginatedUnits}
-                  getRowKey={(row) => row.assetId}
+                <MasterTable<InventoryUnitRow>
+                  columns={unitColumns}
+                  data={paginatedUnits as InventoryUnitRow[]}
+                  getRowKey={(row) => String(row.assetId)}
                   pageNumber={displayUnitPage}
                   pageSize={unitPageSize}
                   totalCount={unitTotalCount}

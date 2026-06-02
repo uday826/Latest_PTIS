@@ -4,7 +4,7 @@ import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/common";
 import { ListPlus } from "lucide-react";
 import { fetchFieldDefinitions } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
-import { fetchCategories, fetchTypesByCategory } from "@/app/[locale]/asset/actions";
+import { fetchCategories, fetchTypesByCategory } from "@/app/[locale]/asset/municipal-Asset/actions";
 import { processFieldDefinitions, ProcessedField, groupAndMergeFields, MergedFieldSection } from "@/components/modules/assets/municipal-Asset/add-New-Asset/FieldRenderer";
 import { DynamicFieldInput } from "./DynamicFieldInput";
 
@@ -16,9 +16,9 @@ import type { DynamicAttributesProps } from "@/types/asset-types/basic-info/basi
  * Hybrid SSR + Client fallback: utilizes fast server-side prefetchedFields on mount,
  * but dynamically loads new definitions when category/type dropdowns change.
  */
-export function DynamicAttributes({ 
-  formData, 
-  onAttributeChange, 
+export function DynamicAttributes({
+  formData,
+  onAttributeChange,
   useApi = true,
   prefetchedFields = []
 }: DynamicAttributesProps) {
@@ -97,7 +97,7 @@ export function DynamicAttributes({
             );
             if (matchedCat) {
               resolvedCatId = matchedCat.id;
-              
+
               if (!resolvedTypId && assetType) {
                 const typesRes = await fetchTypesByCategory(matchedCat.id);
                 if (typesRes.success && typesRes.data) {
@@ -119,16 +119,16 @@ export function DynamicAttributes({
         if (resolvedCatId && resolvedTypId) {
           const rawFields = await fetchFieldDefinitions(resolvedCatId, resolvedTypId);
           const fieldsArray = Array.isArray(rawFields) ? rawFields : [];
-          
+
           // Robust filtering to handle potential API field variations
           const filteredFields = fieldsArray.filter((field: unknown) => {
             if (typeof field !== "object" || field === null) return false;
             const f = field as Record<string, unknown>;
             const rawCatId = f.assetCategoryId ?? f.categoryId ?? f.AssetCategoryId ?? f.Category ?? f.CategoryId;
             const rawTypeId = f.assetTypeId ?? f.typeId ?? f.AssetTypeId ?? f.Type ?? f.TypeId;
-            
+
             if (rawCatId === undefined || rawCatId === null || rawTypeId === undefined || rawTypeId === null) {
-              return true; 
+              return true;
             }
             return Number(rawCatId) === Number(resolvedCatId) && Number(rawTypeId) === Number(resolvedTypId);
           });
@@ -196,10 +196,10 @@ export function DynamicAttributes({
                 })
                 .map((field) => (
                   <div key={field.id} className="space-y-1.5">
-                    <DynamicFieldInput 
-                      field={field} 
-                      formData={formData} 
-                      onAttributeChange={onAttributeChange} 
+                    <DynamicFieldInput
+                      field={field}
+                      formData={formData}
+                      onAttributeChange={onAttributeChange}
                     />
                   </div>
                 ))}

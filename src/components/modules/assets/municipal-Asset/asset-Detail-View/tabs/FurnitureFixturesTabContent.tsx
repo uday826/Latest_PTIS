@@ -1,10 +1,13 @@
+/* eslint-disable i18next/no-literal-string */
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useMemo, useState } from 'react';
 import { Eye, Package2, CircleAlert, FileText, Hash, Layers3, SquareStack } from 'lucide-react';
 import { Badge, Button, Card, CardContent, Drawer, MasterTable, type Column } from '@/components/common';
 import type { AssetDetailController } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
-import type { InventoryBatchDetail, InventoryBatchListResponse, InventoryUnitResponse } from '../../detail-tabs/furniture-fixtures.types';
+import type { InventoryBatchDetail, InventoryBatchListResponse, InventoryUnitResponse } from '@/types/municipal-asset/furniture-fixtures.types';
 
 function formatMoney(value?: number | null): string {
   if (value === null || value === undefined) return '-';

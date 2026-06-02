@@ -1,7 +1,7 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Building2, ChevronRight, Plus } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { AddButton, Button, Card, CardContent, CardHeader, CardTitle, CancelButton } from '@/components/common';
@@ -9,7 +9,6 @@ import { AddAssetDrawer } from './add-New-Asset/AddAssetDrawer';
 import { AssetCategory, AssetType } from '@/lib/api/asset/category-type.service';
 import { AssetCategoryCard } from './AssetCategoryCard';
 import { getCategoryMeta, themes } from './dashboardHelpers';
-import { fetchMunicipalAssetDashboardStats, fetchCategories, fetchAllTypes } from '@/app/[locale]/asset/actions';
 
 type DashboardAssetTypeStat = {
   assetTypeId: number;
@@ -35,94 +34,84 @@ type DashboardStatsResponse = {
 
 type MunicipalAssetDashboardProps = {
   initialStats?: DashboardStatsResponse | null;
+  initialCategories?: AssetCategory[] | null;
+  initialTypes?: AssetType[] | null;
 };
 
-export default function MunicipalAssetDashboard({ initialStats = null }: MunicipalAssetDashboardProps) {
+export default function MunicipalAssetDashboard({
+  initialStats = null,
+  initialCategories = null,
+  initialTypes = null,
+}: MunicipalAssetDashboardProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [visibleExamples, setVisibleExamples] = useState<Record<string, number>>({});
-  const [categories, setCategories] = useState<AssetCategory[]>([]);
-  const [typesByCategory, setTypesByCategory] = useState<Record<number, AssetType[]>>({});
-  const [dashboardStats, setDashboardStats] = useState<DashboardStatsResponse | null>(initialStats);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      setIsLoading(true);
-      try {
-        const [statsRes, categoriesRes, typesRes] = await Promise.all([
-          fetchMunicipalAssetDashboardStats() as Promise<DashboardStatsResponse | null>,
-          fetchCategories(),
-          fetchAllTypes(),
-        ]);
+  const [categories] = useState<AssetCategory[]>(() => {
+    if (initialCategories && initialCategories.length > 0) {
+      return initialCategories;
+    }
+    if (initialStats?.categoryStats?.length) {
+      return initialStats.categoryStats.map((category) => ({
+        id: category.categoryId,
+        categoryName: category.categoryName,
+        categoryCode: `CAT-${category.categoryId}`,
+        isActive: true,
+      }));
+    }
+    return [];
+  });
 
-        let fetchedCategories: AssetCategory[] = [];
-        if (categoriesRes.success && categoriesRes.data && categoriesRes.data.length > 0) {
-          fetchedCategories = categoriesRes.data;
-        } else if (statsRes?.categoryStats?.length) {
-          fetchedCategories = statsRes.categoryStats.map((category) => ({
-            id: category.categoryId,
-            categoryName: category.categoryName,
-            categoryCode: `CAT-${category.categoryId}`,
-            isActive: true,
-          }));
+  const [typesByCategory] = useState<Record<number, AssetType[]>>(() => {
+    const typesMap: Record<number, AssetType[]> = {};
+
+    if (initialTypes) {
+      initialTypes.forEach((type) => {
+        const catId = type.categoryId || type.assetCategoryId;
+        if (catId) {
+          if (!typesMap[catId]) {
+            typesMap[catId] = [];
+          }
+          if (!typesMap[catId].some((t) => t.id === type.id)) {
+            typesMap[catId].push(type);
+          }
         }
+      });
+    }
 
-        setCategories(fetchedCategories);
-
-        const initialVisible: Record<string, number> = {};
-        fetchedCategories.forEach((c) => {
-          initialVisible[c.id.toString()] = 5;
-        });
-        setVisibleExamples(initialVisible);
-
-        const typesMap: Record<number, AssetType[]> = {};
-
-        if (typesRes.success && typesRes.data) {
-          typesRes.data.forEach((type) => {
-            const catId = type.categoryId || type.assetCategoryId;
-            if (catId) {
-              if (!typesMap[catId]) {
-                typesMap[catId] = [];
-              }
-              if (!typesMap[catId].some((t) => t.id === type.id)) {
-                typesMap[catId].push(type);
-              }
-            }
-          });
+    if (initialStats?.categoryStats) {
+      initialStats.categoryStats.forEach((category) => {
+        const catId = category.categoryId;
+        if (!typesMap[catId]) {
+          typesMap[catId] = [];
         }
-
-        if (statsRes?.categoryStats) {
-          statsRes.categoryStats.forEach((category) => {
-            const catId = category.categoryId;
-            if (!typesMap[catId]) {
-              typesMap[catId] = [];
-            }
-            if (category.assetTypeStats) {
-              category.assetTypeStats.forEach((statType) => {
-                if (!typesMap[catId].some((t) => t.id === statType.assetTypeId)) {
-                  typesMap[catId].push({
-                    id: statType.assetTypeId,
-                    assetTypeName: statType.assetTypeName,
-                    typeName: statType.assetTypeName,
-                    assetCategoryId: catId,
-                    isActive: true,
-                  });
-                }
+        if (category.assetTypeStats) {
+          category.assetTypeStats.forEach((statType) => {
+            if (!typesMap[catId].some((t) => t.id === statType.assetTypeId)) {
+              typesMap[catId].push({
+                id: statType.assetTypeId,
+                assetTypeName: statType.assetTypeName,
+                typeName: statType.assetTypeName,
+                assetCategoryId: catId,
+                isActive: true,
               });
             }
           });
         }
+      });
+    }
 
-        setTypesByCategory(typesMap);
-        setDashboardStats(statsRes);
-      } catch (e) {
-        console.error("Failed to fetch dashboard data:", e);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, []);
+    return typesMap;
+  });
+
+  const [visibleExamples, setVisibleExamples] = useState<Record<string, number>>(() => {
+    const initialVisible: Record<string, number> = {};
+    categories.forEach((c) => {
+      initialVisible[c.id.toString()] = 5;
+    });
+    return initialVisible;
+  });
+
+  const [dashboardStats] = useState<DashboardStatsResponse | null>(initialStats);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const resolvedCategories = categories;

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { FileText, Map, ShieldCheck } from 'lucide-react';
-import type { AssetDetailRecord } from './types';
+import type { AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
 import { getGroupedDisplayFields } from './fieldValueUtils';
 
 function blank(value?: string | number | null) {
