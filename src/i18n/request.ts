@@ -61,6 +61,7 @@ export default getRequestConfig(async ({ locale }) => {
     assetMessages,
     municipalAssetMessages,
     assetMasterDashboardMessages,
+    moujaMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -137,6 +138,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/asset.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/municipalAsset.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/assetmasterdashboard.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/mouja.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
   ]);
 
   return {
@@ -188,6 +192,7 @@ export default getRequestConfig(async ({ locale }) => {
       asset: assetMessages,
       municipalAsset: municipalAssetMessages,
       assetmasterdashboard: assetMasterDashboardMessages,
+      mouja: moujaMessages,
     },
   };
 });
