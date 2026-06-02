@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
-import { fetchAssetMasterById } from '@/app/[locale]/asset/municipal-Asset/asset-detail/actions';
+import { fetchAssetFloorSummaryByAsset, fetchAssetMasterById } from '@/app/[locale]/asset/municipal-Asset/asset-detail/actions';
 import { PrintReportButton } from './PrintReportButton';
 import './estate-report.css';
 
@@ -124,6 +124,13 @@ function formatDateMarathi(value: unknown): string {
   return `${toMarathiDigits(day)}-${toMarathiDigits(month)}-${toMarathiDigits(year)}`;
 }
 
+function firstAvailable(...values: unknown[]): unknown {
+  for (const value of values) {
+    if (value !== null && value !== undefined && value !== '') return value;
+  }
+  return undefined;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   return { title: `Estate Report | ${id}` };
@@ -140,11 +147,17 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
   const isBuildingCategory = inferredCategory === 'building';
   const isMovableCategory = inferredCategory === 'movable';
 
-  const rowValues = Array.isArray(record.floors)
-    ? record.floors
-    : Array.isArray(record.floorDetails)
-      ? record.floorDetails
-      : [];
+  const floorSummaryResult = isBuildingCategory
+    ? await fetchAssetFloorSummaryByAsset(id).catch(() => ({ floorSummary: null, error: 'Failed to load floor details.' }))
+    : { floorSummary: null, error: null };
+
+  const rowValues = floorSummaryResult.floorSummary?.floorDetails?.length
+    ? floorSummaryResult.floorSummary.floorDetails
+    : Array.isArray(record.floors)
+      ? record.floors
+      : Array.isArray(record.floorDetails)
+        ? record.floorDetails
+        : [];
 
   const movableItems = [
     ...asRecordArray(record.vehicles),
@@ -212,60 +225,60 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
             <div className="relative z-10 font-sans text-gray-900 h-full flex flex-col">
               <div className="flex justify-between items-start border-b border-[#b0b6c2] pb-2 mb-3 rounded-b-2xl shrink-0">
                 <div className="flex items-center gap-4">
-                  <div className="w-21.25 h-21.25 shrink-0">
+                  <div className="w-12.5 h-12.5 shrink-0">
                     <Image
                       src="/akola Logo.png"
                       alt="Akola Municipal Corporation Logo"
-                      width={85}
-                      height={85}
+                      width={50}
+                      height={50}
                       className="h-full w-full object-contain"
                       priority
                     />
                   </div>
                   <div className="border border-black rounded-lg px-3 py-2">
-                    <h1 className="text-[34px] font-black leading-tight tracking-wide text-[#0d4380]">अकोला महानगरपालिका, अकोला</h1>
-                    <h2 className="text-[13px] font-bold text-gray-800 tracking-wide mt-1">महाराष्ट्र महानगरपालिका अधिनियम १९४९ चे प्रकरण ११ व ८ कराधन नियम अन्वये मालमत्ता विवरण तक्ता</h2>
-                    <div className="inline-block text-white font-bold px-4 py-0.75 rounded-full mt-2 text-[13px] shadow-sm bg-[#175294]">महानगरपालिका मालमत्ता - आरोग्य संस्था माहिती</div>
+                    <h1 className="text-[20px] font-black leading-tight tracking-wide text-[#0d4380]">अकोला महानगरपालिका, अकोला</h1>
+                    <h2 className="text-[10px] font-bold text-gray-800 tracking-wide mt-1">महाराष्ट्र महानगरपालिका अधिनियम १९४९ चे प्रकरण ११ व ८ कराधन नियम अन्वये मालमत्ता विवरण तक्ता</h2>
+                    <div className="inline-block text-white font-bold px-4 py-0.75 rounded-full mt-2 text-[10px] shadow-sm bg-[#175294]">महानगरपालिका मालमत्ता - आरोग्य संस्था माहिती</div>
                   </div>
                 </div>
 
-                <div className="flex flex-col items-center shrink-0 w-42.5 relative z-20">
-                  <div className="border border-[#b0b6c2] p-1.5 rounded-md w-full bg-white shadow-sm flex items-center justify-center min-h-26.5">
+                <div className="flex flex-col items-center shrink-0 w-25 relative z-20 pt-1">
+                  <div className="border border-[#b0b6c2] p-1 rounded-md w-full bg-white shadow-sm flex items-center justify-center min-h-6">
                     <Image
                       src="/qr.png"
                       alt="QR code"
-                      width={140}
-                      height={140}
-                      className="h-26 w-26 object-cover"
+                      width={60}
+                      height={60}
+                      className="h-15 w-15 object-cover"
                       priority
                     />
                   </div>
-                  <div className="relative border border-[#b0b6c2] rounded-md w-37.5 mt-2 pt-3 pb-1.5 flex justify-center bg-white shadow-sm z-10">
+                  <div className="relative border border-[#b0b6c2] rounded-md w-31 mt-1.5 pt-1.25 pb-1 flex justify-center bg-white shadow-sm z-10">
                     <div className="absolute -top-2.25 bg-[#175294] text-white text-[9px] px-3 py-0.5 rounded-sm font-bold tracking-widest leading-none shadow-sm">मालमत्ता क्रमांक</div>
-                    <div className="font-black text-[11px] tracking-widest text-gray-900 leading-none mt-0.5">{assetId}</div>
+                    <div className="font-black text-[9px] tracking-widest text-gray-900 leading-none mt-0.5">{assetId}</div>
                   </div>
                 </div>
               </div>
 
               <div className="flex gap-2 mb-3 shrink-0">
                 <div className="flex-1 flex flex-col gap-1.5">
-                  <div className="border border-[#b0b6c2] rounded-[10px] overflow-hidden shadow-sm text-[11px] leading-tight text-[#0d4380]">
+                  <div className="border border-[#b0b6c2] rounded-[10px] overflow-hidden shadow-sm text-[10px] leading-tight text-[#0d4380]">
                     <div className="grid grid-cols-[84px_92px_64px_96px_70px_1fr_1fr]">
-                      <div className="border-r border-b border-[#b0b6c2] px-2 py-1.5 flex items-center justify-center font-bold bg-white">प्राधिकरणाचे नाव</div>
+                      <div className="border-r border-b border-[#b0b6c2] px-0.75 py-0.75 flex items-center justify-center font-bold bg-white">प्राधिकरणाचे नाव</div>
                       <div className="border-r border-b border-[#b0b6c2] px-2 py-1.5 flex items-center justify-center font-bold bg-white">संस्थेचे नाव</div>
-                      <div className="border-r border-b border-[#b0b6c2] px-2 py-1.5 flex items-center justify-center font-bold bg-white">विभागाचे नाव</div>
+                      <div className="border-r border-b border-[#b0b6c2] px-0.75 py-1.5 flex items-center justify-center font-bold bg-white">विभागाचे नाव</div>
                       <div className="border-r border-b border-[#b0b6c2] px-2 py-1.5 flex items-center justify-center font-bold bg-white">सिटी सर्वे क्रमांक</div>
                       <div className="border-r border-b border-[#b0b6c2] px-2 py-1.5 flex items-center justify-center font-bold bg-white">मालकी प्रकार</div>
                       <div className="border-r border-b border-[#b0b6c2] px-2 py-1.5 flex items-center justify-center font-bold bg-white">खरेदी मूल्य</div>
                       <div className="border-b border-[#b0b6c2] px-2 py-1.5 flex items-center justify-center font-bold bg-white">बाजार मूल्य</div>
 
-                      <div className="border-r border-[#b0b6c2] px-1.5 py-1.5 flex items-center justify-center font-black text-gray-700 text-[12px] leading-tight">{authorityName}</div>
-                      <div className="border-r border-[#b0b6c2] px-1.5 py-1.5 flex items-center justify-center font-black text-gray-700 text-[12px] leading-tight">{organizationName}</div>
-                      <div className="border-r border-[#b0b6c2] px-1 py-1.5 flex items-center justify-center font-black text-gray-700 text-[12px] leading-tight">{departmentName}</div>
-                      <div className="border-r border-[#b0b6c2] px-1.5 py-1.5 flex items-center justify-center font-black text-gray-700 text-[12px] leading-tight">{citySurvey}</div>
-                      <div className="border-r border-[#b0b6c2] px-1.5 py-1.5 flex items-center justify-center font-black text-gray-700 text-[12px] leading-tight">{ownershipType}</div>
-                      <div className="border-r border-[#b0b6c2] px-1.5 py-1.5 flex items-center justify-center font-black text-gray-700 text-[12px] leading-tight">{purchaseValue}</div>
-                      <div className="px-1.5 py-1.5 flex items-center justify-center font-black text-gray-700 text-[12px] leading-tight">{marketValue}</div>
+                      <div className="border-r border-[#b0b6c2] px-0.75 py-1.5 flex items-center justify-center font-black text-gray-700 text-[8px] leading-tight">{authorityName}</div>
+                      <div className="border-r border-[#b0b6c2] px-1.5 py-1.5 flex items-center justify-center font-black text-gray-700 text-[8px] leading-tight">{organizationName}</div>
+                      <div className="border-r border-[#b0b6c2] px-1 py-1.5 flex items-center justify-center font-black text-gray-700 text-[8px] leading-tight">{departmentName}</div>
+                      <div className="border-r border-[#b0b6c2] px-1.5 py-1.5 flex items-center justify-center font-black text-gray-700 text-[8px] leading-tight">{citySurvey}</div>
+                      <div className="border-r border-[#b0b6c2] px-1.5 py-1.5 flex items-center justify-center font-black text-gray-700 text-[8px] leading-tight">{ownershipType}</div>
+                      <div className="border-r border-[#b0b6c2] px-1.5 py-1.5 flex items-center justify-center font-black text-gray-700 text-[8px] leading-tight">{purchaseValue}</div>
+                      <div className="px-1.5 py-1.5 flex items-center justify-center font-black text-gray-700 text-[8px] leading-tight">{marketValue}</div>
                     </div>
                   </div>
 
@@ -312,8 +325,8 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
                 </div>
               </div>
 
-              <div className="flex gap-3 flex-1 min-h-0">
-                <div className="flex-1 flex flex-col gap-3 min-w-0">
+              <div className="flex flex-col gap-3 flex-1 min-h-0">
+                <div className="flex flex-col gap-3 min-w-0">
                   <div className="border border-[#b0b6c2] rounded-md overflow-hidden shadow-sm bg-white shrink-0">
                     <table className="w-full text-center border-collapse text-[9px] font-bold text-[#0d4380] leading-[1.1]">
                       <thead className="bg-gray-100/80 align-middle">
@@ -342,21 +355,21 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
                       <tbody>
                         {isBuildingCategory && constructionRows.length > 0 ? constructionRows.map((row, idx) => (
                           <tr key={idx} className="bg-white text-gray-700 align-middle h-4">
-                            <td className="border-r border-b border-[#e2e8f0] p-1 text-[#0d4380]">{formatText(getField(row, ['floor', 'floorName']))}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1 text-[#0d4380]">{formatText(getField(row, ['year', 'constructionYear']))}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1 text-[#0d4380]">{formatText(getField(row, ['type', 'constructionType']))}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1 text-[#0d4380]">{formatText(getField(row, ['use', 'usage']))}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(getField(row, ['builtUpArea', 'builtUpAreaSqMeter']) ?? '-')}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(getField(row, ['plotArea', 'landArea', 'area']) ?? '-')}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(getField(row, ['landRate']) ?? '-')}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(getField(row, ['landValue', 'value']) ?? '-')}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(getField(row, ['constructionRate', 'buildingRate']) ?? '-')}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(getField(row, ['constructionValue', 'buildingValue']) ?? '-')}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(getField(row, ['totalValue']) ?? '-')}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(getField(row, ['useWeight']) ?? '-')}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(getField(row, ['typeWeight']) ?? '-')}</td>
-                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(getField(row, ['depreciationWeight']) ?? '-')}</td>
-                            <td className="border-b border-[#e2e8f0] p-1 bg-gray-50 text-[10px] font-black text-[#0d4380]">{toMarathiDigits(getField(row, ['capitalValue']) ?? '-')}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1 text-[#0d4380]">{formatText(getField(row, ['floorName', 'floor']))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1 text-[#0d4380]">{formatText(getField(row, ['constructionYear', 'year']))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1 text-[#0d4380]">{formatText(getField(row, ['constructionTypeName', 'constructionType', 'type']))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1 text-[#0d4380]">{formatText(getField(row, ['typeOfUseName', 'usage', 'use']))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(firstAvailable(getField(row, ['builtUpAreaSqMeter', 'builtUpArea']), '-'))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(firstAvailable(getField(row, ['carpetAreaSqMeter', 'plotArea', 'landArea', 'area']), '-'))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(firstAvailable(getField(row, ['cvBaseRate', 'landRate']), '-'))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(firstAvailable(getField(row, ['baseValue', 'landValue', 'value']), '-'))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(firstAvailable(getField(row, ['marketValue', 'constructionRate', 'buildingRate']), '-'))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(firstAvailable(getField(row, ['marketValue', 'constructionValue', 'buildingValue']), '-'))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(firstAvailable(getField(row, ['marketValue', 'totalValue']), '-'))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(firstAvailable(getField(row, ['cvUseFactor', 'useWeight']), '-'))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(firstAvailable(getField(row, ['cvNatureFactor', 'typeWeight']), '-'))}</td>
+                            <td className="border-r border-b border-[#e2e8f0] p-1">{toMarathiDigits(firstAvailable(getField(row, ['cvAgeFactor', 'depreciationWeight']), '-'))}</td>
+                            <td className="border-b border-[#e2e8f0] p-1 bg-gray-50 text-[10px] font-black text-[#0d4380]">{toMarathiDigits(firstAvailable(getField(row, ['capitalValue']), '-'))}</td>
                           </tr>
                         )) : (
                           <tr>
@@ -367,12 +380,12 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
                     </table>
                   </div>
 
-                  <div className="flex gap-3 flex-1 min-h-0">
+                  <div className="flex gap-3 min-h-0 h-[280px]">
                     <div className="w-40 flex flex-col justify-between gap-2 h-full">
                       {[
-                        { label: 'ON SPOT PHOTOGRAPH', icon: '📷', src: getFirstImage(record, 'images') ?? getFirstImage(record, 'thumbnail') },
-                        { label: 'LIVE GIS LOCATION', icon: '📍', src: getFirstImage(record, 'images') },
-                        { label: 'DP PLAN', icon: '🗺️', src: getFirstImage(record, 'floorPlans') },
+                        { label: 'ON SPOT PHOTOGRAPH', icon: '📷', src: getFirstImage(record, 'images') ?? getFirstImage(record, 'thumbnail') ?? '/devplan.png' },
+                        { label: 'LIVE GIS LOCATION', icon: '📍', src: getFirstImage(record, 'images') ?? '/municipal_building_front.png' },
+                        { label: 'DP PLAN', icon: '🗺️', src: getFirstImage(record, 'floorPlans') ?? '/satellite_map_bg.png' },
                       ].map((panel) => (
                         <div key={panel.label} className="flex-1 rounded-md overflow-hidden flex flex-col border border-[#b0b6c2] shadow-sm bg-white relative">
                           <div className="bg-[#175294] text-white text-[8px] font-bold py-0.75 flex items-center justify-center gap-1.5 absolute top-0 w-full z-10 rounded-b-xl px-2 leading-none shadow">
@@ -381,7 +394,7 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
                           <div className="flex-1 bg-gray-100 flex items-center justify-center mt-4.5 relative overflow-hidden">
                             {panel.src ? (
                               // eslint-disable-next-line @next/next/no-img-element
-                              <img src={panel.src} alt={panel.label} className="absolute inset-0 w-full h-full object-cover" />
+                              <img src={panel.src} alt={panel.label} className="absolute inset-0 w-full h-full object-contain p-1" />
                             ) : (
                               <div className="text-xs text-slate-500">-</div>
                             )}
@@ -414,10 +427,36 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
                         )}
                       </div>
                     </div>
+
+                    <div className="w-76 flex gap-2 h-full shrink-0">
+                      <div className="border border-[#b0b6c2] rounded-[10px] bg-gray-50/50 p-2 flex flex-col relative shadow-sm flex-1 min-w-0 h-full">
+                        <div className="text-[#175294] font-black text-[16px] text-center mb-1 drop-shadow-sm leading-none tracking-wide">अकोला</div>
+                        <div className="flex-1 border border-blue-200 bg-[#e0e7ff] rounded-md overflow-hidden flex items-center justify-center relative min-h-0">
+                          <Image
+                            src="/map-panel.png"
+                            alt="Map panel"
+                            fill
+                            className="object-contain p-2"
+                            sizes="(max-width: 768px) 100vw, 240px"
+                            priority
+                          />
+                        </div>
+                      </div>
+
+                      <div className="border border-[#b0b6c2] rounded-[10px] bg-white p-2 flex flex-col relative shadow-sm w-22.5 shrink-0">
+                        <div className="absolute -top-2 left-[50%] translate-x-[-50%] bg-white text-gray-700 px-2 py-px rounded-full text-[7px] font-bold shadow-sm whitespace-nowrap border border-[#b0b6c2]">AREA TAGGING</div>
+                        <div className="flex flex-col gap-1.5 mt-2 h-full justify-between pb-0.5">
+                          <div className="border border-[#b0b6c2] rounded-sm flex-1 bg-white shadow-inner" />
+                          <div className="border border-[#b0b6c2] rounded-sm flex-1 bg-white shadow-inner" />
+                          <div className="border border-[#b0b6c2] rounded-sm flex-1 bg-white shadow-inner" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="w-82.5 flex flex-col gap-3 shrink-0 h-full">
+                <div className="hidden w-82.5 flex-col gap-3 shrink-0 h-full">
+                  {false && (
                   <div className="border border-[#b0b6c2] rounded-[10px] bg-white shadow-sm flex flex-col relative flex-1 min-h-0 pt-3">
                     <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-white px-8 py-1 rounded-full text-[11px] font-black tracking-widest z-10 shadow-sm whitespace-nowrap border-[1.5px] border-white bg-[#175294]">MOVABLE ASSETS</div>
                     <div className="flex flex-col h-full overflow-hidden rounded-b-[9px]">
@@ -483,6 +522,7 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
                       </table>
                     </div>
                   </div>
+                  )}
 
                   <div className="flex gap-2 h-31.25 shrink-0">
                     <div className="border border-[#b0b6c2] rounded-[10px] bg-gray-50/50 p-2 flex flex-col relative shadow-sm flex-1 min-w-0">
@@ -531,4 +571,6 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
     </div>
   );
 }
+
+
 

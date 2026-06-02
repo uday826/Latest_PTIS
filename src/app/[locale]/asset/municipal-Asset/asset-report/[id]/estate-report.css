@@ -469,6 +469,25 @@
     margin: 0;
   }
 
+  html:has(.estate-report-page) header,
+  html:has(.estate-report-page) aside,
+  html:has(.estate-report-page) footer,
+  html:has(.estate-report-page) .sidebar-mobile-toggle,
+  html:has(.estate-report-page) .sidebar-brand-row,
+  html:has(.estate-report-page) .sidebar-footer-label,
+  html:has(.estate-report-page) .sidebar-expandable-label,
+  html:has(.estate-report-page) .sidebar-back-icon {
+    display: none !important;
+  }
+
+  html:has(.estate-report-page) .layout-content-shifted,
+  html:has(.estate-report-page) main {
+    margin-left: 0 !important;
+    padding-top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
   html,
   body {
     margin: 0 !important;
