@@ -233,6 +233,7 @@ export async function fetchChildAssetsByParent(assetId: number | string): Promis
         organizationId: pickFirstNumber(item, ["organizationId", "OrganizationId"]),
         departmentId: pickFirstNumber(item, ["departmentId", "DepartmentId"]),
         assetId: null,
+        inventoryBatchId: pickFirstNumber(item, ["inventoryBatchId", "InventoryBatchId"]),
         assetNo: pickFirstString(item, ["assetNo", "AssetNo"]),
         assetName: pickFirstString(item, ["assetName", "AssetName"]),
         assetCategoryId: pickFirstNumber(item, ["assetCategoryId", "AssetCategoryId"]),

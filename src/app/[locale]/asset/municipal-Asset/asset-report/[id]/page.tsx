@@ -3,7 +3,8 @@ import Image from 'next/image';
 import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
 import { fetchAssetFloorSummaryByAsset, fetchAssetMasterById } from '@/app/[locale]/asset/municipal-Asset/asset-detail/actions';
-import { PrintReportButton } from './PrintReportButton';
+import { PrintReportButton, BackButton } from './PrintReportButton';
+import { Card } from '@/components/common';
 import './estate-report.css';
 
 type PageProps = {
@@ -210,10 +211,22 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
 
   return (
     <div className="estate-report-page font-sans text-slate-900">
-      <div className="estate-report-shell max-w-319.5 mx-auto no-print">
-        <div className="flex justify-end mb-6 pt-4 px-2">
-          <PrintReportButton locale={locale} id={id} />
-        </div>
+      <div className="mx-auto flex w-full max-w-437.5 flex-col gap-2.5 no-print mb-4 px-2 xl:px-0">
+        <Card variant="elevated" className="border-0 bg-white shadow-sm overflow-hidden">
+          <div className="bg-[#0e315d] text-white px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <BackButton />
+                <div>
+                  <h1 className="text-[20px] font-extrabold leading-none truncate max-w-2xl" title={title}>
+                    {title || 'Estate Report'}
+                  </h1>
+                </div>
+              </div>
+              <PrintReportButton locale={locale} id={id} />
+            </div>
+          </div>
+        </Card>
       </div>
       <div className="estate-report-shell">
         <div className="w-full overflow-x-auto print:p-0 flex justify-center custom-scrollbar">
@@ -223,7 +236,7 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
             style={{ width: '297mm', height: '210mm', minWidth: '297mm', minHeight: '210mm', padding: '6mm 7mm' }}
           >
             <div className="relative z-10 font-sans text-gray-900 h-full flex flex-col">
-              <div className="flex justify-between items-start border-b border-[#b0b6c2] pb-2 mb-3 rounded-b-2xl shrink-0">
+              <div className="flex justify-between items-start pb-2 mb-3 rounded-b-2xl shrink-0">
                 <div className="flex items-center gap-4">
                   <div className="w-12.5 h-12.5 shrink-0">
                     <Image
@@ -457,71 +470,71 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
 
                 <div className="hidden w-82.5 flex-col gap-3 shrink-0 h-full">
                   {false && (
-                  <div className="border border-[#b0b6c2] rounded-[10px] bg-white shadow-sm flex flex-col relative flex-1 min-h-0 pt-3">
-                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-white px-8 py-1 rounded-full text-[11px] font-black tracking-widest z-10 shadow-sm whitespace-nowrap border-[1.5px] border-white bg-[#175294]">MOVABLE ASSETS</div>
-                    <div className="flex flex-col h-full overflow-hidden rounded-b-[9px]">
-                      <table className="w-full text-[9px] font-bold text-[#0d4380] border-collapse h-full">
-                        <thead className="bg-gray-100/90 border-b border-[#b0b6c2] h-5.5">
-                          <tr>
-                            <th className="px-3 py-1 text-left align-middle w-auto">वाहने / फर्निचर / उपकरणे</th>
-                            <th className="px-2 py-1 text-center align-middle border-l border-[#b0b6c2] w-11.25">QTY</th>
-                            <th className="px-3 py-1 text-right align-middle border-l border-[#b0b6c2] w-23.75">VALUE ₹</th>
-                          </tr>
-                        </thead>
-                        <tbody className="text-gray-700 bg-white">
-                          {['Vehicles', 'Furniture', 'Equipment'].map((category) => {
-                            const categoryItems = movableItems.filter((item) => {
-                              const itemCategory = normalizeMovableCategory(getField(item, ['category', 'assetCategoryName', 'categoryName', 'itemType', 'type', 'assetTypeName']))
-                                ?? fallbackMovableCategory;
-                              return itemCategory === category;
-                            });
-                            return (
-                              <Fragment key={category}>
-                                <tr className="border-b border-[#e2e8f0] bg-gray-50/50">
-                                  <td colSpan={3} className="px-3 py-0.75 align-middle text-left font-extrabold text-[#0d4380] text-[10px]">
-                                    {category === 'Vehicles' ? 'वाहने' : category === 'Furniture' ? 'फर्निचर' : 'उपकरणे'}
-                                  </td>
-                                </tr>
-                                {categoryItems.length > 0 ? categoryItems.map((item, idx) => {
-                                  const itemName = formatText(getField(item, ['name', 'assetName', 'itemName', 'vehicleName']));
-                                  const itemQty = getField(item, ['quantity', 'qty', 'count']) ?? '-';
-                                  const itemValue = getField(item, ['value', 'marketValue', 'purchaseValue', 'currentBookValue']) ?? '-';
-
-                                  return (
-                                    <tr key={`${category}-${idx}`} className="border-b border-[#e2e8f0] hover:bg-gray-50">
-                                      <td className="px-3 py-0.5 align-middle">
-                                        <div className="flex items-center gap-1.5">
-                                          <div className="w-4.5 h-3.5 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-xs overflow-hidden shrink-0">
-                                            <span className="text-[8px]">•</span>
-                                          </div>
-                                          <span className="truncate max-w-32.5" title={itemName}>{itemName}</span>
-                                        </div>
-                                      </td>
-                                      <td className="px-2 py-0.5 align-middle text-center border-l border-[#e2e8f0] font-black">{toMarathiDigits(itemQty)}</td>
-                                      <td className="px-3 py-0.5 align-middle text-right border-l border-[#e2e8f0] font-black">{formatCurrencyINR(itemValue)}</td>
-                                    </tr>
-                                  );
-                                }) : (
-                                  <tr>
-                                    <td className="px-3 py-0.5 align-middle">-</td>
-                                    <td className="px-2 py-0.5 align-middle text-center border-l border-[#e2e8f0]">-</td>
-                                    <td className="px-3 py-0.5 align-middle text-right border-l border-[#e2e8f0]">-</td>
+                    <div className="border border-[#b0b6c2] rounded-[10px] bg-white shadow-sm flex flex-col relative flex-1 min-h-0 pt-3">
+                      <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-white px-8 py-1 rounded-full text-[11px] font-black tracking-widest z-10 shadow-sm whitespace-nowrap border-[1.5px] border-white bg-[#175294]">MOVABLE ASSETS</div>
+                      <div className="flex flex-col h-full overflow-hidden rounded-b-[9px]">
+                        <table className="w-full text-[9px] font-bold text-[#0d4380] border-collapse h-full">
+                          <thead className="bg-gray-100/90 border-b border-[#b0b6c2] h-5.5">
+                            <tr>
+                              <th className="px-3 py-1 text-left align-middle w-auto">वाहने / फर्निचर / उपकरणे</th>
+                              <th className="px-2 py-1 text-center align-middle border-l border-[#b0b6c2] w-11.25">QTY</th>
+                              <th className="px-3 py-1 text-right align-middle border-l border-[#b0b6c2] w-23.75">VALUE ₹</th>
+                            </tr>
+                          </thead>
+                          <tbody className="text-gray-700 bg-white">
+                            {['Vehicles', 'Furniture', 'Equipment'].map((category) => {
+                              const categoryItems = movableItems.filter((item) => {
+                                const itemCategory = normalizeMovableCategory(getField(item, ['category', 'assetCategoryName', 'categoryName', 'itemType', 'type', 'assetTypeName']))
+                                  ?? fallbackMovableCategory;
+                                return itemCategory === category;
+                              });
+                              return (
+                                <Fragment key={category}>
+                                  <tr className="border-b border-[#e2e8f0] bg-gray-50/50">
+                                    <td colSpan={3} className="px-3 py-0.75 align-middle text-left font-extrabold text-[#0d4380] text-[10px]">
+                                      {category === 'Vehicles' ? 'वाहने' : category === 'Furniture' ? 'फर्निचर' : 'उपकरणे'}
+                                    </td>
                                   </tr>
-                                )}
-                              </Fragment>
-                            );
-                          })}
-                        </tbody>
-                        <tfoot className="bg-[#175294] text-white">
-                          <tr className="h-7.5">
-                            <td className="px-3 py-1 align-middle text-center text-[13px] font-black tracking-widest border-r border-[#1f63ae]">एकूण</td>
-                            <td className="px-2 py-1 align-middle text-center text-[12px] font-black border-r border-[#1f63ae]">{movableTotals.quantity > 0 ? toMarathiDigits(movableTotals.quantity) : '-'}</td>
-                            <td className="px-3 py-1 align-middle text-left font-black tracking-wide text-[12px]">{movableTotals.value > 0 ? formatCurrencyINR(movableTotals.value) : '-'}</td>
-                          </tr>
-                        </tfoot>
-                      </table>
+                                  {categoryItems.length > 0 ? categoryItems.map((item, idx) => {
+                                    const itemName = formatText(getField(item, ['name', 'assetName', 'itemName', 'vehicleName']));
+                                    const itemQty = getField(item, ['quantity', 'qty', 'count']) ?? '-';
+                                    const itemValue = getField(item, ['value', 'marketValue', 'purchaseValue', 'currentBookValue']) ?? '-';
+
+                                    return (
+                                      <tr key={`${category}-${idx}`} className="border-b border-[#e2e8f0] hover:bg-gray-50">
+                                        <td className="px-3 py-0.5 align-middle">
+                                          <div className="flex items-center gap-1.5">
+                                            <div className="w-4.5 h-3.5 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-xs overflow-hidden shrink-0">
+                                              <span className="text-[8px]">•</span>
+                                            </div>
+                                            <span className="truncate max-w-32.5" title={itemName}>{itemName}</span>
+                                          </div>
+                                        </td>
+                                        <td className="px-2 py-0.5 align-middle text-center border-l border-[#e2e8f0] font-black">{toMarathiDigits(itemQty)}</td>
+                                        <td className="px-3 py-0.5 align-middle text-right border-l border-[#e2e8f0] font-black">{formatCurrencyINR(itemValue)}</td>
+                                      </tr>
+                                    );
+                                  }) : (
+                                    <tr>
+                                      <td className="px-3 py-0.5 align-middle">-</td>
+                                      <td className="px-2 py-0.5 align-middle text-center border-l border-[#e2e8f0]">-</td>
+                                      <td className="px-3 py-0.5 align-middle text-right border-l border-[#e2e8f0]">-</td>
+                                    </tr>
+                                  )}
+                                </Fragment>
+                              );
+                            })}
+                          </tbody>
+                          <tfoot className="bg-[#175294] text-white">
+                            <tr className="h-7.5">
+                              <td className="px-3 py-1 align-middle text-center text-[13px] font-black tracking-widest border-r border-[#1f63ae]">एकूण</td>
+                              <td className="px-2 py-1 align-middle text-center text-[12px] font-black border-r border-[#1f63ae]">{movableTotals.quantity > 0 ? toMarathiDigits(movableTotals.quantity) : '-'}</td>
+                              <td className="px-3 py-1 align-middle text-left font-black tracking-wide text-[12px]">{movableTotals.value > 0 ? formatCurrencyINR(movableTotals.value) : '-'}</td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
                     </div>
-                  </div>
                   )}
 
                   <div className="flex gap-2 h-31.25 shrink-0">

@@ -106,7 +106,7 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
           emptyText="No sub-units available for this asset."
           headerTitle=""
           headerSubtitle=""
-          tableClassName="min-w-[3000px]"
+          tableClassName="min-w-[3000px] table-fixed"
           maxBodyHeightClassName="max-h-[calc(100vh-360px)]"
           containerClassName="overflow-hidden"
         />
@@ -161,7 +161,7 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
                 getRowKey={(row, index) => String(row.id ?? index)}
                 paginationConfig={{ enabled: false }}
                 emptyText="No renter information available."
-                tableClassName="min-w-[800px]"
+                tableClassName="min-w-[800px] table-fixed"
                 containerClassName="border-0 shadow-none"
               />
             </Card>
@@ -177,7 +177,7 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
                 getRowKey={(row, index) => String(row.id ?? index)}
                 paginationConfig={{ enabled: false }}
                 emptyText="No room-wise submission data available."
-                tableClassName="min-w-[1000px]"
+                tableClassName="min-w-[1000px] table-fixed"
                 containerClassName="border-0 shadow-none"
               />
             </Card>
@@ -193,7 +193,7 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
                 getRowKey={(row, index) => String(row.id ?? index)}
                 paginationConfig={{ enabled: false }}
                 emptyText="No floor details available."
-                tableClassName="min-w-[1100px]"
+                tableClassName="min-w-[1100px] table-fixed"
                 containerClassName="border-0 shadow-none"
               />
             </Card>
@@ -208,7 +208,7 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
                 data={[selectedUnit] as Record<string, unknown>[]}
                 getRowKey={(row) => String(row.id)}
                 paginationConfig={{ enabled: false }}
-                tableClassName="min-w-[2800px]"
+                tableClassName="min-w-[2800px] table-fixed"
                 containerClassName="border-0 shadow-none"
               />
             </Card>

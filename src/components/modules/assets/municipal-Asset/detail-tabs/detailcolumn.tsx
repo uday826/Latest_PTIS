@@ -238,8 +238,8 @@ export function getSubUnitRenterColumns(): Column<Record<string, unknown>>[] {
     { key: 'mobileNo', label: 'Mobile', width: '120px', render: (v) => blank(v as string | null) },
     { key: 'emailId', label: 'Email', width: '180px', render: (v) => blank(v as string | null) },
     { key: 'agreementId', label: 'Agreement', width: '120px', render: (v) => blank(v as string | null) },
-    { key: 'rentAmount', label: 'Rent', width: '110px', cellClassName: 'text-right', render: (v) => formatNumber(v as string | number | null) },
-    { key: 'securityDeposit', label: 'Deposit', width: '120px', cellClassName: 'text-right font-semibold text-emerald-700', render: (v) => formatNumber(v as string | number | null) },
+    { key: 'rentAmount', label: 'Rent', width: '110px', align: 'center', render: (v) => formatNumber(v as string | number | null) },
+    { key: 'securityDeposit', label: 'Deposit', width: '120px', align: 'center', cellClassName: 'font-semibold text-emerald-700', render: (v) => formatNumber(v as string | number | null) },
   ];
 }
 
@@ -249,11 +249,11 @@ export function getSubUnitRoomColumns(): Column<Record<string, unknown>>[] {
     { key: 'roomType', label: 'Room Type', width: '140px', render: (v) => blank(v as string | null) },
     { key: 'shape', label: 'Shape', width: '110px', render: (v) => blank(v as string | null) },
     { key: 'submissionType', label: 'Submission Type', width: '160px', render: (v) => blank(v as string | null) },
-    { key: 'lengthMtr', label: 'L', width: '80px', cellClassName: 'text-right', render: (v) => blank(v as string | number | null) },
-    { key: 'widthMtr', label: 'W', width: '80px', cellClassName: 'text-right', render: (v) => blank(v as string | number | null) },
-    { key: 'heightMtr', label: 'H', width: '80px', cellClassName: 'text-right', render: (v) => blank(v as string | number | null) },
-    { key: 'outerYesNo', label: 'Outer', width: '90px', render: (v) => boolToYesNo(v as boolean | null) },
-    { key: 'minusYesNo', label: 'Minus', width: '90px', render: (v) => boolToYesNo(v as boolean | null) },
+    { key: 'lengthMtr', label: 'L', width: '80px', align: 'center', render: (v) => blank(v as string | number | null) },
+    { key: 'widthMtr', label: 'W', width: '80px', align: 'center', render: (v) => blank(v as string | number | null) },
+    { key: 'heightMtr', label: 'H', width: '80px', align: 'center', render: (v) => blank(v as string | number | null) },
+    { key: 'outerYesNo', label: 'Outer', width: '90px', align: 'center', render: (v) => boolToYesNo(v as boolean | null) },
+    { key: 'minusYesNo', label: 'Minus', width: '90px', align: 'center', render: (v) => boolToYesNo(v as boolean | null) },
   ];
 }
 
@@ -263,11 +263,11 @@ export function getSubUnitFloorColumns(): Column<Record<string, unknown>>[] {
     { key: 'constructionYear', label: 'Construction Year', width: '150px', render: (v) => blank(v as string | null) },
     { key: 'constructionTypeName', label: 'Construction Type', width: '160px', render: (v) => blank(v as string | null) },
     { key: 'typeOfUseName', label: 'Use Type', width: '140px', render: (v) => blank(v as string | null) },
-    { key: 'carpetAreaSqMeter', label: 'Carpet', width: '110px', cellClassName: 'text-right', render: (v) => formatArea(v as string | number | null) },
-    { key: 'builtUpAreaSqMeter', label: 'Built-up', width: '110px', cellClassName: 'text-right', render: (v) => formatArea(v as string | number | null) },
-    { key: 'noOfRooms', label: 'Rooms', width: '100px', cellClassName: 'text-right', render: (v) => blank(v as string | number | null) },
-    { key: 'capitalValue', label: 'Capital Value', width: '130px', cellClassName: 'text-right', render: (v) => formatNumber(v as string | number | null) },
-    { key: 'marketValue', label: 'Market Value', width: '130px', cellClassName: 'text-right', render: (v) => formatNumber(v as string | number | null) },
+    { key: 'carpetAreaSqMeter', label: 'Carpet', width: '110px', align: 'center', render: (v) => formatArea(v as string | number | null) },
+    { key: 'builtUpAreaSqMeter', label: 'Built-up', width: '110px', align: 'center', render: (v) => formatArea(v as string | number | null) },
+    { key: 'noOfRooms', label: 'Rooms', width: '100px', align: 'center', render: (v) => blank(v as string | number | null) },
+    { key: 'capitalValue', label: 'Capital Value', width: '130px', align: 'center', render: (v) => formatNumber(v as string | number | null) },
+    { key: 'marketValue', label: 'Market Value', width: '130px', align: 'center', render: (v) => formatNumber(v as string | number | null) },
   ];
 }
 

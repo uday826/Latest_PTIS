@@ -117,6 +117,7 @@ export type AssetChildAssetItem = {
   organizationId?: number | string | null;
   departmentId?: number | string | null;
   assetId?: number | string | null;
+  inventoryBatchId?: number | string | null;
   assetNo?: string | null;
   assetName?: string | null;
   assetCategoryId?: number | string | null;
