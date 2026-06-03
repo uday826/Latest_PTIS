@@ -54,6 +54,10 @@ export async function getDocumentsByAsset(assetId: number | string) {
   return apiClient.get<unknown>(`/AssetDocument/by-asset/${encodeURIComponent(String(assetId))}`);
 }
 
+export async function getPhotosAndPlansByAsset(assetId: number | string) {
+  return apiClient.get<unknown>(`/AssetDocument/by-asset/${encodeURIComponent(String(assetId))}/photos-and-plans`);
+}
+
 export async function getDocumentFileRaw(assetDocumentId: number | string): Promise<Response> {
   const url = `${getBaseUrl()}/AssetDocument/by-asset-document/${encodeURIComponent(String(assetDocumentId))}/file`;
   const headers = await getBinaryFetchHeaders();

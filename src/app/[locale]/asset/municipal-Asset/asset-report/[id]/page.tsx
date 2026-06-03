@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
-import { fetchAssetFloorSummaryByAsset, fetchAssetMasterById } from '@/app/[locale]/asset/municipal-Asset/asset-detail/actions';
+import { fetchAssetFloorSummaryByAsset, fetchAssetMasterById, fetchAssetPhotosAndPlansByAsset, fetchAssetDocumentFile } from '@/app/[locale]/asset/municipal-Asset/asset-detail/actions';
 import { PrintReportButton, BackButton } from './PrintReportButton';
 import { Card } from '@/components/common';
 import './estate-report.css';
@@ -142,6 +142,42 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
   const asset = await fetchAssetMasterById(id).catch(() => null);
 
   if (!asset) notFound();
+
+  const photosAndPlans = await fetchAssetPhotosAndPlansByAsset(id).catch((e) => {
+    console.error("Error fetching photos and plans:", e);
+    return { documents: [], error: e.message };
+  });
+  const imageDocs = photosAndPlans.documents || [];
+  
+  console.log("Fetched photosAndPlans for asset", id, "-> documents count:", imageDocs.length, "Error:", photosAndPlans.error);
+  if (imageDocs.length > 0) {
+    console.log("Available docs:");
+    imageDocs.forEach(d => console.log(`- ID: ${d.id}, Name: '${d.name}', FileName: '${d.fileName}'`));
+  }
+
+  async function getBase64ImageSrc(docId: string | number | undefined) {
+    if (!docId) return null;
+    try {
+      const fileData = await fetchAssetDocumentFile(docId);
+      if (!fileData.error && fileData.base64) {
+        const contentType = fileData.contentType || 'image/jpeg';
+        return `data:${contentType};base64,${fileData.base64}`;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  const onSpotDoc = imageDocs.find(d => d.name.toLowerCase().includes('asset image'));
+  const gisDoc = undefined;
+  const dpPlanDoc = imageDocs.find(d => d.name.toLowerCase().includes('asset photo plan'));
+  const digitalPlanDoc = imageDocs.find(d => d.name.toLowerCase().includes('asset photo plan'));
+
+  const [onSpotSrc, gisSrc, dpPlanSrc, digitalPlanSrc] = await Promise.all([
+    onSpotDoc ? getBase64ImageSrc(onSpotDoc.id) : null,
+    gisDoc ? getBase64ImageSrc(gisDoc.id) : null,
+    dpPlanDoc ? getBase64ImageSrc(dpPlanDoc.id) : null,
+    digitalPlanDoc ? getBase64ImageSrc(digitalPlanDoc.id) : null,
+  ]);
 
   const record = asset as unknown as ApiRecord;
   const inferredCategory = inferAssetCategory(record);
@@ -396,9 +432,9 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
                   <div className="flex gap-3 min-h-0 h-[280px]">
                     <div className="w-40 flex flex-col justify-between gap-2 h-full">
                       {[
-                        { label: 'ON SPOT PHOTOGRAPH', icon: '📷', src: getFirstImage(record, 'images') ?? getFirstImage(record, 'thumbnail') ?? '/devplan.png' },
-                        { label: 'LIVE GIS LOCATION', icon: '📍', src: getFirstImage(record, 'images') ?? '/municipal_building_front.png' },
-                        { label: 'DP PLAN', icon: '🗺️', src: getFirstImage(record, 'floorPlans') ?? '/satellite_map_bg.png' },
+                        { label: 'ON SPOT PHOTOGRAPH', icon: '📷', src: onSpotSrc ?? getFirstImage(record, 'images') ?? getFirstImage(record, 'thumbnail') ?? null },
+                        { label: 'LIVE GIS LOCATION', icon: '📍', src: gisSrc ?? getFirstImage(record, 'images') ?? null },
+                        { label: 'DP PLAN', icon: '🗺️', src: dpPlanSrc ?? getFirstImage(record, 'floorPlans') ?? null },
                       ].map((panel) => (
                         <div key={panel.label} className="flex-1 rounded-md overflow-hidden flex flex-col border border-[#b0b6c2] shadow-sm bg-white relative">
                           <div className="bg-[#175294] text-white text-[8px] font-bold py-0.75 flex items-center justify-center gap-1.5 absolute top-0 w-full z-10 rounded-b-xl px-2 leading-none shadow">
@@ -420,23 +456,18 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
                       <div className="absolute -top-2.5 left-[50%] translate-x-[-50%] bg-[#175294] text-white px-5 py-1 rounded-full text-[10px] font-bold flex gap-1.5 items-center shadow-sm whitespace-nowrap border border-white">DIGITAL PLAN</div>
                       <div className="text-center font-black text-[12px] mb-1.5 text-[#0d4380] pb-1 border-b border-gray-300 shrink-0">{title || '-'}</div>
                       <div className="flex-1 bg-gray-50 flex justify-center items-center rounded overflow-hidden min-h-0 relative">
-                        {getFirstImage(record, 'floorPlans') ? (
+                        {digitalPlanSrc || getFirstImage(record, 'floorPlans') ? (
                           <Image
-                            src={getFirstImage(record, 'floorPlans') ?? ''}
+                            src={digitalPlanSrc ?? getFirstImage(record, 'floorPlans') ?? ''}
                             alt="Digital Plan"
                             fill
                             className="object-cover p-1 grayscale-50"
                             sizes="(max-width: 768px) 100vw, 600px"
                           />
                         ) : (
-                          <Image
-                            src="/digital-plan.png"
-                            alt="Digital Plan"
-                            fill
-                            className="object-cover scale-[1.08]"
-                            sizes="(max-width: 768px) 100vw, 600px"
-                            priority
-                          />
+                          <div className="text-sm font-bold text-slate-400 flex flex-col items-center gap-2">
+                            <span>- No Digital Plan Available -</span>
+                          </div>
                         )}
                       </div>
                     </div>

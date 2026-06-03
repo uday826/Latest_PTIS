@@ -2,7 +2,7 @@
 
 import { assetMasterService } from "@/lib/api/asset/asset-master.service";
 import { apiClient } from "@/services/api.service";
-import { getDocumentFileRaw, getDocumentsByAsset } from "@/lib/api/asset/asset-document.server.service";
+import { getDocumentFileRaw, getDocumentsByAsset, getPhotosAndPlansByAsset } from "@/lib/api/asset/asset-document.server.service";
 import type {
   AssetDocumentListItem,
   AssetChildAssetItem,
@@ -108,7 +108,7 @@ function normalizeAssetDocument(raw: unknown): AssetDocumentListItem | null {
     pickFirstString(item, ["fileName", "FileName", "originalFileName", "OriginalFileName", "documentFileName", "DocumentFileName"]) ||
     `document-${id}`;
   const name =
-    pickFirstString(item, ["documentName", "DocumentName", "name", "Name", "title", "Title", "documentTypeName", "DocumentTypeName"]) ||
+    pickFirstString(item, ["documentName", "DocumentName", "name", "Name", "title", "Title", "documentTitle", "DocumentTitle", "documentTypeName", "DocumentTypeName"]) ||
     fileName;
 
   return {
@@ -409,6 +409,24 @@ export async function fetchAssetDocumentsByAsset(assetId: number | string): Prom
     return {
       documents: [],
       error: response.error || "Failed to load asset documents.",
+    };
+  }
+
+  return {
+    documents: unwrapAssetDocumentList(response.data).map(normalizeAssetDocument).filter(Boolean) as AssetDocumentListItem[],
+    error: null,
+  };
+}
+
+export async function fetchAssetPhotosAndPlansByAsset(assetId: number | string): Promise<{
+  documents: AssetDocumentListItem[];
+  error: string | null;
+}> {
+  const response = await getPhotosAndPlansByAsset(assetId);
+  if (!response.success) {
+    return {
+      documents: [],
+      error: response.error || "Failed to load asset photos and plans.",
     };
   }
 
