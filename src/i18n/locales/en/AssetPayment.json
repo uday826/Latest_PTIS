@@ -1,0 +1,168 @@
+{
+  "layout": {
+    "title": "Lease & Rent Registration",
+    "subtitle": "Payment Management System",
+    "tabs": {
+      "makePayment": "Make Payment",
+      "otherPayment": "Other Payment",
+      "paymentHistory": "Payment History"
+    },
+    "summary": {
+      "totalPayments": "Total Payments",
+      "totalAmount": "Total Amount",
+      "status": "Status",
+      "paid": "Paid",
+      "unpaid": "Unpaid"
+    },
+    "assetInfo": {
+      "title": "Asset Information",
+      "assetId": "Asset ID:",
+      "complexName": "Complex name",
+      "zone": "Zone",
+      "wardNo": "Ward No",
+      "shopPlotNo": "Shop/Plot No",
+      "complexAddress": "Complex Address",
+      "assetCategory": "Asset Category",
+      "assetName": "Asset Name",
+      "tenantName": "Tenant Name",
+      "leaseType": "Lease Type",
+      "financeYear": "Finance Year"
+    },
+    "back": "Back"
+  },
+  "makePayment": {
+    "title": "Make a Payment",
+    "financeYear": "Finance Year: {year}",
+    "pendingDemand": "Pending Demand",
+    "currentDemand": "Current Demand",
+    "penalty": "Penalty (2%)",
+    "gst": "GST (18%)",
+    "totalAmount": "Total Amount",
+    "mobileNumber": "Mobile Number",
+    "emailAddress": "Email Address",
+    "paymentMode": "Payment Mode",
+    "selectMode": "Select Mode",
+    "upiReferenceId": "UPI Reference ID",
+    "enterUpiReferenceId": "Enter UPI reference ID",
+    "bankName": "Bank Name",
+    "selectBank": "Select Bank",
+    "chequeNumber": "Cheque Number",
+    "enterChequeNumber": "Enter cheque number",
+    "chequeDate": "Cheque Date",
+    "ddNumber": "DD Number",
+    "enterDdNumber": "Enter DD number",
+    "ddDate": "DD Date",
+    "datePlaceholder": "dd-mm-yyyy",
+    "paymentType": "Payment Type",
+    "monthly": "Monthly",
+    "pending": "Pending",
+    "partial": "Partial",
+    "total": "Total",
+    "selectMonths": "Select Months",
+    "selectedMonths": "Selected: {months}",
+    "payNow": "Pay Now",
+    "drawer": {
+      "title": "Select Months",
+      "cancel": "Cancel",
+      "apply": "Apply"
+    }
+  },
+  "otherPayment": {
+    "title": "Other Payment",
+    "financeYear": "Finance Year: {year}",
+    "mobileNumber": "Mobile Number",
+    "emailId": "Email ID",
+    "paymentType": "Payment Type",
+    "selectType": "Select Type",
+    "paymentMode": "Payment Mode",
+    "selectMode": "Select Mode",
+    "transactionId": "Transaction ID",
+    "enterTransactionId": "Enter transaction ID",
+    "bankGateway": "Bank/Gateway",
+    "enterBankGateway": "Enter bank / gateway",
+    "upiId": "UPI ID",
+    "enterUpiId": "Enter UPI ID",
+    "ddNumber": "DD Number",
+    "enterDdNumber": "Enter DD number",
+    "ddDate": "DD Date",
+    "chequeNumber": "Cheque Number",
+    "enterChequeNumber": "Enter cheque number",
+    "chequeDate": "Cheque Date",
+    "datePlaceholder": "dd-mm-yyyy",
+    "bankName": "Bank Name",
+    "selectBank": "Select Bank",
+    "payNow": "Pay Now",
+    "modes": {
+      "cash": "Cash",
+      "dd": "DD",
+      "cheque": "Cheque",
+      "qr": "QR",
+      "online": "Online"
+    },
+    "types": {
+      "deposit": "Deposit",
+      "penalty": "Penalty",
+      "transferFee": "Transfer Fee"
+    }
+  },
+  "paymentHistory": {
+    "title": "Transaction History",
+    "searchPlaceholder": "Search transactions...",
+    "table": {
+      "receiptNo": "Receipt No",
+      "finYear": "Fin. Year",
+      "amount": "Amount",
+      "dateTime": "Date & Time",
+      "mode": "Mode",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "rowsPerPage": "Rows per page:",
+    "showingEntries": "Showing {start} to {end} of {total} entries",
+    "paid": "Paid",
+    "unpaid": "Unpaid"
+  },
+  "records": {
+    "searchFilterTitle": "Search & Filter",
+    "searchFilterSubtitle": "Filter payment records by zone, category, and status",
+    "filters": {
+      "zone": "Zone",
+      "ward": "Ward",
+      "assetCategory": "Asset Category",
+      "leaseRentType": "Lease/Rent Type",
+      "paymentStatus": "Payment Status",
+      "smartSearch": "Smart Search",
+      "smartSearchPlaceholder": "Search by Asset ID, Shop/Plot No...",
+      "search": "Search",
+      "select": "Select",
+      "all": "All",
+      "allCategories": "All Categories",
+      "allTypes": "All Types",
+      "allStatus": "All Status"
+    },
+    "table": {
+      "srNo": "Sr No",
+      "zone": "Zone",
+      "ward": "Ward",
+      "assetId": "Asset Id",
+      "complex": "Complex",
+      "shopPlot": "Shop/Plot",
+      "asset": "Asset",
+      "tenant": "Tenant",
+      "mobile": "Mobile",
+      "type": "Type",
+      "amount": "Amount",
+      "status": "Status",
+      "action": "Action",
+      "pay": "Pay"
+    },
+    "status": {
+      "paid": "Paid",
+      "unpaid": "Unpaid"
+    },
+    "pagination": {
+      "rowsPerPage": "Rows per page:",
+      "showingEntries": "Showing {start} to {end} of {total} entries"
+    }
+  }
+}
