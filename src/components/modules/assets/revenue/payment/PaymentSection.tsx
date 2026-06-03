@@ -1,32 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Search, IndianRupee, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/common/Card';
-import { Button, SearchInput, Select } from '@/components/common';
-import { FirstPageButton, LastPageButton, NextPageButton, PageNumberButton, PrevPageButton } from '@/components/common/ActionButtons';
+import { Button, MasterTable, SearchInput, Select, type Column } from '@/components/common';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import type { PaymentRecordsPageData } from '@/app/[locale]/asset/revenue/payment/actions';
+import type { PaymentRecord } from '@/types/asset/payment.types';
 
 interface PaymentSectionProps {
   pageData: PaymentRecordsPageData;
 }
 
-const allOption = [{ label: 'All', value: 'all' }];
+type PaymentTableRow = PaymentRecord & Record<string, unknown>;
 
 export function PaymentSection({ pageData }: PaymentSectionProps) {
   const t = useTranslations('AssetPayment.records');
   const router = useRouter();
   const params = useParams<{ locale: string }>();
-  const { query, records, totalEntries, totalPages, startIndex, endIndex } = pageData;
+  const { query, records, totalEntries, totalPages, startIndex } = pageData;
   const [smartSearch, setSmartSearch] = useState(query.search);
-
-  const pageNumbers = Array.from({ length: totalPages }, (_, idx) => idx + 1);
-  const visiblePageNumbers = pageNumbers.filter((page) =>
-    totalPages <= 5 ? true : Math.abs(page - query.pageNumber) <= 1 || page === 1 || page === totalPages
-  );
 
   const listQueryString = (() => {
     const next = new URLSearchParams();
@@ -83,9 +78,61 @@ export function PaymentSection({ pageData }: PaymentSectionProps) {
     );
   };
 
+  const sortableHeader = (label: string, column: string) => (
+    <button
+      type="button"
+      onClick={() => handleSort(column)}
+      className="inline-flex items-center gap-1 text-left"
+    >
+      <span>{label}</span>
+      {sortIcon(column)}
+    </button>
+  );
+
+  const tableRows = records as PaymentTableRow[];
+
+  const columns = useMemo<Column<PaymentTableRow>[]>(
+    () => [
+      {
+        key: 'srNo',
+        label: t('table.srNo'),
+        align: 'center',
+        render: (value, _row, rowIndex) => String(value ?? startIndex + rowIndex + 1),
+      },
+      { key: 'zone', label: sortableHeader(t('table.zone'), 'zone'), align: 'center' },
+      { key: 'ward', label: sortableHeader(t('table.ward'), 'ward'), align: 'center' },
+      { key: 'assetId', label: sortableHeader(t('table.assetId'), 'assetId'), align: 'center' },
+      { key: 'complexName', label: sortableHeader(t('table.complex'), 'complexName') },
+      { key: 'shopPlotNo', label: sortableHeader(t('table.shopPlot'), 'shopPlotNo'), align: 'center' },
+      { key: 'assetName', label: sortableHeader(t('table.asset'), 'assetName') },
+      { key: 'tenantName', label: sortableHeader(t('table.tenant'), 'tenantName') },
+      { key: 'mobileNo', label: sortableHeader(t('table.mobile'), 'mobileNo'), align: 'center' },
+      { key: 'leaseRentType', label: sortableHeader(t('table.type'), 'leaseRentType'), align: 'center' },
+      {
+        key: 'rentDueAmount',
+        label: sortableHeader(t('table.amount'), 'rentDueAmount'),
+        align: 'center',
+        render: (value) => `₹${Number(value ?? 0).toLocaleString('en-IN')}`,
+      },
+      {
+        key: 'status',
+        label: sortableHeader(t('table.status'), 'status'),
+        align: 'center',
+        render: (value) => (
+          <StatusBadge
+            value={value === 'paid' ? 'true' : 'false'}
+            activeLabel={t('status.paid')}
+            inactiveLabel={t('status.unpaid')}
+          />
+        ),
+      },
+    ],
+    [startIndex, t, query.sortBy, query.sortOrder]
+  );
+
   return (
     <div className="space-y-3">
-      <Card variant="bordered" padding="none" className="bg-white shadow-sm border-slate-200">
+      <Card variant="bordered" padding="none" className="bg-white shadow-sm border-slate-200 overflow-hidden">
         <div className="p-5 border-b border-slate-100">
           <div className="flex items-center gap-2 mb-1">
             <Search className="w-4 h-4 text-blue-500" />
@@ -124,92 +171,43 @@ export function PaymentSection({ pageData }: PaymentSectionProps) {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-100 text-left text-xs text-slate-700">
-            <thead>
-              <tr className="bg-[#1f2937] text-white font-semibold text-[10px] leading-tight">
-                <th className="px-4 py-3 border border-gray-100">{t('table.srNo')}</th>
-                <th className="px-4 py-3 border border-gray-100 cursor-pointer" onClick={() => handleSort('zone')}><span className="inline-flex items-center gap-1">{t('table.zone')} {sortIcon('zone')}</span></th>
-                <th className="px-4 py-3 border border-gray-100 cursor-pointer" onClick={() => handleSort('ward')}><span className="inline-flex items-center gap-1">{t('table.ward')} {sortIcon('ward')}</span></th>
-                <th className="px-4 py-3 border border-gray-100 cursor-pointer" onClick={() => handleSort('assetId')}><span className="inline-flex items-center gap-1">{t('table.assetId')} {sortIcon('assetId')}</span></th>
-                <th className="px-4 py-3 border border-gray-100 cursor-pointer" onClick={() => handleSort('complexName')}><span className="inline-flex items-center gap-1">{t('table.complex')} {sortIcon('complexName')}</span></th>
-                <th className="px-4 py-3 border border-gray-100 cursor-pointer" onClick={() => handleSort('shopPlotNo')}><span className="inline-flex items-center gap-1">{t('table.shopPlot')} {sortIcon('shopPlotNo')}</span></th>
-                <th className="px-4 py-3 border border-gray-100 cursor-pointer" onClick={() => handleSort('assetName')}><span className="inline-flex items-center gap-1">{t('table.asset')} {sortIcon('assetName')}</span></th>
-                <th className="px-4 py-3 border border-gray-100 cursor-pointer" onClick={() => handleSort('tenantName')}><span className="inline-flex items-center gap-1">{t('table.tenant')} {sortIcon('tenantName')}</span></th>
-                <th className="px-4 py-3 border border-gray-100 cursor-pointer" onClick={() => handleSort('mobileNo')}><span className="inline-flex items-center gap-1">{t('table.mobile')} {sortIcon('mobileNo')}</span></th>
-                <th className="px-4 py-3 border border-gray-100 cursor-pointer" onClick={() => handleSort('leaseRentType')}><span className="inline-flex items-center gap-1">{t('table.type')} {sortIcon('leaseRentType')}</span></th>
-                <th className="px-4 py-3 border border-gray-100 cursor-pointer" onClick={() => handleSort('rentDueAmount')}><span className="inline-flex items-center gap-1">{t('table.amount')} {sortIcon('rentDueAmount')}</span></th>
-                <th className="px-4 py-3 border border-gray-100 cursor-pointer" onClick={() => handleSort('status')}><span className="inline-flex items-center gap-1">{t('table.status')} {sortIcon('status')}</span></th>
-                <th className="px-4 py-3 border border-gray-100">{t('table.action')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.map((record, index) => (
-                <tr key={`${record.assetId}-${record.srNo}`}>
-                  <td className="px-4 py-3 border border-gray-100">{record.srNo || startIndex + index + 1}</td>
-                  <td className="px-4 py-3 border border-gray-100">{record.zone}</td>
-                  <td className="px-4 py-3 border border-gray-100">{record.ward}</td>
-                  <td className="px-4 py-3 border border-gray-100">{record.assetId}</td>
-                  <td className="px-4 py-3 border border-gray-100">{record.complexName}</td>
-                  <td className="px-4 py-3 border border-gray-100">{record.shopPlotNo}</td>
-                  <td className="px-4 py-3 border border-gray-100">{record.assetName}</td>
-                  <td className="px-4 py-3 border border-gray-100">{record.tenantName}</td>
-                  <td className="px-4 py-3 border border-gray-100">{record.mobileNo}</td>
-                  <td className="px-4 py-3 border border-gray-100">{record.leaseRentType}</td>
-                  <td className="px-4 py-3 border border-gray-100">{'\u20B9'}{record.rentDueAmount.toLocaleString('en-IN')}</td>
-                  <td className="px-4 py-3 border border-gray-100">
-                    <StatusBadge
-                      value={record.status === 'paid' ? 'true' : 'false'}
-                      activeLabel={t('status.paid')}
-                      inactiveLabel={t('status.unpaid')}
-                    />
-                  </td>
-                  <td className="px-4 py-3 border border-gray-100">
-                    {record.status === 'unpaid' && (
-                      <Button
-                        onClick={() => {
-                          const next = new URLSearchParams(listQueryString);
-                          next.set('srNo', String(record.srNo));
-                          next.set('assetId', record.assetId);
-                          router.push(`/${params.locale}/asset/revenue/payment/details?${next.toString()}`);
-                        }}
-                        variant="success"
-                        size="xs"
-                        icon={IndianRupee}
-                      >
-                        {t('table.pay')}
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex items-center justify-between p-4 border-t border-slate-100 bg-slate-50/50">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-600 font-medium">{t('pagination.rowsPerPage')}</span>
-            <Select options={[{ label: '5', value: '5' }, { label: '10', value: '10' }, { label: '20', value: '20' }]} value={String(query.pageSize)} onChange={(_e, value) => updateRoute({ PageSize: value, PageNumber: '1' })} selectSize="sm" className="w-20" />
-            <span className="text-xs text-slate-500 ml-2">{t('pagination.showingEntries', { start: totalEntries === 0 ? 0 : startIndex + 1, end: endIndex, total: totalEntries })}</span>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <FirstPageButton onClick={() => updateRoute({ PageNumber: '1' })} disabled={query.pageNumber === 1} className="h-7 min-w-[36px] px-2" />
-            <PrevPageButton onClick={() => updateRoute({ PageNumber: String(Math.max(1, query.pageNumber - 1)) })} disabled={query.pageNumber === 1} className="h-7 min-w-[36px] px-2" />
-            {visiblePageNumbers.map((page, idx) => {
-              const prev = visiblePageNumbers[idx - 1];
-              const showGap = idx > 0 && prev !== undefined && page - prev > 1;
-              return (
-                <React.Fragment key={page}>
-                  {showGap && <span className="text-slate-400 text-xs px-1">...</span>}
-                  <PageNumberButton page={page} active={page === query.pageNumber} onClick={() => updateRoute({ PageNumber: String(page) })} />
-                </React.Fragment>
-              );
-            })}
-            <NextPageButton onClick={() => updateRoute({ PageNumber: String(Math.min(totalPages, query.pageNumber + 1)) })} disabled={query.pageNumber === totalPages} className="h-7 min-w-[36px] px-2" />
-            <LastPageButton onClick={() => updateRoute({ PageNumber: String(totalPages) })} disabled={query.pageNumber === totalPages} className="h-7 min-w-[36px] px-2" />
-          </div>
+        <div className="p-0 pt-0">
+          <MasterTable<PaymentTableRow>
+            columns={columns}
+            data={tableRows}
+            pageNumber={query.pageNumber}
+            pageSize={query.pageSize}
+            totalCount={totalEntries}
+            totalPages={totalPages}
+            onPageChange={(page) => updateRoute({ PageNumber: String(page) })}
+            onPageSizeChange={(size) => updateRoute({ PageSize: String(size), PageNumber: '1' })}
+            paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+            pageSizeOptions={[5, 10, 20]}
+            renderActions={(record) =>
+              record.status === 'unpaid' ? (
+                <Button
+                  onClick={() => {
+                    const next = new URLSearchParams(listQueryString);
+                    next.set('srNo', String(record.srNo));
+                    next.set('assetId', record.assetId);
+                    router.push(`/${params.locale}/asset/revenue/payment/details?${next.toString()}`);
+                  }}
+                  variant="success"
+                  size="xs"
+                  icon={IndianRupee}
+                >
+                  {t('table.pay')}
+                </Button>
+              ) : null
+            }
+            actionLabel={t('table.action')}
+            getRowKey={(record) => `${record.assetId}-${record.srNo}`}
+            maxBodyHeightClassName="max-h-[calc(100vh-360px)]"
+            tableClassName="text-xs text-slate-700 text-center"
+            theadClassName="bg-[#1f2937] [&_th]:!text-white [&_th]:font-semibold [&_th]:text-xs [&_th]:px-3 [&_th]:py-2 [&_th:first-child]:!rounded-none [&_th:last-child]:!rounded-none"
+            containerClassName="gap-0 [&>div]:!rounded-none [&>div]:!border-0 [&>div]:!shadow-none"
+            footerClassName="!rounded-none"
+          />
         </div>
       </Card>
     </div>
