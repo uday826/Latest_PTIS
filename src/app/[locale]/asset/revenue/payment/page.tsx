@@ -3,9 +3,6 @@ import { getPaymentRecordsPageDataAction } from './actions';
 import type { PaymentRecord } from '@/types/asset/payment.types';
 
 interface PageProps {
-  params: Promise<{
-    locale: string;
-  }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
@@ -13,8 +10,7 @@ interface PageProps {
  * Dedicated Static Route for Payment Management
  * Resolves to /asset/revenue/payment
  */
-export default async function PaymentPage({ params, searchParams }: PageProps) {
-  const { locale } = await params;
+export default async function PaymentPage({ searchParams }: PageProps) {
   const query = await searchParams;
 
   const pageSize = Number(query.PageSize ?? 10);
