@@ -52,7 +52,7 @@ export function FloorDetailsAttachments() {
           <CardHeader className="flex items-center gap-2 border-b border-slate-100 pb-2 mb-3">
             <Camera className="size-4 text-slate-500" />
             <CardTitle className="text-xs font-black text-slate-800 uppercase tracking-wider">
-              Building Front Photo
+              Asset Image
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -60,7 +60,7 @@ export function FloorDetailsAttachments() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={photoUrl} 
-                alt="Building Front View" 
+                alt="Asset View" 
                 className="w-full h-44 object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
@@ -93,7 +93,7 @@ export function FloorDetailsAttachments() {
           <CardHeader className="flex items-center gap-2 border-b border-slate-100 pb-2 mb-3">
             <FileText className="size-4 text-slate-500" />
             <CardTitle className="text-xs font-black text-slate-800 uppercase tracking-wider">
-              Approved Building Plan (Optional)
+              Asset Photo Plan (Optional)
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -110,7 +110,7 @@ export function FloorDetailsAttachments() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src={planUrl} 
-                  alt="Building Plan Preview" 
+                  alt="Asset Plan Preview" 
                   className="w-full h-full object-contain"
                 />
                 <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">

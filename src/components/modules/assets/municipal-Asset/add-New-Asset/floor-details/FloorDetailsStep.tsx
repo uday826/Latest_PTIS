@@ -48,10 +48,16 @@ export default function FloorDetailsPage() {
     };
   }, [registerSubmitHook, handleStepSubmit]);
 
-  const floorLevels      = dropdownOptions?.floorLevels      ?? [];
+  const allFloorLevels = dropdownOptions?.floorLevels ?? [];
+  const availableFloorLevels = allFloorLevels.map((option) => ({
+    ...option,
+    label: floors.some((f) => f.floor === option.value) 
+      ? `${option.label} (Already Added)` 
+      : option.label,
+  }));
   const constructionTypes = dropdownOptions?.constructionTypes ?? [];
-  const useTypes          = dropdownOptions?.useTypes          ?? [];
-  const subUseTypes       = dropdownOptions?.subUseTypes       ?? [];
+  const useTypes = dropdownOptions?.useTypes ?? [];
+  const subUseTypes = dropdownOptions?.subUseTypes ?? [];
 
   /* ── Field helpers ─────────────────────────────────────────────────────── */
   const clearErrors = (key: keyof NewFloorFormState) => {
@@ -69,7 +75,11 @@ export default function FloorDetailsPage() {
   /* ── Dependent-clear handlers ──────────────────────────────────────────── */
   const onFloorChange = (_name: string, val: string) => {
     setNewFloor((prev) => ({ ...prev, floor: val }));
-    clearErrors("floor");
+    if (floors.some((f) => f.floor === val)) {
+      setErrors((prev) => ({ ...prev, floor: "This floor has already been added." }));
+    } else {
+      clearErrors("floor");
+    }
   };
 
   const onConTypeChange = (_name: string, val: string) => {
@@ -107,7 +117,7 @@ export default function FloorDetailsPage() {
         <CardHeader className="flex items-center gap-2.5 border-b border-slate-100 pb-1.5 mb-2">
           <div className="bg-[#0f172a] p-1.5 rounded-lg shadow-sm"><Layers className="size-4 text-white" /></div>
           <div className="flex-1">
-            <CardTitle className="text-sm font-black text-slate-800 uppercase tracking-wide">C) Construction &amp; Floor Details</CardTitle>
+            <CardTitle className="text-sm font-black text-slate-800 uppercase tracking-wide">Construction &amp; Floor Details</CardTitle>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Dynamic Floor Configurator Form &amp; Valuation Table</p>
           </div>
         </CardHeader>
@@ -115,7 +125,7 @@ export default function FloorDetailsPage() {
         <CardContent className="space-y-5">
           <FloorConfigRow
             newFloor={newFloor} errors={errors}
-            floorLevels={floorLevels} constructionTypes={constructionTypes}
+            floorLevels={availableFloorLevels} constructionTypes={constructionTypes}
             useTypes={useTypes} subUseTypes={subUseTypes}
             onFloorChange={onFloorChange} onConTypeChange={onConTypeChange}
             onConYrChange={onConYrChange} onAsstYrChange={onAsstYrChange} onUseTypeChange={onUseTypeChange}
@@ -124,20 +134,19 @@ export default function FloorDetailsPage() {
 
           {/* Floor Table */}
           <div className="overflow-hidden border border-slate-200 rounded-xl shadow-inner bg-slate-50/20">
-            <table className="w-full border-collapse text-left text-xs">
+            <table className="w-full table-fixed border-collapse text-left text-xs">
               <thead className="bg-slate-100 border-b border-slate-200">
                 <tr className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-2.5 px-3 w-10 text-center">
+                  <th className="py-2.5 px-4 w-[5%] text-center">
                     <div className="flex justify-center"><Checkbox checked={allChecked} onCheckedChange={handleToggleAllFloors} /></div>
                   </th>
-                  <th className="py-2.5 px-3">Floor Level</th>
-                  <th className="py-2.5 px-3">Con. Type</th>
-                  <th className="py-2.5 px-3">Con / ASS Yr</th>
-                  <th className="py-2.5 px-3">Use Category</th>
-                  <th className="py-2 px-2 text-right">Carpet Area</th>
-                  <th className="py-2 px-2 text-right">Base Value (₹)</th>
-                  <th className="py-2 px-2 text-center w-24">Sub-Units</th>
-                  <th className="py-2 px-2 w-10 text-center">Delete</th>
+                  <th className="py-2.5 px-4 w-[20%] text-left truncate">Floor Level</th>
+                  <th className="py-2.5 px-4 w-[25%] text-left truncate">Con. Type</th>
+                  <th className="py-2.5 px-4 w-[10%] text-center truncate">Con Yr</th>
+                  <th className="py-2.5 px-4 w-[15%] text-center truncate">Use Category</th>
+                  <th className="py-2.5 px-4 w-[12%] text-right truncate">Carpet Area</th>
+                  <th className="py-2.5 px-4 w-[8%] text-center truncate">Sub-Units</th>
+                  <th className="py-2.5 px-4 w-[5%] text-center truncate">Delete</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -146,27 +155,26 @@ export default function FloorDetailsPage() {
                     key={f.id ? `floor-row-${f.id}-${f.floor}` : `floor-row-idx-${idx}`}
                     className={`hover:bg-slate-50/60 transition-colors ${!f.checked ? "opacity-50 line-through text-slate-400 bg-slate-50/20" : ""}`}
                   >
-                    <td className="py-2 px-3 text-center">
+                    <td className="py-2 px-4 text-center">
                       <div className="flex justify-center"><Checkbox checked={!!f.checked} onCheckedChange={() => handleToggleFloor(f.id)} /></div>
                     </td>
-                    <td className="py-2 px-3 font-semibold text-slate-800">{getLabel(floorLevels, f.floor)}</td>
-                    <td className="py-2 px-3">{getLabel(constructionTypes, f.conType)}</td>
-                    <td className="py-2 px-3 font-mono">{f.conYear || "—"} / {f.asstYear || "—"}</td>
-                    <td className="py-2 px-3">
+                    <td className="py-2 px-4 font-semibold text-slate-800 truncate">{getLabel(allFloorLevels, f.floor)}</td>
+                    <td className="py-2 px-4 truncate">{getLabel(constructionTypes, f.conType)}</td>
+                    <td className="py-2 px-4 text-center font-mono truncate">{f.conYear || "—"}</td>
+                    <td className="py-2 px-4 text-center truncate">
                       <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[9px] font-bold uppercase tracking-wide">
                         {getLabel(useTypes, f.useType)}
                       </span>
                     </td>
-                    <td className="py-2 px-3 text-right font-mono text-[10px] text-slate-600">{Number(f.carpetAreaSqFt).toLocaleString()} Sq.Ft</td>
-                    <td className="py-1 px-2 text-right font-mono font-bold text-slate-800">₹ {Number(f.baseValue).toLocaleString()}</td>
-                    <td className="py-1 px-2 text-center">
+                    <td className="py-2 px-4 text-right font-mono text-[10px] text-slate-600 truncate">{Number(f.carpetAreaSqM).toLocaleString()} Sq.M</td>
+                    <td className="py-1 px-4 text-center">
                       <Button variant="secondary" size="xs"
                         onClick={() => { setSelectedFloorId(f.id); setIsDrawerOpen(true); }}
                         icon={Building2} className="w-full text-[9px] font-bold uppercase tracking-wider">
                         {f.units?.length ?? 0} Units
                       </Button>
                     </td>
-                    <td className="py-1 px-2 text-center">
+                    <td className="py-1 px-4 text-center">
                       <Button variant="ghost" size="xs" onClick={() => {
                         confirm({
                           variant: "delete",
@@ -180,7 +188,7 @@ export default function FloorDetailsPage() {
                   </tr>
                 ))}
                 {floors.length === 0 && (
-                  <tr><td colSpan={9} className="py-8 text-center text-slate-400 font-bold uppercase tracking-wider">
+                  <tr><td colSpan={8} className="py-8 text-center text-slate-400 font-bold uppercase tracking-wider">
                     No floors configured yet. Use the setup tool above to add levels.
                   </td></tr>
                 )}
@@ -188,14 +196,7 @@ export default function FloorDetailsPage() {
             </table>
           </div>
 
-          {/* CV Summary Bar */}
-          <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-3.5 flex justify-between items-center shadow-sm">
-            <h4 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Total Capital Value (CV)</h4>
-            <div className="text-right">
-              <span className="text-xs text-emerald-600 font-bold uppercase tracking-widest mr-1.5">Total:</span>
-              <span className="font-mono text-lg font-black text-emerald-800 tracking-tight">₹ {totalCV.toLocaleString()}</span>
-            </div>
-          </div>
+
         </CardContent>
       </Card>
 

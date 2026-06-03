@@ -61,17 +61,17 @@ export function validateFloorConfig(form: NewFloorFormState): Record<string, str
   }
 
   // Built-Up & Carpet Area validations
-  const builtUp = Number(form.builtUpAreaSqFt);
-  const carpet = Number(form.carpetAreaSqFt);
+  const builtUp = Number(form.builtUpAreaSqM);
+  const carpet = Number(form.carpetAreaSqM);
 
-  if (!form.builtUpAreaSqFt || isNaN(builtUp) || builtUp <= 0) {
-    errors.builtUpAreaSqFt = "Required and must be > 0";
+  if (!form.builtUpAreaSqM || isNaN(builtUp) || builtUp <= 0) {
+    errors.builtUpAreaSqM = "Required and must be > 0";
   }
 
-  if (!form.carpetAreaSqFt || isNaN(carpet) || carpet <= 0) {
-    errors.carpetAreaSqFt = "Required and must be > 0";
+  if (!form.carpetAreaSqM || isNaN(carpet) || carpet <= 0) {
+    errors.carpetAreaSqM = "Required and must be > 0";
   } else if (carpet > builtUp) {
-    errors.carpetAreaSqFt = "Cannot exceed Built-Up Area";
+    errors.carpetAreaSqM = "Cannot exceed Built-Up Area";
   }
 
   return errors;

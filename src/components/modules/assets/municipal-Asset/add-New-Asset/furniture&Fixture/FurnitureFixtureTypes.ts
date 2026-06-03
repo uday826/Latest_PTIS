@@ -12,6 +12,7 @@ export type InventoryInvoice = {
   invoiceNumber: string;
   invoiceDate: string;
   invoiceFileName: string;
+  invoiceFile?: File;
 };
 
 export type IndividualAssetUnit = {
@@ -36,6 +37,7 @@ export type InventoryRow = {
   type: InventoryType;
   photoUrl?: string;
   photoName?: string;
+  photoFile?: File;
   itemName: string;
   modelName: string;
   specifications: string;
@@ -85,6 +87,7 @@ export type InventoryForm = {
   unitValue: string;
   photoName: string;
   photoUrl: string;
+  photoFile?: File;
   owningDepartment: string;
   unitDynamicAttributes?: Record<string, string>[];
 };
@@ -95,6 +98,7 @@ export type InvoiceForm = {
   invoiceNumber: string;
   invoiceDate: string;
   invoiceFileName: string;
+  invoiceFile?: File;
 };
 
 export type TypeMeta = {

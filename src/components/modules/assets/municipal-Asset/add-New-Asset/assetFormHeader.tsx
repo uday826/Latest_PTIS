@@ -39,12 +39,12 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
       {/* Top Premium Dark Header */}
       <div className="bg-[#0f172a] text-white px-4 py-2 flex items-center justify-between border-b border-slate-800 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="bg-[#1e293b] p-1.5 rounded-lg border border-slate-700/50 flex items-center justify-center shadow-inner">
-            <Home className="size-4 text-blue-400" />
+          <div className="bg-[#1e293b] p-2 rounded-lg border border-slate-700/50 flex items-center justify-center shadow-inner">
+            <Home className="size-5 text-blue-400" />
           </div>
           <div>
-            <h1 className="text-sm font-extrabold tracking-tight text-white leading-none">Add New Municipal Asset</h1>
-            <p className="text-[9px] text-amber-500 font-extrabold uppercase tracking-wider mt-0.5">
+            <h1 className="text-lg font-extrabold tracking-tight text-white leading-none">Add New Municipal Asset</h1>
+            <p className="text-[10px] text-amber-500 font-extrabold uppercase tracking-wider mt-1.5">
               Step {currentStep?.id ?? 1} of {steps.length} | {currentStep?.label ?? "Basic Info"}
             </p>
           </div>

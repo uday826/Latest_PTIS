@@ -3,8 +3,10 @@ import { useConfirm } from "@/components/common";
 import { type InventoryType, type InventoryRow, type InventoryForm, type InvoiceForm, type InventoryInvoice } from "./FurnitureFixtureTypes";
 import { typeOptions, conditionMap, invoiceModeOptions, inventoryMeta, initialRows, emptyForm, emptyInvoiceForm, PAGE_SIZE, formatCurrency } from "./FurnitureFixtureConstants";
 import { enrichRows, buildCategoryGroups, calcRowCV } from "./FurnitureFixtureCV";
+import { toast } from "sonner";
 import type { InventoryItemCategory, InventoryItemCondition, InventoryItemName, InventoryItemModel } from "@/lib/api/asset/inventory.service";
 import { saveInventoryBatchAction, saveSingleInventoryBatchAction, updateInventoryBatchAction, deleteInventoryBatchAction, getInventoryBatchesAction, type InventoryBatchDetail, type InventoryBatchListResponse } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/furniture&Fixture/actions";
+import { uploadBulkDocumentsAction } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
 
 /**
  * Converts server-fetched batches to client-side InventoryRow format.
@@ -274,18 +276,18 @@ export function useFurnitureFixtureState(
 
   const handleAddPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setForm(prev => ({ ...prev, photoName: file.name, photoUrl: URL.createObjectURL(file) }));
+    if (file) setForm(prev => ({ ...prev, photoName: file.name, photoUrl: URL.createObjectURL(file), photoFile: file }));
   };
 
   const handleEditPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setEditForm(prev => ({ ...prev, photoName: file.name, photoUrl: URL.createObjectURL(file) }));
+    if (file) setEditForm(prev => ({ ...prev, photoName: file.name, photoUrl: URL.createObjectURL(file), photoFile: file }));
   };
 
   const handleInvoiceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setInvoiceForm(prev => ({ ...prev, invoiceFileName: file.name }));
+      setInvoiceForm(prev => ({ ...prev, invoiceFileName: file.name, invoiceFile: file }));
     }
   };
 
@@ -300,6 +302,7 @@ export function useFurnitureFixtureState(
       invoiceNumber: invoiceForm.invoiceNumber.trim(),
       invoiceDate: invoiceForm.invoiceDate,
       invoiceFileName: invoiceForm.invoiceFileName,
+      invoiceFile: invoiceForm.invoiceFile,
     };
     if (editDrawerOpen) setEditDraftInvoice(inv);
     else setDraftInvoice(inv);
@@ -384,6 +387,66 @@ export function useFurnitureFixtureState(
         return;
       }
 
+      // Upload Documents
+      const batchData = result.data;
+      if (batchData && batchData.units && batchData.units.length > 0) {
+        const photoFile = form.photoFile;
+        const invoiceFile = draftInvoice?.invoiceFile;
+        if (photoFile || invoiceFile) {
+          for (const unit of batchData.units) {
+            if (!unit.assetId) continue;
+            
+            const fd = new FormData();
+            fd.append("AssetId", String(unit.assetId));
+            fd.append("ModuleId", "1004");
+            fd.append("UploadedByUserId", "1");
+            fd.append("IsAdHoc", "true");
+            
+            const metadata: any[] = [];
+
+            if (photoFile) {
+              const uniqueName = `photo_${photoFile.name}`;
+              const renamedFile = new File([photoFile], uniqueName, { type: photoFile.type });
+              fd.append("Files", renamedFile);
+              metadata.push({
+                fileName: uniqueName,
+                documentType: "photo",
+                documentTitle: "Asset Photo",
+                documentDefinitionId: 0
+              });
+            }
+
+            if (invoiceFile) {
+              const uniqueName = `invoice_${invoiceFile.name}`;
+              const renamedFile = new File([invoiceFile], uniqueName, { type: invoiceFile.type });
+              fd.append("Files", renamedFile);
+              metadata.push({
+                fileName: uniqueName,
+                documentType: "invoice",
+                documentTitle: "Asset Invoice",
+                documentDefinitionId: 0
+              });
+            }
+
+            fd.append("FileMetadataJson", JSON.stringify(metadata));
+
+            try {
+              const uploadResult = await uploadBulkDocumentsAction(fd);
+              if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
+                const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
+                console.error("Failed to upload bulk documents for assetId", unit.assetId, detailedError);
+                toast.error(`Document upload failed for Unit ${unit.unitNumber}: ${detailedError}`);
+              } else {
+                toast.success(`Documents uploaded successfully for Unit ${unit.unitNumber}!`);
+              }
+            } catch (e: any) {
+              console.error("Failed to upload bulk documents for assetId", unit.assetId, e);
+              toast.error(`Document upload exception for Unit ${unit.unitNumber}: ${e.message}`);
+            }
+          }
+        }
+      }
+
       
       // Reload fresh data from server
       await reloadDataFromServer();
@@ -435,24 +498,112 @@ export function useFurnitureFixtureState(
     if (existingRow?.batchId && existingRow?.isRegistered) {
       setIsSaving(true);
       try {
-        const result = await updateInventoryBatchAction(existingRow.batchId, {
-          itemName: payload.itemName,
-          modelBrand: payload.modelName,
-          specifications: payload.specifications !== "NA" ? payload.specifications : undefined,
-          purchaseDate: payload.purchaseDate,
-          condition: payload.condition,
-          unitValue: payload.unitValue,
-          invoiceNumber: payload.invoice?.invoiceNumber,
-          invoiceDate: payload.invoice?.invoiceDate,
-          invoiceFileName: payload.invoice?.invoiceFileName,
-          owningDepartment: payload.owningDepartment,
-          photoFileName: payload.photoName
-        });
+        const hasQuantityChanged = payload.quantity !== existingRow.quantity;
+        let result;
+
+        if (hasQuantityChanged) {
+          // Workaround: The backend's UpdateInventoryBatchDto does not support updating Quantity.
+          // To update the quantity, we must delete the existing batch and create a new one.
+          await deleteInventoryBatchAction(existingRow.batchId);
+          
+          // Use the POST endpoint which supports Quantity creation
+          const createPayload = {
+            parentAssetId: parentAssetId!,
+            inventoryType: payload.type,
+            itemName: payload.itemName,
+            modelBrand: payload.modelName,
+            specifications: payload.specifications !== "NA" ? payload.specifications : undefined,
+            purchaseDate: payload.purchaseDate,
+            condition: payload.condition,
+            quantity: payload.quantity,
+            unitValue: payload.unitValue,
+            invoiceNumber: payload.invoice?.invoiceNumber,
+            invoiceDate: payload.invoice?.invoiceDate,
+            invoiceFileName: payload.invoice?.invoiceFileName,
+            owningDepartment: payload.owningDepartment,
+            photoFileName: payload.photoName,
+            units: Array.from({ length: payload.quantity }, (_, i) => ({
+              unitNumber: i + 1,
+              dynamicAttributes: null
+            }))
+          };
+          result = await saveSingleInventoryBatchAction(createPayload);
+        } else {
+          // Standard update for other fields
+          result = await updateInventoryBatchAction(existingRow.batchId, {
+            itemName: payload.itemName,
+            modelBrand: payload.modelName,
+            specifications: payload.specifications !== "NA" ? payload.specifications : undefined,
+            purchaseDate: payload.purchaseDate,
+            condition: payload.condition,
+            unitValue: payload.unitValue,
+            invoiceNumber: payload.invoice?.invoiceNumber,
+            invoiceDate: payload.invoice?.invoiceDate,
+            invoiceFileName: payload.invoice?.invoiceFileName,
+            owningDepartment: payload.owningDepartment,
+            photoFileName: payload.photoName
+          });
+        }
 
         if (!result.success) {
           setFormError(result.error || "Failed to update batch");
           setIsSaving(false);
           return;
+        }
+
+        // Upload new documents if provided
+        if (existingRow.registeredUnits && existingRow.registeredUnits.length > 0) {
+          const photoFile = editForm.photoFile;
+          const invoiceFile = editDraftInvoice?.invoiceFile;
+          if (photoFile || invoiceFile) {
+            for (const unit of existingRow.registeredUnits) {
+              if (!unit.assetId) continue;
+              const fd = new FormData();
+              fd.append("AssetId", String(unit.assetId));
+              fd.append("ModuleId", "1004");
+              fd.append("UploadedByUserId", "1");
+              fd.append("IsAdHoc", "true");
+              
+              const metadata: any[] = [];
+
+              if (photoFile) {
+                const uniqueName = `photo_${photoFile.name}`;
+                const renamedFile = new File([photoFile], uniqueName, { type: photoFile.type });
+                fd.append("Files", renamedFile);
+                metadata.push({
+                  fileName: uniqueName,
+                  documentType: "photo",
+                  documentTitle: "Asset Photo",
+                  documentDefinitionId: 0
+                });
+              }
+              if (invoiceFile) {
+                const uniqueName = `invoice_${invoiceFile.name}`;
+                const renamedFile = new File([invoiceFile], uniqueName, { type: invoiceFile.type });
+                fd.append("Files", renamedFile);
+                metadata.push({
+                  fileName: uniqueName,
+                  documentType: "invoice",
+                  documentTitle: "Asset Invoice",
+                  documentDefinitionId: 0
+                });
+              }
+              fd.append("FileMetadataJson", JSON.stringify(metadata));
+              try {
+                const uploadResult = await uploadBulkDocumentsAction(fd);
+                if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
+                  const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
+                  console.error("Failed to upload document for assetId", unit.assetId, detailedError, uploadResult.data);
+                  toast.error(`Document upload failed for Unit ${unit.unitNumber}: ${detailedError}`);
+                } else {
+                  toast.success(`Documents updated successfully for Unit ${unit.unitNumber}!`);
+                }
+              } catch (e: any) {
+                console.error("Failed to upload document for assetId", unit.assetId, e);
+                toast.error(`Document upload exception for Unit ${unit.unitNumber}: ${e.message}`);
+              }
+            }
+          }
         }
         
         // Reload fresh data from server to get recalculated CV
@@ -642,6 +793,69 @@ export function useFurnitureFixtureState(
     }
   };
 
+  const handlePreviewDocument = async (row: InventoryRow, type: 'photo' | 'invoice') => {
+    // If not registered yet, preview the local ObjectURL/Blob
+    if (!row.isRegistered) {
+      if (type === 'photo' && row.photoUrl) {
+        window.open(row.photoUrl, "_blank");
+      } else if (type === 'invoice' && row.invoice?.invoiceFile) {
+        window.open(URL.createObjectURL(row.invoice.invoiceFile), "_blank");
+      } else {
+        toast.error("No file available to preview locally.");
+      }
+      return;
+    }
+
+    // If registered, fetch from API
+    const assetId = row.registeredUnits?.[0]?.assetId;
+    if (!assetId) {
+      return toast.error("Asset ID not found for this row.");
+    }
+
+    try {
+      // Use Server Actions to securely fetch documents and avoid CORS/Auth issues
+      const { fetchUploadedDocumentsAction, fetchDocumentFileAction } = await import("@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions");
+      
+      const docResponse = await fetchUploadedDocumentsAction(assetId, true, true);
+      if (!docResponse.success || !docResponse.data) {
+        return toast.error(docResponse.error || docResponse.message || "Failed to fetch documents");
+      }
+
+      const documents = docResponse.data;
+      let targetDoc = null;
+      
+      if (type === 'photo' && row.photoName) {
+         targetDoc = documents.find((d: any) => d.fileName === row.photoName || d.fileName === `photo_${row.photoName}`);
+      } else if (type === 'invoice' && row.invoice?.invoiceFileName) {
+         targetDoc = documents.find((d: any) => d.fileName === row.invoice!.invoiceFileName || d.fileName === `invoice_${row.invoice!.invoiceFileName}`);
+      }
+
+      if (!targetDoc) {
+        return toast.error("Document not found on the server.");
+      }
+
+      const fileRes = await fetchDocumentFileAction(targetDoc.id);
+      if (!fileRes.success || !fileRes.data) {
+         return toast.error(fileRes.error || "Failed to download document");
+      }
+
+      // Convert base64 to Blob
+      const byteCharacters = atob(fileRes.data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: fileRes.mimeType || 'application/octet-stream' });
+      
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+
+    } catch (e: any) {
+      toast.error("Error previewing document: " + e.message);
+    }
+  };
+
   return {
     rows, setRows,
     filterType, setFilterType,
@@ -672,7 +886,8 @@ export function useFurnitureFixtureState(
     resetAddForm, resetEditForm,
     handleAddPhotoUpload, handleEditPhotoUpload, handleInvoiceUpload,
     saveInvoiceDetails, handleAddRow, handleUpdateRow,
-    handleDeleteRow, handleStartEdit, openInvoiceDrawer, handleSaveToBackend
+    handleDeleteRow, handleStartEdit, openInvoiceDrawer, handleSaveToBackend,
+    handlePreviewDocument
   };
 }
 

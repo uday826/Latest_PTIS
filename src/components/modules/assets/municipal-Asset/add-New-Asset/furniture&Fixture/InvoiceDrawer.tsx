@@ -64,7 +64,7 @@ export function InvoiceDrawer({
             <Select
               label="Invoice Mode"
               value={invoiceForm.invoiceMode}
-              onChange={(value) => {
+              onChange={(_, value) => {
                 updateInvoiceForm("invoiceMode", value);
                 updateInvoiceForm("existingInvoiceKey", "");
                 if (value === "upload") {
@@ -80,7 +80,7 @@ export function InvoiceDrawer({
               <Select
                 label="Select Existing Invoice"
                 value={invoiceForm.existingInvoiceKey}
-                onChange={(key) => {
+                onChange={(_, key) => {
                   updateInvoiceForm("existingInvoiceKey", key);
                   const selected = existingInvoiceOptions.find((opt) => opt.value === key);
                   if (!selected?.value) return;

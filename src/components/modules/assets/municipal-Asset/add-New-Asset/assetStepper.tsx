@@ -27,7 +27,7 @@ export function AssetStepper({
 
               <div className="flex items-center gap-1.5">
                 <div
-                  className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all ${isCompleted
+                  className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-all ${isCompleted
                       ? "bg-emerald-500 text-white shadow-[0_0_8px_rgba(16,185,129,0.4)]"
                       : isCurrent
                         ? "bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)] ring-2 ring-emerald-300/40"
@@ -35,14 +35,14 @@ export function AssetStepper({
                     }`}
                 >
                   {isCompleted ? (
-                    <Check className="size-5" strokeWidth={3} />
+                    <Check className="size-3.5" strokeWidth={3} />
                   ) : (
-                    <Icon className="size-5" />
+                    <Icon className="size-3.5" />
                   )}
                 </div>
 
                 <span
-                  className={`whitespace-nowrap text-md font-medium transition-colors ${isCompleted
+                  className={`whitespace-nowrap text-[13px] transition-colors ${isCompleted
                       ? "text-emerald-600"
                       : isCurrent
                         ? "font-semibold text-slate-800"

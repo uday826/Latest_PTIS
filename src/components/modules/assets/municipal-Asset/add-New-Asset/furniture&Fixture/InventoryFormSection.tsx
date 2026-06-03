@@ -98,21 +98,7 @@ export function InventoryFormSection({
           required={true}
         />
 
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-gray-700">Photo</span>
-          <input
-            ref={addPhotoInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAddPhotoUpload}
-          />
-          <UploadButton
-            label={form.photoName || "Upload"}
-            className="justify-start"
-            onClick={() => addPhotoInputRef.current?.click()}
-          />
-        </div>
+
 
         {addNameOptions.length > 0 ? (
           <Select
@@ -214,15 +200,36 @@ export function InventoryFormSection({
           onChange={(event) => updateForm("unitValue", event.target.value)}
           required={true}
         />
-
-        <Button
-          variant="primary"
-          icon={Receipt}
-          className="h-8 w-full whitespace-nowrap bg-[#F59E0B] text-white hover:bg-[#D97706] sm:col-span-2 sm:w-auto lg:col-span-1"
-          onClick={openInvoiceDrawer}
-        >
-          {addInvoicePreviewLabel}
-        </Button>
+        <div className="flex gap-2 items-start sm:col-span-2 lg:col-span-1 w-full">
+          <div className="flex flex-col gap-1 w-full flex-1 min-w-0">
+            <span className="text-sm font-medium text-gray-700">Photo</span>
+            <input
+              ref={addPhotoInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAddPhotoUpload}
+            />
+            <UploadButton
+              label={form.photoName || "Upload"}
+              title={form.photoName || "Upload"}
+              className="justify-start h-8 px-3 bg-blue-400 hover:bg-blue-500 text-white border-none w-full overflow-hidden [&>span]:truncate [&>span]:min-w-0"
+              onClick={() => addPhotoInputRef.current?.click()}
+            />
+          </div>
+          <div className="flex flex-col gap-1 w-full flex-1 min-w-0">
+            <span className="text-sm font-medium text-gray-700">Invoice</span>
+            <Button
+              variant="primary"
+              icon={Receipt}
+              title={addInvoicePreviewLabel}
+              className="justify-start h-8 px-3 whitespace-nowrap bg-[#FBBF24] text-white hover:bg-[#F59E0B] border-none w-full overflow-hidden [&>span]:truncate [&>span]:min-w-0"
+              onClick={openInvoiceDrawer}
+            >
+              {addInvoicePreviewLabel}
+            </Button>
+          </div>
+        </div>
 
         <AddButton
           label="Add Row"

@@ -163,29 +163,23 @@ export function DynamicAttributes({
   const mergedSections = groupAndMergeFields(fields);
 
   if (mergedSections.length === 0) {
-    return (
-      <div className="p-3 text-center border border-dashed border-slate-200 rounded-2xl bg-white mt-2 shadow-sm">
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-          No form specifications available for the selected category and type.
-        </p>
-      </div>
-    );
+    return null;
   }
 
   return (
     <div className="space-y-2">
       {mergedSections.map((section: MergedFieldSection) => (
         <Card key={section.title} variant="bordered" padding="sm" className="shadow-sm border-blue-100 bg-white">
-          <CardHeader className="flex items-center gap-2 border-b border-blue-50 pb-1.5 mb-2">
-            <div className="bg-blue-600 p-1.5 rounded-lg">
-              <ListPlus className="size-4 text-white" />
+          <CardHeader className="flex items-center gap-2 border-b border-slate-100 pb-1.5 mb-2">
+            <div className="bg-[#0f172a] p-1 rounded shadow-sm">
+              <ListPlus className="size-3.5 text-white" />
             </div>
-            <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+            <CardTitle className="text-xs font-black text-slate-800 uppercase tracking-widest">
               {section.title}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 items-start">
               {[...section.fields]
                 .sort((a, b) => {
                   const isABool = a.fieldType?.toLowerCase() === "checkbox" || a.fieldType?.toLowerCase() === "boolean";

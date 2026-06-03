@@ -39,6 +39,8 @@ export interface AssetFormContextType {
   registerSubmitHook?: (hook: (() => Promise<boolean>) | null) => void;
   stagedFiles?: Record<number, { file: File; definition: any }>;
   setStagedFiles?: React.Dispatch<React.SetStateAction<Record<number, { file: File; definition: any }>>>;
+  basicInfoFiles?: { frontPhoto?: File; buildingPlan?: File };
+  setBasicInfoFiles?: React.Dispatch<React.SetStateAction<{ frontPhoto?: File; buildingPlan?: File }>>;
   registerStepSave?: (stepKey: string, saveFn: () => Promise<{ success: boolean; error?: string }>) => void;
   unregisterStepSave?: (stepKey: string) => void;
 }

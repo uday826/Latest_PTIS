@@ -2,7 +2,7 @@
 
 import React, { useEffect, useCallback } from "react";
 import { Badge, Card, CardContent, DeleteButton, EditButton, MasterTable, TableHeader } from "@/components/common";
-import { Package2 } from "lucide-react";
+import { Package2, Image as ImageIcon, FileText } from "lucide-react";
 import { type InventoryType, type InventoryRow, type InventoryForm, type InvoiceForm } from "./FurnitureFixtureTypes";
 import { typeOptions, conditionMap, invoiceModeOptions, inventoryMeta, initialRows, emptyForm, emptyInvoiceForm, PAGE_SIZE, formatCurrency } from "./FurnitureFixtureConstants";
 import { InventoryFormSection } from "./InventoryFormSection";
@@ -39,32 +39,9 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
 
   // Register the inventory save function so Save & Next can trigger it
   const saveInventory = useCallback(async (): Promise<boolean> => {
-    // 1. Mandatory validation: At least one inventory item must be added
-    if (!s.rows || s.rows.length === 0) {
-      toast.error("Please add at least one inventory item before proceeding to the next step.");
-      return false;
-    }
-
-    // 2. Alert if there are unadded input details in the configurator fields
-    const hasUnaddedInputs =
-      s.form.type ||
-      s.form.itemName ||
-      s.form.modelName ||
-      s.form.purchaseDate ||
-      s.form.condition ||
-      s.form.owningDepartment ||
-      s.form.specifications ||
-      Number(s.form.quantity) > 0 ||
-      Number(s.form.unitValue) > 0;
-
-    if (hasUnaddedInputs) {
-      toast.warning("You have configured inventory details that haven't been added. Please click the '+ Add Row' button to save them, or clear the fields.");
-      return false;
-    }
-
-    // All validation passed
+    // Validation removed: User requested it saves and proceeds even if no entry is added
     return true;
-  }, [s.rows, s.form]);
+  }, []);
 
   useEffect(() => {
     if (registerSubmitHook) {
@@ -87,7 +64,7 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
   return (
     <div>
       <div className="space-y-2 pb-1.5">
-        <TableHeader title="Furniture & Fixtures Inventory" subtitle="" icon={Package2} className="rounded-xl border border-[#CBD8EA] bg-[#F5F8FD] shadow-sm" />
+        {/* <TableHeader title="Furniture & Fixtures Inventory" subtitle="" icon={Package2} className="rounded-xl border border-[#CBD8EA] bg-[#F5F8FD] shadow-sm" /> */}
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {s.summaryCards.map((card, index) => (
             <Card key={card.type} variant="bordered" className={`rounded-xl border border-[#D8E3F1] bg-white shadow-sm ${card.cardRing}`}>
@@ -155,11 +132,21 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
               data={tableData}
               columns={[
                 { key: "srNo", label: "No." },
-                { key: "type", label: "Type", render: (_, row) => {
-                  const meta = inventoryMeta[row.type];
-                  return <Badge variant="outline" size="sm" className={meta?.badgeClassName || "bg-gray-50 text-gray-700 border-gray-200"}>{meta?.label || row.type}</Badge>;
+                {
+                  key: "type", label: "Type", render: (_, row) => {
+                    const meta = inventoryMeta[row.type];
+                    return <Badge variant="outline" size="sm" className={meta?.badgeClassName || "bg-gray-50 text-gray-700 border-gray-200"}>{meta?.label || row.type}</Badge>;
+                  }
+                },
+                { key: "photoUrl", label: "Photo", render: (_, row) => {
+                  if (row.photoUrl) {
+                    return <img src={row.photoUrl} alt={row.itemName} className="h-12 w-12 rounded-lg border object-cover cursor-pointer hover:opacity-80 transition-opacity" onClick={() => s.handlePreviewDocument(row, 'photo')} title="Click to preview local photo" />;
+                  } else if (row.photoName) {
+                    return <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-blue-500 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => s.handlePreviewDocument(row, 'photo')} title={`Click to preview: ${row.photoName}`}><ImageIcon className="h-5 w-5" /></div>;
+                  } else {
+                    return <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400" title="No photo uploaded"><Package2 className="h-4 w-4" /></div>;
+                  }
                 } },
-                { key: "photoUrl", label: "Photo", render: (_, row) => row.photoUrl ? <img src={row.photoUrl} alt={row.itemName} className="h-12 w-12 rounded-lg border object-cover" /> : <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400"><Package2 className="h-4 w-4" /></div> },
                 { key: "itemName", label: "Item / Equipment Name" },
                 { key: "modelName", label: "Type / Model / Brand", render: (val) => <span className="font-medium text-blue-700">{String(val ?? "-")}</span> },
                 { key: "specifications", label: "Specs / Reg No." },
@@ -170,7 +157,23 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
                 { key: "unitValue", label: "Unit Value (₹)", render: (val) => formatCurrency(Number(val ?? 0)) },
                 { key: "total", label: "Total (₹)", render: (val) => <span className="font-semibold text-blue-700">{formatCurrency(Number(val ?? 0))}</span> },
                 { key: "totalCV", label: "Live CV (₹)", render: (val) => <span className="font-bold text-emerald-600">{formatCurrency(Number(val ?? 0))}</span> },
-                { key: "invoice", label: "Invoice", render: (val) => (val as any)?.invoiceNumber ? <Badge variant="warning" size="sm">{(val as any).invoiceNumber}</Badge> : <span className="text-slate-400">-</span> },
+                { key: "invoice", label: "Invoice", render: (val, row) => {
+                  const inv = val as any;
+                  if (inv?.invoiceNumber) {
+                    return (
+                      <div 
+                        className="flex flex-col h-12 w-12 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-600 cursor-pointer hover:bg-amber-100 transition-colors" 
+                        onClick={() => s.handlePreviewDocument(row, 'invoice')} 
+                        title={`Click to preview Invoice: ${inv.invoiceNumber}`}
+                      >
+                        <FileText className="h-4 w-4 mb-1" />
+                        <span className="text-[9px] font-bold leading-none truncate w-10 text-center">{inv.invoiceNumber}</span>
+                      </div>
+                    );
+                  } else {
+                    return <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400" title="No invoice uploaded"><FileText className="h-4 w-4 opacity-50" /></div>;
+                  }
+                } },
               ]}
               emptyText="No inventory rows added yet."
               renderActions={(row) => (
@@ -219,8 +222,8 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
                 {s.saveSuccess && <p className="text-xs text-emerald-600 font-semibold">✓ Inventory saved successfully!</p>}
               </div>
             </div>
-            
-            <InventoryCVGroupTable 
+
+            <InventoryCVGroupTable
               groups={s.categoryGroups}
               grandPurchase={s.grandAssetValue}
               grandCV={s.grandCV}

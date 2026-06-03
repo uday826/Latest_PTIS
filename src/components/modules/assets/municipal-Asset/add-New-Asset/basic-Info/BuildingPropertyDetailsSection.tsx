@@ -39,32 +39,32 @@ export function BuildingPropertyDetailsSection({
       padding="sm"
       className="shadow-sm border-slate-200/80 bg-white rounded-2xl"
     >
-      <CardHeader className="flex items-center gap-2.5 border-b border-slate-100 pb-1.5 mb-2">
-        <div className="bg-[#0f172a] p-1.5 rounded-lg shadow-sm">
-          <ClipboardList className="size-4 text-white" />
+      <CardHeader className="flex items-center gap-2 border-b border-slate-100 pb-1.5 mb-2">
+        <div className="bg-[#0f172a] p-1 rounded shadow-sm">
+          <ClipboardList className="size-3.5 text-white" />
         </div>
-        <CardTitle className="text-sm font-black text-slate-800 uppercase tracking-wide">
-          A) Property Number Details
+        <CardTitle className="text-xs font-black text-slate-800 uppercase tracking-widest">
+          Asset Details
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+      <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 items-start">
         {/* Asset Category — read-only */}
         <div className="flex flex-col">
-          <span className="mb-1.5 text-sm font-medium text-gray-700">
+          <span className="mb-1.5 text-[13px] font-medium text-gray-700">
             Asset Category
           </span>
-          <div className="h-10 px-3 bg-slate-100 border border-slate-200 rounded-lg text-sm text-slate-700 font-bold flex items-center">
+          <div className="h-8 px-2 bg-slate-100 border border-slate-200 rounded-md text-[13px] text-slate-700 font-bold flex items-center">
             {formData.category}
           </div>
         </div>
 
         {/* Asset Type — read-only */}
         <div className="flex flex-col">
-          <span className="mb-1.5 text-sm font-medium text-gray-700">
+          <span className="mb-1.5 text-[13px] font-medium text-gray-700">
             Asset Type
           </span>
-          <div className="h-10 px-3 bg-slate-100 border border-slate-200 rounded-lg text-sm text-slate-700 font-bold flex items-center">
+          <div className="h-8 px-2 bg-slate-100 border border-slate-200 rounded-md text-[13px] text-slate-700 font-bold flex items-center truncate">
             {formData.assetType || "—"}
           </div>
         </div>
@@ -77,52 +77,25 @@ export function BuildingPropertyDetailsSection({
           options={
             zones && zones.length > 0
               ? zones.map((z) => {
-                  const label =
-                    z.zoneName ||
-                    z.ZoneName ||
-                    z.zoneNo ||
-                    `Zone ${z.id || ""}`;
-                  return { label, value: String(z.id) };
-                })
+                const label =
+                  z.zoneName ||
+                  z.ZoneName ||
+                  z.zoneNo ||
+                  `Zone ${z.id || ""}`;
+                return { label, value: String(z.id) };
+              })
               : [
-                  { label: "Zone 1", value: "1" },
-                  { label: "Zone 2", value: "2" },
-                  { label: "Zone 3", value: "3" },
-                  { label: "Zone 4", value: "4" },
-                  { label: "Zone 5", value: "5" },
-                ]
+                { label: "Zone 1", value: "1" },
+                { label: "Zone 2", value: "2" },
+                { label: "Zone 3", value: "3" },
+                { label: "Zone 4", value: "4" },
+                { label: "Zone 5", value: "5" },
+              ]
           }
-          className="font-semibold"
+          className="font-semibold text-sm"
+          selectSize="sm"
           required
           error={showError("zone") ? errors.zone : undefined}
-        />
-
-        <Select
-          label="Subzone"
-          name="subzone"
-          value={formData.subzone}
-          onChange={handleChange}
-          options={
-            subzones && subzones.length > 0
-              ? subzones.map((s) => {
-                  const label =
-                    s.subZoneName ||
-                    s.SubZoneName ||
-                    s.subZoneNo ||
-                    s.SubZoneNo ||
-                    s.name ||
-                    `Subzone ${s.id || ""}`;
-                  return { label, value: String(s.id || s.subZoneNo || s.SubZoneNo || "") };
-                })
-              : [
-                  { label: "Subzone A", value: "Subzone A" },
-                  { label: "Subzone B", value: "Subzone B" },
-                  { label: "Subzone C", value: "Subzone C" },
-                ]
-          }
-          className="font-semibold"
-          required
-          error={showError("subzone" as any) ? (errors as any).subzone : undefined}
         />
 
         <Select
@@ -134,23 +107,53 @@ export function BuildingPropertyDetailsSection({
           options={
             wards && wards.length > 0
               ? wards
-                  .filter((w) => !formData.zone || w.zoneId == null || String(w.zoneId) === String(formData.zone))
-                  .map((w) => {
-                    const label = 
-                      w.wardName || 
-                      w.WardName || 
-                      w.wardNo || 
-                      `Ward ${w.id || ""}`;
-                    return { label, value: String(w.id) };
-                  })
+                .filter((w) => !formData.zone || w.zoneId == null || String(w.zoneId) === String(formData.zone))
+                .map((w) => {
+                  const label =
+                    w.wardName ||
+                    w.WardName ||
+                    w.wardNo ||
+                    `Ward ${w.id || ""}`;
+                  return { label, value: String(w.id) };
+                })
               : Array.from({ length: 20 }, (_, i) => ({
-                  label: `Ward ${i + 1}`,
-                  value: String(i + 1),
-                }))
+                label: `Ward ${i + 1}`,
+                value: String(i + 1),
+              }))
           }
-          className="font-semibold"
+          className="font-semibold text-sm"
+          selectSize="sm"
           required
           error={showError("ward") ? errors.ward : undefined}
+        />
+
+        <Select
+          label="Subzone"
+          name="subzone"
+          value={formData.subzone}
+          onChange={handleChange}
+          options={
+            subzones && subzones.length > 0
+              ? subzones.map((s) => {
+                const label =
+                  s.subZoneName ||
+                  s.SubZoneName ||
+                  s.subZoneNo ||
+                  s.SubZoneNo ||
+                  s.name ||
+                  `Subzone ${s.id || ""}`;
+                return { label, value: String(s.id || s.subZoneNo || s.SubZoneNo || "") };
+              })
+              : [
+                { label: "Subzone A", value: "Subzone A" },
+                { label: "Subzone B", value: "Subzone B" },
+                { label: "Subzone C", value: "Subzone C" },
+              ]
+          }
+          className="font-semibold text-sm"
+          selectSize="sm"
+          required
+          error={showError("subzone" as any) ? (errors as any).subzone : undefined}
         />
 
         <Select
@@ -161,25 +164,15 @@ export function BuildingPropertyDetailsSection({
           options={
             moujas && moujas.length > 0
               ? moujas.map((m) => {
-                  const label = m.moujaName || `Mouja ${m.id}`;
-                  return { label, value: String(m.id) };
-                })
+                const label = m.moujaName || `Mouja ${m.id}`;
+                return { label, value: String(m.id) };
+              })
               : []
           }
-          className="font-semibold"
+          className="font-semibold text-sm"
+          selectSize="sm"
           required
           error={showError("mouja" as any) ? (errors as any).mouja : undefined}
-        />
-
-        <Input
-          label="Property Tax No"
-          name="propertyNumber"
-          value={formData.propertyNumber}
-          onChange={handleChange}
-          placeholder="e.g. MC/WD15/2024/001"
-          className="h-10"
-          required
-          error={showError("propertyNumber") ? errors.propertyNumber : undefined}
         />
 
         <Input
@@ -188,8 +181,19 @@ export function BuildingPropertyDetailsSection({
           value={formData.surveyNumber}
           onChange={handleChange}
           placeholder="e.g. CSN-123"
-          className="h-10"
+          className="h-8 text-[13px]"
           error={showError("surveyNumber") ? errors.surveyNumber : undefined}
+        />
+
+        <Input
+          label="Property Tax No"
+          name="propertyNumber"
+          value={formData.propertyNumber}
+          onChange={handleChange}
+          placeholder="e.g. MC/WD15/2024/001"
+          className="h-8 text-[13px]"
+          required
+          error={showError("propertyNumber") ? errors.propertyNumber : undefined}
         />
 
         <Select
@@ -202,7 +206,8 @@ export function BuildingPropertyDetailsSection({
             { label: "Average", value: "Average" },
             { label: "Poor", value: "Poor" },
           ]}
-          className="font-semibold"
+          className="font-semibold text-sm"
+          selectSize="sm"
         />
 
         <Select
@@ -214,7 +219,8 @@ export function BuildingPropertyDetailsSection({
             { label: "Yes", value: "Yes" },
             { label: "No", value: "No" },
           ]}
-          className="font-semibold"
+          className="font-semibold text-sm"
+          selectSize="sm"
         />
 
         {isLand && (
@@ -225,7 +231,7 @@ export function BuildingPropertyDetailsSection({
             onChange={handleChange}
             placeholder="0.00"
             type="number"
-            className="h-10"
+            className="h-8 text-[13px]"
             required
             error={showError("landArea" as any) ? (errors as any).landArea : undefined}
           />

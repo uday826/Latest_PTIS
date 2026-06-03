@@ -48,8 +48,8 @@ export interface NewFloorFormState {
   useType: string;
   subUseType: string;
   rooms: number;
-  carpetAreaSqFt: number;
-  builtUpAreaSqFt: number;
+  carpetAreaSqM: number;
+  builtUpAreaSqM: number;
   baseValue: number;
 }
 

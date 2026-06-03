@@ -74,6 +74,14 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
     >) || {},
     categoryId: Number(contextData.categoryId) || 0,
     typeId: Number(contextData.typeId) || 0,
+    latitude: contextData.latitude || "",
+    longitude: contextData.longitude || "",
+    zoneId: contextData.zoneId || "",
+    wardId: contextData.wardId || "",
+    departmentId: contextData.departmentId || "",
+    status: contextData.status || "Active",
+    condition: contextData.condition || "Good",
+    assetCode: contextData.assetCode || "",
   });
 
   const {

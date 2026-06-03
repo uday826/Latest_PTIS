@@ -5,7 +5,7 @@ import { assetMasterService } from "@/lib/api/asset/asset-master.service";
 import { apiClient } from "@/services/api.service";
 import { assetFieldDefinitionService } from "@/lib/api/asset/asset-field-definition.service";
 import { assetFieldValueService } from "@/lib/api/asset/asset-field-value.service";
-import { getDocumentFileRaw, getDocumentsByAsset } from "@/lib/api/asset/asset-document.server.service";
+import { getDocumentFileRaw, getDocumentsByAsset, uploadDocument } from "@/lib/api/asset/asset-document.server.service";
 import { AssetFormData, AssetMasterRequest } from "@/types/asset-types/basic-info/asset-wizard.types";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
@@ -66,6 +66,16 @@ export async function fetchMunicipalAssetDashboardStats() {
     console.error("Failed to fetch dashboard stats from AssetMaster:", err);
   }
   return null;
+}
+
+export async function uploadAssetDocumentAction(formData: FormData) {
+  try {
+    const response = await uploadDocument(formData);
+    return response;
+  } catch (error) {
+    console.error("uploadAssetDocumentAction error:", error);
+    throw error;
+  }
 }
 
 /**
@@ -666,13 +676,18 @@ export async function submitAssetForm(formData: AssetFormData) {
         propertyNumber: formData.propertyNumber,
         plotNumber: formData.plotNumber,
         surveyNumber: formData.surveyNumber,
-      }).map(([key, value]) => {
+      })
+      .filter(([key, value]) => value !== null && value !== undefined && String(value).trim() !== "")
+      .map(([key, value]) => {
         const definition = fieldDefs.find(
           (d: any) =>
             d.fieldName?.toLowerCase() === key.toLowerCase() ||
             d.fieldCode?.toLowerCase() === key.toLowerCase()
         );
-        const fieldDefinitionId = definition ? definition.id : 1; // Fallback to 1
+        
+        if (!definition) return null;
+
+        const fieldDefinitionId = definition.id;
 
         let textValue: string | null = null;
         let numberValue: number | null = null;
@@ -700,13 +715,14 @@ export async function submitAssetForm(formData: AssetFormData) {
 
         return {
           fieldDefinitionId,
-          fieldName: definition?.fieldName || key,
+          fieldName: definition.fieldName || key,
           textValue,
           numberValue,
           dateValue,
           booleanValue
         };
       })
+      .filter(Boolean)
     };
 
     console.log("SUBMITTING ASSET MASTER API REQUEST PAYLOAD:", JSON.stringify(apiRequest, null, 2));
@@ -770,7 +786,6 @@ export async function submitAssetForm(formData: AssetFormData) {
       }
 
       try {
-        const fs = require("fs");
         const logContent = `[${new Date().toISOString()}] SAVE FAILED\n` +
           `Request Payload:\n${JSON.stringify(apiRequest, null, 2)}\n\n` +
           `Active DB Wards: ${JSON.stringify(dbWardIds)}\n` +
@@ -786,9 +801,9 @@ export async function submitAssetForm(formData: AssetFormData) {
           `Active DB UlbConfig: ${JSON.stringify(dbUlb)}\n\n` +
           `Response Error:\n${JSON.stringify(response.error || response, null, 2)}\n` +
           `============================================================\n\n`;
-        fs.appendFileSync("server-errors.log", logContent);
+        console.error(logContent);
       } catch (logErr) {
-        console.error("Failed to write to server-errors.log:", logErr);
+        console.error("Failed to write to console:", logErr);
       }
     } else {
       console.log("ASSET MASTER API SUCCESS RESPONSE DATA:", JSON.stringify(response.data, null, 2));

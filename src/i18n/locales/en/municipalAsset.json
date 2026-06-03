@@ -183,7 +183,7 @@
     "download": "Download",
     "noDocuments": "No Documents Available",
     "noDocumentsDescription": "There are no approved or active registration documents uploaded for this asset.",
-    "approvedBuildingPlan": "Approved Building Plan",
+    "approvedBuildingPlan": "Asset Photo Plan",
     "completionCertificate": "Completion Certificate",
     "occupancyCertificate": "Occupancy Certificate",
     "waterConnectionDocument": "Water Connection Document",
@@ -222,7 +222,7 @@
       "safetySecurity": "Safety & Security Features"
     },
     "labels": {
-      "approvedBuildingPlan": "Approved Building Plan",
+      "approvedBuildingPlan": "Asset Photo Plan",
       "completionCertificate": "Completion Certificate",
       "occupancyCertificate": "Occupancy Certificate",
       "emergencyExit": "Emergency Exit",

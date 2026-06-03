@@ -321,23 +321,6 @@ export function FloorDetailsConfigurator() {
           </table>
         </div>
 
-        <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-3.5 flex justify-between items-center shadow-sm">
-          <div className="flex items-center gap-2">
-            <div className="bg-emerald-600 p-1 rounded-lg">
-              <FileSpreadsheet className="size-4 text-white" />
-            </div>
-            <div>
-              <h4 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Total Capital Value (CV)</h4>
-              <p className="text-[9px] text-emerald-600 font-bold uppercase tracking-tight">Aggregated value of active floor plans</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <span className="text-xs text-emerald-600 font-bold uppercase tracking-widest mr-1.5">Total:</span>
-            <span className="font-mono text-lg font-black text-emerald-800 tracking-tight">
-              ₹ {totalCV.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
-        </div>
 
       </CardContent>
 

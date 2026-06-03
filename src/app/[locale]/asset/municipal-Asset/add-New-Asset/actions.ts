@@ -6,7 +6,8 @@ import {
   getDocumentDefinitions,
   getDocumentsByAsset,
   deleteDocument,
-  uploadDocument
+  uploadDocument,
+  uploadBulkDocuments
 } from "@/lib/api/asset/asset-document.server.service";
 import { ApiResponse } from "@/types/common.types";
 
@@ -75,10 +76,13 @@ export const fetchDocumentDefinitionsAction = async (
  * Fetches already uploaded documents for a given asset ID
  */
 export const fetchUploadedDocumentsAction = async (
-  assetId: number
+  assetId: number,
+  includeAdHoc = false,
+  includeDefinitionBased = false
 ): Promise<ApiResponse<any>> => {
   try {
-    const res = await getDocumentsByAsset(assetId);
+    const res = await getDocumentsByAsset(assetId, includeAdHoc, includeDefinitionBased);
+    
     if (res.success && res.data) {
       const raw = res.data as any;
       const arrayData = Array.isArray(raw) ? raw : (raw.items || raw.data || []);
@@ -87,6 +91,28 @@ export const fetchUploadedDocumentsAction = async (
     return res;
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to fetch uploaded documents" };
+  }
+};
+
+/**
+ * Downloads a document securely via server and returns it as base64
+ */
+export const fetchDocumentFileAction = async (
+  docId: number
+): Promise<{ success: boolean; data?: string; mimeType?: string; error?: string }> => {
+  try {
+    const { getDocumentFileRaw } = await import("@/lib/api/asset/asset-document.server.service");
+    const res = await getDocumentFileRaw(docId);
+    if (!res.ok) {
+       return { success: false, error: "Failed to download document" };
+    }
+    const arrayBuffer = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const base64 = buffer.toString('base64');
+    const mimeType = res.headers.get("Content-Type") || "application/octet-stream";
+    return { success: true, data: base64, mimeType };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to download document" };
   }
 };
 
@@ -110,6 +136,12 @@ export const uploadDocumentAction = async (
   formData: FormData
 ): Promise<ApiResponse<any>> => {
   try {
+    console.log("Server Action Received FormData:");
+    console.log("AssetId:", formData.get("AssetId"));
+    console.log("ModuleId:", formData.get("ModuleId"));
+    console.log("DocumentType:", formData.get("DocumentType"));
+    console.log("DocumentTitle:", formData.get("DocumentTitle"));
+
     return await uploadDocument(formData);
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to upload document" };
@@ -344,13 +376,24 @@ export async function submitAssetForm(formData: AssetFormData) {
         propertyNumber: formData.propertyNumber,
         plotNumber: formData.plotNumber,
         surveyNumber: formData.surveyNumber,
-      }).map(([key, value]) => {
+      })
+      .filter(([_, value]) => value !== undefined && value !== null && value !== "")
+      .map(([key, value]) => {
         const definition = fieldDefs.find(
           (d: any) =>
             d.fieldName?.toLowerCase() === key.toLowerCase() ||
             d.fieldCode?.toLowerCase() === key.toLowerCase()
         );
-        const fieldDefinitionId = definition ? definition.id : 1; // Fallback to 1
+        
+        // If definition is missing, we must NOT default everything to 1, otherwise it throws a unique constraint error.
+        // But since we need an ID, we'll try to find it, or skip it if strict mapping is required.
+        // For now, if missing, we use a negative ID based on the key string so it doesn't collide, 
+        // OR we just don't send it. Let's just filter them out if not found, except for known ones.
+        if (!definition) {
+          return null; // Filtered out below
+        }
+
+        const fieldDefinitionId = definition.id;
 
         let textValue: string | null = null;
         let numberValue: number | null = null;
@@ -385,6 +428,7 @@ export async function submitAssetForm(formData: AssetFormData) {
           booleanValue
         };
       })
+      .filter((fv): fv is any => fv !== null)
     };
 
     console.log("SUBMITTING ASSET MASTER API REQUEST PAYLOAD:", JSON.stringify(apiRequest, null, 2));
@@ -580,3 +624,15 @@ export async function activateAssetAction(assetId: number): Promise<{ success: b
     };
   }
 }
+/**
+ * Uploads multiple documents via multipart FormData (Bulk)
+ */
+export const uploadBulkDocumentsAction = async (
+  formData: FormData
+): Promise<ApiResponse<any>> => {
+  try {
+    return await uploadBulkDocuments(formData);
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to upload bulk documents" };
+  }
+};

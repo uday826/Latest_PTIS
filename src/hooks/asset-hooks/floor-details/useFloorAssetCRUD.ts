@@ -6,6 +6,7 @@ import type { FloorEntry, NewFloorFormState, FloorDetailApiRequest } from "@/typ
 import { saveFloorDetail, deleteFloorDetail, updateFloorDetail } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/floor-details/actions";
 import { validateFloorConfig } from "@/lib/api/asset/floor-details-validation";
 import { DEFAULT_NEW_FLOOR, invalidateFloorCache } from "./useFloorAssetFlowCache";
+import { convertSqMToSqFt } from "@/lib/utils/RoomSubmission/conversions";
 
 export function useFloorAssetCRUD(
   formData: any,
@@ -23,6 +24,9 @@ export function useFloorAssetCRUD(
     if (isSaving) return;
 
     const newErrors = validateFloorConfig(newFloor);
+    if (floors.some((f) => f.floor === newFloor.floor)) {
+      newErrors.floor = "This floor has already been added.";
+    }
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
@@ -41,9 +45,10 @@ export function useFloorAssetCRUD(
     }
 
     setIsSaving(true);
-    const sqM = (val: number) => parseFloat((val * 0.092903).toFixed(2));
-    const carpetAreaSqFt = Number(newFloor.carpetAreaSqFt);
-    const builtUpAreaSqFt = Number(newFloor.builtUpAreaSqFt);
+    const carpetAreaSqM = Number(newFloor.carpetAreaSqM);
+    const builtUpAreaSqM = Number(newFloor.builtUpAreaSqM);
+    const carpetAreaSqFt = parseFloat(convertSqMToSqFt(carpetAreaSqM).toFixed(2));
+    const builtUpAreaSqFt = parseFloat(convertSqMToSqFt(builtUpAreaSqM).toFixed(2));
 
     try {
       const payload: FloorDetailApiRequest = {
@@ -57,9 +62,9 @@ export function useFloorAssetCRUD(
         constructionTypeId: Number(newFloor.conType),
         typeOfUseId: Number(newFloor.useType),
         subTypeOfUseId: Number(newFloor.subUseType),
-        carpetAreaSqMeter: sqM(carpetAreaSqFt),
+        carpetAreaSqMeter: carpetAreaSqM,
         carpetAreaSqFeet: carpetAreaSqFt,
-        builtUpAreaSqMeter: sqM(builtUpAreaSqFt),
+        builtUpAreaSqMeter: builtUpAreaSqM,
         builtUpAreaSqFeet: builtUpAreaSqFt,
         noOfRooms: Number(newFloor.rooms) || 1,
         isRented: false,
@@ -90,9 +95,9 @@ export function useFloorAssetCRUD(
           subUseType: newFloor.subUseType,
           rooms: Number(newFloor.rooms) || 1,
           carpetAreaSqFt: carpetAreaSqFt,
-          carpetAreaSqM: sqM(carpetAreaSqFt),
+          carpetAreaSqM: carpetAreaSqM,
           builtUpAreaSqFt: builtUpAreaSqFt,
-          builtUpAreaSqM: sqM(builtUpAreaSqFt),
+          builtUpAreaSqM: builtUpAreaSqM,
           baseValue: Number(newFloor.baseValue) || 1000,
           floorFactor: `1.00 / ${Number(Number(newFloor.baseValue) || 1000).toLocaleString()}`,
           ageFactor: 1.0,

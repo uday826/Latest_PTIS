@@ -77,29 +77,31 @@ export default function ValuationPage() {
             // 1. Bind floor valuation values saved in DB with robust casing fallbacks
             if (res.floors && res.floors.length > 0) {
               const mappedFloors = res.floors.map((f: any) => {
-                const finalCapitalValue = f.CapitalValue ?? f.capitalValue ?? f.baseValue ?? f.BaseValue ?? f.marketValue ?? f.MarketValue ?? 0;
-                const builtUpArea = f.builtUpAreaSqFeet ?? f.BuiltUpAreaSqFeet ?? f.builtUpAreaSqMeter ?? f.BuiltUpAreaSqMeter ?? f.carpetAreaSqFeet ?? f.CarpetAreaSqFeet ?? 0;
-                const carpetArea = f.carpetAreaSqFeet ?? f.CarpetAreaSqFeet ?? f.carpetAreaSqMeter ?? f.CarpetAreaSqMeter ?? 0;
                 const floorDetailsId = f.floorDetailsId ?? f.FloorDetailsId ?? f.id ?? f.Id ?? 0;
                 const assetIdVal = f.assetId ?? f.AssetId ?? 0;
-
+                const contextFloor = formData.floors?.find((cf: any) => cf.id === floorDetailsId || cf.floor === String(f.floorId || f.FloorId));
+                
+                const finalCapitalValue = f.CapitalValue ?? f.capitalValue ?? f.baseValue ?? f.BaseValue ?? f.marketValue ?? f.MarketValue ?? contextFloor?.finalCapitalValue ?? contextFloor?.baseValue ?? 0;
+                const builtUpArea = f.builtUpAreaSqFeet ?? f.BuiltUpAreaSqFeet ?? f.builtUpAreaSqMeter ?? f.BuiltUpAreaSqMeter ?? f.carpetAreaSqFeet ?? f.CarpetAreaSqFeet ?? contextFloor?.builtUpAreaSqFt ?? contextFloor?.builtUpAreaSqM ?? 0;
+                const carpetArea = f.carpetAreaSqFeet ?? f.CarpetAreaSqFeet ?? f.carpetAreaSqMeter ?? f.CarpetAreaSqMeter ?? contextFloor?.carpetAreaSqFt ?? contextFloor?.carpetAreaSqM ?? 0;
+                
                 return {
-                  id: floorDetailsId,
-                  floorDetailsId: floorDetailsId,
-                  assetId: assetIdVal,
-                  floor: String(f.floorId ?? f.FloorId ?? ""),
-                  constructionYear: String(f.constructionYear ?? f.ConstructionYear ?? ""),
-                  assessmentYear: String(f.assessmentYear ?? f.AssessmentYear ?? ""),
-                  noOfRooms: Number(f.noOfRooms ?? f.NoOfRooms ?? 0),
+                  id: floorDetailsId || contextFloor?.id || 0,
+                  floorDetailsId: floorDetailsId || contextFloor?.id || 0,
+                  assetId: assetIdVal || contextFloor?.assetId || 0,
+                  floor: String(f.floorId ?? f.FloorId ?? contextFloor?.floor ?? ""),
+                  constructionYear: String(f.constructionYear ?? f.ConstructionYear ?? contextFloor?.conYear ?? ""),
+                  assessmentYear: String(f.assessmentYear ?? f.AssessmentYear ?? contextFloor?.asstYear ?? ""),
+                  noOfRooms: Number(f.noOfRooms ?? f.NoOfRooms ?? contextFloor?.rooms ?? 0),
                   carpetAreaSqFt: Number(carpetArea),
-                  carpetAreaSqM: Number(f.carpetAreaSqMeter ?? f.CarpetAreaSqMeter ?? 0),
+                  carpetAreaSqM: Number(f.carpetAreaSqMeter ?? f.CarpetAreaSqMeter ?? contextFloor?.carpetAreaSqM ?? 0),
                   builtUpAreaSqFt: Number(builtUpArea),
-                  builtUpAreaSqM: Number(f.builtUpAreaSqMeter ?? f.BuiltUpAreaSqMeter ?? 0),
-                  baseValue: Number(f.baseValue ?? f.BaseValue ?? 0),
-                  floorFactorValue: Number(f.cvFloorFactor ?? f.CvFloorFactor ?? 1),
-                  ageFactorValue: Number(f.cvAgeFactor ?? f.CvAgeFactor ?? 1),
-                  ntbFactorValue: Number(f.cvNatureFactor ?? f.CvNatureFactor ?? 1),
-                  useFactorValue: Number(f.cvUseFactor ?? f.CvUseFactor ?? 1),
+                  builtUpAreaSqM: Number(f.builtUpAreaSqMeter ?? f.BuiltUpAreaSqMeter ?? contextFloor?.builtUpAreaSqM ?? 0),
+                  baseValue: Number(f.baseValue ?? f.BaseValue ?? contextFloor?.baseValue ?? 0),
+                  floorFactorValue: Number(f.cvFloorFactor ?? f.CvFloorFactor ?? contextFloor?.floorFactorValue ?? 1),
+                  ageFactorValue: Number(f.cvAgeFactor ?? f.CvAgeFactor ?? contextFloor?.ageFactorValue ?? 1),
+                  ntbFactorValue: Number(f.cvNatureFactor ?? f.CvNatureFactor ?? contextFloor?.ntbFactorValue ?? 1),
+                  useFactorValue: Number(f.cvUseFactor ?? f.CvUseFactor ?? contextFloor?.useFactorValue ?? 1),
                   finalCapitalValue: String(finalCapitalValue),
                   cvCalculationFormula: String(f.cvCalculationFormula ?? ""),
                   isCalculated: Boolean(f.isCalculated ?? false),

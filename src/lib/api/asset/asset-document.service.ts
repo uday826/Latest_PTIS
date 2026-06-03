@@ -153,12 +153,23 @@ export const assetDocumentService = {
     if (assetTypeId) params.append("assetTypeId", assetTypeId.toString());
     return apiRequest<AssetDocumentDefinitionDto[]>(`/AssetDocument/definitions?${params.toString()}`);
   },
-  getByAssetId: async (assetId: number): Promise<ApiResponse<AssetDocumentDto[]>> => {
-    return apiRequest<AssetDocumentDto[]>(`/AssetDocument/by-asset/${assetId}`);
+  getByAssetId: async (assetId: number, includeAdHoc: boolean = false, includeDefinitionBased: boolean = false): Promise<ApiResponse<AssetDocumentDto[]>> => {
+    let url = `/AssetDocument/by-asset/${assetId}`;
+    const params = new URLSearchParams();
+    if (includeAdHoc) params.append("includeAdHoc", "true");
+    if (includeDefinitionBased) params.append("includeDefinitionBased", "true");
+    const qs = params.toString();
+    if (qs) url += `?${qs}`;
+    return apiRequest<AssetDocumentDto[]>(url);
   },
   getFileByAssetId: async (assetId: number): Promise<Blob> => {
     const response = await fetch(`${BASE_URL}/AssetDocument/by-asset/${assetId}/file`);
     if (!response.ok) throw new Error("Failed to download document");
+    return response.blob();
+  },
+  getFileByDocumentId: async (documentId: number): Promise<Blob> => {
+    const response = await fetch(`${BASE_URL}/AssetDocument/by-asset-document/${documentId}/file`);
+    if (!response.ok) throw new Error("Failed to download document file");
     return response.blob();
   },
   upload: async (data: AssetDocumentUploadFormData): Promise<ApiResponse<AssetDocumentUploadResponseDto>> => {

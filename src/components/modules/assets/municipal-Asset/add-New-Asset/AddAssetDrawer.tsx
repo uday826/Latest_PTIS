@@ -315,14 +315,16 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
             onClick={() => setMode("new")}
             color="blue"
           />
-          <ModeTab
-            active={mode === "existing"}
-            icon={<Search className="size-4" />}
-            title="Use Existing Asset"
-            subtitle="Find asset by zone, ward & code"
-            onClick={() => setMode("existing")}
-            color="violet"
-          />
+          {false && (
+            <ModeTab
+              active={mode === "existing"}
+              icon={<Search className="size-4" />}
+              title="Use Existing Asset"
+              subtitle="Find asset by zone, ward & code"
+              onClick={() => setMode("existing")}
+              color="violet"
+            />
+          )}
         </div>
 
         {/* ── Divider ── */}

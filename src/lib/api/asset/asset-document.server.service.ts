@@ -50,8 +50,14 @@ async function getBinaryFetchHeaders(): Promise<Record<string, string>> {
   return headers;
 }
 
-export async function getDocumentsByAsset(assetId: number | string) {
-  return apiClient.get<unknown>(`/AssetDocument/by-asset/${encodeURIComponent(String(assetId))}`);
+export async function getDocumentsByAsset(assetId: number | string, includeAdHoc = false, includeDefinitionBased = false) {
+  let url = `/AssetDocument/by-asset/${encodeURIComponent(String(assetId))}`;
+  const params = new URLSearchParams();
+  if (includeAdHoc) params.append("includeAdHoc", "true");
+  if (includeDefinitionBased) params.append("includeDefinitionBased", "true");
+  const qs = params.toString();
+  if (qs) url += `?${qs}`;
+  return apiClient.get<unknown>(url);
 }
 
 export async function getPhotosAndPlansByAsset(assetId: number | string) {
@@ -79,30 +85,57 @@ export async function uploadDocument(formData: FormData) {
   try {
     const url = `${getBaseUrl()}/AssetDocument/upload`;
     const headers = await getBinaryFetchHeaders();
+    
     // Do NOT set Content-Type header so fetch automatically handles multipart boundary.
-
     const response = await documentServerFetch(url, {
       method: "POST",
       headers,
       body: formData,
     });
 
-    if (!response.ok) {
-      const text = await response.text();
-      let errorMsg = response.statusText || "Upload failed";
-      try {
-        const parsed = JSON.parse(text);
-        errorMsg = parsed.message || parsed.error || errorMsg;
-      } catch {
-        if (text) errorMsg = text;
-      }
-      return { success: false, error: errorMsg };
+    const text = await response.text();
+    let data;
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      data = { message: text };
     }
 
-    const data = await response.json();
-    return { success: true, data };
+    if (!response.ok || (data && data.success === false)) {
+      return { 
+        success: false, 
+        error: data.message || data.error || `Upload failed with status ${response.status}`, 
+        statusCode: response.status 
+      };
+    }
+
+    return { success: true, data: data.items || data.data || data };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to upload document" };
   }
 }
 
+export async function uploadBulkDocuments(formData: FormData) {
+  const url = `${getBaseUrl()}/AssetDocument/upload/bulk`;
+  const headers = await getBinaryFetchHeaders();
+  
+  const response = await documentServerFetch(url, { 
+    method: "POST", 
+    headers, 
+    body: formData 
+  });
+  
+  const text = await response.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { message: text };
+  }
+
+  if (!response.ok || (data && data.success === false)) {
+    return { success: false, error: data.message || data.error || `Bulk upload failed with status ${response.status}`, statusCode: response.status };
+  }
+
+  return { success: true, data: data.items || data.data || data };
+}

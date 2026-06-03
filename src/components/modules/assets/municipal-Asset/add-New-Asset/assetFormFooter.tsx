@@ -13,7 +13,7 @@ import { submitAssetForm, activateAssetAction } from "@/app/[locale]/asset/munic
 import AssetSuccessModal from "./AssetSuccessModal";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { uploadDocumentAction } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
+import { uploadDocumentAction, uploadBulkDocumentsAction, fetchDocumentDefinitionsAction } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
 import { validateBuildingBasicInfo } from "@/hooks/asset-hooks/building-basic-info/useBuildingBasicInfoFormValidation";
 import { validateLandBasicInfo } from "@/utils/asset-utils/basic-info/basic-info-validation-schemas";
 import { useConfirm } from "@/components/common/ConfirmProvider";
@@ -23,9 +23,13 @@ function isDeepEqual(obj1: any, obj2: any): boolean {
   if (typeof obj1 !== "object" || obj1 === null || typeof obj2 !== "object" || obj2 === null) {
     return false;
   }
-  const keys1 = Object.keys(obj1);
-  const keys2 = Object.keys(obj2);
+  
+  // Filter out undefined keys so that { a: 1, b: undefined } equals { a: 1 }
+  const keys1 = Object.keys(obj1).filter(k => obj1[k] !== undefined);
+  const keys2 = Object.keys(obj2).filter(k => obj2[k] !== undefined);
+  
   if (keys1.length !== keys2.length) return false;
+  
   for (const key of keys1) {
     if (!keys2.includes(key)) return false;
     if (!isDeepEqual(obj1[key], obj2[key])) return false;
@@ -54,7 +58,9 @@ export function AssetFormFooter() {
     setLastSavedFormData,
     onSubmitHook,
     stagedFiles,
-    setStagedFiles
+    setStagedFiles,
+    basicInfoFiles,
+    setBasicInfoFiles
   } = useAssetForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState<{ assetName: string; assetCode: string } | null>(null);
@@ -234,18 +240,8 @@ export function AssetFormFooter() {
         }
         return;
       }
-
-      confirm({
-        variant: "info",
-        title: `Save ${stepLabel}`,
-        description: `Do you want to save ${stepLabel.toLowerCase()}?`,
-        confirmText: "Yes, Save",
-        cancelText: "Cancel",
-        onConfirm: () => {
-          handleNext(true);
-        }
-      });
-      return;
+      
+      // Proceed directly to save without confirmation modal
     }
 
     // Unify save and next for all intermediate steps
@@ -276,6 +272,85 @@ export function AssetFormFooter() {
         }
         if (assetCode) {
           sp.set("assetCode", String(assetCode));
+        }
+
+        // Upload basic info files if they exist and we just saved basic info
+        if (currentStep?.key === "basic-info" && basicInfoFiles && (basicInfoFiles.frontPhoto || basicInfoFiles.buildingPlan)) {
+          let userId = 1;
+          try {
+            const match = document.cookie.match(/(?:^|; )user_id=([^;]*)/);
+            if (match) {
+              userId = Number(decodeURIComponent(match[1])) || 1;
+            }
+          } catch (e) {
+            // ignore
+          }
+
+          const formDataPayload = new FormData();
+          formDataPayload.append("AssetId", String(assetId || 0));
+          formDataPayload.append("ModuleId", "1004");
+          formDataPayload.append("UploadedByUserId", userId.toString());
+          formDataPayload.append("IsAdHoc", "true");
+
+          // Attempt to fetch correct document definitions for this category and type
+          let frontPhotoDefId = 0;
+          let planDefId = 0;
+          try {
+            const defRes = await fetchDocumentDefinitionsAction(formData.categoryId, formData.typeId || 0);
+            if (defRes.success && Array.isArray(defRes.data)) {
+              const frontDef = defRes.data.find(d => d.documentCode?.toLowerCase().includes("front") || d.documentName?.toLowerCase().includes("front"));
+              if (frontDef) frontPhotoDefId = frontDef.id;
+
+              const planDef = defRes.data.find(d => d.documentCode?.toLowerCase().includes("plan") || d.documentName?.toLowerCase().includes("plan"));
+              if (planDef) planDefId = planDef.id;
+            }
+          } catch(e) {
+            console.error("Failed to fetch definitions for basic info upload", e);
+          }
+
+          const metadata = [];
+
+          if (basicInfoFiles.frontPhoto) {
+            const uniqueName = `front_${basicInfoFiles.frontPhoto.name}`;
+            const renamedFile = new File([basicInfoFiles.frontPhoto], uniqueName, { type: basicInfoFiles.frontPhoto.type });
+            
+            formDataPayload.append("Files", renamedFile);
+            const metaItem: any = {
+              fileName: uniqueName,
+              documentType: "front_photo",
+              documentTitle: "Asset Image",
+            };
+            if (frontPhotoDefId > 0) metaItem.documentDefinitionId = frontPhotoDefId;
+            
+            metadata.push(metaItem);
+          }
+
+          if (basicInfoFiles.buildingPlan) {
+            const uniqueName = `plan_${basicInfoFiles.buildingPlan.name}`;
+            const renamedFile = new File([basicInfoFiles.buildingPlan], uniqueName, { type: basicInfoFiles.buildingPlan.type });
+
+            formDataPayload.append("Files", renamedFile);
+            const metaItem: any = {
+              fileName: uniqueName,
+              documentType: "building_plan",
+              documentTitle: "Asset Photo Plan",
+            };
+            if (planDefId > 0) metaItem.documentDefinitionId = planDefId;
+
+            metadata.push(metaItem);
+          }
+
+          formDataPayload.append("FileMetadataJson", JSON.stringify(metadata));
+
+          const uploadRes = await uploadBulkDocumentsAction(formDataPayload);
+
+          if (!uploadRes.success || (uploadRes.data && uploadRes.data.failureCount > 0)) {
+            const detailedError = uploadRes.data?.failedUploads?.[0]?.errorMessage || uploadRes.error || "Unknown bulk upload error";
+            console.error("Failed to bulk upload photos:", uploadRes.data?.failedUploads || uploadRes.error);
+            toast.error(`Photo upload failed: ${detailedError}`);
+          } else {
+            if (setBasicInfoFiles) setBasicInfoFiles({});
+          }
         }
 
         toast.success(`${stepLabel} saved successfully!`);

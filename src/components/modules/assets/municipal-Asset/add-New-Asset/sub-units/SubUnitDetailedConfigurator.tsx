@@ -785,7 +785,7 @@ export function SubUnitDetailedConfigurator({ unit, parentBuildingName, onSave, 
 
           {/* Front Photo */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <SectionBar icon={<ImagePlus className="size-3.5 text-white" />} title="Building Front Photo" color="bg-slate-700" />
+            <SectionBar icon={<ImagePlus className="size-3.5 text-white" />} title="Asset Image" color="bg-slate-700" />
             <div className="p-3 flex flex-col items-center gap-2">
               <div
                 onClick={() => photoRef.current?.click()}
@@ -808,9 +808,9 @@ export function SubUnitDetailedConfigurator({ unit, parentBuildingName, onSave, 
             </div>
           </div>
 
-          {/* Approved Plan */}
+          {/* Asset Photo Plan */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <SectionBar icon={<FileText className="size-3.5 text-white" />} title="Approved Plan" color="bg-emerald-700" />
+            <SectionBar icon={<FileText className="size-3.5 text-white" />} title="Asset Photo Plan" color="bg-emerald-700" />
             <div className="p-3 flex flex-col items-center gap-2">
               <div
                 onClick={() => planRef.current?.click()}

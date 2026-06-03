@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { fetchAssetMasterById } from "@/app/[locale]/asset/actions";
 
 import { AssetFormData, AssetFormContextType } from "@/types/asset-types/basic-info/asset-wizard.types";
 
@@ -15,6 +16,7 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
   const [submittedOnce, setSubmittedOnce] = useState(false);
   const [onSubmitHook, setOnSubmitHook] = useState<(() => Promise<boolean>) | null>(null);
   const [stagedFiles, setStagedFiles] = useState<Record<number, { file: File; definition: any }>>({});
+  const [basicInfoFiles, setBasicInfoFiles] = useState<{ frontPhoto?: File; buildingPlan?: File }>({});
 
   const registerSubmitHook = (hook: (() => Promise<boolean>) | null) => {
     setOnSubmitHook(() => hook);
@@ -89,6 +91,73 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
   });
 
   const [lastSavedFormData, setLastSavedFormData] = useState<AssetFormData | null>(null);
+
+  // Draft Recovery: If React Context is wiped (e.g. page refresh) but we have an ID in the URL,
+  // fetch the saved draft from the database to refill the context.
+  useEffect(() => {
+    const recoverDraft = async () => {
+      const assetIdStr = searchParams.get("assetId") || searchParams.get("id");
+      if (!assetIdStr) return;
+      
+      const parsedId = Number(assetIdStr);
+      // If the Context lost its memory (assetName is blank) but URL has an ID, we recover!
+      if (parsedId > 0 && !formData.assetName && !formData.fullAddress) {
+        try {
+          const dbAsset = await fetchAssetMasterById(parsedId);
+          if (dbAsset) {
+            setFormData(prev => {
+              const dynamicAttrs: Record<string, string | number | boolean> = {};
+              if (dbAsset.fieldValues && Array.isArray(dbAsset.fieldValues)) {
+                dbAsset.fieldValues.forEach((fv: any) => {
+                  const key = fv.fieldName || fv.fieldCode;
+                  if (key) {
+                    if (fv.textValue !== null && fv.textValue !== undefined) dynamicAttrs[key] = fv.textValue;
+                    else if (fv.numberValue !== null && fv.numberValue !== undefined) dynamicAttrs[key] = fv.numberValue;
+                    else if (fv.booleanValue !== null && fv.booleanValue !== undefined) dynamicAttrs[key] = fv.booleanValue;
+                    else if (fv.dateValue !== null && fv.dateValue !== undefined) dynamicAttrs[key] = fv.dateValue;
+                  }
+                });
+              }
+
+              const updatedData = {
+                ...prev,
+                assetName: dbAsset.assetName || prev.assetName,
+                assetCode: dbAsset.assetNo || dbAsset.assetCode || prev.assetCode,
+                fullAddress: dbAsset.address || prev.fullAddress,
+                latitude: dbAsset.latitude ? String(dbAsset.latitude) : prev.latitude,
+                longitude: dbAsset.longitude ? String(dbAsset.longitude) : prev.longitude,
+                surveyNumber: dbAsset.csn || prev.surveyNumber,
+                zoneId: dbAsset.zoneId ? String(dbAsset.zoneId) : prev.zoneId,
+                wardId: dbAsset.wardId ? String(dbAsset.wardId) : prev.wardId,
+                departmentId: dbAsset.departmentId ? String(dbAsset.departmentId) : prev.departmentId,
+                status: dbAsset.status || prev.status,
+                condition: dbAsset.assetCondition || prev.condition,
+                ownershipType: dbAsset.ownershipType || prev.ownershipType,
+                subzone: dbAsset.subZoneId ? String(dbAsset.subZoneId) : prev.subzone,
+                mouja: dbAsset.moujaId ? String(dbAsset.moujaId) : prev.mouja,
+                attributes: { ...prev.attributes, ...dynamicAttrs },
+                // Try to map any dynamic attributes back into standard form fields if they match
+                propertyNumber: dynamicAttrs.propertyNumber as string || prev.propertyNumber,
+                locality: dynamicAttrs.locality as string || prev.locality,
+                pinCode: dynamicAttrs.pinCode as string || prev.pinCode,
+                inChargeName: dynamicAttrs.inChargeName as string || prev.inChargeName,
+                inChargeDesignation: dynamicAttrs.inChargeDesignation as string || prev.inChargeDesignation,
+                inChargeMobile: dynamicAttrs.inChargeMobile as string || prev.inChargeMobile,
+                inChargeEmail: dynamicAttrs.inChargeEmail as string || prev.inChargeEmail,
+              };
+              // Set the lastSavedFormData so the "Save & Next" button knows this is the baseline
+              setLastSavedFormData(JSON.parse(JSON.stringify(updatedData)));
+              return updatedData;
+            });
+          }
+        } catch (error) {
+          console.error("Failed to recover draft:", error);
+        }
+      }
+    };
+
+    recoverDraft();
+  }, [searchParams]);
 
   const updateFormData = (data: Partial<AssetFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
@@ -213,7 +282,9 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
       onSubmitHook,
       registerSubmitHook,
       stagedFiles,
-      setStagedFiles
+      setStagedFiles,
+      basicInfoFiles,
+      setBasicInfoFiles
     }}>
       {children}
     </AssetFormContext.Provider>

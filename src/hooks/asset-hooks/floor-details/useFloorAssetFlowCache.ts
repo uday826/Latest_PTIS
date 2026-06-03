@@ -12,8 +12,8 @@ export const DEFAULT_NEW_FLOOR: NewFloorFormState = {
   useType: "",
   subUseType: "",
   rooms: 0,
-  carpetAreaSqFt: 0,
-  builtUpAreaSqFt: 0,
+  carpetAreaSqM: 0,
+  builtUpAreaSqM: 0,
   baseValue: 0,
 };
 

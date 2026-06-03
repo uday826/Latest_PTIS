@@ -18,7 +18,7 @@ export const ALL_ASSET_FORM_STEPS: AssetFormStepConfig[] = [
   {
     id: 2,
     key: "floor-details",
-    label: "Floor Details & Media",
+    label: "Floor Details",
     icon: Layers,
     path: "/asset/municipal-Asset/add-New-Asset/floor-details",
   },

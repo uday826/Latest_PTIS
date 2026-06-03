@@ -126,9 +126,24 @@ export async function updateInventoryBatchAction(batchId: number, updates: {
   error?: string;
 }> {
   try {
+    const payload = {
+      batchId,
+      itemName: updates.itemName,
+      modelBrand: updates.modelBrand,
+      specifications: updates.specifications,
+      purchaseDate: updates.purchaseDate,
+      condition: updates.condition,
+      unitValue: updates.unitValue,
+      invoiceNumber: updates.invoiceNumber,
+      invoiceDate: updates.invoiceDate,
+      invoiceFileName: updates.invoiceFileName,
+      owningDepartment: updates.owningDepartment,
+      photoFileName: updates.photoFileName
+    };
+
     const response = await apiClient.put<any>(
       `/asset-management/AssetInventory/batch/${batchId}`,
-      { batchId, ...updates }
+      payload
     );
 
     if (response.success && response.data) {

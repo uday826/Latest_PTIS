@@ -97,7 +97,7 @@ export const ownershipDocuments = [
 ];
 
 export const planningDocuments = [
-  { name: 'Approved Building Plan', type: 'PDF', size: '5.2 MB', uploadDate: '2021-08-20', url: '#', status: 'Verified' },
+  { name: 'Asset Photo Plan', type: 'PDF', size: '5.2 MB', uploadDate: '2021-08-20', url: '#', status: 'Verified' },
   { name: 'Sanctioned Plan', type: 'PDF', size: '4.8 MB', uploadDate: '2021-08-20', url: '#', status: 'Verified' },
   { name: 'DP/Zoning Compliance Certificate', type: 'PDF', size: '1.1 MB', uploadDate: '2021-07-15', url: '#', status: 'Verified' },
   { name: 'Building Completion Certificate', type: 'PDF', size: '1.2 MB', uploadDate: '2022-06-15', url: '#', status: 'Verified' },

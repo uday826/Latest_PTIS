@@ -71,6 +71,8 @@ export const buildingBasicInfoSchema: ValidationSchema<BuildingBasicInfoFormData
     minLengthMessage: "Full Address must be at least 10 characters.",
   },
   pinCode: {
+    required: true,
+    requiredMessage: "Pin Code is required.",
     pattern: PIN_CODE_RE,
     patternMessage: "Pin Code must be a valid 6-digit Indian PIN code not starting with 0.",
   },
@@ -155,6 +157,8 @@ export const landBasicInfoSchema: ValidationSchema<any> = {
     minLengthMessage: "Full Address must be at least 10 characters.",
   },
   pinCode: {
+    required: true,
+    requiredMessage: "Pin Code is required.",
     pattern: PIN_CODE_RE,
     patternMessage: "Pin Code must be a valid 6-digit Indian PIN code not starting with 0.",
   },
