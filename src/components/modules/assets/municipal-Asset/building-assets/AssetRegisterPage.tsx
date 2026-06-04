@@ -33,6 +33,11 @@ export default function AssetRegisterPage({
   wardId = 'all',
   assets: initialAssets = [],
   totalCount = 0,
+  totalPurchaseValue = 0,
+  totalMarketValue = 0,
+  totalDepreciation = 0,
+  netBookValue = 0,
+  activeAssetsCount = 0,
   initialAssetTypes = [],
   initialZones = [],
   initialWards = [],
@@ -47,6 +52,11 @@ export default function AssetRegisterPage({
   wardId?: string;
   assets?: AssetRegisterApiRecord[];
   totalCount?: number;
+  totalPurchaseValue?: number;
+  totalMarketValue?: number;
+  totalDepreciation?: number;
+  netBookValue?: number;
+  activeAssetsCount?: number;
   initialAssetTypes?: { id: number; label: string }[];
   initialZones?: { id: number; label: string }[];
   initialWards?: { id: number; label: string; zoneId?: number | null }[];
@@ -145,15 +155,7 @@ export default function AssetRegisterPage({
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const safePage = Math.min(page, totalPages);
   const totalAssets = totalCount;
-  const activeAssets = useMemo(() => assets.filter((item) => item.status === 'Active').length, [assets]);
-  const totalPurchaseValue = useMemo(
-    () => assets.reduce((sum, item) => sum + (Number(item.purchaseValue.replace(/,/g, '')) || 0), 0),
-    [assets]
-  );
-  const totalMarketValue = useMemo(
-    () => assets.reduce((sum, item) => sum + (Number(item.marketValue.replace(/,/g, '')) || 0), 0),
-    [assets]
-  );
+  const activeAssets = activeAssetsCount;
 
   const handleExportExcel = async () => {
     try {
@@ -217,11 +219,11 @@ export default function AssetRegisterPage({
               </div>
               <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-center shadow-sm">
                 <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">Depreciation</p>
-                <p className="mt-1 text-[22px] font-extrabold leading-none text-red-600">₹{Math.max(0, totalPurchaseValue - totalMarketValue).toLocaleString('en-IN')}</p>
+                <p className="mt-1 text-[22px] font-extrabold leading-none text-red-600">₹{totalDepreciation.toLocaleString('en-IN')}</p>
               </div>
               <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-center shadow-sm">
                 <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">Net Book Value</p>
-                <p className="mt-1 text-[22px] font-extrabold leading-none text-emerald-600">₹{Math.min(totalPurchaseValue, totalMarketValue).toLocaleString('en-IN')}</p>
+                <p className="mt-1 text-[22px] font-extrabold leading-none text-emerald-600">₹{netBookValue.toLocaleString('en-IN')}</p>
               </div>
               <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-center shadow-sm">
                 <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">Active Assets</p>

@@ -40,7 +40,15 @@ export default async function Page({ params, searchParams }: PageProps) {
   }
 
   let categoryName = '';
-  let initialData: { items: AssetRegisterApiRecord[]; totalCount: number } = { items: [], totalCount: 0 };
+  let initialData: { 
+    items: AssetRegisterApiRecord[]; 
+    totalCount: number;
+    totalPurchaseValue: number;
+    totalMarketValue: number;
+    totalDepreciation: number;
+    netBookValue: number;
+    activeAssetsCount: number;
+  } = { items: [], totalCount: 0, totalPurchaseValue: 0, totalMarketValue: 0, totalDepreciation: 0, netBookValue: 0, activeAssetsCount: 0 };
   let initialAssetTypes: { id: number; label: string }[] = [];
   let initialZones: { id: number; label: string }[] = [];
   let initialWards: { id: number; label: string; zoneId?: number | null }[] = [];
@@ -87,6 +95,11 @@ export default async function Page({ params, searchParams }: PageProps) {
               wardId={initialWardId}
               assets={initialData.items}
               totalCount={initialData.totalCount}
+              totalPurchaseValue={initialData.totalPurchaseValue}
+              totalMarketValue={initialData.totalMarketValue}
+              totalDepreciation={initialData.totalDepreciation}
+              netBookValue={initialData.netBookValue}
+              activeAssetsCount={initialData.activeAssetsCount}
               initialAssetTypes={initialAssetTypes}
               initialZones={initialZones}
               initialWards={initialWards}

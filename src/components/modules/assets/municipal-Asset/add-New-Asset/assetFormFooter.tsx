@@ -105,43 +105,47 @@ export function AssetFormFooter() {
         // Sequentially upload staged documents in context now that the asset is active
         const filesToUpload = stagedFiles ? Object.entries(stagedFiles) : [];
         if (filesToUpload.length > 0) {
-          const loadingToast = toast.loading("Uploading staged compliance documents...");
-          let uploadFailed = false;
+          let loadingToast: string | number | undefined;
+          try {
+            loadingToast = toast.loading("Uploading staged compliance documents...");
+            let uploadFailed = false;
 
-          for (const [defId, item] of filesToUpload) {
-            let userId = 1;
-            try {
-              const match = document.cookie.match(/(?:^|; )user_id=([^;]*)/);
-              if (match) {
-                userId = Number(decodeURIComponent(match[1])) || 1;
+            for (const [defId, item] of filesToUpload) {
+              let userId = 1;
+              try {
+                const match = document.cookie.match(/(?:^|; )user_id=([^;]*)/);
+                if (match) {
+                  userId = Number(decodeURIComponent(match[1])) || 1;
+                }
+              } catch (e) {
+                // ignore
               }
-            } catch (e) {
-              // ignore
+
+              const formDataPayload = new FormData();
+              formDataPayload.append("File", item.file);
+              formDataPayload.append("AssetId", assetId.toString());
+              formDataPayload.append("ModuleId", "1004");
+              formDataPayload.append("DocumentDefinitionId", defId.toString());
+              formDataPayload.append("DocumentTitle", item.definition.documentName);
+              formDataPayload.append("DocumentType", item.definition.documentCode);
+              formDataPayload.append("UploadedByUserId", userId.toString());
+
+              const uploadRes = await uploadDocumentAction(formDataPayload);
+              if (!uploadRes.success) {
+                uploadFailed = true;
+                console.error(`Failed to upload ${item.definition.documentName}:`, uploadRes.error || uploadRes.message);
+                toast.error(`Failed to upload ${item.definition.documentName}`);
+              }
             }
 
-            const formDataPayload = new FormData();
-            formDataPayload.append("File", item.file);
-            formDataPayload.append("AssetId", assetId.toString());
-            formDataPayload.append("ModuleId", "1004");
-            formDataPayload.append("DocumentDefinitionId", defId.toString());
-            formDataPayload.append("DocumentTitle", item.definition.documentName);
-            formDataPayload.append("DocumentType", item.definition.documentCode);
-            formDataPayload.append("UploadedByUserId", userId.toString());
-
-            const uploadRes = await uploadDocumentAction(formDataPayload);
-            if (!uploadRes.success) {
-              uploadFailed = true;
-              console.error(`Failed to upload ${item.definition.documentName}:`, uploadRes.error || uploadRes.message);
-              toast.error(`Failed to upload ${item.definition.documentName}`);
+            if (uploadFailed) {
+              toast.warning("Asset activated, but some documents failed to upload. You can re-upload them in Details.");
+            } else {
+              toast.success("All compliance documents uploaded successfully!");
+              if (setStagedFiles) setStagedFiles({});
             }
-          }
-
-          toast.dismiss(loadingToast);
-          if (uploadFailed) {
-            toast.warning("Asset activated, but some documents failed to upload. You can re-upload them in Details.");
-          } else {
-            toast.success("All compliance documents uploaded successfully!");
-            if (setStagedFiles) setStagedFiles({});
+          } finally {
+            if (loadingToast !== undefined) toast.dismiss(loadingToast);
           }
         }
 

@@ -31,13 +31,18 @@ export async function fetchAssetRegisterPage(
       return {
         items,
         totalCount: (data as any).totalCount || items.length,
+        totalPurchaseValue: (data as any).totalPurchaseValue || 0,
+        totalMarketValue: (data as any).totalMarketValue || 0,
+        totalDepreciation: (data as any).totalDepreciation || 0,
+        netBookValue: (data as any).netBookValue || 0,
+        activeAssetsCount: (data as any).activeAssetsCount || 0,
       };
     }
   } catch (err) {
     console.error("Failed to fetch asset register page:", err);
   }
 
-  return { items: [], totalCount: 0 };
+  return { items: [], totalCount: 0, totalPurchaseValue: 0, totalMarketValue: 0, totalDepreciation: 0, netBookValue: 0, activeAssetsCount: 0 };
 }
 
 export async function fetchAssetTypesByCategory(categoryId: number) {
