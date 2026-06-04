@@ -1,10 +1,23 @@
 'use server';
 
-import { getPaymentRecords } from '@/lib/api/asset/payment.service';
-import type { PaymentRecord } from '@/types/asset/payment.types';
+import { leaseRentPaymentService } from '@/lib/api/asset/leaseRentPayment.service';
+import type { LeaseRentPaymentListItem } from '@/types/asset/leaseRentPayment.types';
 
-export async function getPaymentRecordsAction(): Promise<PaymentRecord[]> {
-  return getPaymentRecords();
+function normalizeStatus(status: string): string {
+  const value = status.trim().toLowerCase();
+  if (value === 'paid') return 'Paid';
+  if (value === 'unpaid') return 'Unpaid';
+  return status;
+}
+
+export async function getPaymentRecordsAction(): Promise<LeaseRentPaymentListItem[]> {
+  const response = await leaseRentPaymentService.getLeaseRentPayments({
+    pageNumber: 1,
+    pageSize: 1000,
+  });
+
+  if (!response.success || !response.data?.items) return [];
+  return response.data.items;
 }
 
 export interface PaymentRecordsQuery {
@@ -15,13 +28,13 @@ export interface PaymentRecordsQuery {
   leaseRentType: string;
   status: string;
   search: string;
-  sortBy: keyof PaymentRecord | '';
+  sortBy: keyof LeaseRentPaymentListItem | '';
   sortOrder: 'asc' | 'desc';
 }
 
 export interface PaymentRecordsPageData {
   query: PaymentRecordsQuery;
-  records: PaymentRecord[];
+  records: LeaseRentPaymentListItem[];
   totalEntries: number;
   totalPages: number;
   startIndex: number;
@@ -35,18 +48,25 @@ export interface PaymentRecordsPageData {
 export async function getPaymentRecordsPageDataAction(
   query: PaymentRecordsQuery
 ): Promise<PaymentRecordsPageData> {
-  const allRecords = await getPaymentRecords();
+  const response = await leaseRentPaymentService.getLeaseRentPayments({
+    pageNumber: 1,
+    pageSize: 1000,
+    leaseType: query.leaseRentType === 'all' ? undefined : query.leaseRentType,
+    paymentStatus: query.status === 'all' ? undefined : normalizeStatus(query.status),
+    searchTerm: query.search.trim() || undefined,
+  });
+  const allRecords = response.success && response.data?.items ? response.data.items : [];
   const normalizedSearch = query.search.trim().toLowerCase();
 
   const filtered = allRecords.filter((item) => {
     const zoneMatch = query.zone === 'all' || item.zone === query.zone;
-    const wardMatch = query.ward === 'all' || item.ward === query.ward;
-    const leaseMatch = query.leaseRentType === 'all' || item.leaseRentType === query.leaseRentType;
-    const statusMatch = query.status === 'all' || item.status === query.status;
+    const wardMatch = query.ward === 'all' || item.wardNo === query.ward;
+    const leaseMatch = query.leaseRentType === 'all' || item.leaseType === query.leaseRentType;
+    const statusMatch = query.status === 'all' || item.status.toLowerCase() === query.status.toLowerCase();
     const searchMatch =
       !normalizedSearch ||
-      item.assetId.toLowerCase().includes(normalizedSearch) ||
-      item.shopPlotNo.toLowerCase().includes(normalizedSearch) ||
+      String(item.assetId).toLowerCase().includes(normalizedSearch) ||
+      item.shopNo.toLowerCase().includes(normalizedSearch) ||
       item.assetName.toLowerCase().includes(normalizedSearch) ||
       item.tenantName.toLowerCase().includes(normalizedSearch);
 
@@ -78,8 +98,8 @@ export async function getPaymentRecordsPageDataAction(
   const endIndex = Math.min(startIndex + query.pageSize, totalEntries);
 
   const zoneOptions = Array.from(new Set(allRecords.map((item) => item.zone))).map((value) => ({ label: value, value }));
-  const wardOptions = Array.from(new Set(allRecords.map((item) => item.ward))).map((value) => ({ label: value, value }));
-  const leaseRentTypeOptions = Array.from(new Set(allRecords.map((item) => item.leaseRentType))).map((value) => ({ label: value, value }));
+  const wardOptions = Array.from(new Set(allRecords.map((item) => item.wardNo))).map((value) => ({ label: value, value }));
+  const leaseRentTypeOptions = Array.from(new Set(allRecords.map((item) => item.leaseType))).map((value) => ({ label: value, value }));
   const statusOptions = [
     { label: 'Unpaid', value: 'unpaid' },
     { label: 'Paid', value: 'paid' },
