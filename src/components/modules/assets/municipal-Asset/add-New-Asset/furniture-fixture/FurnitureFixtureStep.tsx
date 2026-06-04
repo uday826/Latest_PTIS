@@ -5,7 +5,7 @@ import { Armchair } from "lucide-react";
 import FurnitureFixtureClient from "./FurnitureFixtureClient";
 import { useAssetForm } from "../AssetFormContext";
 import type { InventoryItemCategory, InventoryItemCondition, InventoryItemName, InventoryItemModel } from "@/lib/api/asset/inventory.service";
-import type { InventoryBatchListResponse } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/furniture&Fixture/actions";
+import type { InventoryBatchListResponse } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/furniture-fixture/actions";
 
 interface Props {
   parentAssetId?: number | null;

@@ -5,7 +5,7 @@ import { typeOptions, conditionMap, invoiceModeOptions, inventoryMeta, initialRo
 import { enrichRows, buildCategoryGroups, calcRowCV } from "./FurnitureFixtureCV";
 import { toast } from "sonner";
 import type { InventoryItemCategory, InventoryItemCondition, InventoryItemName, InventoryItemModel } from "@/lib/api/asset/inventory.service";
-import { saveInventoryBatchAction, saveSingleInventoryBatchAction, updateInventoryBatchAction, deleteInventoryBatchAction, getInventoryBatchesAction, type InventoryBatchDetail, type InventoryBatchListResponse } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/furniture&Fixture/actions";
+import { saveInventoryBatchAction, saveSingleInventoryBatchAction, updateInventoryBatchAction, deleteInventoryBatchAction, getInventoryBatchesAction, type InventoryBatchDetail, type InventoryBatchListResponse } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/furniture-fixture/actions";
 import { uploadBulkDocumentsAction } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
 
 /**

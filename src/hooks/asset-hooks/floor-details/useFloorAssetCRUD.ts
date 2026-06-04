@@ -68,16 +68,8 @@ export function useFloorAssetCRUD(
         builtUpAreaSqFeet: builtUpAreaSqFt,
         noOfRooms: Number(newFloor.rooms) || 1,
         isRented: false,
-        isTaxable: true,
-        capitalValue: Number(newFloor.baseValue) || 1000,
-        marketValue: Number(newFloor.baseValue) || 1000,
-        baseValue: Number(newFloor.baseValue) || 1000,
-        cvBaseRate: Number(newFloor.baseValue) || 1000,
-        cvAgeFactor: 1.0,
-        cvFloorFactor: 1.0,
-        cvNatureFactor: 1.0,
-        cvUseFactor: 1.0,
-        cvCalculationFormula: "BaseRate * AgeFactor * FloorFactor",
+        isTaxable: true
+        // CV calculation and factors are delegated entirely to the backend.
       };
 
       const res = await saveFloorDetail(payload);
@@ -98,9 +90,9 @@ export function useFloorAssetCRUD(
           carpetAreaSqM: carpetAreaSqM,
           builtUpAreaSqFt: builtUpAreaSqFt,
           builtUpAreaSqM: builtUpAreaSqM,
-          baseValue: Number(newFloor.baseValue) || 1000,
-          floorFactor: `1.00 / ${Number(Number(newFloor.baseValue) || 1000).toLocaleString()}`,
-          ageFactor: 1.0,
+          baseValue: res.data.baseValue ?? 0,
+          floorFactor: res.data.cvFloorFactor ? res.data.cvFloorFactor.toString() : "-",
+          ageFactor: res.data.cvAgeFactor ?? 1.0,
           units: [],
         };
         updateFormData({ floors: [...floors, addedFloor] });

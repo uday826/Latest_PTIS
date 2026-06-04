@@ -34,7 +34,7 @@ export const ALL_ASSET_FORM_STEPS: AssetFormStepConfig[] = [
     key: "furniture-fixture",
     label: "Furniture & Fixtures Inventory",
     icon: Armchair,
-    path: "/asset/municipal-Asset/add-New-Asset/furniture&Fixture",
+    path: "/asset/municipal-Asset/add-New-Asset/furniture-fixture",
   },
   {
     id: 5,
