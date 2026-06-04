@@ -71,28 +71,28 @@ export function FloorConfigRow({
         <Sparkles className="size-3.5 text-blue-500 animate-pulse" />
         <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Configure New Floor Level</span>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+      <div className="flex gap-2 w-full">
 
         {/* Floor — always enabled */}
-        <div>
-          <label className="block text-[11px] font-medium text-slate-700 mb-1">Floor <span className="text-red-500">*</span></label>
+        <div className="flex-1 min-w-0">
+          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Floor <span className="text-red-500">*</span></label>
           <SearchSelect name="floor" options={floorLevels} value={newFloor.floor}
-            onChange={onFloorChange} placeholder="Select Floor" className={BASE_INPUT} />
+            onChange={onFloorChange} placeholder="Select" className={BASE_INPUT} />
           <ValidationMessage message={errors.floor} />
         </div>
 
         {/* Con Type — enabled after Floor */}
-        <div className={conTypeEnabled ? "" : DISABLED_CLS}>
-          <label className="block text-[11px] font-medium text-slate-700 mb-1">Con Type <span className="text-red-500">*</span></label>
+        <div className={`flex-1 min-w-0 ${conTypeEnabled ? "" : DISABLED_CLS}`}>
+          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Con Type <span className="text-red-500">*</span></label>
           <SearchSelect name="conType" options={constructionTypes} value={newFloor.conType}
-            onChange={onConTypeChange} placeholder="Select Con Type"
+            onChange={onConTypeChange} placeholder="Select"
             disabled={!conTypeEnabled} className={BASE_INPUT} />
           <ValidationMessage message={errors.conType} />
         </div>
 
         {/* Con Yr — enabled after Con Type */}
-        <div className={conYrEnabled ? "" : DISABLED_CLS}>
-          <label className="block text-[11px] font-medium text-slate-700 mb-1">Con Yr <span className="text-red-500">*</span></label>
+        <div className={`flex-[0.5] min-w-0 ${conYrEnabled ? "" : DISABLED_CLS}`}>
+          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Con Yr <span className="text-red-500">*</span></label>
           <Input type="text" inputMode="numeric" maxLength={4}
             placeholder={`e.g. ${CURRENT_YEAR}`} value={newFloor.conYear}
             onChange={onConYrChange} disabled={!conYrEnabled}
@@ -100,37 +100,35 @@ export function FloorConfigRow({
           <ValidationMessage message={conYrError} />
         </div>
 
-
-
         {/* Use Type — enabled after valid Con Yr */}
-        <div className={useTypeEnabled ? "" : DISABLED_CLS}>
-          <label className="block text-[11px] font-medium text-slate-700 mb-1">Use Type <span className="text-red-500">*</span></label>
+        <div className={`flex-1 min-w-0 ${useTypeEnabled ? "" : DISABLED_CLS}`}>
+          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Use Type <span className="text-red-500">*</span></label>
           <SearchSelect name="useType" options={useTypes} value={newFloor.useType}
-            onChange={onUseTypeChange} placeholder="Select Use Type"
+            onChange={onUseTypeChange} placeholder="Select"
             disabled={!useTypeEnabled} className={BASE_INPUT} />
           <ValidationMessage message={errors.useType} />
         </div>
 
         {/* Sub Use — enabled after Use Type */}
-        <div className={subUseEnabled ? "" : DISABLED_CLS}>
-          <label className="block text-[11px] font-medium text-slate-700 mb-1">Sub Use <span className="text-red-500">*</span></label>
+        <div className={`flex-1 min-w-0 ${subUseEnabled ? "" : DISABLED_CLS}`}>
+          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Sub Use <span className="text-red-500">*</span></label>
           <SearchSelect name="subUseType" options={subUseTypes} value={newFloor.subUseType}
-            onChange={onSelect("subUseType")} placeholder="Select Sub Use"
+            onChange={onSelect("subUseType")} placeholder="Select"
             disabled={!subUseEnabled} className={BASE_INPUT} />
           <ValidationMessage message={errors.subUseType} />
         </div>
 
         {/* Rooms, Carpet, Built-Up, Base Value — enabled after Sub Use */}
         <div className="hidden">
-          <label className="block text-[11px] font-medium text-slate-700 mb-1">Rooms <span className="text-red-500">*</span></label>
+          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Rooms <span className="text-red-500">*</span></label>
           <Input type="number" value={newFloor.rooms}
             onChange={(e) => setField("rooms")(Number(e.target.value))}
             min={1} disabled={!numericEnabled}
             className={`${BASE_INPUT} border-slate-300`} />
           <ValidationMessage message={errors.rooms} />
         </div>
-        <div className={numericEnabled ? "" : DISABLED_CLS}>
-          <label className="block text-[11px] font-medium text-slate-700 mb-1">Carpet (SqM) <span className="text-red-500">*</span></label>
+        <div className={`flex-[0.8] min-w-0 ${numericEnabled ? "" : DISABLED_CLS}`}>
+          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Carpet(SqM)</label>
           <Input type="number" value={newFloor.carpetAreaSqM === 0 ? "" : newFloor.carpetAreaSqM}
             onChange={(e) => {
               const val = Number(e.target.value);
@@ -141,15 +139,15 @@ export function FloorConfigRow({
             className={`${BASE_INPUT} border-slate-300`} />
           <ValidationMessage message={errors.carpetAreaSqM as string} />
         </div>
-        <div className={numericEnabled ? "" : DISABLED_CLS}>
-          <label className="block text-[11px] font-medium text-slate-700 mb-1">Built-Up (SqM) <span className="text-red-500">*</span></label>
+        <div className={`flex-[0.8] min-w-0 ${numericEnabled ? "" : DISABLED_CLS}`}>
+          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Built(SqM)</label>
           <Input type="number" value={newFloor.builtUpAreaSqM === 0 ? "" : newFloor.builtUpAreaSqM}
             readOnly={true} // Use readOnly instead of disabled so text isn't grayed out
             className={`${BASE_INPUT} border-slate-200 bg-slate-100 cursor-not-allowed text-slate-900 font-bold opacity-100`} />
           <ValidationMessage message={errors.builtUpAreaSqM as string} />
         </div>
         <div className="hidden">
-          <label className="block text-[11px] font-medium text-slate-700 mb-1">Base Value (₹) <span className="text-red-500">*</span></label>
+          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Base Val <span className="text-red-500">*</span></label>
           <Input type="number" value={newFloor.baseValue}
             onChange={(e) => setField("baseValue")(Number(e.target.value))}
             min={0} disabled={!numericEnabled}
@@ -158,9 +156,9 @@ export function FloorConfigRow({
         </div>
 
         {/* Add button — active only when all step-gates pass */}
-        <div className="flex items-end">
+        <div className="flex items-end shrink-0">
           <button type="button" onClick={handleAddFloor} disabled={!addEnabled}
-            className={`w-32 h-8 text-white rounded-md flex items-center justify-center gap-1 text-[11px] font-black uppercase tracking-wider transition-all shadow-sm ${
+            className={`px-3 h-8 text-white rounded-md flex items-center justify-center gap-1 text-[11px] font-black uppercase tracking-wider transition-all shadow-sm ${
               addEnabled
                 ? "bg-blue-600 hover:bg-blue-700 shadow-blue-100 cursor-pointer"
                 : "bg-blue-300 cursor-not-allowed opacity-60"

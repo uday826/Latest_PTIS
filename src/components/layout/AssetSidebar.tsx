@@ -26,8 +26,8 @@ import {
 import { getLocaleFromPathname } from '@/i18n/config';
 
 const sidebarItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, route: '/asset/dashboard/master-dashboard' },
-  { id: 'assets', label: 'Municipal Assets', icon: Building2, route: '/asset/municipal-Asset' },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, route: '/assets/dashboard/master-dashboard' },
+  { id: 'assets', label: 'Municipal Assets', icon: Building2, route: '/assets/municipal-Asset' },
 ];
 
 const secondarySidebarItems: any[] = [];
@@ -39,18 +39,18 @@ const ASSET_MENU_SECTIONS: SidebarSection[] = [
     icon: IndianRupee,
     colorClass: 'text-violet-400',
     items: [
-      { id: 'renters', label: 'Manage Renters Details', icon: Users, route: '/asset/revenue/manage-renters' },
-      { id: 'payment', label: 'Payment', icon: CreditCard, route: '/asset/revenue/payment' }
+      { id: 'renters', label: 'Manage Renters Details', icon: Users, route: '/assets/revenue/manage-renters' },
+      { id: 'payment', label: 'Payment', icon: CreditCard, route: '/assets/revenue/payment' }
     ]
   }
 ];
 
 const routeMap = {
-  'dashboard': '/asset/dashboard/master-dashboard',
-  'assets': '/asset/municipal-Asset',
-  'renters': '/asset/revenue/manage-renters',
-  'payment': '/asset/revenue/payment',
-  'configuration': '/asset/ScreenField/configuration',
+  'dashboard': '/assets/dashboard/master-dashboard',
+  'assets': '/assets/municipal-Asset',
+  'renters': '/assets/revenue/manage-renters',
+  'payment': '/assets/revenue/payment',
+  'configuration': '/assets/ScreenField/configuration',
 };
 
 /**

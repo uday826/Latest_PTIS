@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
@@ -7,40 +7,37 @@ import { StatusBadge } from '@/components/common/StatusBadge';
 import { Input } from '@/components/common/Input';
 import { Select } from '@/components/common/select';
 import { PrevPageButton, NextPageButton, PageNumberButton } from '@/components/common/ActionButtons';
+import type { LeaseRentPaymentHistoryItem } from '@/types/asset/leaseRentPayment.types';
 
-export function PaymentHistoryScreen() {
+interface PaymentHistoryScreenProps {
+  items: LeaseRentPaymentHistoryItem[];
+}
+
+export function PaymentHistoryScreen({ items }: PaymentHistoryScreenProps) {
   const t = useTranslations('AssetPayment.paymentHistory');
-  const rows = [
-    {
-      receiptNo: 'RCP-2024-001',
-      finYear: '2025',
-      amount: '\u20B925,000',
-      date: '2024-11-20',
-      time: '10:30:45',
-      mode: 'Online',
-      paid: true,
-    },
-    {
-      receiptNo: 'RCP-2024-002',
-      finYear: '2025',
-      amount: '\u20B925,000',
-      date: '2024-10-20',
-      time: '02:15:30',
-      mode: 'QR',
-      paid: false,
-    },
-  ];
-
+  const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState(5);
   const [pageNumber, setPageNumber] = useState(1);
 
-  const totalEntries = rows.length;
+  const filteredRows = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    if (!normalizedSearch) return items;
+
+    return items.filter((row) =>
+      row.receiptNo.toLowerCase().includes(normalizedSearch) ||
+      row.paymentMode.toLowerCase().includes(normalizedSearch) ||
+      row.paymentType.toLowerCase().includes(normalizedSearch) ||
+      row.paymentStatus.toLowerCase().includes(normalizedSearch)
+    );
+  }, [items, searchTerm]);
+
+  const totalEntries = filteredRows.length;
   const totalPages = Math.max(1, Math.ceil(totalEntries / pageSize));
   const safePage = Math.min(pageNumber, totalPages);
   const startIndex = (safePage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalEntries);
 
-  const pagedRows = useMemo(() => rows.slice(startIndex, endIndex), [rows, startIndex, endIndex]);
+  const pagedRows = useMemo(() => filteredRows.slice(startIndex, endIndex), [filteredRows, startIndex, endIndex]);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-white">
@@ -57,6 +54,11 @@ export function PaymentHistoryScreen() {
               <Search className="h-3.5 w-3.5 text-slate-400" />
             </span>
             <Input
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPageNumber(1);
+              }}
               placeholder={t('searchPlaceholder')}
               className="w-full h-9 pl-9 pr-3 text-xs font-medium bg-white border-slate-200 rounded-full placeholder:text-slate-400 shadow-sm"
             />
@@ -77,29 +79,38 @@ export function PaymentHistoryScreen() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {pagedRows.map((row) => (
-                <tr key={row.receiptNo} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 font-semibold text-slate-700">{row.receiptNo}</td>
-                  <td className="px-4 py-3 text-slate-600">{row.finYear}</td>
-                  <td className="px-4 py-3 font-bold text-emerald-600">{row.amount}</td>
-                  <td className="px-4 py-3 text-slate-500">
-                    <div>{row.date}</div>
-                    <div className="text-[10px]">{row.time}</div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-blue-600 font-medium">{row.mode}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge value={row.paid ? 'true' : 'false'} activeLabel={t('paid')} inactiveLabel={t('unpaid')} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <button className="p-1.5 rounded-md text-blue-600 hover:bg-blue-50 transition-colors"><Eye className="w-3.5 h-3.5" /></button>
-                      <button className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-50 transition-colors"><Download className="w-3.5 h-3.5" /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {pagedRows.map((row) => {
+                const paymentDate = new Date(row.paymentDate);
+                const isValidDate = !Number.isNaN(paymentDate.getTime());
+                const finYear = isValidDate ? String(paymentDate.getFullYear()) : '-';
+                const date = isValidDate ? paymentDate.toLocaleDateString('en-CA') : '-';
+                const time = isValidDate ? paymentDate.toLocaleTimeString('en-GB') : '-';
+                const isPaid = row.paymentStatus.trim().toLowerCase() === 'paid';
+
+                return (
+                  <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3 font-semibold text-slate-700">{row.receiptNo}</td>
+                    <td className="px-4 py-3 text-slate-600">{finYear}</td>
+                    <td className="px-4 py-3 font-bold text-emerald-600">{`₹${row.paidAmount.toLocaleString('en-IN')}`}</td>
+                    <td className="px-4 py-3 text-slate-500">
+                      <div>{date}</div>
+                      <div className="text-[10px]">{time}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-blue-600 font-medium">{row.paymentMode}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge value={isPaid ? 'true' : 'false'} activeLabel={t('paid')} inactiveLabel={t('unpaid')} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-2">
+                        <button className="p-1.5 rounded-md text-blue-600 hover:bg-blue-50 transition-colors"><Eye className="w-3.5 h-3.5" /></button>
+                        <button className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-50 transition-colors"><Download className="w-3.5 h-3.5" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

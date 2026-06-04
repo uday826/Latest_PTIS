@@ -1,6 +1,6 @@
 import { PaymentSection } from '@/components/modules/assets/revenue/payment/PaymentSection';
 import { getPaymentRecordsPageDataAction } from './actions';
-import type { PaymentRecord } from '@/types/asset/payment.types';
+import type { LeaseRentPaymentListItem } from '@/types/asset/leaseRentPayment.types';
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -20,23 +20,24 @@ export default async function PaymentPage({ searchParams }: PageProps) {
   const leaseRentType = typeof query.LeaseRentType === 'string' ? query.LeaseRentType : 'all';
   const status = typeof query.Status === 'string' ? query.Status : 'all';
   const search = typeof query.Search === 'string' ? query.Search : '';
-  const allowedSortBy: Array<keyof PaymentRecord> = [
-    'srNo',
+  const allowedSortBy: Array<keyof LeaseRentPaymentListItem> = [
+    'leaseRentRegistrationId',
+    'grievanceNo',
     'zone',
-    'ward',
+    'wardNo',
     'assetId',
-    'complexName',
-    'shopPlotNo',
+    'category',
+    'shopNo',
     'assetName',
     'tenantName',
-    'mobileNo',
-    'leaseRentType',
-    'rentDueAmount',
+    'tenantMobile',
+    'leaseType',
+    'rentDue',
     'status',
   ];
   const rawSortBy = typeof query.SortBy === 'string' ? query.SortBy : '';
-  const sortBy = allowedSortBy.includes(rawSortBy as keyof PaymentRecord)
-    ? (rawSortBy as keyof PaymentRecord)
+  const sortBy = allowedSortBy.includes(rawSortBy as keyof LeaseRentPaymentListItem)
+    ? (rawSortBy as keyof LeaseRentPaymentListItem)
     : '';
   const sortOrder = query.SortOrder === 'desc' ? 'desc' : 'asc';
 

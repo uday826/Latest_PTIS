@@ -7,7 +7,7 @@ import { IndianRupee } from 'lucide-react';
 import { Input } from '@/components/common/Input';
 import { Select } from '@/components/common/select';
 import { Button } from '@/components/common/ActionButton';
-import type { PaymentRecord } from '@/types/payment.types';
+import type { LeaseRentPaymentDetail } from '@/types/asset/leaseRentPayment.types';
 
 const PAYMENT_TYPE_VALUES = ['', 'Deposit', 'Penalty', 'Transfer Fee'] as const;
 const PAYMENT_MODE_VALUES = ['', 'Cash', 'DD', 'Cheque', 'QR', 'Online'] as const;
@@ -17,7 +17,7 @@ export function OtherPaymentScreen({
   initialPaymentType = '',
   initialPaymentMode = '',
 }: {
-  record: PaymentRecord;
+  record: LeaseRentPaymentDetail;
   initialPaymentType?: (typeof PAYMENT_TYPE_VALUES)[number];
   initialPaymentMode?: (typeof PAYMENT_MODE_VALUES)[number];
 }) {
@@ -38,11 +38,11 @@ export function OtherPaymentScreen({
     return PAYMENT_MODE_VALUES.includes(value as (typeof PAYMENT_MODE_VALUES)[number]) ? value : '';
   }, [initialPaymentMode, searchParams]);
 
-  const [mobileNo, setMobileNo] = useState(record.mobileNo);
-  const [email, setEmail] = useState('');
+  const [mobileNo, setMobileNo] = useState(record.tenantMobile);
+  const [email, setEmail] = useState(record.tenantEmail);
   const [paymentType, setPaymentType] = useState(paymentTypeFromQuery);
   const [paymentMode, setPaymentMode] = useState(paymentModeFromQuery);
-  const [amount, setAmount] = useState('0');
+  const [amount, setAmount] = useState(String(record.totalPayable));
   const [transactionId, setTransactionId] = useState('');
   const [bankGateway, setBankGateway] = useState('');
   const [upiId, setUpiId] = useState('');
@@ -79,7 +79,7 @@ export function OtherPaymentScreen({
     }
     next.delete('Mode');
 
-    const basePath = `/${params.locale}/asset/revenue/payment/details/${params.recordId}/other-payment`;
+    const basePath = `/${params.locale}/assets/revenue/payment/details/${params.recordId}/other-payment`;
     const queryString = next.toString();
     router.replace(queryString ? `${basePath}?${queryString}` : basePath);
   };

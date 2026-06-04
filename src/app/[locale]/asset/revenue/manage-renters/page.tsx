@@ -14,8 +14,8 @@ export default async function ManageRentersPage({ params }: PageProps) {
     const { locale } = await params;
 
     return (
-        <div className="p-6 bg-slate-50/50 overflow-y-auto custom-scrollbar">
+        // <div className="p-0 bg-slate-50/50 overflow-hidden">
             <LeaseRentRegistration />
-        </div>
+        // </div>
     );
 }

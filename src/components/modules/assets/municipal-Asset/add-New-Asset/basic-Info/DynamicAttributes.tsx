@@ -3,8 +3,8 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/common";
 import { ListPlus } from "lucide-react";
-import { fetchFieldDefinitions } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
-import { fetchCategories, fetchTypesByCategory } from "@/app/[locale]/asset/municipal-Asset/actions";
+import { fetchFieldDefinitions } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
+import { fetchCategories, fetchTypesByCategory } from "@/app/[locale]/assets/municipal-Asset/actions";
 import { processFieldDefinitions, ProcessedField, groupAndMergeFields, MergedFieldSection } from "@/components/modules/assets/municipal-Asset/add-New-Asset/FieldRenderer";
 import { DynamicFieldInput } from "./DynamicFieldInput";
 

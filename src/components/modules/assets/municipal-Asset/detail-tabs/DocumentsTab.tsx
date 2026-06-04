@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle, Eye, FileImage, FileText } from 'lucide-react';
 import { Button, Card } from '@/components/common';
 import type { AssetDetailRecord, AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
-import { fetchAssetDocumentFile } from '@/app/[locale]/asset/municipal-Asset/asset-detail/actions';
+import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
 import {
   LoadedDocumentFile,
   parseFileNameFromDisposition,

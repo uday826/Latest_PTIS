@@ -8,7 +8,7 @@ import { BuildingValuationSummary } from "./BuildingValuationSummary";
 import { InfrastructureValuation } from "./InfrastructureValuation";
 import { useAssetForm } from "../AssetFormContext";
 import { useSearchParams } from "next/navigation";
-import { getAssetValuationDataAction } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/valuation/actions";
+import { getAssetValuationDataAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/valuation/actions";
 import { Loader2 } from "lucide-react";
 
 // Infrastructure asset types

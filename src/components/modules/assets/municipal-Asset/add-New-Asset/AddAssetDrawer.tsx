@@ -11,7 +11,7 @@ import {
   fetchZones,
   fetchWards,
   fetchAssetsByFilter,
-} from "@/app/[locale]/asset/municipal-Asset/actions";
+} from "@/app/[locale]/assets/municipal-Asset/actions";
 import { AssetCategory, AssetType } from "@/lib/api/asset/category-type.service";
 import { Zone } from "@/lib/api/asset/zone.service";
 import { Ward } from "@/lib/api/asset/ward.service";
@@ -223,8 +223,7 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
       categoryId: (cat?.id ?? newData.categoryId ?? "").toString(),
       typeId: (typ?.id ?? newData.typeId ?? "").toString(),
     });
-    router.push(`/${getLocale()}/asset/municipal-Asset/add-New-Asset/basic-Info?${params}`);
-    onClose();
+    router.push(`${pathname}/basic-Info?${params}`);
   };
 
   const handleExistingAssetSubmit = () => {
@@ -237,8 +236,7 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
       existingAssetId: selectedAsset.id.toString(),
       existingAssetNo: selectedAsset.assetNo,
     });
-    router.push(`/${getLocale()}/asset/municipal-Asset/add-New-Asset/basic-Info?${params}`);
-    onClose();
+    router.push(`${pathname}/basic-Info?${params}`);
   };
 
   // ──────────────────────────────────────────────────────
@@ -294,8 +292,8 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
             onClick={mode === "new" ? handleNewRegisterSubmit : handleExistingAssetSubmit}
             disabled={mode === "new" ? !canSubmitNew : !canSubmitExisting}
             className={`flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold transition-all shadow-md ml-auto ${(mode === "new" ? canSubmitNew : canSubmitExisting)
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-95 shadow-blue-200"
-                : "cursor-not-allowed bg-slate-100 text-slate-400 shadow-none"
+              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-95 shadow-blue-200"
+              : "cursor-not-allowed bg-slate-100 text-slate-400 shadow-none"
               }`}
           >
             {mode === "new" ? "Start Registration" : "Continue"}
@@ -547,10 +545,10 @@ function StepBadge({ step, done, locked }: { step: number; done: boolean; locked
   return (
     <div className="flex items-center gap-2 mb-1">
       <span className={`inline-flex size-5 items-center justify-center rounded-full text-[10px] font-black transition-colors ${done
-          ? "bg-emerald-500 text-white"
-          : locked
-            ? "bg-slate-200 text-slate-400"
-            : "bg-blue-600 text-white"
+        ? "bg-emerald-500 text-white"
+        : locked
+          ? "bg-slate-200 text-slate-400"
+          : "bg-blue-600 text-white"
         }`}>
         {done ? "✓" : step}
       </span>
@@ -613,8 +611,8 @@ function AssetResultRow({
     <button
       onClick={onSelect}
       className={`w-full flex items-start justify-between rounded-xl border px-3.5 py-3 text-left transition-all group ${selected
-          ? "border-violet-400 bg-violet-50 shadow-sm"
-          : "border-slate-200 bg-white hover:border-violet-300 hover:bg-violet-50/40"
+        ? "border-violet-400 bg-violet-50 shadow-sm"
+        : "border-slate-200 bg-white hover:border-violet-300 hover:bg-violet-50/40"
         }`}
     >
       <div className="min-w-0 flex-1">

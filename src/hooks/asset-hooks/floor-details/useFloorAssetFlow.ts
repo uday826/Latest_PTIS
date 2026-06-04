@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAssetForm } from "../../../components/modules/assets/municipal-Asset/add-New-Asset/AssetFormContext";
-import { fetchFloorStepData } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/floor-details/actions";
+import { fetchFloorStepData } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import type { FloorDropdownOptions } from "@/types/asset/floor-details.types";
 import { cacheLock, mapFloorsFromApi } from "./useFloorAssetFlowCache";
 import { useFloorAssetMedia } from "./useFloorAssetMedia";

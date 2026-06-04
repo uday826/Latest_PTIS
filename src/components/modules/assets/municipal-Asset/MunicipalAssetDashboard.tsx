@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { Building2, ChevronRight, Plus } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { AddButton, Button, Card, CardContent, CardHeader, CardTitle, CancelButton } from '@/components/common';
-import { AddAssetDrawer } from './add-New-Asset/AddAssetDrawer';
 import { AssetCategory, AssetType } from '@/lib/api/asset/category-type.service';
 import { AssetCategoryCard } from './AssetCategoryCard';
 import { getCategoryMeta, themes } from './dashboardHelpers';
@@ -113,13 +112,12 @@ export default function MunicipalAssetDashboard({
 
   const [dashboardStats] = useState<DashboardStatsResponse | null>(initialStats);
 
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const resolvedCategories = categories;
 
   const handleSelectCategory = (categoryId: number) => {
     const segments = pathname.split('/').filter(Boolean);
     const locale = segments[0] || 'en';
-    router.push(`/${locale}/asset/municipal-Asset/asset-register/${categoryId}`);
+    router.push(`/${locale}/assets/municipal-Asset/asset-register/${categoryId}`);
   };
 
   return (
@@ -170,7 +168,11 @@ export default function MunicipalAssetDashboard({
               </div>
               <AddButton
                 label="Add New Asset"
-                onClick={() => setIsDrawerOpen(true)}
+                onClick={() => {
+                  const segments = pathname.split('/').filter(Boolean);
+                  const locale = segments[0] || 'en';
+                  router.push(`/${locale}/assets/municipal-Asset/add-New-Asset`);
+                }}
                 className="h-auto rounded-lg border-0 bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-1.5 text-[11px] font-bold text-white shadow-md transition-all hover:opacity-95 hover:shadow-lg"
               />
             </div>
@@ -209,8 +211,6 @@ export default function MunicipalAssetDashboard({
           </div>
         )}
       </div>
-      {/* ── Dedicated Add Asset Drawer ── */}
-      <AddAssetDrawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
     </div>
   );
 }

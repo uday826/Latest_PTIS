@@ -12,7 +12,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { ImagePlus, UploadCloud, X } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/common";
 import { toast } from "sonner";
-import { fetchUploadedDocumentsAction, fetchDocumentFileAction } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
+import { fetchUploadedDocumentsAction, fetchDocumentFileAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 
 import type { Ward } from "@/lib/api/asset/ward.service";
 import type { Zone } from "@/lib/api/asset/zone.service";

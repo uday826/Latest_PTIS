@@ -1,16 +1,16 @@
 import { ScreenItem } from '@/types/asset.types';
 
 export const PROJECT_SCREEN_CATALOG: ScreenItem[] = [
-  { screenCode: "asset_dash", screenPath: "/asset/dashboard/master-dashboard" },
+  { screenCode: "asset_dash", screenPath: "/assets/dashboard/master-dashboard" },
   { screenCode: "map_viewer", screenPath: "/map-viewer" },
-  { screenCode: "assets", screenPath: "/asset/municipal-Asset" },
+  { screenCode: "assets", screenPath: "/assets/municipal-Asset" },
   { screenCode: "maintenance", screenPath: "/maintenance/dashboard" },
   { screenCode: "change_detection", screenPath: "/change-detection" },
   { screenCode: "inventory", screenPath: "/inventory-dashboard" },
   { screenCode: "auction", screenPath: "/auction-management" },
-  { screenCode: "revenue", screenPath: "/asset/revenue/payment" },
-  { screenCode: "manage_renters", screenPath: "/asset/revenue/manage-renters" },
-  { screenCode: "configuration", screenPath: "/asset/ScreenField/configuration" }
+  { screenCode: "revenue", screenPath: "/assets/revenue/payment" },
+  { screenCode: "manage_renters", screenPath: "/assets/revenue/manage-renters" },
+  { screenCode: "configuration", screenPath: "/assets/ScreenField/configuration" }
 ];
 
 export const SCREEN_MASTER_CHANGE_EVENT = 'screen_master_change';
