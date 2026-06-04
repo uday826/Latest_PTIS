@@ -13,11 +13,24 @@ export interface AssetStepperProps {
   steps: AssetFormStepConfig[];
 }
 
+export interface CategoryFlags {
+  isMovable?: boolean;
+  hasFloorDetails?: boolean;
+  hasInventory?: boolean;
+  isInventoryMandatory?: boolean;
+  hasLegalCompliance?: boolean;
+}
+
 export interface AssetFormData {
   category: string;
   assetType: string;
   assetName: string;
   assetCode: string;
+  isMovableCategory?: boolean;
+  hasFloorDetails?: boolean;
+  hasInventory?: boolean;
+  isInventoryMandatory?: boolean;
+  hasLegalCompliance?: boolean;
   attributes: Record<string, any>;
   documents: any[];
   [key: string]: any;

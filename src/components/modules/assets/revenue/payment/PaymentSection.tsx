@@ -7,8 +7,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/common/Card';
 import { Button, MasterTable, SearchInput, Select, type Column } from '@/components/common';
 import { StatusBadge } from '@/components/common/StatusBadge';
+<<<<<<< Updated upstream
 import type { PaymentRecordsPageData } from '@/app/[locale]/asset/revenue/payment/actions';
 import type { LeaseRentPaymentListItem } from '@/types/asset/leaseRentPayment.types';
+=======
+import type { PaymentRecordsPageData } from '@/app/[locale]/assets/revenue/payment/actions';
+import type { PaymentRecord } from '@/types/asset/payment.types';
+>>>>>>> Stashed changes
 
 interface PaymentSectionProps {
   pageData: PaymentRecordsPageData;
@@ -56,7 +61,7 @@ export function PaymentSection({ pageData }: PaymentSectionProps) {
       if (key === 'PageSize' || key === 'PageNumber' || value) next.set(key, value);
     });
 
-    router.push(`/${params.locale}/asset/revenue/payment?${next.toString()}`);
+    router.push(`/${params.locale}/assets/revenue/payment?${next.toString()}`);
   };
 
   const handleSort = (column: string) => {
@@ -188,9 +193,15 @@ export function PaymentSection({ pageData }: PaymentSectionProps) {
                 <Button
                   onClick={() => {
                     const next = new URLSearchParams(listQueryString);
+<<<<<<< Updated upstream
                     next.set('srNo', String(record.leaseRentRegistrationId));
                     next.set('assetId', String(record.assetId));
                     router.push(`/${params.locale}/asset/revenue/payment/details?${next.toString()}`);
+=======
+                    next.set('srNo', String(record.srNo));
+                    next.set('assetId', record.assetId);
+                    router.push(`/${params.locale}/assets/revenue/payment/details?${next.toString()}`);
+>>>>>>> Stashed changes
                   }}
                   variant="success"
                   size="xs"

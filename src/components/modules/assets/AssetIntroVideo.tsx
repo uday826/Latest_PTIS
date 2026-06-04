@@ -44,7 +44,7 @@ export function AssetIntroVideo({ displayUlbName }: AssetIntroVideoProps) {
     console.log('Current URL:', window.location.pathname);
 
     // Only show if NOT played and we're on asset dashboard route
-    const isAssetDashboardRoute = window.location.pathname.includes('/asset/dashboard');
+    const isAssetDashboardRoute = window.location.pathname.includes('/assets/dashboard');
 
     console.log('Is asset dashboard route:', isAssetDashboardRoute);
 

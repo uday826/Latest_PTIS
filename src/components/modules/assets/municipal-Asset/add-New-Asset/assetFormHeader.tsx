@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { AssetStepper } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetStepper";
 import { AssetFormFooter } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetFormFooter";
-import { getFilteredSteps, getCurrentAssetStep } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetFormSteps";
+import { getFilteredSteps, getCurrentAssetStep, type CategoryFlags } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetFormSteps";
 import { User, X, Home, ArrowLeft } from "lucide-react";
 
 import { AssetFormProvider, useAssetForm } from "@/components/modules/assets/municipal-Asset/add-New-Asset/AssetFormContext";
@@ -25,13 +25,22 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
   const router = useRouter();
   const { formData } = useAssetForm();
 
-  const steps = getFilteredSteps(formData.category, formData.assetType, formData.parentBuildingId);
-  const currentStep = getCurrentAssetStep(pathname, formData.category, formData.assetType, formData.parentBuildingId);
+  const categoryFlags: CategoryFlags | undefined =
+    formData.hasFloorDetails !== undefined ? {
+      isMovable:            formData.isMovableCategory,
+      hasFloorDetails:      formData.hasFloorDetails,
+      hasInventory:         formData.hasInventory,
+      isInventoryMandatory: formData.isInventoryMandatory,
+      hasLegalCompliance:   formData.hasLegalCompliance,
+    } : undefined;
+
+  const steps = getFilteredSteps(formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
+  const currentStep = getCurrentAssetStep(pathname, formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
 
   const handleBackToDashboard = () => {
     const segments = pathname.split("/").filter(Boolean);
     const locale = segments[0] || "en";
-    router.push(`/${locale}/asset/municipal-Asset`);
+    router.push(`/${locale}/assets/municipal-Asset`);
   };
 
   return (

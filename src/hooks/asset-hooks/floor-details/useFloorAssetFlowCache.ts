@@ -1,6 +1,6 @@
 import { NewFloorFormState, BulkGeneratorState } from "@/types/asset/floor-details.types";
 import { ActionResult } from "@/types/common.types";
-import { FloorStepData } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/floor-details/actions";
+import { FloorStepData } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 
 export const CURRENT_YEAR = new Date().getFullYear().toString();
 

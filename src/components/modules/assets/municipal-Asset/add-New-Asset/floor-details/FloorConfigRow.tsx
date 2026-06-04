@@ -128,7 +128,7 @@ export function FloorConfigRow({
           <ValidationMessage message={errors.rooms} />
         </div>
         <div className={`flex-[0.8] min-w-0 ${numericEnabled ? "" : DISABLED_CLS}`}>
-          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Carpet(SqM)<span className="text-red-500">*</span></label>
+          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Carpet(SqM)</label>
           <Input type="number" value={newFloor.carpetAreaSqM === 0 ? "" : newFloor.carpetAreaSqM}
             onChange={(e) => {
               const val = Number(e.target.value);
@@ -140,7 +140,7 @@ export function FloorConfigRow({
           <ValidationMessage message={errors.carpetAreaSqM as string} />
         </div>
         <div className={`flex-[0.8] min-w-0 ${numericEnabled ? "" : DISABLED_CLS}`}>
-          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Built(SqM)<span className="text-red-500">*</span></label>
+          <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Built(SqM)</label>
           <Input type="number" value={newFloor.builtUpAreaSqM === 0 ? "" : newFloor.builtUpAreaSqM}
             readOnly={true} // Use readOnly instead of disabled so text isn't grayed out
             className={`${BASE_INPUT} border-slate-200 bg-slate-100 cursor-not-allowed text-slate-900 font-bold opacity-100`} />

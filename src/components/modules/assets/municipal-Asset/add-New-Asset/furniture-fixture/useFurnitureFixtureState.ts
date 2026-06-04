@@ -5,8 +5,8 @@ import { typeOptions, conditionMap, invoiceModeOptions, inventoryMeta, initialRo
 import { enrichRows, buildCategoryGroups, calcRowCV } from "./FurnitureFixtureCV";
 import { toast } from "sonner";
 import type { InventoryItemCategory, InventoryItemCondition, InventoryItemName, InventoryItemModel } from "@/lib/api/asset/inventory.service";
-import { saveInventoryBatchAction, saveSingleInventoryBatchAction, updateInventoryBatchAction, deleteInventoryBatchAction, getInventoryBatchesAction, type InventoryBatchDetail, type InventoryBatchListResponse } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/furniture-fixture/actions";
-import { uploadBulkDocumentsAction } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
+import { saveInventoryBatchAction, saveSingleInventoryBatchAction, updateInventoryBatchAction, deleteInventoryBatchAction, getInventoryBatchesAction, type InventoryBatchDetail, type InventoryBatchListResponse } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
+import { uploadBulkDocumentsAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 
 /**
  * Converts server-fetched batches to client-side InventoryRow format.
@@ -814,7 +814,7 @@ export function useFurnitureFixtureState(
 
     try {
       // Use Server Actions to securely fetch documents and avoid CORS/Auth issues
-      const { fetchUploadedDocumentsAction, fetchDocumentFileAction } = await import("@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions");
+      const { fetchUploadedDocumentsAction, fetchDocumentFileAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions");
       
       const docResponse = await fetchUploadedDocumentsAction(assetId, true, true);
       if (!docResponse.success || !docResponse.data) {

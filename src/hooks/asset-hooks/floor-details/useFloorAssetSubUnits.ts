@@ -11,7 +11,7 @@ import {
   bulkGenerateSubUnitsAction,
   createChildAssetAction,
   getSubUnitsByAssetAction,
-} from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/floor-details/actions";
+} from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { useAssetForm } from "../../../components/modules/assets/municipal-Asset/add-New-Asset/AssetFormContext";
 
 export function useFloorAssetSubUnits(

@@ -81,7 +81,7 @@ export function MakePaymentScreen({
     }
 
     const queryString = next.toString();
-    const basePath = `/${params.locale}/asset/revenue/payment/details/${params.recordId}/make-payment`;
+    const basePath = `/${params.locale}/assets/revenue/payment/details/${params.recordId}/make-payment`;
     router.replace(queryString ? `${basePath}?${queryString}` : basePath);
   };
 

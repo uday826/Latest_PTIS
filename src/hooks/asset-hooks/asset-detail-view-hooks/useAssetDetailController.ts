@@ -32,7 +32,7 @@ interface ParsedAssetDetailRoute {
   lightboxIndex: number;
 }
 
-const DETAIL_ROOT = '/asset/municipal-Asset';
+const DETAIL_ROOT = '/assets/municipal-Asset';
 const DEFAULT_ROUTE_STATE: ParsedAssetDetailRoute = {
   activeTab: 'overview',
   overviewSubTab: 'summary',

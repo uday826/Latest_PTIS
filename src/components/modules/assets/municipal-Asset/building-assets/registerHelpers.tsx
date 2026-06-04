@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, PencilLine, Printer } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Badge, Button, type Column } from '@/components/common';
-import { fetchAssetRegisterPage } from '@/app/[locale]/asset/municipal-Asset/asset-register/actions';
+import { fetchAssetRegisterPage } from '@/app/[locale]/assets/municipal-Asset/asset-register/actions';
 
 import { AssetRegisterRow, AssetRegisterApiRecord, AssetRegisterPageResult } from '@/types/municipal-asset/register.types';
 export type { AssetRegisterRow, AssetRegisterApiRecord, AssetRegisterPageResult };
@@ -229,7 +229,7 @@ export function getRegisterColumns(
             onClick={() => {
               const segments = pathname.split('/').filter(Boolean);
               const locale = segments[0] || 'en';
-              router.push(`/${locale}/asset/municipal-Asset/asset-detail/${row.id}`);
+              router.push(`/${locale}/assets/municipal-Asset/asset-detail/${row.id}`);
             }}
             variant="secondary"
             size="sm"
@@ -243,7 +243,7 @@ export function getRegisterColumns(
             onClick={() => {
               const segments = window.location.pathname.split('/').filter(Boolean);
               const locale = segments[0] || 'en';
-              router.push(`/${locale}/asset/municipal-Asset/asset-report/${row.id}`);
+              router.push(`/${locale}/assets/municipal-Asset/asset-report/${row.id}`);
             }}
             variant="secondary"
             size="sm"

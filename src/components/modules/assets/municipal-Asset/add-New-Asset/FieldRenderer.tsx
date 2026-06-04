@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { fetchFieldDefinitions } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
+import { fetchFieldDefinitions } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { AssetFieldDefinition } from "@/lib/api/asset/asset-field-definition.service";
 import { ApiResponse } from "@/types/common.types";
 

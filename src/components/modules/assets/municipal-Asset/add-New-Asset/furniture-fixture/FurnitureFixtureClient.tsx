@@ -11,7 +11,7 @@ import { InvoiceDrawer } from "./InvoiceDrawer";
 import { useFurnitureFixtureState } from "./useFurnitureFixtureState";
 import { InventoryCVGroupTable } from "./InventoryCVGroupTable";
 import type { InventoryItemCategory, InventoryItemCondition, InventoryItemName, InventoryItemModel } from "@/lib/api/asset/inventory.service";
-import type { InventoryBatchListResponse } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/furniture-fixture/actions";
+import type { InventoryBatchListResponse } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
 import { Loader2 } from "lucide-react";
 import { useAssetForm } from "../AssetFormContext";
 import { toast } from "sonner";
@@ -39,9 +39,33 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
 
   // Register the inventory save function so Save & Next can trigger it
   const saveInventory = useCallback(async (): Promise<boolean> => {
-    // Validation removed: User requested it saves and proceeds even if no entry is added
+
+    // Use DB flag when present; fall back to isMovableCategory for legacy URLs
+    const isInventoryMandatory =
+      formData.isInventoryMandatory !== undefined
+        ? formData.isInventoryMandatory === true
+        : formData.isMovableCategory === true;
+
+    // 1. Block if mandatory and no items added
+    if (isInventoryMandatory && (!s.rows || s.rows.length === 0)) {
+      toast.error('At least one inventory item is required before proceeding.');
+      return false;
+    }
+
+    // 2. Optional — allow proceeding with no rows
+    if (!isInventoryMandatory && (!s.rows || s.rows.length === 0)) {
+      return true;
+    }
+
+    // 3. Warn if form has unadded inputs (unchanged)
+    const hasUnaddedInputs = s.form.type || s.form.itemName || s.form.modelName;
+    if (hasUnaddedInputs) {
+      toast.warning('You have configured inventory details that haven\'t been added...');
+      return false;
+    }
+
     return true;
-  }, []);
+  }, [s.rows, s.form, formData.isInventoryMandatory, formData.isMovableCategory]);
 
   useEffect(() => {
     if (registerSubmitHook) {

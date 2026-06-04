@@ -79,7 +79,7 @@ export function OtherPaymentScreen({
     }
     next.delete('Mode');
 
-    const basePath = `/${params.locale}/asset/revenue/payment/details/${params.recordId}/other-payment`;
+    const basePath = `/${params.locale}/assets/revenue/payment/details/${params.recordId}/other-payment`;
     const queryString = next.toString();
     router.replace(queryString ? `${basePath}?${queryString}` : basePath);
   };

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import type { FloorEntry, NewFloorFormState, FloorDetailApiRequest } from "@/types/asset/floor-details.types";
-import { saveFloorDetail, deleteFloorDetail, updateFloorDetail } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/floor-details/actions";
+import { saveFloorDetail, deleteFloorDetail, updateFloorDetail } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { validateFloorConfig } from "@/lib/api/asset/floor-details-validation";
 import { DEFAULT_NEW_FLOOR, invalidateFloorCache } from "./useFloorAssetFlowCache";
 import { convertSqMToSqFt } from "@/lib/utils/RoomSubmission/conversions";

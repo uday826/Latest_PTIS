@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { fetchAssetMasterById } from "@/app/[locale]/asset/actions";
+import { fetchAssetMasterById } from "@/app/[locale]/assets/actions";
+import { fetchCategories } from "@/app/[locale]/assets/municipal-Asset/actions";
 
 import { AssetFormData, AssetFormContextType } from "@/types/asset-types/basic-info/asset-wizard.types";
 
@@ -37,6 +38,11 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
 
     return {
       category: isBuilding ? "Building Assets" : categoryKey,
+      isMovableCategory: undefined,
+      hasFloorDetails: undefined,
+      hasInventory: undefined,
+      isInventoryMandatory: undefined,
+      hasLegalCompliance: undefined,
       assetType: assetType || (isBuilding ? "Municipal Office" : ""),
       categoryId: categoryIdStr ? Number(categoryIdStr) : 1,
       typeId: typeIdStr ? Number(typeIdStr) : 1,
@@ -158,6 +164,76 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
 
     recoverDraft();
   }, [searchParams]);
+
+  // Sync category and type IDs from URL and securely fetch category flags from backend
+  useEffect(() => {
+    const categoryIdStr = searchParams.get("categoryId");
+    const typeIdStr = searchParams.get("typeId");
+    const categoryStr = searchParams.get("category");
+    const assetTypeStr = searchParams.get("assetType");
+
+    const syncAndFetchFlags = async () => {
+      let changed = false;
+      const updates: Partial<AssetFormData> = {};
+
+      const currentCatId = categoryIdStr ? Number(categoryIdStr) : formData.categoryId;
+
+      if (categoryIdStr && Number(categoryIdStr) !== formData.categoryId && Number(categoryIdStr) > 0) {
+        updates.categoryId = Number(categoryIdStr);
+        changed = true;
+      }
+      if (typeIdStr && Number(typeIdStr) !== formData.typeId && Number(typeIdStr) > 0) {
+        updates.typeId = Number(typeIdStr);
+        changed = true;
+      }
+      if (categoryStr) {
+        const config = getAssetConfig(categoryStr, "");
+        const categoryKey = config ? config.categoryKey : categoryStr.toUpperCase();
+        const isBuildingCategory = categoryKey === "BUILDING";
+        const normalizedCategory = isBuildingCategory ? "Building Assets" : categoryKey;
+        
+        if (normalizedCategory !== formData.category) {
+          updates.category = normalizedCategory;
+          changed = true;
+        }
+      }
+      if (assetTypeStr && assetTypeStr !== formData.assetType) {
+        updates.assetType = assetTypeStr;
+        changed = true;
+      }
+
+      // If flags are undefined OR category changed, fetch secure config from DB
+      if (
+        formData.isMovableCategory === undefined || 
+        formData.hasFloorDetails === undefined ||
+        (updates.categoryId && updates.categoryId !== formData.categoryId)
+      ) {
+        try {
+          const res = await fetchCategories();
+          if (res.success && res.data) {
+            const cat = res.data.find((c: any) => c.id === currentCatId);
+            if (cat) {
+              updates.isMovableCategory = cat.isMovable ?? false;
+              updates.hasFloorDetails = cat.hasFloorDetails ?? false;
+              updates.hasInventory = cat.hasInventory ?? false;
+              updates.isInventoryMandatory = cat.isInventoryMandatory ?? false;
+              updates.hasLegalCompliance = cat.hasLegalCompliance ?? false;
+              changed = true;
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch secure category flags:", error);
+        }
+      }
+
+      if (changed) {
+        console.log(`[AssetFormContext] Syncing state & flags securely from backend:`, updates);
+        setFormData(prev => ({ ...prev, ...updates }) as AssetFormData);
+      }
+    };
+
+    syncAndFetchFlags();
+  }, [searchParams, formData.categoryId, formData.typeId, formData.category, formData.assetType, formData.isMovableCategory, formData.hasFloorDetails]);
 
   const updateFormData = (data: Partial<AssetFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));

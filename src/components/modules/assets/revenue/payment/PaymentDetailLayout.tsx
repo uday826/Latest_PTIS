@@ -60,14 +60,14 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
     });
 
     const query = next.toString();
-    router.push(query ? `/${params.locale}/asset/revenue/payment?${query}` : `/${params.locale}/asset/revenue/payment`);
+    router.push(query ? `/${params.locale}/assets/revenue/payment?${query}` : `/${params.locale}/assets/revenue/payment`);
   };
 
   const onTabChange = (value: string | number) => {
     const target = String(value) as PaymentDetailTabKey;
     const next = new URLSearchParams(searchParams.toString());
     const query = next.toString();
-    const basePath = `/${params.locale}/asset/revenue/payment/details/${params.recordId}/${target}`;
+    const basePath = `/${params.locale}/assets/revenue/payment/details/${params.recordId}/${target}`;
     router.push(query ? `${basePath}?${query}` : basePath);
   };
 

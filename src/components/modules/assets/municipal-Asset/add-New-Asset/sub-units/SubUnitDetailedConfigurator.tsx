@@ -5,7 +5,7 @@ import { X, Save, Building2, UploadCloud, FileText, IndianRupee, ImagePlus, Chec
 import { Input, Select } from "@/components/common";
 import { RoomWiseSubmissionDrawer } from "./RoomWiseSubmissionDrawer";
 import { useAssetForm } from "../AssetFormContext";
-import { createChildAssetAction, getChildAssetByIdAction, fetchFloorStepData } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/floor-details/actions";
+import { createChildAssetAction, getChildAssetByIdAction, fetchFloorStepData } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { mapFloorsFromApi } from "@/hooks/asset-hooks/floor-details/useFloorAssetFlowCache";
 import { toast } from "sonner";
 

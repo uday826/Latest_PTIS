@@ -5,7 +5,7 @@ import { Armchair } from "lucide-react";
 import FurnitureFixtureClient from "./FurnitureFixtureClient";
 import { useAssetForm } from "../AssetFormContext";
 import type { InventoryItemCategory, InventoryItemCondition, InventoryItemName, InventoryItemModel } from "@/lib/api/asset/inventory.service";
-import type { InventoryBatchListResponse } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/furniture-fixture/actions";
+import type { InventoryBatchListResponse } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
 
 interface Props {
   parentAssetId?: number | null;
@@ -23,13 +23,29 @@ export default function FurnitureFixturePage({ parentAssetId, categories = [], c
   const isLandFurnitureAllowed = ["garden", "park", "playground", "reserved"].some(keyword => typeLower.includes(keyword));
 
   const isLand = formData.category === "LAND" && !isLandFurnitureAllowed;
-  const isMovable = formData.category === "MOVABLE";
-  
-  // We show the full form if it's a building/infrastructure or an applicable land asset
-  const showForm = !isLand && !isMovable;
+
+  // Use DB flag when available (new flow); fall back to legacy string check
+  const showForm = formData.hasInventory !== undefined
+    ? formData.hasInventory === true
+    : !isLand;
+
+  const isInventoryMandatory = formData.isInventoryMandatory !== undefined
+    ? formData.isInventoryMandatory === true
+    : formData.isMovableCategory === true;
 
   return (
     <div className="space-y-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Mandatory banner — driven by DB flag */}
+      {isInventoryMandatory && (
+        <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl mb-3 flex items-center gap-3">
+          <div className="bg-amber-500 size-2 rounded-full shrink-0" />
+          <p className="text-xs font-bold text-amber-800 uppercase tracking-widest">
+            Mandatory: At least one inventory item must be added before proceeding
+          </p>
+        </div>
+      )}
+
+      {/* Inventory form */}
       {showForm && (
         <div className="pt-2">
           <FurnitureFixtureClient 
@@ -43,7 +59,8 @@ export default function FurnitureFixturePage({ parentAssetId, categories = [], c
         </div>
       )}
 
-      {(isLand || isMovable) && (
+      {/* Not Applicable placeholder */}
+      {!showForm && (
         <div className="p-10 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center">
             <div className="bg-white p-2 rounded-full shadow-sm mb-2">
               <Armchair className="size-8 text-slate-300" />

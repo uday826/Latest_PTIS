@@ -7,13 +7,14 @@ import {
   getNextAssetStep,
   getPreviousAssetStep,
   getFilteredSteps,
+  type CategoryFlags,
 } from "./assetFormSteps";
 import { useAssetForm } from "./AssetFormContext";
-import { submitAssetForm, activateAssetAction } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
+import { submitAssetForm, activateAssetAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import AssetSuccessModal from "./AssetSuccessModal";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { uploadDocumentAction, uploadBulkDocumentsAction, fetchDocumentDefinitionsAction } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
+import { uploadDocumentAction, uploadBulkDocumentsAction, fetchDocumentDefinitionsAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { validateBuildingBasicInfo } from "@/hooks/asset-hooks/building-basic-info/useBuildingBasicInfoFormValidation";
 import { validateLandBasicInfo } from "@/utils/asset-utils/basic-info/basic-info-validation-schemas";
 import { useConfirm } from "@/components/common/ConfirmProvider";
@@ -72,14 +73,23 @@ export function AssetFormFooter() {
     }
   }, [formData, lastSavedFormData, setLastSavedFormData]);
 
-  const currentStep = getCurrentAssetStep(pathname, formData.category, formData.assetType, formData.parentBuildingId);
-  const previousStep = getPreviousAssetStep(pathname, formData.category, formData.assetType, formData.parentBuildingId);
-  const nextStep = getNextAssetStep(pathname, formData.category, formData.assetType, formData.parentBuildingId);
+  const categoryFlags: CategoryFlags | undefined =
+    formData.hasFloorDetails !== undefined ? {
+      isMovable:            formData.isMovableCategory,
+      hasFloorDetails:      formData.hasFloorDetails,
+      hasInventory:         formData.hasInventory,
+      isInventoryMandatory: formData.isInventoryMandatory,
+      hasLegalCompliance:   formData.hasLegalCompliance,
+    } : undefined;
+
+  const currentStep    = getCurrentAssetStep (pathname, formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
+  const previousStep   = getPreviousAssetStep(pathname, formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
+  const nextStep       = getNextAssetStep    (pathname, formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
 
   const queryString = searchParams.toString();
   const appendQuery = (url: string) => (queryString ? `${url}?${queryString}` : url);
 
-  const filteredSteps = getFilteredSteps(formData.category, formData.assetType, formData.parentBuildingId);
+  const filteredSteps  = getFilteredSteps    (formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
   const totalSteps = filteredSteps.length;
   const currentStepId = currentStep?.id ?? 1;
   const isFirstStep = !previousStep;
@@ -169,7 +179,7 @@ export function AssetFormFooter() {
     setSuccessModal(null);
     const segments = pathname.split("/").filter(Boolean);
     const locale = segments[0] || "en";
-    router.push(`/${locale}/asset/municipal-Asset`);
+    router.push(`/${locale}/assets/municipal-Asset`);
   };
 
   // ─── Save & Next for intermediate steps ────────────────────────────────────

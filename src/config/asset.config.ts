@@ -625,7 +625,7 @@ export type MasterModuleGroup = keyof typeof MASTER_MODULE_GROUPS;
 export const sidebarItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, route: '/dashboard' },
   { id: 'map', label: 'GIS Map Viewer', icon: MapIcon, route: '/map-viewer' },
-  { id: 'addnewasset', label: 'Add New Asset', icon: LayoutDashboard, route: '/asset/addnewasset' },
+  { id: 'addnewasset', label: 'Add New Asset', icon: LayoutDashboard, route: '/assets/addnewasset' },
   { id: 'assets', label: 'Municipal Assets', icon: Building2, route: '/assets' },
 ];
 
@@ -691,8 +691,8 @@ export const ASSET_MENU_SECTIONS: SidebarSection[] = [
     icon: Settings,
     colorClass: 'text-indigo-400',
     items: [
-      { id: 'configuration-master', label: 'Master Data', icon: Database, route: '/asset/configuration' },
-      { id: 'screen-field-master', label: 'Screen Field Master', icon: LayoutGrid, route: '/asset/configuration/screen-fields-master' },
+      { id: 'configuration-master', label: 'Master Data', icon: Database, route: '/assets/configuration' },
+      { id: 'screen-field-master', label: 'Screen Field Master', icon: LayoutGrid, route: '/assets/configuration/screen-fields-master' },
     ],
   },
 ];
@@ -714,14 +714,15 @@ export const routeMap = {
   'inventory-manage': '/inventory-dashboard',
   'inventory-request': '/inventory-request',
   'inventory-approval': '/inventory-approval',
-  configuration: '/asset/configuration',
-  'screen-fields': '/asset/configuration/screen-fields-master',
+  configuration: '/assets/configuration',
+  'screen-fields': '/assets/configuration/screen-fields-master',
   'auction-management': '/auction-management',
   'live-bidding': '/live-bidding',
   'verify-registrations': '/verify-registrations',
   'blacklist-defaulters': '/blacklist-defaulters',
   'manage-renters': '/lease-rent-registration',
   'make-payments': '/payment-management',
+  'add-new-asset-basic-info': '/assets/municipal-Asset/add-New-Asset/basic-Info',
 };
 
 /* =============================================================================

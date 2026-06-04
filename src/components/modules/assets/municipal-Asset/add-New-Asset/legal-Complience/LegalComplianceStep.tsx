@@ -15,7 +15,7 @@ import {
   fetchUploadedDocumentsAction,
   deleteUploadedDocAction,
   uploadDocumentAction
-} from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/actions";
+} from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { toast } from "sonner";
 
 // Document status type
@@ -57,7 +57,7 @@ export default function LegalCompliancePage() {
     if (state.uploadedDoc?.id) {
       setViewingDocId(definitionId);
       try {
-        const { fetchAssetDocumentFile } = await import("@/app/[locale]/asset/municipal-Asset/asset-detail/actions");
+        const { fetchAssetDocumentFile } = await import("@/app/[locale]/assets/municipal-Asset/asset-detail/actions");
         const result = await fetchAssetDocumentFile(state.uploadedDoc.id);
 
         if (result.error || !result.base64) {
