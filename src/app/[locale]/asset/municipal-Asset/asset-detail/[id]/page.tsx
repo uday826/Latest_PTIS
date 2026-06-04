@@ -5,7 +5,7 @@ import {
   fetchAssetMasterById,
   fetchChildAssetsByParent,
 } from '@/app/[locale]/asset/municipal-Asset/asset-detail/actions';
-import { getInventoryBatchesAction } from '@/app/[locale]/asset/municipal-Asset/add-New-Asset/furniture&Fixture/actions';
+import { getInventoryBatchesAction } from '@/app/[locale]/asset/municipal-Asset/add-New-Asset/furniture-fixture/actions';
 import { AssetDetailView, type AssetDetailRecord } from '@/components/modules/assets/municipal-Asset/AssetDetailView';
 import { getAssetDetailTabs } from '@/components/modules/assets/municipal-Asset/detail-tabs/detailTabConfig';
 import { Card, CardContent } from '@/components/common';

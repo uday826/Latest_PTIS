@@ -55,7 +55,7 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
             className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-red-400 rounded-lg border border-slate-700 hover:border-slate-600 transition-all cursor-pointer shadow-sm flex items-center justify-center"
             title="Close Wizard"
           >
-            <X className="size-4" />
+            <span>Close</span>
           </button>
         </div>
       </div>

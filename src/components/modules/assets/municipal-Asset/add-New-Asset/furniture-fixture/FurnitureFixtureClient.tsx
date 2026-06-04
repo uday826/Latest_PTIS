@@ -11,7 +11,7 @@ import { InvoiceDrawer } from "./InvoiceDrawer";
 import { useFurnitureFixtureState } from "./useFurnitureFixtureState";
 import { InventoryCVGroupTable } from "./InventoryCVGroupTable";
 import type { InventoryItemCategory, InventoryItemCondition, InventoryItemName, InventoryItemModel } from "@/lib/api/asset/inventory.service";
-import type { InventoryBatchListResponse } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/furniture&Fixture/actions";
+import type { InventoryBatchListResponse } from "@/app/[locale]/asset/municipal-Asset/add-New-Asset/furniture-fixture/actions";
 import { Loader2 } from "lucide-react";
 import { useAssetForm } from "../AssetFormContext";
 import { toast } from "sonner";
