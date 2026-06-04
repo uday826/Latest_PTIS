@@ -57,12 +57,13 @@ export default getRequestConfig(async ({ locale }) => {
     waterConnectionMasterMessages,
     commonDetailsUpdateMessages,
     financialYearMessages,
+    moujaMessages,
+    policyConfigurationMessages,
     modulesMessages,
     assetMessages,
     municipalAssetMessages,
     assetMasterDashboardMessages,
-    moujaMessages,
-    assetPaymentMessages
+    assetPaymentMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -135,13 +136,14 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/financialYear.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/mouja.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/policyConfiguration.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/asset.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/municipalAsset.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/assetmasterdashboard.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/mouja.json`)
-      .catch(() => ({}))
-      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/AssetPayment.json`).then((m) => m.default),
   ]);
 
@@ -188,7 +190,7 @@ export default getRequestConfig(async ({ locale }) => {
       waterConnection: waterConnectionMessages?.waterConnection || waterConnectionMessages,
       waterConnectionMaster: waterConnectionMasterMessages.waterConnectionMaster,
       commonDetailsUpdate:
-        commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
+      commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
       financialYear: financialYearMessages,
       modules: modulesMessages,
       asset: assetMessages,
@@ -196,6 +198,8 @@ export default getRequestConfig(async ({ locale }) => {
       assetmasterdashboard: assetMasterDashboardMessages,
       mouja: moujaMessages,
       AssetPayment: assetPaymentMessages,
+      policyConfiguration:
+      policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
     },
   };
 });
