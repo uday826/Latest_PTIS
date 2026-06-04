@@ -8,13 +8,13 @@ import { Card } from '@/components/common/Card';
 import { Button, MasterTable, SearchInput, Select, type Column } from '@/components/common';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import type { PaymentRecordsPageData } from '@/app/[locale]/asset/revenue/payment/actions';
-import type { PaymentRecord } from '@/types/asset/payment.types';
+import type { LeaseRentPaymentListItem } from '@/types/asset/leaseRentPayment.types';
 
 interface PaymentSectionProps {
   pageData: PaymentRecordsPageData;
 }
 
-type PaymentTableRow = PaymentRecord & Record<string, unknown>;
+type PaymentTableRow = LeaseRentPaymentListItem & Record<string, unknown>;
 
 export function PaymentSection({ pageData }: PaymentSectionProps) {
   const t = useTranslations('AssetPayment.records');
@@ -94,23 +94,23 @@ export function PaymentSection({ pageData }: PaymentSectionProps) {
   const columns = useMemo<Column<PaymentTableRow>[]>(
     () => [
       {
-        key: 'srNo',
+        key: 'leaseRentRegistrationId',
         label: t('table.srNo'),
         align: 'center',
-        render: (value, _row, rowIndex) => String(value ?? startIndex + rowIndex + 1),
+        render: (_value, _row, rowIndex) => String(startIndex + rowIndex + 1),
       },
       { key: 'zone', label: sortableHeader(t('table.zone'), 'zone'), align: 'center' },
-      { key: 'ward', label: sortableHeader(t('table.ward'), 'ward'), align: 'center' },
+      { key: 'wardNo', label: sortableHeader(t('table.ward'), 'wardNo'), align: 'center' },
       { key: 'assetId', label: sortableHeader(t('table.assetId'), 'assetId'), align: 'center' },
-      { key: 'complexName', label: sortableHeader(t('table.complex'), 'complexName') },
-      { key: 'shopPlotNo', label: sortableHeader(t('table.shopPlot'), 'shopPlotNo'), align: 'center' },
+      { key: 'category', label: sortableHeader(t('table.complex'), 'category') },
+      { key: 'shopNo', label: sortableHeader(t('table.shopPlot'), 'shopNo'), align: 'center' },
       { key: 'assetName', label: sortableHeader(t('table.asset'), 'assetName') },
       { key: 'tenantName', label: sortableHeader(t('table.tenant'), 'tenantName') },
-      { key: 'mobileNo', label: sortableHeader(t('table.mobile'), 'mobileNo'), align: 'center' },
-      { key: 'leaseRentType', label: sortableHeader(t('table.type'), 'leaseRentType'), align: 'center' },
+      { key: 'tenantMobile', label: sortableHeader(t('table.mobile'), 'tenantMobile'), align: 'center' },
+      { key: 'leaseType', label: sortableHeader(t('table.type'), 'leaseType'), align: 'center' },
       {
-        key: 'rentDueAmount',
-        label: sortableHeader(t('table.amount'), 'rentDueAmount'),
+        key: 'rentDue',
+        label: sortableHeader(t('table.amount'), 'rentDue'),
         align: 'center',
         render: (value) => `₹${Number(value ?? 0).toLocaleString('en-IN')}`,
       },
@@ -120,7 +120,7 @@ export function PaymentSection({ pageData }: PaymentSectionProps) {
         align: 'center',
         render: (value) => (
           <StatusBadge
-            value={value === 'paid' ? 'true' : 'false'}
+            value={String(value).toLowerCase() === 'paid' ? 'true' : 'false'}
             activeLabel={t('status.paid')}
             inactiveLabel={t('status.unpaid')}
           />
@@ -184,12 +184,12 @@ export function PaymentSection({ pageData }: PaymentSectionProps) {
             paginationConfig={{ enabled: true, showPageSizeSelector: true }}
             pageSizeOptions={[5, 10, 20]}
             renderActions={(record) =>
-              record.status === 'unpaid' ? (
+              String(record.status).toLowerCase() === 'unpaid' ? (
                 <Button
                   onClick={() => {
                     const next = new URLSearchParams(listQueryString);
-                    next.set('srNo', String(record.srNo));
-                    next.set('assetId', record.assetId);
+                    next.set('srNo', String(record.leaseRentRegistrationId));
+                    next.set('assetId', String(record.assetId));
                     router.push(`/${params.locale}/asset/revenue/payment/details?${next.toString()}`);
                   }}
                   variant="success"
@@ -201,7 +201,7 @@ export function PaymentSection({ pageData }: PaymentSectionProps) {
               ) : null
             }
             actionLabel={t('table.action')}
-            getRowKey={(record) => `${record.assetId}-${record.srNo}`}
+            getRowKey={(record) => `${record.assetId}-${record.leaseRentRegistrationId}`}
             maxBodyHeightClassName="max-h-[calc(100vh-360px)]"
             tableClassName="text-xs text-slate-700 text-center"
             theadClassName="bg-[#1f2937] [&_th]:!text-white [&_th]:font-semibold [&_th]:text-xs [&_th]:px-3 [&_th]:py-2 [&_th:first-child]:!rounded-none [&_th:last-child]:!rounded-none"

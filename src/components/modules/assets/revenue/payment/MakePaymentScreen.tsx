@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/common/radio-group';
 import { Button } from '@/components/common/ActionButton';
 import { Card } from '@/components/common/Card';
 import { Drawer } from '@/components/common/Drawer';
-import type { PaymentRecord } from '@/types/payment.types';
+import type { LeaseRentPaymentDetail } from '@/types/asset/leaseRentPayment.types';
 
 type PaymentMode = 'Cash' | 'DD' | 'Cheque' | 'QR / UPI' | 'Online' | '';
 
@@ -35,7 +35,7 @@ export function MakePaymentScreen({
   record,
   initialMode = '',
 }: {
-  record: PaymentRecord;
+  record: LeaseRentPaymentDetail;
   initialMode?: PaymentMode;
 }) {
   const t = useTranslations('AssetPayment.makePayment');
@@ -55,14 +55,13 @@ export function MakePaymentScreen({
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
   const [partialAmount, setPartialAmount] = useState('');
   const monthOptions = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const baseAmount = record.rentDueAmount;
-  const totalModeAmount = record.rentDueAmount * 2;
-  const demandAmount = Math.round(record.rentDueAmount / 2);
 
-  const penaltyAmount = paymentType === 'partial' ? 0 : paymentType === 'total' ? Number((demandAmount * 0.04).toFixed(2)) : Number((demandAmount * 0.02).toFixed(2));
-  const gstAmount = paymentType === 'partial' ? 0 : paymentType === 'total' ? Number((demandAmount * 0.36).toFixed(2)) : Number((demandAmount * 0.18).toFixed(2));
-  const summaryTotalAmount = paymentType === 'partial' ? 0 : paymentType === 'total' ? totalModeAmount : baseAmount;
-  const payNowAmount = paymentType === 'total' ? totalModeAmount : baseAmount;
+  const pendingDemandAmount = record.pendingDue;
+  const currentDemandAmount = record.currentDemand;
+  const penaltyAmount = record.penalty;
+  const gstAmount = record.gst;
+  const summaryTotalAmount = record.totalPayable;
+  const payNowAmount = paymentType === 'partial' ? 0 : record.totalPayable;
 
   useEffect(() => {
     setSelectedMode(modeFromQuery);
@@ -108,7 +107,7 @@ export function MakePaymentScreen({
               <div className="w-5 h-5 rounded flex items-center justify-center bg-orange-500 text-white text-[10px] font-bold">?</div>
               <span className="text-xs font-bold text-orange-800">{t('pendingDemand')}</span>
             </div>
-            <p className="text-xl font-black text-orange-600">{`\u20B9 ${demandAmount.toLocaleString('en-IN')}`}</p>
+            <p className="text-xl font-black text-orange-600">{`₹ ${pendingDemandAmount.toLocaleString('en-IN')}`}</p>
           </Card>
           <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
@@ -116,7 +115,7 @@ export function MakePaymentScreen({
               <div className="w-5 h-5 rounded flex items-center justify-center bg-emerald-500 text-white text-[10px] font-bold">?</div>
               <span className="text-xs font-bold text-emerald-800">{t('currentDemand')}</span>
             </div>
-            <p className="text-xl font-black text-emerald-600">{`\u20B9 ${demandAmount.toLocaleString('en-IN')}`}</p>
+            <p className="text-xl font-black text-emerald-600">{`₹ ${currentDemandAmount.toLocaleString('en-IN')}`}</p>
           </Card>
         </div>
 
@@ -126,22 +125,22 @@ export function MakePaymentScreen({
               <div className="w-5 h-5 rounded bg-red-500 text-white flex items-center justify-center text-[10px] font-bold">%</div>
               <span className="text-xs font-bold text-red-700">{t('penalty')}</span>
             </div>
-            <span className="text-sm font-black text-red-600">{`\u20B9 ${penaltyAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+            <span className="text-sm font-black text-red-600">{`₹ ${penaltyAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
           </Card>
           <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-purple-50/50 border-purple-100 rounded-lg shadow-none">
             <span className="text-xs font-bold text-purple-700 ml-7">{t('gst')}</span>
-            <span className="text-sm font-black text-purple-600">{`\u20B9 ${gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+            <span className="text-sm font-black text-purple-600">{`₹ ${gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
           </Card>
           <Card variant="bordered" padding="none" className="flex justify-between items-center p-4 bg-blue-50 border-blue-200 rounded-xl shadow-sm">
             <span className="text-sm font-bold text-blue-900">{t('totalAmount')}</span>
-            <span className="text-xl font-black text-blue-700">{`\u20B9 ${summaryTotalAmount.toLocaleString('en-IN')}`}</span>
+            <span className="text-xl font-black text-blue-700">{`₹ ${summaryTotalAmount.toLocaleString('en-IN')}`}</span>
           </Card>
         </div>
 
         <Card variant="bordered" padding="none" className="bg-white border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
           <div className="grid grid-cols-3 gap-4">
-            <Input label={t('mobileNumber')} required defaultValue={record.mobileNo} className="h-9 text-xs font-medium bg-slate-50 border-slate-200 rounded-lg" />
-            <Input label={t('emailAddress')} required placeholder={t('emailAddress')} className="h-9 text-xs font-medium bg-white border-slate-200 rounded-lg placeholder:text-slate-400" />
+            <Input label={t('mobileNumber')} required defaultValue={record.tenantMobile} className="h-9 text-xs font-medium bg-slate-50 border-slate-200 rounded-lg" />
+            <Input label={t('emailAddress')} required defaultValue={record.tenantEmail} placeholder={t('emailAddress')} className="h-9 text-xs font-medium bg-white border-slate-200 rounded-lg placeholder:text-slate-400" />
             <Select
               label={t('paymentMode')}
               required

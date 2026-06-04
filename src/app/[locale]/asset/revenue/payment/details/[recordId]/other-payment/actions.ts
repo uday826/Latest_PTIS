@@ -1,8 +1,10 @@
 'use server';
 
-import { getPaymentRecordById } from '@/lib/api/asset/payment.service';
-import type { PaymentRecord } from '@/types/asset/payment.types';
+import { leaseRentPaymentService } from '@/lib/api/asset/leaseRentPayment.service';
+import type { LeaseRentPaymentDetail } from '@/types/asset/leaseRentPayment.types';
 
-export async function getOtherPaymentRecordAction(recordId: string): Promise<PaymentRecord | null> {
-  return getPaymentRecordById(recordId);
+export async function getOtherPaymentRecordAction(recordId: string): Promise<LeaseRentPaymentDetail | null> {
+  const response = await leaseRentPaymentService.getLeaseRentPaymentById(recordId);
+  if (!response.success || !response.data) return null;
+  return response.data;
 }
