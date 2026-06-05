@@ -6,12 +6,9 @@ import { useRouter } from 'next/navigation';
 import { Eye, PencilLine, Printer } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Badge, Button, type Column } from '@/components/common';
-import { fetchAssetRegisterPage } from '@/app/[locale]/assets/municipal-Asset/asset-register/actions';
 
-import { AssetRegisterRow, AssetRegisterApiRecord, AssetRegisterPageResult } from '@/types/municipal-asset/register.types';
-export type { AssetRegisterRow, AssetRegisterApiRecord, AssetRegisterPageResult };
-
-export const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+import { AssetRegisterRow, AssetRegisterApiRecord } from '@/types/municipal-asset/register.types';
+export type { AssetRegisterRow, AssetRegisterApiRecord };
 
 export function formatDate(value?: string) {
   if (!value) return '-';
@@ -71,8 +68,10 @@ export function renderBadge(value?: string) {
 
 export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName: string): AssetRegisterRow {
   const record = item as AssetRegisterApiRecord;
+  const parsedId = Number(record.id);
+  const safeId = Number.isFinite(parsedId) && parsedId > 0 ? parsedId : null;
   return {
-    id: Number(record.id ?? 0),
+    id: safeId,
     assetId: record.assetId || record.assetNo || '-',
     authorityName: record.authorityName || '-',
     organizationName: record.organizationName || '-',
@@ -109,10 +108,7 @@ export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName
     lifeYears: record.purchaseDate ? String(Math.max(0, new Date().getFullYear() - new Date(record.purchaseDate).getFullYear())) : '-',
     purchaseValue: record.purchaseValue == null ? '-' : String(record.purchaseValue),
     marketValue: record.marketValue == null ? '-' : String(record.marketValue),
-    depreciation:
-      record.purchaseValue != null && record.marketValue != null
-        ? String(Math.max(0, Number(record.purchaseValue) - Number(record.marketValue)))
-        : '-',
+    depreciation: record.depreciation == null ? '-' : String(record.depreciation),
     netBookValue:
       record.netBookValue != null
         ? String(record.netBookValue)
@@ -227,6 +223,7 @@ export function getRegisterColumns(
           <Button
             type="button"
             onClick={() => {
+              if (row.id == null) return;
               const segments = pathname.split('/').filter(Boolean);
               const locale = segments[0] || 'en';
               router.push(`/${locale}/assets/municipal-Asset/asset-detail/${row.id}`);
@@ -235,12 +232,14 @@ export function getRegisterColumns(
             size="sm"
             className="h-8 w-8 px-0 text-slate-600"
             aria-label={`View ${row.assetName}`}
+            disabled={row.id == null}
           >
             <Eye className="h-4 w-4" />
           </Button>
           <Button
             type="button"
             onClick={() => {
+              if (row.id == null) return;
               const segments = window.location.pathname.split('/').filter(Boolean);
               const locale = segments[0] || 'en';
               router.push(`/${locale}/assets/municipal-Asset/asset-report/${row.id}`);
@@ -250,6 +249,7 @@ export function getRegisterColumns(
             className="h-8 w-8 border-amber-200 bg-amber-50 px-0 text-amber-700 hover:bg-amber-100"
             aria-label={`Print report for ${row.assetName}`}
             title="Open report"
+            disabled={row.id == null}
           >
             <Printer className="h-4 w-4" />
           </Button>
@@ -259,6 +259,7 @@ export function getRegisterColumns(
             size="sm"
             className="h-8 w-8 border-emerald-200 bg-emerald-50 px-0 text-emerald-700 hover:bg-emerald-100 ml-1 mr-0.5"
             aria-label={`Edit ${row.assetName}`}
+            disabled={row.id == null}
           >
             <PencilLine className="h-4 w-4" />
           </Button>
@@ -269,30 +270,15 @@ export function getRegisterColumns(
 }
 
 export async function exportToExcel(
+  items: AssetRegisterApiRecord[],
   categoryId: number,
-  search: string,
-  totalCount: number,
-  requestParams: { assetTypeId: number | null; zoneId: number | null; wardId: number | null },
-  initialCategoryName: string,
-  pageSize: number,
-  assets: AssetRegisterRow[]
+  categoryName: string
 ) {
-  const exportResponse = (await fetchAssetRegisterPage(
-    categoryId,
-    1,
-    Math.max(totalCount || assets.length || pageSize, pageSize),
-    search,
-    requestParams.assetTypeId,
-    requestParams.zoneId,
-    requestParams.wardId
-  )) as AssetRegisterPageResult;
-
-  const exportRows = exportResponse.items.map((item) => {
-    const record = item as AssetRegisterApiRecord;
+  const exportRows = items.map((record) => {
     return {
       'Asset ID': record.assetCode || record.assetNo || '',
       'Asset Name': record.assetName || record.name || '',
-      'Category': record.categoryName || initialCategoryName || '',
+      'Category': record.categoryName || categoryName || '',
       'Sub-Category': record.assetTypeName || '',
       'Authority': record.authorityName || '',
       'Organization': record.organizationName || '',

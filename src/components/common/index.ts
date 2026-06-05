@@ -43,6 +43,8 @@ export {
 export { IconButton } from './ActionButtons';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
 export type { CardProps } from './Card';
+export { DashboardCard } from './DashboardCard';
+export type { DashboardCardProps } from './DashboardCard';
 
 export { Input } from './Input';
 export type { InputProps } from './Input';
