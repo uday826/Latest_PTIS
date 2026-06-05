@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { XCircle } from 'lucide-react';
 
 interface ModalProps {
@@ -9,7 +8,7 @@ interface ModalProps {
 }
 import { Drawer } from '@/components/common';
 
-export function RejectRegistrationModal({ record, onClose }: ModalProps) {
+export function RejectRegistrationModal({ record: _record, onClose }: ModalProps) {
   const drawerTitle = (
     <div className="flex items-center gap-3">
       <div className="p-1.5 bg-red-100 rounded-full">

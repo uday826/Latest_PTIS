@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { X, FileText, Users, User, Image as ImageIcon, MapPin, Grid, ShieldAlert, FileCheck2, ShieldX } from 'lucide-react';
 import { Drawer } from '@/components/common';
 

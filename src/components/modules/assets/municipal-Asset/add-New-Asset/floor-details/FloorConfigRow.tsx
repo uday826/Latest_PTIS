@@ -48,9 +48,6 @@ export function FloorConfigRow({
   const subUseSelected  = !!newFloor.subUseType;
   const numericEnabled  = true;
 
-  const builtUpValid = Number(newFloor.builtUpAreaSqFt) > 0;
-  const carpetValid = Number(newFloor.carpetAreaSqFt) > 0;
-
   const floorAlreadyAdded = typeof errors.floor === "string" && errors.floor.includes("already been added");
   /* Add is enabled directly; full validation is performed on submit */
   const addEnabled = !floorAlreadyAdded;

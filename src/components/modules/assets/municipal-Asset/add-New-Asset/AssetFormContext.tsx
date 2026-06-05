@@ -109,7 +109,7 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
       // If the Context lost its memory (assetName is blank) but URL has an ID, we recover!
       if (parsedId > 0 && !formData.assetName && !formData.fullAddress) {
         try {
-          const dbAsset = await fetchAssetMasterById(parsedId);
+          const dbAsset = (await fetchAssetMasterById(parsedId)) as any;
           if (dbAsset) {
             setFormData(prev => {
               const dynamicAttrs: Record<string, string | number | boolean> = {};

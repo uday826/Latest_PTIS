@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { X, Info, UploadCloud, FileText, User, Calendar, IndianRupee, Building2, Grid } from 'lucide-react';
+import { useState } from 'react';
+import { Info, UploadCloud, FileText, User, Calendar, IndianRupee, Building2, Grid } from 'lucide-react';
 import { Drawer } from '@/components/common';
 
 interface ModalProps {

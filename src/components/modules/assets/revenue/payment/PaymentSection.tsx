@@ -11,12 +11,38 @@ import type { PaymentRecordsPageData } from '@/app/[locale]/assets/revenue/payme
 import type { LeaseRentPaymentListItem } from '@/types/asset/leaseRentPayment.types';
 
 interface PaymentSectionProps {
-  pageData: PaymentRecordsPageData;
+  pageData?: PaymentRecordsPageData;
 }
+
+const DEFAULT_PAGE_DATA: PaymentRecordsPageData = {
+  query: {
+    pageSize: 10,
+    pageNumber: 1,
+    zone: 'all',
+    ward: 'all',
+    leaseRentType: 'all',
+    status: 'all',
+    search: '',
+    sortBy: '',
+    sortOrder: 'asc',
+  },
+  records: [],
+  totalEntries: 0,
+  totalPages: 1,
+  startIndex: 0,
+  endIndex: 0,
+  zoneOptions: [],
+  wardOptions: [],
+  leaseRentTypeOptions: [],
+  statusOptions: [
+    { label: 'Unpaid', value: 'unpaid' },
+    { label: 'Paid', value: 'paid' },
+  ],
+};
 
 type PaymentTableRow = LeaseRentPaymentListItem & Record<string, unknown>;
 
-export function PaymentSection({ pageData }: PaymentSectionProps) {
+export function PaymentSection({ pageData = DEFAULT_PAGE_DATA }: PaymentSectionProps) {
   const t = useTranslations('AssetPayment.records');
   const router = useRouter();
   const params = useParams<{ locale: string }>();

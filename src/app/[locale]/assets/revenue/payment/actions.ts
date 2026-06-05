@@ -74,10 +74,11 @@ export async function getPaymentRecordsPageDataAction(
   });
 
   const sorted = [...filtered];
-  if (query.sortBy) {
+  const sortBy = query.sortBy;
+  if (sortBy) {
     sorted.sort((a, b) => {
-      const aValue = a[query.sortBy];
-      const bValue = b[query.sortBy];
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
 
       if (typeof aValue === 'number' && typeof bValue === 'number') {
         return query.sortOrder === 'asc' ? aValue - bValue : bValue - aValue;

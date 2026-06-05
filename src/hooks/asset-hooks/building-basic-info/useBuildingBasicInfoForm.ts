@@ -86,7 +86,6 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
 
   const {
     formData,
-    errors: stateErrors,
     touched,
     submittedOnce: localSubmittedOnce,
     setErrors,

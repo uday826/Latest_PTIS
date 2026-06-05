@@ -6,7 +6,7 @@ import { apiClient } from "@/services/api.service";
 import { assetFieldDefinitionService } from "@/lib/api/asset/asset-field-definition.service";
 import { assetFieldValueService } from "@/lib/api/asset/asset-field-value.service";
 import { getDocumentFileRaw, getDocumentsByAsset, uploadDocument } from "@/lib/api/asset/asset-document.server.service";
-import { AssetFormData, AssetMasterRequest } from "@/types/asset-types/basic-info/asset-wizard.types";
+import { AssetFormData, AssetMasterRequest, AssetFieldValueRequest } from "@/types/asset-types/basic-info/asset-wizard.types";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { categoryTypeService } from "@/lib/api/asset/category-type.service";
@@ -19,13 +19,13 @@ import type {
   MasterDataConfig,
   MasterDataRecord,
 } from "@/types/asset.types";
-import type { AssetDocumentListItem } from "@/components/modules/assets/municipal-Asset/detail-tabs/types";
 import type {
+  AssetDocumentListItem,
   AssetChildAssetItem,
   AssetFieldDefinitionItem,
   AssetFloorDetailItem,
   AssetFloorSummary,
-} from "@/components/modules/assets/municipal-Asset/detail-tabs/types";
+} from "@/types/municipal-asset/detail-tabs.types";
 
 /**
  * Fetch all active asset categories
@@ -710,7 +710,7 @@ export async function submitAssetForm(formData: AssetFormData) {
           booleanValue
         };
       })
-      .filter(Boolean)
+      .filter((item) => item !== null) as AssetFieldValueRequest[]
     };
 
     console.log("SUBMITTING ASSET MASTER API REQUEST PAYLOAD:", JSON.stringify(apiRequest, null, 2));

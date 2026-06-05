@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { Building2, Calendar, FileText, Clock } from 'lucide-react';
 import { Drawer } from '@/components/common';
 

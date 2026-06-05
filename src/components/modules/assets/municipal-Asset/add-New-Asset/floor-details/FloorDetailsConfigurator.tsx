@@ -126,7 +126,7 @@ export function FloorDetailsConfigurator() {
                 { label: "6th", value: "6th" },
               ]}
               value={newFloor.floor}
-              onChange={(val) => setNewFloor(prev => ({ ...prev, floor: val }))}
+              onChange={(e) => setNewFloor(prev => ({ ...prev, floor: e.target.value }))}
               selectSize="sm"
               className="text-xs"
             />
@@ -140,7 +140,7 @@ export function FloorDetailsConfigurator() {
                 { label: "Wooden", value: "Wooden" },
               ]}
               value={newFloor.conType}
-              onChange={(val) => setNewFloor(prev => ({ ...prev, conType: val }))}
+              onChange={(e) => setNewFloor(prev => ({ ...prev, conType: e.target.value }))}
               selectSize="sm"
               className="text-xs"
             />
@@ -172,7 +172,7 @@ export function FloorDetailsConfigurator() {
                 { label: "Mixed Use", value: "Mixed Use" },
               ]}
               value={newFloor.useType}
-              onChange={(val) => setNewFloor(prev => ({ ...prev, useType: val }))}
+              onChange={(e) => setNewFloor(prev => ({ ...prev, useType: e.target.value }))}
               selectSize="sm"
               className="text-xs"
             />
@@ -187,7 +187,7 @@ export function FloorDetailsConfigurator() {
                 { label: "Storage", value: "Storage" },
               ]}
               value={newFloor.subUseType}
-              onChange={(val) => setNewFloor(prev => ({ ...prev, subUseType: val }))}
+              onChange={(e) => setNewFloor(prev => ({ ...prev, subUseType: e.target.value }))}
               selectSize="sm"
               className="text-xs"
             />

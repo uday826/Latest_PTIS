@@ -13,7 +13,6 @@ import { VerificationLeaseModal } from './VerificationLeaseModal';
 import { ApprovalLeaseModal } from './ApprovalLeaseModal';
 import { RejectRegistrationModal } from './RejectRegistrationModal';
 import { mockLeaseRecords, LeaseRentRecord } from './mockData';
-import { toast } from 'sonner';
 
 export function LeaseRentRegistration() {
   const [activeTab, setActiveTab] = useState<'registration' | 'verification' | 'approval'>('registration');

@@ -57,6 +57,12 @@ export interface BuildingBasicInfoFormData
   /** Numeric IDs resolved from the API – needed by the submit action */
   categoryId: number;
   typeId: number;
+  zoneId?: string;
+  wardId?: string;
+  departmentId?: string;
+  status?: string;
+  condition?: string;
+  assetCode?: string;
 }
 
 // ─── Validation error map ─────────────────────────────────────────────────────

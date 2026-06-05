@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import type { SubUnit, BulkGeneratorState, FloorEntry } from "@/types/asset/floor-details.types";
 import { DEFAULT_BULK, invalidateFloorCache } from "./useFloorAssetFlowCache";
 import {
-  fetchSubUnitsByFloor,
   deleteSubUnit,
   updateSubUnitAction,
   bulkGenerateSubUnitsAction,

@@ -5,7 +5,7 @@ import { LayoutDashboard, Users, CreditCard, PlusCircle, IndianRupee, ArrowLeft 
 import { RevenueDashboardCards } from './RevenueDashboardCards';
 import { RenterList } from './RenterList';
 import { RenterDetailsForm } from './RenterDetailsForm';
-import { PaymentSection } from './PaymentSection';
+import { PaymentSection } from './payment/PaymentSection';
 
 type ActiveTab = 'dashboard' | 'renters' | 'payment';
 

@@ -6,11 +6,11 @@ export interface AssetCategory {
   categoryName: string;
   categoryCode: string;
   isActive: boolean;
-  isMovable: boolean;
-  hasFloorDetails: boolean;
-  hasInventory: boolean;
-  isInventoryMandatory: boolean;
-  hasLegalCompliance: boolean;
+  isMovable?: boolean;
+  hasFloorDetails?: boolean;
+  hasInventory?: boolean;
+  isInventoryMandatory?: boolean;
+  hasLegalCompliance?: boolean;
 }
 
 export interface AssetType {

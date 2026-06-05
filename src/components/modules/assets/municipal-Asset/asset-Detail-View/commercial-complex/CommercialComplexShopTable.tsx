@@ -225,8 +225,8 @@ export function CommercialComplexShopTable({ controller }: { controller: AssetDe
             <Select
               options={floorOptions}
               value={selectedFloorFilter}
-              onChange={(val): void => {
-                setSelectedFloorFilter(val);
+              onChange={(e): void => {
+                setSelectedFloorFilter(e.target.value);
                 setCurrentShopPage(1);
               }}
               selectSize="sm"
