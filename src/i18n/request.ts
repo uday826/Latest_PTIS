@@ -57,6 +57,7 @@ export default getRequestConfig(async ({ locale }) => {
     waterConnectionMasterMessages,
     commonDetailsUpdateMessages,
     financialYearMessages,
+    ruleEngineMessages,
     moujaMessages,
     policyConfigurationMessages,
     modulesMessages,
@@ -136,7 +137,12 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/financialYear.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/mouja.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/rule-engine.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/mouja.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/policyConfiguration.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -146,6 +152,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/assetmasterdashboard.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/AssetPayment.json`).then((m) => m.default),
   ]);
+
 
   return {
     locale: validatedLocale,
@@ -190,16 +197,17 @@ export default getRequestConfig(async ({ locale }) => {
       waterConnection: waterConnectionMessages?.waterConnection || waterConnectionMessages,
       waterConnectionMaster: waterConnectionMasterMessages.waterConnectionMaster,
       commonDetailsUpdate:
-      commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
+        commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
       financialYear: financialYearMessages,
       modules: modulesMessages,
       asset: assetMessages,
       municipalAsset: municipalAssetMessages,
       assetmasterdashboard: assetMasterDashboardMessages,
+      ruleEngine: ruleEngineMessages,
       mouja: moujaMessages,
       AssetPayment: assetPaymentMessages,
       policyConfiguration:
-      policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
+        policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
     },
   };
 });
