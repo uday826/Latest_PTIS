@@ -178,7 +178,7 @@ export default function AssetRegisterPage({
   return (
     <div className="min-h-[calc(100vh-120px)] bg-slate-50/80 p-2 font-sans">
       <div className="mx-auto flex w-full max-w-437.5 flex-col gap-2.5">
-        <Card variant="elevated" className="border-0 bg-white shadow-sm overflow-hidden">
+        <Card variant="elevated" className="overflow-hidden border-0 bg-white shadow-sm">
           <div className="bg-[#0e315d] text-white px-4 py-3">
             <div className="flex items-center gap-2.5">
               <Button
@@ -233,56 +233,68 @@ export default function AssetRegisterPage({
           </CardContent>
         </Card>
 
-        <Card variant="bordered" padding="none" className="relative z-30 border-blue-100 shadow-sm overflow-visible">
-          <CardContent className="flex flex-col gap-2.5 px-4 py-3 xl:flex-row xl:items-center xl:justify-between overflow-visible">
-            <div className="relative z-40 w-full xl:max-w-[320px]">
+        <Card
+          variant="bordered"
+          padding="none"
+          className="relative z-30 overflow-visible border-slate-200/80 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+        >
+          <CardContent className="flex flex-col gap-3 overflow-visible px-4 py-4 xl:flex-row xl:items-center xl:justify-between xl:gap-4">
+            <div className="w-full xl:max-w-[320px]">
               <SearchInput
                 value={searchValue}
                 onChange={handleSearchChange}
                 placeholder="Search assets ..."
-                className="w-full"
+                className="mb-0 w-full"
                 showClear={false}
               />
             </div>
 
-            <div className="relative z-40 flex flex-wrap items-center gap-2 xl:justify-end">
-              <SearchSelect
-                name="assetType"
-                label=""
-                options={assetTypeOptions}
-                value={assetTypeId}
-                onChange={(_, value) => handleAssetTypeChange(value)}
-                placeholder="Asset Type"
-                className="relative z-50 min-w-41.25"
-              />
+            <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center xl:w-auto xl:flex-nowrap xl:justify-end">
+              <div className="w-full sm:w-[230px]">
+                <SearchSelect
+                  name="assetType"
+                  label=""
+                  options={assetTypeOptions}
+                  value={assetTypeId}
+                  onChange={(_, value) => handleAssetTypeChange(value)}
+                  placeholder="All Asset Types"
+                  className="w-full"
+                />
+              </div>
 
-              <SearchSelect
-                name="zone"
-                label=""
-                options={zoneOptions}
-                value={zoneId}
-                onChange={(_, value) => handleZoneChange(value)}
-                placeholder="All Zones"
-                className="relative z-50 min-w-41.25"
-              />
+              <div className="w-full sm:w-[230px]">
+                <SearchSelect
+                  name="zone"
+                  label=""
+                  options={zoneOptions}
+                  value={zoneId}
+                  onChange={(_, value) => handleZoneChange(value)}
+                  placeholder="All Zones"
+                  className="w-full"
+                />
+              </div>
 
-              <SearchSelect
-                name="ward"
-                label=""
-                options={wardOptions}
-                value={wardId}
-                onChange={(_, value) => handleWardChange(value)}
-                placeholder="All Wards"
-                className="relative z-50 min-w-41.25"
-              />
+              <div className="w-full sm:w-[230px]">
+                <SearchSelect
+                  name="ward"
+                  label=""
+                  options={wardOptions}
+                  value={wardId}
+                  onChange={(_, value) => handleWardChange(value)}
+                  placeholder="All Wards"
+                  className="w-full"
+                />
+              </div>
 
-              <ExportButton
-                size="sm"
-                onClick={() => void handleExportExcel()}
-                className="h-9 rounded-md border-slate-200 bg-white px-4 text-xs text-slate-700 shadow-sm hover:bg-slate-50"
-              >
-                Export
-              </ExportButton>
+              <div className="w-full sm:w-auto">
+                <ExportButton
+                  size="sm"
+                  onClick={() => void handleExportExcel()}
+                  className="h-9 w-full rounded-md border-slate-200 bg-white px-4 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 sm:w-auto"
+                >
+                  Export
+                </ExportButton>
+              </div>
             </div>
           </CardContent>
         </Card>
