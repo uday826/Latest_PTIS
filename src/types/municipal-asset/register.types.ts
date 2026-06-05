@@ -1,5 +1,5 @@
 export type AssetRegisterRow = {
-  id: number;
+  id: number | null;
   assetId: string;
   authorityName: string;
   organizationName: string;
@@ -78,6 +78,7 @@ export type AssetRegisterApiRecord = {
   fieldValues?: unknown;
   purchaseValue?: number | string | null;
   marketValue?: number | string | null;
+  depreciation?: number | string | null;
   netBookValue?: number | string | null;
   builtUpAreaSqMeter?: number | string | null;
   carpetAreaSqMeter?: number | string | null;
