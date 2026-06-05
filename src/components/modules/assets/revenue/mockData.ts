@@ -1,4 +1,4 @@
-export interface LeaseRentRecord {
+export interface LeaseRentRecord extends Record<string, unknown> {
   id: string;
   assetId: string;
   shopNo: string;

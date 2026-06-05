@@ -1,12 +1,19 @@
 'use client';
+/* eslint-disable i18next/no-literal-string */
 
 import { XCircle } from 'lucide-react';
+import { Button, Drawer, Label } from '@/components/common';
+
+interface RejectRegistrationRecord {
+  assetId?: string;
+  grievanceNo?: string;
+  assetCategory?: string;
+}
 
 interface ModalProps {
-  record: any;
+  record: RejectRegistrationRecord;
   onClose: () => void;
 }
-import { Drawer } from '@/components/common';
 
 export function RejectRegistrationModal({ record: _record, onClose }: ModalProps) {
   const drawerTitle = (
@@ -23,15 +30,16 @@ export function RejectRegistrationModal({ record: _record, onClose }: ModalProps
 
   const drawerFooter = (
     <>
-      <button 
+      <Button
+        variant="secondary"
+        size="sm"
         onClick={onClose}
-        className="px-6 py-2.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm cursor-pointer"
       >
         Cancel
-      </button>
-      <button className="px-6 py-2.5 text-xs font-bold text-white bg-[#f43f5e] rounded-lg hover:bg-rose-600 transition-colors shadow-sm cursor-pointer">
+      </Button>
+      <Button variant="danger" size="sm">
         Confirm Rejection
-      </button>
+      </Button>
     </>
   );
 
@@ -49,9 +57,9 @@ export function RejectRegistrationModal({ record: _record, onClose }: ModalProps
         </p>
         
         <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-            Rejection Reason <span className="text-red-500">*</span>
-          </label>
+          <Label required className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+            Rejection Reason
+          </Label>
           <textarea 
             className="w-full h-32 p-3 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 placeholder:font-normal placeholder:text-slate-400 resize-none transition-all shadow-sm"
             placeholder="Enter reason for rejection..."

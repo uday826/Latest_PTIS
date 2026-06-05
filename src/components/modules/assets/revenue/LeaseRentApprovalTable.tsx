@@ -1,6 +1,9 @@
+/* eslint-disable i18next/no-literal-string */
 'use client';
 
+import { useMemo, useState } from 'react';
 import { CheckCircle2, XCircle } from 'lucide-react';
+import { MasterTable, type Column } from '@/components/common';
 
 interface ApprovalRecord {
   id: string;
@@ -24,7 +27,7 @@ const MOCK_APPROVAL_RECORDS: ApprovalRecord[] = [
     leaseType: 'Rent',
     rentAmount: 6437,
     submittedDate: '03/01/2026',
-    status: 'Pending'
+    status: 'Pending',
   },
   {
     id: '2',
@@ -35,7 +38,7 @@ const MOCK_APPROVAL_RECORDS: ApprovalRecord[] = [
     leaseType: 'Rent',
     rentAmount: 598,
     submittedDate: '01/01/2026',
-    status: 'Pending'
+    status: 'Pending',
   },
   {
     id: '3',
@@ -46,7 +49,7 @@ const MOCK_APPROVAL_RECORDS: ApprovalRecord[] = [
     leaseType: 'Rent',
     rentAmount: 5800,
     submittedDate: '01/01/2026',
-    status: 'Pending'
+    status: 'Pending',
   },
   {
     id: '4',
@@ -57,7 +60,7 @@ const MOCK_APPROVAL_RECORDS: ApprovalRecord[] = [
     leaseType: 'Lease',
     rentAmount: 85000,
     submittedDate: '15/12/2019',
-    status: 'Approved'
+    status: 'Approved',
   },
   {
     id: '5',
@@ -68,96 +71,121 @@ const MOCK_APPROVAL_RECORDS: ApprovalRecord[] = [
     leaseType: 'Rent',
     rentAmount: 15000,
     submittedDate: '10/01/2026',
-    status: 'Pending'
-  }
+    status: 'Pending',
+  },
 ];
 
 interface Props {
-  onActionClick?: (record: any) => void;
-  onRejectClick?: (record: any) => void;
+  onActionClick?: (record: ApprovalRecord) => void;
+  onRejectClick?: (record: ApprovalRecord) => void;
 }
 
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+
+const columns: Column<ApprovalRecord>[] = [
+  { key: 'grievanceNo', label: 'Grievance No', width: '160px' },
+  { key: 'assetId', label: 'Asset ID', width: '120px' },
+  { key: 'assetCategory', label: 'Asset Category', width: '180px' },
+  { key: 'tenantName', label: 'Tenant Name', width: '220px' },
+  {
+    key: 'leaseType',
+    label: 'Lease/Rent Type',
+    width: '150px',
+    render: (value) => (
+      <span
+        className={`font-bold ${
+          String(value) === 'Rent' ? 'text-emerald-600' : 'text-purple-600'
+        }`}
+      >
+        {String(value)}
+      </span>
+    ),
+  },
+  {
+    key: 'rentAmount',
+    label: 'Rent Amount (₹)',
+    width: '160px',
+    align: 'right',
+    render: (value) => <span className="font-black text-slate-700">₹ {Number(value).toLocaleString('en-IN')}</span>,
+  },
+  { key: 'submittedDate', label: 'Submitted Date', width: '140px' },
+  {
+    key: 'status',
+    label: 'Status',
+    width: '120px',
+    render: (value) =>
+      String(value) === 'Approved' ? (
+        <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold text-emerald-600">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          Approved
+        </span>
+      ) : (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50/50 px-2.5 py-1 text-[10px] font-bold text-orange-600">
+          <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+          Pending
+        </span>
+      ),
+  },
+];
+
 export function LeaseRentApprovalTable({ onActionClick, onRejectClick }: Props = {}) {
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+
+  const totalCount = MOCK_APPROVAL_RECORDS.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  const paginatedRecords = useMemo(() => {
+    const safePage = Math.min(pageNumber, totalPages);
+    const start = (safePage - 1) * pageSize;
+    return MOCK_APPROVAL_RECORDS.slice(start, start + pageSize);
+  }, [pageNumber, pageSize, totalPages]);
+
+  const safePage = Math.min(pageNumber, totalPages);
+
   return (
-    <div className="overflow-x-auto bg-white rounded-2xl border border-slate-200/80 shadow-sm mt-4">
-      <table className="w-full border-collapse text-left text-xs font-semibold text-slate-700">
-        <thead>
-          <tr className="bg-[#1f2937] text-white font-bold text-[10px] uppercase tracking-wider border-b border-slate-700">
-            <th className="px-4 py-3.5 text-center w-16">Sr. No</th>
-            <th className="px-4 py-3.5">Grievance No</th>
-            <th className="px-4 py-3.5">Asset ID</th>
-            <th className="px-4 py-3.5">Asset Category</th>
-            <th className="px-4 py-3.5">Tenant Name</th>
-            <th className="px-4 py-3.5">Lease/Rent Type</th>
-            <th className="px-4 py-3.5 text-right">Rent Amount (₹)</th>
-            <th className="px-4 py-3.5">Submitted Date</th>
-            <th className="px-4 py-3.5">Status</th>
-            <th className="px-4 py-3.5 text-center w-24">Action</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {MOCK_APPROVAL_RECORDS.map((r, index) => (
-            <tr key={r.id} className="hover:bg-slate-50/50 transition-colors text-slate-700">
-              <td className="px-4 py-4 text-center font-bold text-slate-400">{index + 1}</td>
-              <td className="px-4 py-4 text-blue-600 font-medium">{r.grievanceNo}</td>
-              <td className="px-4 py-4 font-bold text-slate-800">{r.assetId}</td>
-              <td className="px-4 py-4 text-slate-600">{r.assetCategory}</td>
-              <td className="px-4 py-4 text-slate-800">{r.tenantName}</td>
-              <td className="px-4 py-4">
-                <span className={`font-bold ${r.leaseType === 'Rent' ? 'text-emerald-600' : 'text-purple-600'}`}>
-                  {r.leaseType}
-                </span>
-              </td>
-              <td className="px-4 py-4 text-right font-black text-slate-700">
-                ₹ {r.rentAmount.toLocaleString('en-IN')}
-              </td>
-              <td className="px-4 py-4 text-slate-500">{r.submittedDate}</td>
-              <td className="px-4 py-4">
-                {r.status === 'Pending' && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-orange-200 bg-orange-50/50 text-orange-600 text-[10px] font-bold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                    Pending
-                  </span>
-                )}
-                {r.status === 'Approved' && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-emerald-600 text-[10px] font-bold">
-                    Approved
-                  </span>
-                )}
-              </td>
-              <td className="px-4 py-4">
-                <div className="flex items-center justify-center gap-2">
-                  <button 
-                    onClick={() => onActionClick?.(r)}
-                    className="p-1 rounded-full text-emerald-500 hover:bg-emerald-50 border border-emerald-500/20 transition-colors cursor-pointer"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => onRejectClick?.(r)}
-                    className="p-1 rounded-full text-red-500 hover:bg-red-50 border border-red-500/20 transition-colors cursor-pointer"
-                  >
-                    <XCircle className="w-4 h-4" />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      
-      <div className="flex items-center justify-between p-4 border-t border-slate-100 bg-slate-50/50">
-        <span className="text-xs text-slate-500">Showing 1 to 5 of 5 records</span>
-        <div className="flex items-center gap-1">
-          <button className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1">
-            <span className="text-[10px]">❮</span> Previous
+    <MasterTable<ApprovalRecord>
+      columns={columns}
+      data={paginatedRecords}
+      loading={false}
+      getRowKey={(row) => row.id}
+      emptyText="No approval records found."
+      headerTitle="Approval Records"
+      headerSubtitle="Lease and rent entries ready for approval"
+      tableClassName="min-w-[1220px]"
+      maxBodyHeightClassName="max-h-[calc(100vh-440px)]"
+      containerClassName="overflow-hidden"
+      pageNumber={safePage}
+      pageSize={pageSize}
+      totalCount={totalCount}
+      totalPages={totalPages}
+      onPageChange={setPageNumber}
+      onPageSizeChange={(size) => {
+        setPageSize(size);
+        setPageNumber(1);
+      }}
+      pageSizeOptions={PAGE_SIZE_OPTIONS}
+      paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+      renderActions={(row) => (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            type="button"
+            onClick={() => onActionClick?.(row)}
+            className="rounded-full border border-emerald-200 p-1 text-emerald-500 transition-colors hover:bg-emerald-50"
+            aria-label="Approve"
+          >
+            <CheckCircle2 className="h-4 w-4" />
           </button>
-          <button className="w-7 h-7 flex items-center justify-center rounded bg-blue-600 text-white text-xs font-bold">1</button>
-          <button className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1">
-            Next <span className="text-[10px]">❯</span>
+          <button
+            type="button"
+            onClick={() => onRejectClick?.(row)}
+            className="rounded-full border border-red-200 p-1 text-red-500 transition-colors hover:bg-red-50"
+            aria-label="Reject"
+          >
+            <XCircle className="h-4 w-4" />
           </button>
         </div>
-      </div>
-    </div>
+      )}
+    />
   );
 }

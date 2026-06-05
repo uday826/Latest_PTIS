@@ -1,7 +1,9 @@
 'use client';
+/* eslint-disable i18next/no-literal-string */
 
 import { useState } from 'react';
 import { LayoutDashboard, Users, CreditCard, PlusCircle, IndianRupee, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/common';
 import { RevenueDashboardCards } from './RevenueDashboardCards';
 import { RenterList } from './RenterList';
 import { RenterDetailsForm } from './RenterDetailsForm';
@@ -45,9 +47,11 @@ export function RevenueManagement() {
 
         {/* Action Button */}
         {activeTab === 'renters' && (
-          <button
+          <Button
             onClick={() => setShowRegisterForm(!showRegisterForm)}
-            className="w-full md:w-auto px-4 py-2 rounded-xl text-xs font-bold text-white bg-violet-600 hover:bg-violet-700 shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+            variant="primary"
+            size="sm"
+            className="w-full md:w-auto shadow-md"
           >
             {showRegisterForm ? (
               <>
@@ -58,7 +62,7 @@ export function RevenueManagement() {
                 <PlusCircle className="w-4 h-4" /> Register New Tenant
               </>
             )}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -68,13 +72,15 @@ export function RevenueManagement() {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
-            <button
+            <Button
               key={tab.id}
               onClick={() => {
                 setActiveTab(tab.id);
                 setShowRegisterForm(false);
               }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              variant={isActive ? 'primary' : 'secondary'}
+              size="sm"
+              className={`flex-1 justify-center gap-2 transition-all ${
                 isActive
                   ? 'bg-white text-slate-800 shadow-sm border border-slate-200/50'
                   : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
@@ -82,7 +88,7 @@ export function RevenueManagement() {
             >
               <Icon className={`w-4 h-4 ${isActive ? 'text-violet-600' : 'text-slate-400'}`} />
               {tab.label}
-            </button>
+            </Button>
           );
         })}
       </div>

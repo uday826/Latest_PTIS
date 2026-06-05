@@ -1,16 +1,26 @@
 'use client';
+/* eslint-disable i18next/no-literal-string */
 
 import { useState } from 'react';
 import { Info, UploadCloud, FileText, User, Calendar, IndianRupee, Building2, Grid } from 'lucide-react';
-import { Drawer } from '@/components/common';
+import { Button, Drawer, Label } from '@/components/common';
+
+interface NewLeaseRecord {
+  assetId?: string;
+  tenantName?: string;
+  rentAmount?: string | number;
+  category?: string;
+  shopName?: string;
+}
 
 interface ModalProps {
-  record: any;
+  record: NewLeaseRecord;
   onClose: () => void;
 }
 
 export function NewLeaseRegistrationModal({ record, onClose }: ModalProps) {
   const [activeTab, setActiveTab] = useState<'new' | 'previous'>('new');
+  const tabs: Array<'new' | 'previous'> = ['new', 'previous'];
 
   const drawerTitle = (
     <div className="flex items-center gap-2">
@@ -26,12 +36,12 @@ export function NewLeaseRegistrationModal({ record, onClose }: ModalProps) {
         <span className="text-xs font-semibold">Complete all required fields</span>
       </div>
       <div className="flex items-center gap-3">
-        <button onClick={onClose} className="px-6 py-2 text-xs font-bold text-slate-600 border border-[#e2e8f0] rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+        <Button onClick={onClose} variant="secondary" size="sm">
           Cancel
-        </button>
-        <button className="px-6 py-2 text-xs font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 cursor-pointer">
-          <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin hidden" /> Send to Verification
-        </button>
+        </Button>
+        <Button variant="success" size="sm" icon={UploadCloud}>
+          Send to Verification
+        </Button>
       </div>
     </div>
   );
@@ -139,8 +149,8 @@ export function NewLeaseRegistrationModal({ record, onClose }: ModalProps) {
 
           <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex flex-col">
             <div className="flex bg-slate-500 text-white">
-              {['new', 'previous'].map(t => (
-                <button key={t} onClick={() => setActiveTab(t as any)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${activeTab === t ? 'bg-slate-600 shadow-inner' : 'hover:bg-slate-500/80 opacity-70'}`}>
+              {tabs.map((t) => (
+                <button key={t} onClick={() => setActiveTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${activeTab === t ? 'bg-slate-600 shadow-inner' : 'hover:bg-slate-500/80 opacity-70'}`}>
                   {t === 'new' ? 'New Tenant Registration' : 'Previous Tenant Information'}
                 </button>
               ))}
@@ -150,9 +160,9 @@ export function NewLeaseRegistrationModal({ record, onClose }: ModalProps) {
                 const Icon = f.icon;
                 return (
                   <div key={i} className={`space-y-1 ${f.full ? 'col-span-2' : ''}`}>
-                    <label className="text-[10px] font-bold text-slate-600 flex items-center gap-1">
-                      <Icon className="w-3 h-3 text-slate-400" /> {f.label} <span className="text-red-500">*</span>
-                    </label>
+                    <Label required className="text-[10px] font-bold text-slate-600 flex items-center gap-1">
+                      <Icon className="w-3 h-3 text-slate-400" /> {f.label}
+                    </Label>
                     {f.type === 'select' ? (
                       <select className="w-full h-8 px-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded outline-none focus:border-blue-500">
                         {f.options?.map((opt, oi) => <option key={oi}>{opt}</option>)}
@@ -163,9 +173,9 @@ export function NewLeaseRegistrationModal({ record, onClose }: ModalProps) {
                   </div>
                 );
               })}
-              <button className="w-full py-2.5 col-span-2 mt-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold tracking-wider rounded uppercase flex items-center justify-center gap-2 transition-colors cursor-pointer">
-                <UploadCloud className="w-3.5 h-3.5" /> RENEWAL REQUEST LETTER
-              </button>
+              <Button variant="primary" size="sm" className="w-full col-span-2 mt-2">
+                RENEWAL REQUEST LETTER
+              </Button>
             </div>
           </div>
 

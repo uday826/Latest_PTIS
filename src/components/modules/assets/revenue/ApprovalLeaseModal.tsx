@@ -1,10 +1,17 @@
 'use client';
+/* eslint-disable i18next/no-literal-string */
 
 import { X, FileText, Users, Image as ImageIcon, MapPin, Grid, ShieldAlert, CheckCircle2, ShieldX } from 'lucide-react';
-import { Drawer } from '@/components/common';
+import { Button, Drawer } from '@/components/common';
+
+interface ApprovalDrawerRecord {
+  assetId?: string;
+  grievanceNo?: string;
+  assetCategory?: string;
+}
 
 interface ModalProps {
-  record: any;
+  record: ApprovalDrawerRecord;
   onClose: () => void;
 }
 
@@ -18,15 +25,15 @@ export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
 
   const drawerFooter = (
     <>
-      <button onClick={onClose} className="px-5 py-2 text-xs font-bold text-slate-600 border border-slate-200 rounded hover:bg-slate-50 transition-colors shadow-sm cursor-pointer flex items-center gap-1.5">
+      <Button onClick={onClose} variant="secondary" size="sm">
         <X className="w-3.5 h-3.5" /> Cancel
-      </button>
-      <button className="px-5 py-2 text-xs font-bold text-white bg-[#e65c00] rounded hover:bg-orange-700 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer">
+      </Button>
+      <Button variant="danger" size="sm">
         <ShieldX className="w-3.5 h-3.5" /> Revert To Verify
-      </button>
-      <button className="px-5 py-2 text-xs font-bold text-white bg-green-600 rounded hover:bg-green-700 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer">
+      </Button>
+      <Button variant="success" size="sm">
         <CheckCircle2 className="w-3.5 h-3.5" /> Approve
-      </button>
+      </Button>
     </>
   );
 
@@ -176,9 +183,9 @@ export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
                 </tbody>
               </table>
             </div>
-            <button className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer">
+            <Button variant="primary" size="sm" className="w-full">
               <ShieldAlert className="w-4 h-4" /> View Workflow
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -1,10 +1,21 @@
 'use client';
+/* eslint-disable i18next/no-literal-string */
 
 import { X, FileText, Users, User, Image as ImageIcon, MapPin, Grid, ShieldAlert, FileCheck2, ShieldX } from 'lucide-react';
-import { Drawer } from '@/components/common';
+import { Button, Drawer } from '@/components/common';
+
+interface VerificationDrawerRecord {
+  assetId?: string;
+  grievanceNo?: string;
+  assetCategory?: string;
+  tenantName?: string;
+  rentAmount?: string | number;
+  category?: string;
+  shopName?: string;
+}
 
 interface ModalProps {
-  record: any;
+  record: VerificationDrawerRecord;
   onClose: () => void;
 }
 
@@ -30,15 +41,15 @@ export function VerificationLeaseModal({ record, onClose }: ModalProps) {
       width="xl"
       footer={
         <>
-          <button onClick={onClose} className="px-5 py-2 text-xs font-bold text-slate-600 border border-slate-200 rounded hover:bg-slate-50 transition-colors shadow-sm cursor-pointer flex items-center gap-1.5">
+          <Button onClick={onClose} variant="secondary" size="sm">
             <X className="w-3.5 h-3.5" /> Cancel
-          </button>
-          <button className="px-5 py-2 text-xs font-bold text-white bg-[#e65c00] rounded hover:bg-orange-700 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer">
+          </Button>
+          <Button variant="danger" size="sm">
             <ShieldX className="w-3.5 h-3.5" /> Revert Request
-          </button>
-          <button className="px-5 py-2 text-xs font-bold text-white bg-[#0a869e] rounded hover:bg-cyan-700 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer">
+          </Button>
+          <Button variant="success" size="sm">
             <FileCheck2 className="w-3.5 h-3.5" /> Send to Verification
-          </button>
+          </Button>
         </>
       }
     >
@@ -122,9 +133,9 @@ export function VerificationLeaseModal({ record, onClose }: ModalProps) {
                       <td className="px-3 py-1.5 border-r border-slate-100">2024-04-01</td>
                       <td className="px-3 py-1.5 bg-slate-50/50" rowSpan={2}>View Documents:</td>
                       <td className="px-3 py-1.5" rowSpan={2}>
-                        <button className="bg-[#0a869e] hover:bg-cyan-700 text-white text-[9px] font-bold px-2 py-1 rounded flex items-center gap-1 transition-colors shadow-sm">
+                        <Button variant="primary" size="xs" className="px-2 py-1 h-auto">
                           <FileText className="w-3 h-3" /> View Docs
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                     <tr>
@@ -205,9 +216,9 @@ export function VerificationLeaseModal({ record, onClose }: ModalProps) {
                 </tbody>
               </table>
             </div>
-            <button className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer">
+            <Button variant="primary" size="sm" className="w-full">
               <ShieldAlert className="w-4 h-4" /> View Workflow
-            </button>
+            </Button>
           </div>
         </div>
       </div>
