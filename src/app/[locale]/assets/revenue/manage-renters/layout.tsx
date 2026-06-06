@@ -1,8 +1,8 @@
 /* eslint-disable i18next/no-literal-string */
 import { ReactNode } from 'react';
 import { Card, CardContent } from '@/components/common';
-import { LeaseRentStats } from '@/components/modules/assets/revenue/LeaseRentStats';
 import { ManageRentersTabs } from '@/components/modules/assets/revenue/ManageRentersTabs';
+import { getManageRentersTabCountsAction } from './actions';
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,6 +13,7 @@ interface LayoutProps {
 
 export default async function ManageRentersLayout({ children, params }: LayoutProps) {
   const { locale } = await params;
+  const tabCounts = await getManageRentersTabCountsAction();
 
   return (
     <div className="flex h-full min-h-[calc(100vh-120px)] w-full overflow-y-auto bg-slate-50/50 p-6 custom-scrollbar">
@@ -29,10 +30,8 @@ export default async function ManageRentersLayout({ children, params }: LayoutPr
                 </p>
               </div>
 
-              <ManageRentersTabs locale={locale} />
+              <ManageRentersTabs locale={locale} counts={tabCounts} />
             </div>
-
-            <LeaseRentStats />
           </CardContent>
         </Card>
 
