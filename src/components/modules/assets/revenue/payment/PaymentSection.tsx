@@ -7,11 +7,12 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/common/Card';
 import { Button, MasterTable, SearchInput, Select, type Column } from '@/components/common';
 import { StatusBadge } from '@/components/common/StatusBadge';
-import type { PaymentRecordsPageData } from '@/app/[locale]/assets/revenue/payment/actions';
+import type { PaymentFilterOptions, PaymentRecordsPageData } from '@/app/[locale]/assets/revenue/payment/actions';
 import type { LeaseRentPaymentListItem } from '@/types/asset/leaseRentPayment.types';
 
 interface PaymentSectionProps {
   pageData?: PaymentRecordsPageData;
+  filterOptions?: PaymentFilterOptions;
 }
 
 const DEFAULT_PAGE_DATA: PaymentRecordsPageData = {
@@ -20,6 +21,7 @@ const DEFAULT_PAGE_DATA: PaymentRecordsPageData = {
     pageNumber: 1,
     zone: 'all',
     ward: 'all',
+    assetCategory: 'all',
     leaseRentType: 'all',
     status: 'all',
     search: '',
@@ -31,18 +33,32 @@ const DEFAULT_PAGE_DATA: PaymentRecordsPageData = {
   totalPages: 1,
   startIndex: 0,
   endIndex: 0,
+};
+
+const DEFAULT_FILTER_OPTIONS: PaymentFilterOptions = {
   zoneOptions: [],
   wardOptions: [],
-  leaseRentTypeOptions: [],
-  statusOptions: [
-    { label: 'Unpaid', value: 'unpaid' },
-    { label: 'Paid', value: 'paid' },
-  ],
+  assetCategoryOptions: [],
 };
+
+const LEASE_RENT_TYPE_OPTIONS = [
+  { label: 'All', value: 'all' },
+  { label: 'Lease', value: 'lease' },
+  { label: 'Rent', value: 'rent' },
+];
+
+const PAYMENT_STATUS_OPTIONS = [
+  { label: 'All', value: 'all' },
+  { label: 'Paid', value: 'paid' },
+  { label: 'UnPaid', value: 'unpaid' },
+];
 
 type PaymentTableRow = LeaseRentPaymentListItem & Record<string, unknown>;
 
-export function PaymentSection({ pageData = DEFAULT_PAGE_DATA }: PaymentSectionProps) {
+export function PaymentSection({
+  pageData = DEFAULT_PAGE_DATA,
+  filterOptions = DEFAULT_FILTER_OPTIONS,
+}: PaymentSectionProps) {
   const t = useTranslations('AssetPayment.records');
   const router = useRouter();
   const params = useParams<{ locale: string }>();
@@ -53,8 +69,9 @@ export function PaymentSection({ pageData = DEFAULT_PAGE_DATA }: PaymentSectionP
     const next = new URLSearchParams();
     next.set('PageSize', String(query.pageSize));
     next.set('PageNumber', String(query.pageNumber));
-    next.set('Zone', query.zone);
-    next.set('Ward', query.ward);
+    next.set('ZoneId', query.zone);
+    next.set('WardId', query.ward);
+    next.set('AssetCategoryId', query.assetCategory);
     next.set('LeaseRentType', query.leaseRentType);
     next.set('Status', query.status);
     if (query.search) next.set('Search', query.search);
@@ -67,8 +84,9 @@ export function PaymentSection({ pageData = DEFAULT_PAGE_DATA }: PaymentSectionP
     const merged = {
       PageSize: String(query.pageSize),
       PageNumber: String(query.pageNumber),
-      Zone: query.zone,
-      Ward: query.ward,
+      ZoneId: query.zone,
+      WardId: query.ward,
+      AssetCategoryId: query.assetCategory,
       LeaseRentType: query.leaseRentType,
       Status: query.status,
       Search: query.search,
@@ -125,10 +143,10 @@ export function PaymentSection({ pageData = DEFAULT_PAGE_DATA }: PaymentSectionP
         align: 'center',
         render: (_value, _row, rowIndex) => String(startIndex + rowIndex + 1),
       },
-      { key: 'zone', label: sortableHeader(t('table.zone'), 'zone'), align: 'center' },
-      { key: 'wardNo', label: sortableHeader(t('table.ward'), 'wardNo'), align: 'center' },
-      { key: 'assetId', label: sortableHeader(t('table.assetId'), 'assetId'), align: 'center' },
-      { key: 'category', label: sortableHeader(t('table.complex'), 'category') },
+      { key: 'zone', label: sortableHeader(t('table.zone'), 'zone'), align: 'center', render: (value) => String(value ?? '-') },
+      { key: 'wardNo', label: sortableHeader(t('table.ward'), 'wardNo'), align: 'center', render: (value) => String(value ?? '-') },
+      { key: 'assetNo', label: sortableHeader(t('table.assetId'), 'assetNo'), align: 'center' },
+      { key: 'shopName', label: sortableHeader(t('table.complex'), 'shopName') },
       { key: 'shopNo', label: sortableHeader(t('table.shopPlot'), 'shopNo'), align: 'center' },
       { key: 'assetName', label: sortableHeader(t('table.asset'), 'assetName') },
       { key: 'tenantName', label: sortableHeader(t('table.tenant'), 'tenantName') },
@@ -138,7 +156,7 @@ export function PaymentSection({ pageData = DEFAULT_PAGE_DATA }: PaymentSectionP
         key: 'rentDue',
         label: sortableHeader(t('table.amount'), 'rentDue'),
         align: 'center',
-        render: (value) => `₹${Number(value ?? 0).toLocaleString('en-IN')}`,
+        render: (value) => `\u20B9${Number(value ?? 0).toLocaleString('en-IN')}`,
       },
       {
         key: 'status',
@@ -169,23 +187,23 @@ export function PaymentSection({ pageData = DEFAULT_PAGE_DATA }: PaymentSectionP
           <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-600">{t('filters.zone')}</label>
-              <Select options={[{ label: t('filters.all'), value: 'all' }, ...pageData.zoneOptions]} value={query.zone} onChange={(_e, value) => updateRoute({ Zone: value, PageNumber: '1' })} placeholder={t('filters.select')} selectSize="sm" className="text-xs" />
+              <Select options={[{ label: 'All', value: 'all' }, ...filterOptions.zoneOptions]} value={query.zone} onChange={(_e, value) => updateRoute({ ZoneId: value, WardId: 'all', PageNumber: '1' })} placeholder={t('filters.select')} selectSize="sm" className="text-xs" />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-600">{t('filters.ward')}</label>
-              <Select options={[{ label: t('filters.all'), value: 'all' }, ...pageData.wardOptions]} value={query.ward} onChange={(_e, value) => updateRoute({ Ward: value, PageNumber: '1' })} placeholder={t('filters.select')} selectSize="sm" className="text-xs" />
+              <Select options={[{ label: 'All', value: 'all' }, ...filterOptions.wardOptions]} value={query.ward} onChange={(_e, value) => updateRoute({ WardId: value, PageNumber: '1' })} placeholder={t('filters.select')} selectSize="sm" className="text-xs" />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-600">{t('filters.assetCategory')}</label>
-              <Select options={[{ label: t('filters.all'), value: 'all' }]} value="all" placeholder={t('filters.allCategories')} selectSize="sm" className="text-xs" />
+              <Select options={[{ label: 'All', value: 'all' }, ...filterOptions.assetCategoryOptions]} value={query.assetCategory} onChange={(_e, value) => updateRoute({ AssetCategoryId: value, PageNumber: '1' })} placeholder={t('filters.allCategories')} selectSize="sm" className="text-xs" />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-600">{t('filters.leaseRentType')}</label>
-              <Select options={[{ label: t('filters.all'), value: 'all' }, ...pageData.leaseRentTypeOptions]} value={query.leaseRentType} onChange={(_e, value) => updateRoute({ LeaseRentType: value, PageNumber: '1' })} placeholder={t('filters.allTypes')} selectSize="sm" className="text-xs" />
+              <Select options={LEASE_RENT_TYPE_OPTIONS} value={query.leaseRentType} onChange={(_e, value) => updateRoute({ LeaseRentType: value, PageNumber: '1' })} placeholder={t('filters.allTypes')} selectSize="sm" className="text-xs" />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-600">{t('filters.paymentStatus')}</label>
-              <Select options={[{ label: t('filters.all'), value: 'all' }, ...pageData.statusOptions]} value={query.status} onChange={(_e, value) => updateRoute({ Status: value, PageNumber: '1' })} placeholder={t('filters.allStatus')} selectSize="sm" className="text-xs" />
+              <Select options={PAYMENT_STATUS_OPTIONS} value={query.status} onChange={(_e, value) => updateRoute({ Status: value, PageNumber: '1' })} placeholder={t('filters.allStatus')} selectSize="sm" className="text-xs" />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-600">{t('filters.smartSearch')}</label>
@@ -239,3 +257,4 @@ export function PaymentSection({ pageData = DEFAULT_PAGE_DATA }: PaymentSectionP
     </div>
   );
 }
+
