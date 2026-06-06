@@ -1,26 +1,32 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { ArrowLeft, Building2Icon } from 'lucide-react';
 import {
   Button,
   Card,
   CardContent,
+  DashboardCard,
   MasterTable,
   SearchInput,
   SearchSelect,
   ExportButton,
+  useToast,
 } from '@/components/common';
+import { useDebounce } from '@/hooks/useDebounce';
+import { fetchAssetRegisterPage } from '@/app/[locale]/assets/municipal-Asset/asset-register/actions';
 import {
   AssetRegisterRow,
   AssetRegisterApiRecord,
-  PAGE_SIZE_OPTIONS,
   mapAssetToRow,
   getRegisterColumns,
   exportToExcel,
 } from './registerHelpers';
+
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+const EXPORT_BATCH_SIZE = 200;
 
 export default function AssetRegisterPage({
   categoryId,
@@ -41,6 +47,7 @@ export default function AssetRegisterPage({
   initialAssetTypes = [],
   initialZones = [],
   initialWards = [],
+  updatedDate = '',
 }: {
   categoryId: number;
   initialCategoryName?: string;
@@ -60,12 +67,39 @@ export default function AssetRegisterPage({
   initialAssetTypes?: { id: number; label: string }[];
   initialZones?: { id: number; label: string }[];
   initialWards?: { id: number; label: string; zoneId?: number | null }[];
+  updatedDate?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const toast = useToast();
   const [searchValue, setSearchValue] = useState(search);
+  const debouncedSearch = useDebounce(searchValue, 500);
+  const isInitialSearchSync = useRef(true);
   const categoryName = initialCategoryName;
-  const error = null;
+
+  const updateQuery = (updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(window.location.search);
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
+
+  // Only update URL when debounced search changes (avoids server fetch on every keypress)
+  useEffect(() => {
+    if (isInitialSearchSync.current) {
+      isInitialSearchSync.current = false;
+      return;
+    }
+    const trimmed = debouncedSearch.trim();
+    updateQuery({ search: trimmed || null, page: '1' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
 
   const assets = useMemo(
     () => initialAssets.map((item) => mapAssetToRow(item, initialCategoryName)),
@@ -114,22 +148,8 @@ export default function AssetRegisterPage({
     [assetTypeId, zoneId, wardId]
   );
 
-  const updateQuery = (updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(window.location.search);
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value === null) {
-        params.delete(key);
-      } else {
-        params.set(key, value);
-      }
-    });
-    const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  };
-
   const handleSearchChange = (val: string) => {
     setSearchValue(val);
-    updateQuery({ search: val.trim() || null, page: '1' });
   };
 
   const handlePageChange = (newPage: number) => {
@@ -156,20 +176,55 @@ export default function AssetRegisterPage({
   const safePage = Math.min(page, totalPages);
   const totalAssets = totalCount;
   const activeAssets = activeAssetsCount;
+  const purchaseAssetsValue = totalPurchaseValue;
 
   const handleExportExcel = async () => {
     try {
-      await exportToExcel(
+      const totalToExport = totalCount || assets.length;
+      const firstPageSize = Math.min(EXPORT_BATCH_SIZE, Math.max(totalToExport, pageSize));
+      const exportResponse = await fetchAssetRegisterPage(
         categoryId,
-        search,
-        totalCount,
-        requestParams,
-        initialCategoryName,
-        pageSize,
-        assets
+        1,
+        firstPageSize,
+        searchValue.trim(),
+        requestParams.assetTypeId,
+        requestParams.zoneId,
+        requestParams.wardId
       );
-    } catch {
-      // keep export failures silent for now
+
+      const firstItems = exportResponse.items || [];
+      const allItems = [...firstItems];
+      const exportTotal = exportResponse.totalCount || totalToExport || allItems.length;
+      let currentPage = 2;
+
+      while (allItems.length < exportTotal) {
+        const nextResponse = await fetchAssetRegisterPage(
+          categoryId,
+          currentPage,
+          EXPORT_BATCH_SIZE,
+          searchValue.trim(),
+          requestParams.assetTypeId,
+          requestParams.zoneId,
+          requestParams.wardId
+        );
+
+        const nextItems = nextResponse.items || [];
+        if (!nextItems.length) {
+          break;
+        }
+
+        allItems.push(...nextItems);
+        currentPage += 1;
+      }
+
+      await exportToExcel(
+        allItems,
+        categoryId,
+        initialCategoryName
+      );
+    } catch (error) {
+      console.error('Failed to export asset register Excel:', error);
+      toast.error('Failed to export asset register. Please try again.');
     }
   };
 
@@ -204,31 +259,44 @@ export default function AssetRegisterPage({
                 <h2 className="text-[15px] font-extrabold uppercase tracking-tight">MUNICIPAL CORPORATION ASSET REGISTER</h2>
               </div>
               <p className="mt-1 text-[11px] text-slate-600">
-                {registerSubtitle} | Updated: {new Date().toLocaleDateString('en-GB')}
+                {registerSubtitle} | Updated: {updatedDate}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-2 px-4 py-3 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
-              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-center shadow-sm">
-                <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">Total Assets</p>
-                <p className="mt-1 text-[22px] font-extrabold leading-none text-slate-900">{totalAssets}</p>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-center shadow-sm">
-                <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">Current Value</p>
-                <p className="mt-1 text-[22px] font-extrabold leading-none text-slate-900">₹{totalMarketValue.toLocaleString('en-IN')}</p>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-center shadow-sm">
-                <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">Depreciation</p>
-                <p className="mt-1 text-[22px] font-extrabold leading-none text-red-600">₹{totalDepreciation.toLocaleString('en-IN')}</p>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-center shadow-sm">
-                <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">Net Book Value</p>
-                <p className="mt-1 text-[22px] font-extrabold leading-none text-emerald-600">₹{netBookValue.toLocaleString('en-IN')}</p>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-center shadow-sm">
-                <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">Active Assets</p>
-                <p className="mt-1 text-[22px] font-extrabold leading-none text-blue-600">{activeAssets}</p>
-              </div>
+            <div className="grid grid-cols-1 gap-2 px-4 py-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+              <DashboardCard
+                label="Total Assets"
+                value={totalAssets}
+                className="min-h-[78px]"
+              />
+              <DashboardCard
+                label="Purchase Value"
+                value={`₹${purchaseAssetsValue.toLocaleString('en-IN')}`}
+                className="min-h-[78px]"
+              />
+              <DashboardCard
+                label="Current Value"
+                value={`₹${totalMarketValue.toLocaleString('en-IN')}`}
+                className="min-h-[78px]"
+              />
+              <DashboardCard
+                label="Depreciation"
+                value={`₹${totalDepreciation.toLocaleString('en-IN')}`}
+                valueColor="text-red-600"
+                className="min-h-[78px]"
+              />
+              <DashboardCard
+                label="Net Book Value"
+                value={`₹${netBookValue.toLocaleString('en-IN')}`}
+                valueColor="text-emerald-600"
+                className="min-h-[78px]"
+              />
+              <DashboardCard
+                label="Active Assets"
+                value={activeAssets}
+                valueColor="text-blue-600"
+                className="min-h-[78px]"
+              />
             </div>
           </CardContent>
         </Card>
@@ -250,7 +318,7 @@ export default function AssetRegisterPage({
             </div>
 
             <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center xl:w-auto xl:flex-nowrap xl:justify-end">
-              <div className="w-full sm:w-[230px]">
+              <div className="w-full sm:w-57.5">
                 <SearchSelect
                   name="assetType"
                   label=""
@@ -262,7 +330,7 @@ export default function AssetRegisterPage({
                 />
               </div>
 
-              <div className="w-full sm:w-[230px]">
+              <div className="w-full sm:w-57.5">
                 <SearchSelect
                   name="zone"
                   label=""
@@ -274,7 +342,7 @@ export default function AssetRegisterPage({
                 />
               </div>
 
-              <div className="w-full sm:w-[230px]">
+              <div className="w-full sm:w-57.5">
                 <SearchSelect
                   name="ward"
                   label=""
@@ -299,12 +367,6 @@ export default function AssetRegisterPage({
           </CardContent>
         </Card>
 
-        {error ? (
-          <Card variant="bordered" className="border-red-200 bg-red-50">
-            <CardContent className="p-6 text-sm text-red-700">{error}</CardContent>
-          </Card>
-        ) : null}
-
         <MasterTable<AssetRegisterRow>
           columns={columns}
           data={assets}
@@ -321,7 +383,7 @@ export default function AssetRegisterPage({
           containerClassName="rounded-lg"
           tableClassName="min-w-[2800px] table-fixed"
           rowClassName={(_, index) => (index % 2 === 0 ? 'bg-white' : 'bg-slate-50')}
-          getRowKey={(row) => row.id}
+          getRowKey={(row, index) => row.id ?? `${row.assetCode}-${index}`}
         />
       </div>
     </div>

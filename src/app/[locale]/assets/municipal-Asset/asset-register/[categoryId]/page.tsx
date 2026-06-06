@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import AssetRegisterPage from '@/components/modules/assets/municipal-Asset/building-assets/AssetRegisterPage';
-import { AssetRegisterApiRecord } from '@/components/modules/assets/municipal-Asset/building-assets/registerHelpers';
+import { parsePaginationParams } from '@/lib/utils/pagination';
 import {
   fetchAssetRegisterPage,
   fetchAssetTypesByCategory,
@@ -24,60 +24,62 @@ interface PageProps {
   }>;
 }
 
+// Helper: check if string is a valid numeric ID or 'all'
+function isValidFilterValue(value: string): boolean {
+  return value === 'all' || (/^\d+$/.test(value) && Number.isFinite(Number(value)));
+}
+
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const;
+
 export default async function Page({ params, searchParams }: PageProps) {
   const { categoryId } = await params;
   const query = await searchParams;
   const parsed = Number(categoryId);
-  const initialPage = Number(query.page || 1);
-  const initialPageSize = Number(query.pageSize || 10);
-  const initialSearch = query.search || '';
-  const initialAssetTypeId = query.AssetTypeId || 'all';
-  const initialZoneId = query.ZoneId || 'all';
-  const initialWardId = query.WardId || 'all';
 
   if (!Number.isFinite(parsed) || parsed <= 0) {
     notFound();
   }
 
-  let categoryName = '';
-  let initialData: { 
-    items: AssetRegisterApiRecord[]; 
-    totalCount: number;
-    totalPurchaseValue: number;
-    totalMarketValue: number;
-    totalDepreciation: number;
-    netBookValue: number;
-    activeAssetsCount: number;
-  } = { items: [], totalCount: 0, totalPurchaseValue: 0, totalMarketValue: 0, totalDepreciation: 0, netBookValue: 0, activeAssetsCount: 0 };
-  let initialAssetTypes: { id: number; label: string }[] = [];
-  let initialZones: { id: number; label: string }[] = [];
-  let initialWards: { id: number; label: string; zoneId?: number | null }[] = [];
+  // ===== SANITIZE ALL QUERY PARAMS (same pattern as property-tax modules) =====
+  const { pageNumber: safePage, pageSize: rawPageSize } = parsePaginationParams(
+    query.page,
+    query.pageSize
+  );
+  // Clamp pageSize to the allowed options from PAGE_SIZE_OPTIONS
+  const safePageSize = PAGE_SIZE_OPTIONS.includes(rawPageSize) ? rawPageSize : 10;
 
-  try {
-    categoryName = await fetchCategoryNameById(parsed);
-    const [assetsResult, typesResult, zonesResult, wardsResult] = await Promise.all([
-      fetchAssetRegisterPage(
-        parsed,
-        Number.isFinite(initialPage) && initialPage > 0 ? initialPage : 1,
-        Number.isFinite(initialPageSize) && initialPageSize > 0 ? initialPageSize : 10,
-        initialSearch,
-        initialAssetTypeId === 'all' ? null : initialAssetTypeId,
-        initialZoneId === 'all' ? null : initialZoneId,
-        initialWardId === 'all' ? null : initialWardId
-      ),
-      fetchAssetTypesByCategory(parsed),
-      fetchZones(),
-      fetchWards(),
-    ]);
+  const safeSearch = (query.search || '').trim().slice(0, 200);
 
-    initialData = assetsResult;
-    initialAssetTypes = typesResult;
-    initialZones = zonesResult;
-    initialWards = wardsResult;
-  } catch (err) {
-    console.error('Failed to pre-fetch SSR data:', err);
-    categoryName = '';
-  }
+  const safeAssetTypeId = isValidFilterValue(query.AssetTypeId ?? 'all')
+    ? (query.AssetTypeId ?? 'all') : 'all';
+  const safeZoneId = isValidFilterValue(query.ZoneId ?? 'all')
+    ? (query.ZoneId ?? 'all') : 'all';
+  const safeWardId = isValidFilterValue(query.WardId ?? 'all')
+    ? (query.WardId ?? 'all') : 'all';
+
+  const categoryName = await fetchCategoryNameById(parsed);
+  const updatedDate = new Date().toLocaleDateString('en-GB');
+
+  const [assetsResult, typesResult, zonesResult, wardsResult] = await Promise.all([
+    fetchAssetRegisterPage(
+      parsed,
+      safePage,
+      safePageSize,
+      safeSearch,
+      safeAssetTypeId === 'all' ? null : Number(safeAssetTypeId),
+      safeZoneId === 'all' ? null : Number(safeZoneId),
+      safeWardId === 'all' ? null : Number(safeWardId)
+    ),
+    fetchAssetTypesByCategory(parsed),
+    fetchZones().catch((error) => {
+      console.error('Failed to fetch zones for asset register:', error);
+      return [];
+    }),
+    fetchWards().catch((error) => {
+      console.error('Failed to fetch wards for asset register:', error);
+      return [];
+    }),
+  ]);
 
   return (
   
@@ -87,22 +89,23 @@ export default async function Page({ params, searchParams }: PageProps) {
             <AssetRegisterPage
               categoryId={parsed}
               initialCategoryName={categoryName}
-              page={Number.isFinite(initialPage) && initialPage > 0 ? initialPage : 1}
-              pageSize={Number.isFinite(initialPageSize) && initialPageSize > 0 ? initialPageSize : 10}
-              search={initialSearch}
-              assetTypeId={initialAssetTypeId}
-              zoneId={initialZoneId}
-              wardId={initialWardId}
-              assets={initialData.items}
-              totalCount={initialData.totalCount}
-              totalPurchaseValue={initialData.totalPurchaseValue}
-              totalMarketValue={initialData.totalMarketValue}
-              totalDepreciation={initialData.totalDepreciation}
-              netBookValue={initialData.netBookValue}
-              activeAssetsCount={initialData.activeAssetsCount}
-              initialAssetTypes={initialAssetTypes}
-              initialZones={initialZones}
-              initialWards={initialWards}
+              page={safePage}
+              pageSize={safePageSize}
+              search={safeSearch}
+              assetTypeId={safeAssetTypeId}
+              zoneId={safeZoneId}
+              wardId={safeWardId}
+              assets={assetsResult.items}
+              totalCount={assetsResult.totalCount}
+              totalPurchaseValue={assetsResult.totalPurchaseValue}
+              totalMarketValue={assetsResult.totalMarketValue}
+              totalDepreciation={assetsResult.totalDepreciation}
+              netBookValue={assetsResult.netBookValue}
+              activeAssetsCount={assetsResult.activeAssetsCount}
+              initialAssetTypes={typesResult}
+              initialZones={zonesResult}
+              initialWards={wardsResult}
+              updatedDate={updatedDate}
             />
           </div>
         </div>

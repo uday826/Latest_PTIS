@@ -1,8 +1,10 @@
 'use client';
+/* eslint-disable i18next/no-literal-string */
 
 import React, { useState } from 'react';
 import { User, Phone, Mail, IndianRupee } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button, Label } from '@/components/common';
 
 interface FormProps {
   onSuccess?: () => void;
@@ -48,7 +50,9 @@ export function RenterDetailsForm({ onSuccess, onCancel }: FormProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Category & Asset selection */}
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Asset Category *</label>
+          <Label required className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            Asset Category
+          </Label>
           <select
             name="category"
             value={formData.category}
@@ -63,7 +67,9 @@ export function RenterDetailsForm({ onSuccess, onCancel }: FormProps) {
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Asset ID / Number *</label>
+          <Label required className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            Asset ID / Number
+          </Label>
           <input
             type="text"
             name="assetNumber"
@@ -77,7 +83,9 @@ export function RenterDetailsForm({ onSuccess, onCancel }: FormProps) {
 
         {/* Tenant Information */}
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tenant Full Name *</label>
+          <Label required className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            Tenant Full Name
+          </Label>
           <div className="relative">
             <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
               <User className="h-4 w-4 text-slate-400" />
@@ -95,7 +103,9 @@ export function RenterDetailsForm({ onSuccess, onCancel }: FormProps) {
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mobile Number *</label>
+          <Label required className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            Mobile Number
+          </Label>
           <div className="relative">
             <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
               <Phone className="h-4 w-4 text-slate-400" />
@@ -113,7 +123,9 @@ export function RenterDetailsForm({ onSuccess, onCancel }: FormProps) {
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            Email Address
+          </Label>
           <div className="relative">
             <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
               <Mail className="h-4 w-4 text-slate-400" />
@@ -131,7 +143,9 @@ export function RenterDetailsForm({ onSuccess, onCancel }: FormProps) {
 
         {/* Financial Details */}
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Monthly Rent (₹) *</label>
+          <Label required className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            Monthly Rent (₹)
+          </Label>
           <div className="relative">
             <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
               <IndianRupee className="h-4 w-4 text-slate-400" />
@@ -149,7 +163,9 @@ export function RenterDetailsForm({ onSuccess, onCancel }: FormProps) {
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Security Deposit (₹)</label>
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            Security Deposit (₹)
+          </Label>
           <div className="relative">
             <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
               <IndianRupee className="h-4 w-4 text-slate-400" />
@@ -167,7 +183,9 @@ export function RenterDetailsForm({ onSuccess, onCancel }: FormProps) {
 
         {/* Agreement Dates */}
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Agreement Start Date *</label>
+          <Label required className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            Agreement Start Date
+          </Label>
           <input
             type="date"
             name="startDate"
@@ -179,7 +197,9 @@ export function RenterDetailsForm({ onSuccess, onCancel }: FormProps) {
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Agreement End Date *</label>
+          <Label required className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            Agreement End Date
+          </Label>
           <input
             type="date"
             name="endDate"
@@ -193,19 +213,21 @@ export function RenterDetailsForm({ onSuccess, onCancel }: FormProps) {
 
       {/* Buttons */}
       <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-        <button
+        <Button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+          variant="secondary"
+          size="sm"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
-          className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-violet-600 hover:bg-violet-700 transition-colors shadow-sm"
+          variant="success"
+          size="sm"
         >
           Register & Create Agreement
-        </button>
+        </Button>
       </div>
     </form>
   );

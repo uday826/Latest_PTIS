@@ -1,164 +1,125 @@
 'use client';
 
 import { Pencil } from 'lucide-react';
+import { Button, MasterTable, type Column } from '@/components/common';
 
-interface VerificationRecord {
+export interface VerificationRecord extends Record<string, unknown> {
   id: string;
-  grievanceNo: string;
-  isNew: boolean;
   assetId: string;
   assetCategory: string;
   assetSubCategory: string;
   tenantName: string;
-  correctionBy: string;
-  correctionDate: string;
-  status: 'Pending';
+  applicationType: string;
+  submittedDate: string;
+  status: string;
 }
-
-const MOCK_VERIFICATION_RECORDS: VerificationRecord[] = [
-  {
-    id: '1',
-    grievanceNo: '',
-    isNew: true,
-    assetId: 'MPMS-AS-9',
-    assetCategory: 'Shopping Complex',
-    assetSubCategory: '(गंगोवाडा मनपा व्यापारी संकुल)',
-    tenantName: 'राजेश कुमार शर्मा',
-    correctionBy: '',
-    correctionDate: '',
-    status: 'Pending'
-  },
-  {
-    id: '2',
-    grievanceNo: '',
-    isNew: true,
-    assetId: 'MPMS-AS-12',
-    assetCategory: 'Shopping Complex',
-    assetSubCategory: '(राजकमल कॉम्प्लेक्स)',
-    tenantName: 'सुनिता देशमुख',
-    correctionBy: '',
-    correctionDate: '',
-    status: 'Pending'
-  },
-  {
-    id: '3',
-    grievanceNo: '',
-    isNew: true,
-    assetId: 'MPMS-PL-001',
-    assetCategory: 'Plot / Open Land',
-    assetSubCategory: 'गांधी मैदान - व्यावसायिक विभाग',
-    tenantName: 'महाराष्ट्र स्पोर्टस अकादमी',
-    correctionBy: '',
-    correctionDate: '',
-    status: 'Pending'
-  },
-  {
-    id: '4',
-    grievanceNo: '',
-    isNew: true,
-    assetId: 'MPMS-PL-003',
-    assetCategory: 'Plot / Open Land',
-    assetSubCategory: 'यशवंत मैदान - कार्यक्रम क्षेत्र',
-    tenantName: 'अकोला महोत्सव समिती',
-    correctionBy: '',
-    correctionDate: '',
-    status: 'Pending'
-  },
-  {
-    id: '5',
-    grievanceNo: '',
-    isNew: true,
-    assetId: 'PMC-GRD-001',
-    assetCategory: 'Garden',
-    assetSubCategory: '',
-    tenantName: 'Dream Wedding Planners',
-    correctionBy: '',
-    correctionDate: '',
-    status: 'Pending'
-  }
-];
 
 interface Props {
-  onActionClick?: (record: any) => void;
+  records: VerificationRecord[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  onActionClick?: (record: VerificationRecord) => void;
 }
 
-export function LeaseRentVerificationTable({ onActionClick }: Props = {}) {
-  return (
-    <div className="overflow-x-auto bg-white rounded-2xl border border-slate-200/80 shadow-sm mt-4">
-      <table className="w-full border-collapse text-left text-xs font-semibold text-slate-700">
-        <thead>
-          <tr className="bg-[#1f2937] text-white font-bold text-[10px] uppercase tracking-wider border-b border-slate-700">
-            <th className="px-4 py-3.5 text-center w-16">Sr. No</th>
-            <th className="px-4 py-3.5">Grievance No</th>
-            <th className="px-4 py-3.5">Asset ID</th>
-            <th className="px-4 py-3.5">Asset Category</th>
-            <th className="px-4 py-3.5">Tenant Name</th>
-            <th className="px-4 py-3.5">Correction By</th>
-            <th className="px-4 py-3.5">Correction Date</th>
-            <th className="px-4 py-3.5">Status</th>
-            <th className="px-4 py-3.5 text-center w-16">Action</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {MOCK_VERIFICATION_RECORDS.map((r, index) => (
-            <tr key={r.id} className="hover:bg-slate-50/50 transition-colors text-slate-700">
-              <td className="px-4 py-4 text-center font-bold text-slate-400">{index + 1}</td>
-              <td className="px-4 py-4">
-                {r.isNew && (
-                  <span className="inline-flex px-2 py-0.5 rounded border border-emerald-200 text-emerald-600 bg-emerald-50 text-[10px] font-bold">
-                    New
-                  </span>
-                )}
-                {r.grievanceNo && <span className="ml-2">{r.grievanceNo}</span>}
-              </td>
-              <td className="px-4 py-4 font-bold text-slate-800">{r.assetId}</td>
-              <td className="px-4 py-4">
-                <div className="flex flex-col">
-                  <span>{r.assetCategory}</span>
-                  {r.assetSubCategory && (
-                    <span className="text-[10px] text-red-500/80 font-normal mt-0.5">
-                      {r.assetSubCategory}
-                    </span>
-                  )}
-                </div>
-              </td>
-              <td className="px-4 py-4 text-slate-800">{r.tenantName}</td>
-              <td className="px-4 py-4 text-slate-500">{r.correctionBy}</td>
-              <td className="px-4 py-4 text-slate-500">{r.correctionDate}</td>
-              <td className="px-4 py-4">
-                {r.status === 'Pending' && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-orange-200 bg-orange-50/50 text-orange-600 text-[10px] font-bold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                    Pending
-                  </span>
-                )}
-              </td>
-              <td className="px-4 py-4 text-center">
-                <button 
-                  onClick={() => onActionClick?.(r)}
-                  className="p-1.5 rounded-lg text-orange-500 hover:bg-orange-50 transition-colors cursor-pointer"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      
-      <div className="flex items-center justify-between p-4 border-t border-slate-100 bg-slate-50/50">
-        <span className="text-xs text-slate-500">Showing 1 to 5 of 10 records</span>
-        <div className="flex items-center gap-1">
-          <button className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1">
-            <span className="text-[10px]">❮</span> Previous
-          </button>
-          <button className="w-7 h-7 flex items-center justify-center rounded bg-blue-600 text-white text-xs font-bold">1</button>
-          <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-slate-200 text-slate-600 text-xs font-bold transition-colors">2</button>
-          <button className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800 transition-colors flex items-center gap-1">
-            Next <span className="text-[10px]">❯</span>
-          </button>
-        </div>
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+const iconActionClassName = '!h-7 !w-7 !px-0 !py-0 !gap-0';
+
+const columns: Column<VerificationRecord>[] = [
+  { key: 'assetId', label: 'Asset No', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  {
+    key: 'assetCategory',
+    label: 'Asset Category',
+    align: 'center',
+    cellClassName: '!px-2 !py-2',
+    render: (_value, row) => (
+      <div className="flex flex-col leading-tight">
+        <span>{row.assetCategory}</span>
+        {row.assetSubCategory ? (
+          <span className="mt-0.5 text-[10px] font-normal text-red-500/80">{row.assetSubCategory}</span>
+        ) : null}
       </div>
-    </div>
+    ),
+  },
+  { key: 'tenantName', label: 'Tenant Name', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  { key: 'applicationType', label: 'Application Type', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  { key: 'submittedDate', label: 'Submitted Date', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  {
+    key: 'status',
+    label: 'Status',
+    align: 'center',
+    cellClassName: '!px-2 !py-2',
+    render: (value) => {
+      const v = String(value).toLowerCase();
+      const isVerified = v === 'verified';
+      const isRejected = v === 'rejected';
+      return (
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold ${
+            isVerified
+              ? 'border-emerald-200 bg-emerald-50/50 text-emerald-600'
+              : isRejected
+                ? 'border-red-200 bg-red-50/50 text-red-600'
+                : 'border-orange-200 bg-orange-50/50 text-orange-600'
+          }`}
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${
+              isVerified ? 'bg-emerald-500' : isRejected ? 'bg-red-500' : 'bg-orange-500'
+            }`}
+          />
+          {String(value)}
+        </span>
+      );
+    },
+  },
+];
+
+export function LeaseRentVerificationTable({
+  records,
+  pageNumber,
+  pageSize,
+  totalCount,
+  totalPages,
+  onPageChange,
+  onPageSizeChange,
+  onActionClick,
+}: Props) {
+  return (
+    <MasterTable<VerificationRecord>
+      columns={columns}
+      data={records}
+      loading={false}
+      getRowKey={(row) => row.id}
+      emptyText="No verification records found."
+      headerTitle="Verification Records"
+      headerSubtitle="Renter corrections awaiting review"
+      tableClassName="min-w-full table-auto text-[11px]"
+      maxBodyHeightClassName="max-h-[calc(100vh-440px)]"
+      containerClassName="overflow-hidden"
+      theadClassName="[&_th]:!px-2 [&_th]:!py-2 [&_th]:!text-[11px]"
+      pageNumber={pageNumber}
+      pageSize={pageSize}
+      totalCount={totalCount}
+      totalPages={totalPages}
+      onPageChange={onPageChange}
+      onPageSizeChange={onPageSizeChange}
+      pageSizeOptions={PAGE_SIZE_OPTIONS}
+      paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+      renderActions={(row) => (
+        <Button
+          type="button"
+          onClick={() => onActionClick?.(row)}
+          variant="edit"
+          size="xs"
+          icon={Pencil}
+          aria-label="Open verification"
+          className={iconActionClassName}
+        />
+      )}
+    />
   );
 }

@@ -1,10 +1,20 @@
 'use client';
+/* eslint-disable i18next/no-literal-string */
 
 import { Building2, Calendar, FileText, Clock } from 'lucide-react';
-import { Drawer } from '@/components/common';
+import { Button, Drawer, Label } from '@/components/common';
+
+interface RegistrationHistoryRecord {
+  shopName?: string;
+  assetId?: string;
+  category?: string;
+  tenantName?: string;
+  leaseType?: string;
+  rentAmount?: number;
+}
 
 interface ModalProps {
-  record: any;
+  record: RegistrationHistoryRecord;
   onClose: () => void;
 }
 
@@ -22,9 +32,9 @@ export function RegistrationHistoryModal({ record, onClose }: ModalProps) {
   );
 
   const drawerFooter = (
-    <button onClick={onClose} className="px-6 py-2 text-xs font-bold text-white bg-[#8b3dff] rounded hover:bg-purple-700 transition-colors shadow-sm cursor-pointer">
+    <Button onClick={onClose} variant="primary" size="sm">
       Close
-    </button>
+    </Button>
   );
 
   return (
@@ -53,7 +63,7 @@ export function RegistrationHistoryModal({ record, onClose }: ModalProps) {
               { label: 'Mobile', value: '+91 9822464286' }
             ].map((f, i) => (
               <div key={i} className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500">{f.label}</label>
+                <Label className="text-[10px] font-bold text-slate-500">{f.label}</Label>
                 <div className="w-full px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg">
                   {f.value}
                 </div>
@@ -99,7 +109,7 @@ export function RegistrationHistoryModal({ record, onClose }: ModalProps) {
               { label: 'Payment Frequency', value: 'Yearly' }
             ].map((f, i) => (
               <div key={i} className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500">{f.label}</label>
+                <Label className="text-[10px] font-bold text-slate-500">{f.label}</Label>
                 <div className="w-full px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg">
                   {f.value}
                 </div>

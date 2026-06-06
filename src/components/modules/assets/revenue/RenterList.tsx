@@ -1,7 +1,9 @@
 'use client';
+/* eslint-disable i18next/no-literal-string */
 
 import { useState, useMemo } from 'react';
-import { Search, User, Phone, CheckCircle, AlertTriangle, Building } from 'lucide-react';
+import { User, Phone, CheckCircle, AlertTriangle, Building } from 'lucide-react';
+import { Card, Label, SearchInput, Select } from '@/components/common';
 
 interface Renter {
   id: string;
@@ -39,34 +41,36 @@ export function RenterList() {
   }, [search, statusFilter]);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm space-y-4">
+    <Card variant="bordered" padding="none" className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm space-y-4">
       {/* Search Header */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-72">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-slate-400" />
-          </span>
-          <input
-            type="text"
-            placeholder="Search tenant name, asset ID..."
+        <div className="w-full sm:w-72">
+          <SearchInput
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all outline-none"
+            onChange={setSearch}
+            placeholder="Search tenant name, asset ID..."
+            className="mb-0 w-full"
+            showClear={false}
           />
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden sm:block">Status:</label>
-          <select
+          <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden sm:block">
+            Status:
+          </Label>
+          <Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full sm:w-40 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all outline-none"
-          >
-            <option value="all">All Tenants</option>
-            <option value="paid">Paid</option>
-            <option value="unpaid">Unpaid</option>
-            <option value="pending">Pending clearings</option>
-          </select>
+            onChange={(_, value) => setStatusFilter(value)}
+            options={[
+              { label: 'All Tenants', value: 'all' },
+              { label: 'Paid', value: 'paid' },
+              { label: 'Unpaid', value: 'unpaid' },
+              { label: 'Pending clearings', value: 'pending' },
+            ]}
+            selectSize="sm"
+            className="w-full sm:w-40"
+            placeholder="All Tenants"
+          />
         </div>
       </div>
 
@@ -141,6 +145,6 @@ export function RenterList() {
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
   );
 }

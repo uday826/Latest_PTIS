@@ -1,234 +1,495 @@
+/* eslint-disable i18next/no-literal-string */
 'use client';
 
-import { useState, useMemo } from 'react';
-import { FileText, Eye, CheckCircle, Search, Calendar as CalendarIcon } from 'lucide-react';
-import { LeaseRentStats } from './LeaseRentStats';
-import { LeaseRentFilters } from './LeaseRentFilters';
+import { startTransition, useCallback, useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Input, Label, SearchInput, Select } from '@/components/common';
+import { LeaseRentFilters, type FilterOption } from './LeaseRentFilters';
 import { LeaseRentTable } from './LeaseRentTable';
-import { LeaseRentVerificationTable } from './LeaseRentVerificationTable';
-import { LeaseRentApprovalTable } from './LeaseRentApprovalTable';
-import { NewLeaseRegistrationModal } from './NewLeaseRegistrationModal';
-import { RegistrationHistoryModal } from './RegistrationHistoryModal';
-import { VerificationLeaseModal } from './VerificationLeaseModal';
+import { LeaseRentVerificationTable, type VerificationRecord } from './LeaseRentVerificationTable';
+import { LeaseRentApprovalTable, type ApprovalRecord } from './LeaseRentApprovalTable';
+import { NewLeaseRegistrationModal } from './NewLeaseRegistrationDrawer';
+import { RegistrationHistoryModal } from './RegistrationHistoryDrawer';
+import { VerificationLeaseModal } from './VerificationLeaseDrawer';
 import { ApprovalLeaseModal } from './ApprovalLeaseModal';
-import { RejectRegistrationModal } from './RejectRegistrationModal';
-import { mockLeaseRecords, LeaseRentRecord } from './mockData';
+import { RejectRegistrationModal } from './RejectRegistrationDrawer';
+import type { LeaseRentRecord } from './lease-rent.types';
+import type { LeaseRentRegistrationListItem } from '@/lib/api/asset/leaseRentRegistration.service';
+import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
+import type { ApplicationTypeItem } from '@/app/[locale]/assets/revenue/manage-renters/actions';
 
-export function LeaseRentRegistration() {
-  const [activeTab, setActiveTab] = useState<'registration' | 'verification' | 'approval'>('registration');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [category, setCategory] = useState('Shopping Complex');
-  const [zone, setZone] = useState('all');
-  const [ward, setWard] = useState('all');
-  const [assetSelect, setAssetSelect] = useState('all');
-  
-  // State for the Modals
-  const [selectedRecordForRegistration, setSelectedRecordForRegistration] = useState<LeaseRentRecord | null>(null);
+type Stage = 'registration' | 'verification' | 'approval';
+
+interface LeaseRentRegistrationProps {
+  stage?: Stage;
+  initialRecords?: LeaseRentRecord[];
+  pageNumber?: number;
+  pageSize?: number;
+  totalCount?: number;
+  totalPages?: number;
+  searchTerm?: string;
+  assetCategoryId?: number | null;
+  zoneId?: number | null;
+  wardId?: number | null;
+  assetId?: number | null;
+  verificationRecords?: VerificationRecord[];
+  approvalRecords?: ApprovalRecord[];
+  drawerAssetId?: number | null;
+  selectedAsset?: Record<string, unknown> | null;
+  assetDocuments?: AssetDocumentListItem[];
+  applicationTypes?: ApplicationTypeItem[];
+  verificationDrawerId?: number | null;
+  selectedVerification?: LeaseRentRegistrationListItem | null;
+  approvalDrawerId?: number | null;
+  selectedApproval?: LeaseRentRegistrationListItem | null;
+  rejectDrawerId?: number | null;
+  selectedRejection?: LeaseRentRegistrationListItem | null;
+  categoryOptions?: FilterOption[];
+  zoneOptions?: FilterOption[];
+  wardOptions?: FilterOption[];
+  assetOptions?: FilterOption[];
+}
+
+export function LeaseRentRegistration({
+  stage = 'registration',
+  initialRecords = [],
+  pageNumber = 1,
+  pageSize = 5,
+  totalCount = 0,
+  totalPages = 1,
+  searchTerm = '',
+  assetCategoryId = null,
+  zoneId = null,
+  wardId = null,
+  assetId = null,
+  verificationRecords = [],
+  approvalRecords = [],
+  drawerAssetId = null,
+  selectedAsset = null,
+  assetDocuments = [],
+  applicationTypes = [],
+  verificationDrawerId = null,
+  selectedVerification = null,
+  approvalDrawerId = null,
+  selectedApproval = null,
+  rejectDrawerId = null,
+  selectedRejection = null,
+  categoryOptions = [],
+  zoneOptions = [],
+  wardOptions = [],
+  assetOptions = [],
+}: LeaseRentRegistrationProps = {}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchTerm);
+  const [category, setCategory] = useState(assetCategoryId ? String(assetCategoryId) : 'all');
+  const [zone, setZone] = useState(zoneId ? String(zoneId) : 'all');
+  const [ward, setWard] = useState(wardId ? String(wardId) : 'all');
+  const [assetSelect, setAssetSelect] = useState(assetId ? String(assetId) : 'all');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
   const [selectedRecordForHistory, setSelectedRecordForHistory] = useState<LeaseRentRecord | null>(null);
-  const [selectedRecordForVerification, setSelectedRecordForVerification] = useState<any | null>(null);
-  const [selectedRecordForApproval, setSelectedRecordForApproval] = useState<any | null>(null);
-  const [selectedRecordForRejection, setSelectedRecordForRejection] = useState<any | null>(null);
+  const [selectedRecordForRegistration, setSelectedRecordForRegistration] = useState<LeaseRentRecord | null>(null);
+  const drawerAsset = selectedAsset ?? (drawerAssetId ? { assetNo: 'Asset not found' } : null);
+  
+  const verificationDrawerOpen = verificationDrawerId != null;
+  const openVerificationDrawer = useCallback(
+    (recordId: string | number) => {
+      const nextParams = new URLSearchParams(searchParams.toString());
+      nextParams.set('drawerVerificationId', String(recordId));
+      startTransition(() => {
+        router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
+        router.refresh();
+      });
+    },
+    [pathname, router, searchParams]
+  );
 
-  const filteredRecords = useMemo(() => {
-    return mockLeaseRecords.filter((r) => {
-      const matchesSearch =
-        r.tenantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.shopName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.assetId.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesAsset = assetSelect === 'all' || r.assetId === assetSelect;
-      return matchesSearch && matchesAsset;
+  const closeVerificationDrawer = useCallback(() => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete('drawerVerificationId');
+    const queryString = nextParams.toString();
+    startTransition(() => {
+      router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
+      router.refresh();
     });
-  }, [searchQuery, assetSelect]);
+  }, [pathname, router, searchParams]);
 
-  const handleAction = (record: LeaseRentRecord) => {
-    setSelectedRecordForRegistration(record);
-  };
+  const approvalDrawerOpen = approvalDrawerId != null;
+  const openApprovalDrawer = useCallback(
+    (recordId: string | number) => {
+      const nextParams = new URLSearchParams(searchParams.toString());
+      nextParams.set('drawerApprovalId', String(recordId));
+      startTransition(() => {
+        router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
+        router.refresh();
+      });
+    },
+    [pathname, router, searchParams]
+  );
 
-  const handleHistory = (record: LeaseRentRecord) => {
+  const closeApprovalDrawer = useCallback(() => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete('drawerApprovalId');
+    const queryString = nextParams.toString();
+    startTransition(() => {
+      router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
+      router.refresh();
+    });
+  }, [pathname, router, searchParams]);
+
+  const rejectDrawerOpen = rejectDrawerId != null;
+  const openRejectDrawer = useCallback(
+    (recordId: string | number) => {
+      const nextParams = new URLSearchParams(searchParams.toString());
+      nextParams.set('drawerRejectId', String(recordId));
+      startTransition(() => {
+        router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
+        router.refresh();
+      });
+    },
+    [pathname, router, searchParams]
+  );
+
+  const closeRejectDrawer = useCallback(() => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete('drawerRejectId');
+    const queryString = nextParams.toString();
+    startTransition(() => {
+      router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
+      router.refresh();
+    });
+  }, [pathname, router, searchParams]);
+
+  const toNullableNumber = useCallback((value: string | number | null | undefined) => {
+    if (value == null || value === 'all') return null;
+    const parsed = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }, []);
+
+  const buildUrl = useCallback((nextParams: Record<string, string | number | null | undefined>) => {
+    const params = new URLSearchParams();
+    params.set('pageNumber', String(nextParams.pageNumber ?? pageNumber));
+    params.set('pageSize', String(nextParams.pageSize ?? pageSize));
+
+    const currentSearch = String(nextParams.searchTerm ?? searchQuery ?? '').trim();
+    if (currentSearch) params.set('searchTerm', currentSearch);
+
+    const hasKey = (key: string) => Object.prototype.hasOwnProperty.call(nextParams, key);
+
+    const currentCategory = hasKey('assetCategoryId')
+      ? nextParams.assetCategoryId
+      : toNullableNumber(category);
+    const currentZone = hasKey('zoneId') ? nextParams.zoneId : toNullableNumber(zone);
+    const currentWard = hasKey('wardId') ? nextParams.wardId : toNullableNumber(ward);
+    const currentAsset = hasKey('assetId') ? nextParams.assetId : toNullableNumber(assetSelect);
+
+    if (currentCategory != null && Number.isFinite(currentCategory)) {
+      params.set('assetCategoryId', String(currentCategory));
+    }
+    if (currentZone != null && Number.isFinite(currentZone)) {
+      params.set('zoneId', String(currentZone));
+    }
+    if (currentWard != null && Number.isFinite(currentWard)) {
+      params.set('wardId', String(currentWard));
+    }
+    if (currentAsset != null && Number.isFinite(currentAsset)) {
+      params.set('assetId', String(currentAsset));
+    }
+
+    return `${pathname}?${params.toString()}`;
+  }, [assetSelect, category, pageNumber, pageSize, pathname, searchQuery, toNullableNumber, ward, zone]);
+
+  const updateQuery = useCallback(
+    (nextParams: Record<string, string | number | null | undefined>) => {
+      const nextUrl = buildUrl(nextParams);
+      startTransition(() => {
+        router.replace(nextUrl, { scroll: false });
+        router.refresh();
+      });
+    },
+    [buildUrl, router]
+  );
+
+  const openAssetDrawer = useCallback(
+    (assetIdValue: string | number) => {
+      const nextParams = new URLSearchParams(searchParams.toString());
+      nextParams.set('drawerAssetId', String(assetIdValue));
+      startTransition(() => {
+        router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
+        router.refresh();
+      });
+    },
+    [pathname, router, searchParams]
+  );
+
+  const closeAssetDrawer = useCallback(() => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete('drawerAssetId');
+    const queryString = nextParams.toString();
+    startTransition(() => {
+      router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
+      router.refresh();
+    });
+  }, [pathname, router, searchParams]);
+
+  const handleCategoryChange = useCallback(
+    (value: string | null) => {
+      const nextValue = value ?? 'all';
+      setCategory(nextValue);
+      updateQuery({ pageNumber: 1, assetCategoryId: toNullableNumber(value) });
+    },
+    [toNullableNumber, updateQuery]
+  );
+
+  const handleZoneChange = useCallback(
+    (value: string | null) => {
+      const nextValue = value ?? 'all';
+      setZone(nextValue);
+      setWard('all');
+      setAssetSelect('all');
+      updateQuery({
+        pageNumber: 1,
+        zoneId: toNullableNumber(value),
+        wardId: null,
+        assetId: null,
+      });
+    },
+    [toNullableNumber, updateQuery]
+  );
+
+  const handleWardChange = useCallback(
+    (value: string | null) => {
+      const nextValue = value ?? 'all';
+      setWard(nextValue);
+      setAssetSelect('all');
+      updateQuery({
+        pageNumber: 1,
+        wardId: toNullableNumber(value),
+        assetId: null,
+      });
+    },
+    [toNullableNumber, updateQuery]
+  );
+
+  const handleAssetChange = useCallback(
+    (value: string | null) => {
+      const nextValue = value ?? 'all';
+      setAssetSelect(nextValue);
+      updateQuery({ pageNumber: 1, assetId: toNullableNumber(value) });
+    },
+    [toNullableNumber, updateQuery]
+  );
+
+  const handleRegistrationAction = useCallback(
+    (record: LeaseRentRecord) => {
+      setSelectedRecordForRegistration(record);
+      if (record.assetMasterId) {
+        openAssetDrawer(record.assetMasterId);
+      }
+    },
+    [openAssetDrawer]
+  );
+
+  const handleHistoryAction = useCallback((record: LeaseRentRecord) => {
     setSelectedRecordForHistory(record);
+  }, []);
+
+  const handleVerificationAction = useCallback((record: VerificationRecord) => {
+    openVerificationDrawer(record.id);
+  }, [openVerificationDrawer]);
+
+  const handleApprovalAction = useCallback((record: ApprovalRecord) => {
+    openApprovalDrawer(record.id);
+  }, [openApprovalDrawer]);
+
+  const handleRejectAction = useCallback((record: ApprovalRecord) => {
+    openRejectDrawer(record.id);
+  }, [openRejectDrawer]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery === searchTerm) return;
+      updateQuery({ pageNumber: 1, searchTerm: searchQuery });
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchTerm, updateQuery]);
+
+  const renderStageFilters = () => {
+    if (stage === 'registration') {
+      return (
+        <LeaseRentFilters
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          category={category}
+          setCategory={setCategory}
+          zone={zone}
+          setZone={setZone}
+          ward={ward}
+          setWard={setWard}
+          assetSelect={assetSelect}
+          setAssetSelect={setAssetSelect}
+          categoryOptions={categoryOptions}
+          zoneOptions={zoneOptions}
+          wardOptions={wardOptions}
+          assetOptions={assetOptions}
+          onCategoryChange={handleCategoryChange}
+          onZoneChange={handleZoneChange}
+          onWardChange={handleWardChange}
+          onAssetChange={handleAssetChange}
+        />
+      );
+    }
+
+    return (
+      <div className="mb-4 rounded-2xl border border-slate-200/60 bg-slate-50 p-4 shadow-sm">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[200px_minmax(0,1fr)_170px_170px]">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Asset Category</Label>
+          <Select
+            value={category}
+            onChange={(_, value) => handleCategoryChange(value === 'all' ? null : value)}
+            options={[
+              { label: 'All Categories', value: 'all' },
+              ...categoryOptions,
+              ]}
+              selectSize="sm"
+              className="w-full"
+              placeholder="All Categories"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Smart Search</Label>
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search across all fields..."
+              className="mb-0 w-full"
+              showClear={false}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Input
+              type="date"
+              label="From Date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400 focus:border-blue-500"
+              fullWidth
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Input
+              type="date"
+              label="To Date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400 focus:border-blue-500"
+              fullWidth
+            />
+          </div>
+        </div>
+      </div>
+    );
   };
 
-  const tabs = [
-    { id: 'registration' as const, label: 'Registration', icon: FileText, badge: null, badgeColor: '' },
-    { id: 'verification' as const, label: 'Verification', icon: Eye, badge: '10', badgeColor: 'bg-blue-100 text-blue-600 border-blue-200' },
-    { id: 'approval' as const, label: 'Approval', icon: CheckCircle, badge: '4', badgeColor: 'bg-amber-100 text-amber-600 border-amber-200' },
-  ];
+  const renderStageTable = () => {
+    if (stage === 'registration') {
+      return (
+        <LeaseRentTable
+          records={initialRecords}
+          pageNumber={pageNumber}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          totalPages={totalPages}
+          onPageChange={(nextPage) => updateQuery({ pageNumber: nextPage })}
+          onPageSizeChange={(nextSize) => updateQuery({ pageNumber: 1, pageSize: nextSize })}
+          onActionClick={handleRegistrationAction}
+          onHistoryClick={handleHistoryAction}
+        />
+      );
+    }
+
+    if (stage === 'verification') {
+      return (
+        <LeaseRentVerificationTable
+          records={verificationRecords}
+          pageNumber={pageNumber}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          totalPages={totalPages}
+          onPageChange={(nextPage) => updateQuery({ pageNumber: nextPage })}
+          onPageSizeChange={(nextSize) => updateQuery({ pageNumber: 1, pageSize: nextSize })}
+          onActionClick={handleVerificationAction}
+        />
+      );
+    }
+
+    return (
+      <LeaseRentApprovalTable
+        records={approvalRecords}
+        pageNumber={pageNumber}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        onPageChange={(nextPage) => updateQuery({ pageNumber: nextPage })}
+        onPageSizeChange={(nextSize) => updateQuery({ pageNumber: 1, pageSize: nextSize })}
+        onActionClick={handleApprovalAction}
+        onRejectClick={handleRejectAction}
+      />
+    );
+  };
 
   return (
     <>
-      <div className="space-y-5 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-        {/* ── HEADER ── */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-5">
-          <div>
-            <h1 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
-              Lease & Rent Registration
-            </h1>
-            <p className="text-[10px] text-slate-500 font-medium mt-0.5">
-              Manage tenant details, lease agreements & rental properties
-            </p>
-          </div>
+      {renderStageFilters()}
+      {renderStageTable()}
 
-          {/* Capsule Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-50 border border-slate-200/60 rounded-xl shadow-inner">
-            {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-white text-slate-800 shadow-sm border border-slate-200/50'
-                      : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
-                  }`}
-                >
-                  <tab.icon className={`w-3.5 h-3.5 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
-                  {tab.label}
-                  {tab.badge && (
-                    <span className={`px-1.5 py-0.5 rounded-full border text-[8px] font-black ${tab.badgeColor}`}>
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── TOP KPI STATS ── */}
-        <LeaseRentStats />
-
-        {/* ── FILTERS BAR ── */}
-        {activeTab === 'registration' ? (
-          <LeaseRentFilters
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            category={category}
-            setCategory={setCategory}
-            zone={zone}
-            setZone={setZone}
-            ward={ward}
-            setWard={setWard}
-            assetSelect={assetSelect}
-            setAssetSelect={setAssetSelect}
-          />
-        ) : (
-          <div className="flex flex-col md:flex-row items-end gap-4 bg-slate-50 border border-slate-200/60 p-4 rounded-2xl">
-            <div className="space-y-1.5 min-w-[150px]">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Asset Category</label>
-              <select className="w-full h-9 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500 transition-colors">
-                <option>All Categories</option>
-                <option>Shopping Complex</option>
-                <option>Plot / Land</option>
-              </select>
-            </div>
-            
-            <div className="space-y-1.5 flex-1">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Smart Search</label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-3.5 w-3.5 text-slate-400" />
-                </span>
-                <input
-                  type="text"
-                  placeholder="Search across all fields..."
-                  className="w-full h-9 pl-9 pr-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500 placeholder:font-normal placeholder:text-slate-400 transition-colors"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5 w-[140px]">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">From Date</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="mm/dd/yyyy"
-                  className="w-full h-9 px-3 pr-8 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500 placeholder:font-normal placeholder:text-slate-400"
-                />
-                <CalendarIcon className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-            </div>
-
-            <div className="space-y-1.5 w-[140px]">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">To Date</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="mm/dd/yyyy"
-                  className="w-full h-9 px-3 pr-8 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500 placeholder:font-normal placeholder:text-slate-400"
-                />
-                <CalendarIcon className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-            </div>
-
-            <button className="h-9 px-6 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer whitespace-nowrap">
-              <Search className="w-3.5 h-3.5" />
-              Search
-            </button>
-          </div>
-        )}
-
-        {/* ── MAIN TABBED VIEWS ── */}
-        <div className="pt-2">
-          {activeTab === 'registration' && (
-            <LeaseRentTable
-              records={filteredRecords}
-              onActionClick={handleAction}
-              onHistoryClick={handleHistory}
-            />
-          )}
-
-          {activeTab === 'verification' && (
-            <LeaseRentVerificationTable 
-              onActionClick={(record) => setSelectedRecordForVerification(record)}
-            />
-          )}
-
-          {activeTab === 'approval' && (
-            <LeaseRentApprovalTable 
-              onActionClick={(record) => setSelectedRecordForApproval(record)}
-              onRejectClick={(record) => setSelectedRecordForRejection(record)}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* ── MODALS ── */}
-      {selectedRecordForRegistration && (
-        <NewLeaseRegistrationModal 
-          record={selectedRecordForRegistration} 
-          onClose={() => setSelectedRecordForRegistration(null)} 
+      {drawerAsset ? (
+        <NewLeaseRegistrationModal
+          asset={drawerAsset}
+          record={selectedRecordForRegistration}
+          documents={assetDocuments}
+          applicationTypes={applicationTypes}
+          onClose={closeAssetDrawer}
         />
-      )}
-      
-      {selectedRecordForHistory && (
-        <RegistrationHistoryModal 
-          record={selectedRecordForHistory} 
-          onClose={() => setSelectedRecordForHistory(null)} 
-        />
-      )}
-      
-      {selectedRecordForVerification && (
-        <VerificationLeaseModal 
-          record={selectedRecordForVerification}
-          onClose={() => setSelectedRecordForVerification(null)}
-        />
-      )}
+      ) : null}
 
-      {selectedRecordForApproval && (
-        <ApprovalLeaseModal 
-          record={selectedRecordForApproval}
-          onClose={() => setSelectedRecordForApproval(null)}
+      {selectedRecordForHistory ? (
+        <RegistrationHistoryModal
+          record={selectedRecordForHistory}
+          onClose={() => setSelectedRecordForHistory(null)}
         />
-      )}
+      ) : null}
 
-      {selectedRecordForRejection && (
-        <RejectRegistrationModal 
-          record={selectedRecordForRejection}
-          onClose={() => setSelectedRecordForRejection(null)}
+      {verificationDrawerOpen && selectedVerification ? (
+        <VerificationLeaseModal
+          record={selectedVerification}
+          onClose={closeVerificationDrawer}
         />
-      )}
+      ) : null}
+
+      {approvalDrawerOpen && selectedApproval ? (
+        <ApprovalLeaseModal
+          record={selectedApproval}
+          onClose={closeApprovalDrawer}
+        />
+      ) : null}
+
+      {rejectDrawerOpen && selectedRejection ? (
+        <RejectRegistrationModal
+          record={selectedRejection}
+          onClose={closeRejectDrawer}
+        />
+      ) : null}
     </>
   );
 }
+
 export default LeaseRentRegistration;

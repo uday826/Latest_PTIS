@@ -1,6 +1,12 @@
+/* eslint-disable i18next/no-literal-string */
 'use client';
 
-import { Search } from 'lucide-react';
+import { Label, SearchInput, Select } from '@/components/common';
+
+export interface FilterOption {
+  label: string;
+  value: string;
+}
 
 interface FiltersProps {
   searchQuery: string;
@@ -13,7 +19,20 @@ interface FiltersProps {
   setWard: (ward: string) => void;
   assetSelect: string;
   setAssetSelect: (asset: string) => void;
+  categoryOptions?: FilterOption[];
+  zoneOptions?: FilterOption[];
+  wardOptions?: FilterOption[];
+  assetOptions?: FilterOption[];
+  onCategoryChange?: (value: string | null) => void;
+  onZoneChange?: (value: string | null) => void;
+  onWardChange?: (value: string | null) => void;
+  onAssetChange?: (value: string | null) => void;
 }
+
+const ALL_CATEGORY_OPTION = { label: 'All Categories', value: 'all' };
+const ALL_ZONE_OPTION = { label: 'All Zones', value: 'all' };
+const ALL_WARD_OPTION = { label: 'All Wards', value: 'all' };
+const ALL_ASSET_OPTION = { label: 'All Assets', value: 'all' };
 
 export function LeaseRentFilters({
   searchQuery,
@@ -26,86 +45,81 @@ export function LeaseRentFilters({
   setWard,
   assetSelect,
   setAssetSelect,
+  categoryOptions = [],
+  zoneOptions = [],
+  wardOptions = [],
+  assetOptions = [],
+  onCategoryChange,
+  onZoneChange,
+  onWardChange,
+  onAssetChange,
 }: FiltersProps) {
+  const normalizeSelectValue = (value: string) => (value === 'all' ? null : value);
+
   return (
-    <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 shadow-inner">
+    <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 shadow-inner mb-4">
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {/* Search */}
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Search</label>
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-slate-400" />
-            </span>
-            <input
-              type="text"
-              placeholder="Search by name, path or ID..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all outline-none"
-            />
-          </div>
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Search</Label>
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search by name, path or ID..."
+            className="mb-0 w-full"
+            showClear={false}
+          />
         </div>
 
-        {/* Category */}
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Asset Category</label>
-          <select
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Asset Category</Label>
+          <Select
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all outline-none"
-          >
-            <option value="Shopping Complex">Shopping Complex</option>
-            <option value="Open Land">Open Land</option>
-            <option value="Garden">Municipal Garden</option>
-            <option value="Quarters">Municipal Quarters</option>
-          </select>
+            onChange={(_, value) =>
+              onCategoryChange ? onCategoryChange(normalizeSelectValue(value)) : setCategory(value)
+            }
+            options={[ALL_CATEGORY_OPTION, ...categoryOptions]}
+            selectSize="sm"
+            className="w-full"
+            placeholder="All Categories"
+          />
         </div>
 
-        {/* Zone */}
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Zone</label>
-          <select
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Zone</Label>
+          <Select
             value={zone}
-            onChange={(e) => setZone(e.target.value)}
-            className="w-full px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all outline-none"
-          >
-            <option value="all">All Zones</option>
-            <option value="East">East Zone</option>
-            <option value="West">West Zone</option>
-            <option value="North">North Zone</option>
-            <option value="South">South Zone</option>
-          </select>
+            onChange={(_, value) => (onZoneChange ? onZoneChange(normalizeSelectValue(value)) : setZone(value))}
+            options={[ALL_ZONE_OPTION, ...zoneOptions]}
+            selectSize="sm"
+            className="w-full"
+            placeholder="All Zones"
+          />
         </div>
 
-        {/* Ward */}
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ward</label>
-          <select
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ward</Label>
+          <Select
             value={ward}
-            onChange={(e) => setWard(e.target.value)}
-            className="w-full px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all outline-none"
-          >
-            <option value="all">All Wards</option>
-            <option value="Ward 1">Ward 1</option>
-            <option value="Ward 2">Ward 2</option>
-            <option value="Ward 3">Ward 3</option>
-          </select>
+            onChange={(_, value) => (onWardChange ? onWardChange(normalizeSelectValue(value)) : setWard(value))}
+            options={[ALL_WARD_OPTION, ...wardOptions]}
+            selectSize="sm"
+            className="w-full"
+            placeholder="All Wards"
+          />
         </div>
 
-        {/* Select Asset */}
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Select Asset</label>
-          <select
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Select Asset</Label>
+          <Select
             value={assetSelect}
-            onChange={(e) => setAssetSelect(e.target.value)}
-            className="w-full px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all outline-none"
-          >
-            <option value="all">All</option>
-            <option value="MPMS-AS-9">MPMS-AS-9</option>
-            <option value="MPMS-AS-10">MPMS-AS-10</option>
-            <option value="MPMS-AS-15">MPMS-AS-15</option>
-          </select>
+            onChange={(_, value) =>
+              onAssetChange ? onAssetChange(normalizeSelectValue(value)) : setAssetSelect(value)
+            }
+            options={[ALL_ASSET_OPTION, ...assetOptions]}
+            selectSize="sm"
+            className="w-full"
+            placeholder="All Assets"
+          />
         </div>
       </div>
     </div>

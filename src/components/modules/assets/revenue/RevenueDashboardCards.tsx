@@ -1,6 +1,8 @@
 'use client';
+/* eslint-disable i18next/no-literal-string */
 
 import { Building2, IndianRupee, TrendingUp } from 'lucide-react';
+import { DashboardCard } from '@/components/common/DashboardCard';
 
 interface StatsProps {
   onCardClick?: (type: 'leased' | 'demand' | 'collection') => void;
@@ -16,7 +18,6 @@ export function RevenueDashboardCards({ onCardClick }: StatsProps) {
       icon: Building2,
       color: 'from-violet-500 via-purple-600 to-indigo-700',
       badge: '94% Occupied',
-      badgeColor: 'bg-violet-100 text-violet-700 border-violet-200',
     },
     {
       id: 'demand' as const,
@@ -26,7 +27,6 @@ export function RevenueDashboardCards({ onCardClick }: StatsProps) {
       icon: IndianRupee,
       color: 'from-emerald-500 via-teal-600 to-cyan-600',
       badge: 'Target 100%',
-      badgeColor: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     },
     {
       id: 'collection' as const,
@@ -36,7 +36,6 @@ export function RevenueDashboardCards({ onCardClick }: StatsProps) {
       icon: TrendingUp,
       color: 'from-pink-500 via-rose-600 to-amber-600',
       badge: '83.8% Collection Rate',
-      badgeColor: 'bg-rose-100 text-rose-700 border-rose-200',
     },
   ];
 
@@ -47,30 +46,22 @@ export function RevenueDashboardCards({ onCardClick }: StatsProps) {
         {stats.map((card) => {
           const Icon = card.icon;
           return (
-            <div
+            <button
               key={card.id}
+              type="button"
               onClick={() => onCardClick?.(card.id)}
-              className="group relative bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+              className="text-left cursor-pointer"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 via-white to-transparent pointer-events-none" />
-              <div className="relative z-10 flex items-center justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded-full border text-[9px] font-bold tracking-wide uppercase ${card.badgeColor}`}>
-                      {card.badge}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{card.label}</p>
-                    <h3 className="text-2xl font-black text-slate-800 tracking-tight mt-0.5">{card.value}</h3>
-                  </div>
-                  <p className="text-[10px] text-slate-500 font-medium">{card.subtext}</p>
-                </div>
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${card.color} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                  <Icon className="w-6 h-6 text-white drop-shadow-sm" />
-                </div>
-              </div>
-            </div>
+              <DashboardCard
+                label={card.label}
+                value={card.value}
+                subLabel={`${card.badge} · ${card.subtext}`}
+                icon={<Icon className="w-5 h-5 text-white" />}
+                iconBg={`bg-gradient-to-br ${card.color}`}
+                valueColor="text-slate-800"
+                className="group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+              />
+            </button>
           );
         })}
       </div>
