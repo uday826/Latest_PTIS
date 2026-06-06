@@ -50,7 +50,7 @@ const LEASE_RENT_TYPE_OPTIONS = [
 const PAYMENT_STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
   { label: 'Paid', value: 'paid' },
-  { label: 'UnPaid', value: 'unpaid' },
+  { label: 'Unpaid', value: 'unpaid' },
 ];
 
 type PaymentTableRow = LeaseRentPaymentListItem & Record<string, unknown>;

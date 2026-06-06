@@ -16,11 +16,13 @@ export interface LeaseRentPaymentListItem {
   leaseRentRegistrationId: number;
   grievanceNo: string;
   assetId: number;
+  assetNo: string;
   assetName: string;
   zone: string;
   wardNo: string;
   category: string;
   shopNo: string;
+  shopName: string;
   tenantName: string;
   tenantMobile: string;
   leaseType: string;
@@ -34,8 +36,13 @@ export interface LeaseRentPaymentDetail {
   leaseRentRegistrationId: number;
   grievanceNo: string;
   assetId: number;
+  assetNo?: string | null;
   assetName: string;
+  zone?: string | null;
+  wardNo?: string | null;
+  category?: string | null;
   shopNo: string;
+  shopName?: string | null;
   tenantName: string;
   tenantMobile: string;
   tenantEmail: string;

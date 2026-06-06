@@ -47,6 +47,11 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
   const router = useRouter();
   const params = useParams<{ locale: string; recordId: string }>();
   const searchParams = useSearchParams();
+  const assetNo = record.assetNo?.trim() || '-';
+  const zone = record.zone?.trim() || '-';
+  const wardNo = record.wardNo?.trim() || '-';
+  const category = record.category?.trim() || '-';
+  const shopName = record.shopName?.trim() || '-';
 
   const handleBack = () => {
     const next = new URLSearchParams();
@@ -130,11 +135,11 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
                 <div className="flex items-center gap-2 mb-1">
                   <FileText className="w-3.5 h-3.5 opacity-80" />
                   <span className="text-[10px] font-bold opacity-90 uppercase tracking-wide">{t('assetInfo.assetId')}</span>
-                  <span className="text-xs font-black">{record.assetNo}</span>
+                  <span className="text-xs font-black">{assetNo}</span>
                 </div>
                 <p className="text-[10px] font-medium opacity-80">{t('assetInfo.assetName')}</p>
                 <p className="text-xs font-bold leading-tight">{record.assetName}</p>
-                <p className="text-[10px] leading-tight opacity-90 mt-0.5">{record.shopName}</p>
+                <p className="text-[10px] leading-tight opacity-90 mt-0.5">{shopName}</p>
               </div>
 
               <div className="absolute top-4 right-1/3 bg-blue-500 p-1.5 rounded-full text-white shadow-md border-2 border-white">
@@ -143,8 +148,8 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
             </div>
 
             <div className="grid grid-cols-3 gap-3 mb-3">
-              <InfoItem icon={<Map className="w-3 h-3" />} label={t('assetInfo.assetId')} value={record.assetNo} iconClassName="bg-blue-100 text-blue-600" />
-              <InfoItem icon={<Navigation className="w-3 h-3" />} label={t('assetInfo.wardNo')} value={record.wardNo ?? '-'} iconClassName="bg-purple-100 text-purple-600" />
+              <InfoItem icon={<MapPin className="w-3 h-3" />} label={t('assetInfo.zone')} value={zone} iconClassName="bg-orange-100 text-orange-600" />
+              <InfoItem icon={<Navigation className="w-3 h-3" />} label={t('assetInfo.wardNo')} value={wardNo} iconClassName="bg-purple-100 text-purple-600" />
               <InfoItem icon={<Home className="w-3 h-3" />} label={t('assetInfo.shopPlotNo')} value={record.shopNo} iconClassName="bg-emerald-100 text-emerald-600" />
             </div>
 
@@ -153,11 +158,11 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
               <InfoItem icon={<User className="w-3 h-3" />} label="Email" value={record.tenantEmail} iconClassName="bg-indigo-100 text-indigo-600" />
             </div>
 
-            <InfoItem icon={<MapPin className="w-3 h-3" />} label={t('assetInfo.zone')} value={record.zone ?? '-'} iconClassName="bg-orange-100 text-orange-600" />
+            <InfoItem icon={<Map className="w-3 h-3" />} label={t('assetInfo.assetId')} value={assetNo} iconClassName="bg-blue-100 text-blue-600" />
 
             <div className="grid grid-cols-2 gap-3 my-3">
-              <InfoItem icon={<Building2 className="w-3 h-3" />} label={t('assetInfo.assetCategory')} value={record.category} iconClassName="bg-teal-100 text-teal-600" />
-              <InfoItem icon={<FileText className="w-3 h-3" />} label="Shop Name" value={record.shopName} iconClassName="bg-rose-100 text-rose-600" />
+              <InfoItem icon={<Building2 className="w-3 h-3" />} label={t('assetInfo.assetCategory')} value={category} iconClassName="bg-teal-100 text-teal-600" />
+              <InfoItem icon={<FileText className="w-3 h-3" />} label="Shop Name" value={shopName} iconClassName="bg-rose-100 text-rose-600" />
             </div>
 
             <InfoItem icon={<MapPin className="w-3 h-3" />} label={t('assetInfo.assetName')} value={record.assetName} iconClassName="bg-orange-100 text-orange-600" />
