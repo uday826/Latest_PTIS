@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Input } from "@/components/common";
-import { DollarSign, Landmark, TrendingUp, Calculator, FileText, Cpu, Calendar, CheckCircle2, RefreshCw } from "lucide-react";
+import { Landmark, TrendingUp, Calculator, FileText, Cpu, Calendar, CheckCircle2, RefreshCw } from "lucide-react";
 
 interface LandValuationProps {
   formData: any;

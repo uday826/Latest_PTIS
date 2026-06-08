@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { AssetValuation } from "./AssetValuation";
 import { TaxationDetails } from "./TaxationDetails";
 import { LandValuation } from "./LandValuation";
@@ -37,7 +37,7 @@ export default function ValuationPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [dynamicFloors, setDynamicFloors] = useState<any[]>([]);
-  const [buildingCV, setBuildingCV] = useState<any>(null);
+
   const [plotCV, setPlotCV] = useState<any>(null);
   const [inventoryState, setInventoryState] = useState<{
     furnitureItems: any[];
@@ -117,9 +117,7 @@ export default function ValuationPage() {
               updateFormData({ floors: mappedFloors });
             }
 
-            if (res.buildingCV) {
-              setBuildingCV(res.buildingCV);
-            }
+
 
             if (res.plotCV) {
               setPlotCV(res.plotCV);

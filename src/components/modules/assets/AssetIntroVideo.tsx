@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Landmark, Sparkles } from 'lucide-react';
+import { Landmark } from 'lucide-react';
 
 /**
  * Asset Management Intro Video Component

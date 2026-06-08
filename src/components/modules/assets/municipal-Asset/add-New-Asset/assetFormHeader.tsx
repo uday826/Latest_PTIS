@@ -1,10 +1,10 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AssetStepper } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetStepper";
 import { AssetFormFooter } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetFormFooter";
 import { getFilteredSteps, getCurrentAssetStep, type CategoryFlags } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetFormSteps";
-import { User, X, Home, ArrowLeft } from "lucide-react";
+import { Home, PencilLine } from "lucide-react";
 
 import { AssetFormProvider, useAssetForm } from "@/components/modules/assets/municipal-Asset/add-New-Asset/AssetFormContext";
 
@@ -23,7 +23,11 @@ export function AssetFormHeader({ children }: AssetFormHeaderProps) {
 function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { formData } = useAssetForm();
+
+  const isEditMode = searchParams.get('mode') === 'edit' || !!(searchParams.get('assetId') || searchParams.get('id'));
+  const assetCode = searchParams.get('assetCode') || formData.assetCode || '';
 
   const categoryFlags: CategoryFlags | undefined =
     formData.hasFloorDetails !== undefined ? {
@@ -45,16 +49,31 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
 
   return (
     <div className="flex flex-col h-full bg-slate-50/50 rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-      {/* Top Premium Dark Header */}
-      <div className="bg-[#0f172a] text-white px-4 py-2 flex items-center justify-between border-b border-slate-800 shrink-0">
+      {/* Top Header — dark navy for new, amber-tinted for edit */}
+      <div className={`${isEditMode ? 'bg-[#1a1200]' : 'bg-[#0f172a]'} text-white px-4 py-2 flex items-center justify-between border-b ${isEditMode ? 'border-amber-900/40' : 'border-slate-800'} shrink-0`}>
         <div className="flex items-center gap-3">
-          <div className="bg-[#1e293b] p-2 rounded-lg border border-slate-700/50 flex items-center justify-center shadow-inner">
-            <Home className="size-5 text-blue-400" />
+          <div className={`${isEditMode ? 'bg-amber-900/40 border-amber-700/40' : 'bg-[#1e293b] border-slate-700/50'} p-2 rounded-lg border flex items-center justify-center shadow-inner`}>
+            {isEditMode
+              ? <PencilLine className="size-5 text-amber-400" />
+              : <Home className="size-5 text-blue-400" />
+            }
           </div>
           <div>
-            <h1 className="text-lg font-extrabold tracking-tight text-white leading-none">Add New Municipal Asset</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-extrabold tracking-tight text-white leading-none">
+                {isEditMode ? 'Edit Municipal Asset' : 'Add New Municipal Asset'}
+              </h1>
+              {isEditMode && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-amber-400">
+                  Edit Mode
+                </span>
+              )}
+            </div>
             <p className="text-[10px] text-amber-500 font-extrabold uppercase tracking-wider mt-1.5">
-              Step {currentStep?.id ?? 1} of {steps.length} | {currentStep?.label ?? "Basic Info"}
+              Step {currentStep?.id ?? 1} of {steps.length} | {currentStep?.label ?? 'Basic Info'}
+              {isEditMode && assetCode && (
+                <span className="ml-2 text-amber-400/70">• {assetCode}</span>
+              )}
             </p>
           </div>
         </div>

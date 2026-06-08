@@ -15,7 +15,7 @@ import { assetMasterService } from "@/lib/api/asset/asset-master.service";
 import { apiClient } from "@/services/api.service";
 import { assetFieldValueService } from "@/lib/api/asset/asset-field-value.service";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+
 import { categoryTypeService } from "@/lib/api/asset/category-type.service";
 import { departmentService } from "@/lib/api/asset/department.service";
 import { wardService } from "@/lib/api/asset/ward.service";
@@ -297,9 +297,7 @@ export async function submitAssetForm(formData: AssetFormData) {
     const totalBuiltUpSqM = floors.reduce((acc: number, f: any) => acc + (f.checked ? Number(f.builtUpAreaSqM || 0) : 0), 0);
     const totalCarpetSqM = floors.reduce((acc: number, f: any) => acc + (f.checked ? Number(f.carpetAreaSqM || 0) : 0), 0);
 
-    const cookieStore = await cookies();
-    const userIdVal = cookieStore.get("user_id")?.value;
-    const userId = userIdVal ? Number(userIdVal) : 1;
+
 
     const apiRequest: AssetMasterRequest = {
       authorityId: 1,

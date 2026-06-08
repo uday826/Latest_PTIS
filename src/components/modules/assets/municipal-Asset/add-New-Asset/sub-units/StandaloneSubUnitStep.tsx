@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAssetForm } from "../AssetFormContext";
-import { Plus, ListFilter, Building2, CheckCircle2, LayoutGrid, Edit2 } from "lucide-react";
+import { Plus, Building2, CheckCircle2, LayoutGrid, Edit2 } from "lucide-react";
 import { Input, Select, Card, CardContent } from "@/components/common";
 import { SubUnitDetailedConfigurator } from "./SubUnitDetailedConfigurator";
 
@@ -32,7 +32,7 @@ export function StandaloneSubUnitStep() {
     const newUnits = [];
     const baseId = units.length > 0 ? Math.max(...units.map((u: any) => u.id || 0)) + 1 : 1;
     const typeLabel = formData.assetType?.split(" ")[0] || "Unit"; // "Flats", "Shops"
-    const prefix = typeLabel === "Flats" ? "F-" : typeLabel === "Shops" ? "S-" : "R-";
+
 
     const selectedFloor = parentFloors.find((f: any) => f.id === selectedFloorId) || parentFloors[0] || {
       floor: "Ground",

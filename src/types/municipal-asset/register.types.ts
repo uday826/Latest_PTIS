@@ -38,6 +38,9 @@ export type AssetRegisterRow = {
   carpetAreaSqMeter: string;
   landAreaSqMeter: string;
   createdDate: string;
+  // Edit-mode context
+  assetCategoryId: number | null;
+  assetTypeId: number | null;
 };
 
 export type AssetRegisterApiRecord = {
@@ -49,7 +52,9 @@ export type AssetRegisterApiRecord = {
   name?: string;
   categoryName?: string;
   assetCategoryName?: string;
+  assetCategoryId?: number | null;
   assetTypeName?: string;
+  assetTypeId?: number | null;
   departmentName?: string;
   department?: string;
   authorityName?: string;

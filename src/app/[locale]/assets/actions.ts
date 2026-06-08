@@ -8,7 +8,7 @@ import { assetFieldValueService } from "@/lib/api/asset/asset-field-value.servic
 import { getDocumentFileRaw, getDocumentsByAsset, uploadDocument } from "@/lib/api/asset/asset-document.server.service";
 import { AssetFormData, AssetMasterRequest, AssetFieldValueRequest } from "@/types/asset-types/basic-info/asset-wizard.types";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+
 import { categoryTypeService } from "@/lib/api/asset/category-type.service";
 import { departmentService } from "@/lib/api/asset/department.service";
 import { wardService } from "@/lib/api/asset/ward.service";
@@ -471,38 +471,6 @@ export async function submitAssetForm(formData: AssetFormData) {
       "zone 1": 1, "zone 2": 2, "zone 3": 3, "zone 4": 4, "zone 5": 5
     };
 
-    const floorMapping: Record<string, number> = {
-      "ground": 1,
-      "1st": 2,
-      "2nd": 3,
-      "3rd": 4,
-      "4th": 5,
-      "5th": 6,
-      "6th": 7
-    };
-
-    const conTypeMapping: Record<string, number> = {
-      "rcc": 1,
-      "load bearing": 2,
-      "steel frame": 3,
-      "wooden": 4
-    };
-
-    const useTypeMapping: Record<string, number> = {
-      "residential": 1,
-      "commercial": 2,
-      "industrial": 3,
-      "mixed use": 4
-    };
-
-    const subUseTypeMapping: Record<string, number> = {
-      "bungalow": 1,
-      "duplex": 2,
-      "shop": 3,
-      "office": 4,
-      "storage": 5
-    };
-
 
 
     const floors = formData.floors || [];
@@ -591,13 +559,8 @@ export async function submitAssetForm(formData: AssetFormData) {
       return null;
     };
 
-    const firstFloor = floors[0];
     const totalBuiltUpSqM = floors.reduce((acc: number, f: any) => acc + (f.checked ? Number(f.builtUpAreaSqM || 0) : 0), 0);
     const totalCarpetSqM = floors.reduce((acc: number, f: any) => acc + (f.checked ? Number(f.carpetAreaSqM || 0) : 0), 0);
-
-    const cookieStore = await cookies();
-    const userIdVal = cookieStore.get("user_id")?.value;
-    const userId = userIdVal ? Number(userIdVal) : 1;
 
     const apiRequest: AssetMasterRequest = {
       authorityId: 1,
@@ -665,7 +628,7 @@ export async function submitAssetForm(formData: AssetFormData) {
         plotNumber: formData.plotNumber,
         surveyNumber: formData.surveyNumber,
       })
-      .filter(([key, value]) => value !== null && value !== undefined && String(value).trim() !== "")
+      .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "")
       .map(([key, value]) => {
         const definition = fieldDefs.find(
           (d: any) =>

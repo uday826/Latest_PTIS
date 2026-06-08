@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Layers, Sparkles, Plus, Trash2, FileSpreadsheet } from "lucide-react";
+import { Layers, Sparkles, Plus, Trash2 } from "lucide-react";
 import { Input, Select, Card, CardHeader, CardTitle, CardContent } from "@/components/common";
 import { useAssetForm } from "../AssetFormContext";
 import { ChildAssetDrawer } from "./ChildAssetDrawer";
@@ -88,9 +88,6 @@ export function FloorDetailsConfigurator() {
     });
   };
 
-  const totalCV = (formData.floors || []).reduce((acc: number, f: any) =>
-    acc + (f.checked ? Number(f.baseValue || 0) : 0), 0
-  );
 
   return (
     <Card variant="bordered" padding="sm" className="shadow-sm border-slate-200/80 bg-white rounded-2xl">

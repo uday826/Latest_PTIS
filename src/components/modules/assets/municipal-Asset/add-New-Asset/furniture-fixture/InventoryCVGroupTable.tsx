@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import { InventoryCategoryGroup, IndividualAssetUnit } from "./FurnitureFixtureTypes";
+import { InventoryCategoryGroup } from "./FurnitureFixtureTypes";
 import { inventoryMeta, formatCurrency } from "./FurnitureFixtureConstants";
-import { ChevronDown, ChevronRight, TrendingDown, Hash, Info } from "lucide-react";
+import { ChevronDown, ChevronRight, TrendingDown, Hash } from "lucide-react";
 
 interface Props {
   groups: InventoryCategoryGroup[];
@@ -87,7 +87,7 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
                     </td>
                   </tr>
 
-                  {catOpen && group.batches.map((batch, bIdx) => {
+                  {catOpen && group.batches.map((batch) => {
                     const batchOpen = expandedBatches[batch.id];
                     const totalCV   = batch.totalCV ?? batch.total;
                     const dep       = batch.total - totalCV;

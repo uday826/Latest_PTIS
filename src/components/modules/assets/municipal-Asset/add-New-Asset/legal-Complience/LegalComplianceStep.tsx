@@ -13,8 +13,7 @@ import {
 import {
   fetchDocumentDefinitionsAction,
   fetchUploadedDocumentsAction,
-  deleteUploadedDocAction,
-  uploadDocumentAction
+  deleteUploadedDocAction
 } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { toast } from "sonner";
 

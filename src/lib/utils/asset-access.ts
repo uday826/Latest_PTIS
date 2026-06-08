@@ -10,7 +10,7 @@ export const PROJECT_SCREEN_CATALOG: ScreenItem[] = [
   { screenCode: "auction", screenPath: "/auction-management" },
   { screenCode: "revenue", screenPath: "/assets/revenue/payment" },
   { screenCode: "manage_renters", screenPath: "/assets/revenue/manage-renters" },
-  { screenCode: "configuration", screenPath: "/assets/ScreenField/configuration" }
+  { screenCode: "configuration", screenPath: "/assets/configuration/master-data/asset-type" }
 ];
 
 export const SCREEN_MASTER_CHANGE_EVENT = 'screen_master_change';

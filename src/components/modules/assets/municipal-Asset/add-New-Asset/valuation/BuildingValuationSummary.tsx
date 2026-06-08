@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
 import {
-  DollarSign, TrendingUp,
+  DollarSign,
 } from "lucide-react";
 
 interface DetailRow {

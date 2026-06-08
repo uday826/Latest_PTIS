@@ -1,8 +1,8 @@
-import { useState, useRef, useMemo, useCallback } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useConfirm } from "@/components/common";
 import { type InventoryType, type InventoryRow, type InventoryForm, type InvoiceForm, type InventoryInvoice } from "./FurnitureFixtureTypes";
-import { typeOptions, conditionMap, invoiceModeOptions, inventoryMeta, initialRows, emptyForm, emptyInvoiceForm, PAGE_SIZE, formatCurrency } from "./FurnitureFixtureConstants";
-import { enrichRows, buildCategoryGroups, calcRowCV } from "./FurnitureFixtureCV";
+import { typeOptions, inventoryMeta, emptyForm, emptyInvoiceForm, PAGE_SIZE } from "./FurnitureFixtureConstants";
+import { enrichRows, buildCategoryGroups } from "./FurnitureFixtureCV";
 import { toast } from "sonner";
 import type { InventoryItemCategory, InventoryItemCondition, InventoryItemName, InventoryItemModel } from "@/lib/api/asset/inventory.service";
 import { saveInventoryBatchAction, saveSingleInventoryBatchAction, updateInventoryBatchAction, deleteInventoryBatchAction, getInventoryBatchesAction, type InventoryBatchDetail, type InventoryBatchListResponse } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
@@ -491,8 +491,7 @@ export function useFurnitureFixtureState(
       registeredUnits: existingRow?.registeredUnits
     };
     
-    const cvData = calcRowCV(payload, dynamicRates, dynamicConditions);
-    const enrichedPayload = { ...payload, ...cvData };
+
 
     // If the row is registered, update via API
     if (existingRow?.batchId && existingRow?.isRegistered) {
@@ -763,7 +762,7 @@ export function useFurnitureFixtureState(
 
       const responseData = result.data;
 
-      setRows(prev => prev.map((row, idx) => {
+      setRows(prev => prev.map((row) => {
         let matchedBatch = null;
         if (responseData && responseData.categoryGroups) {
           const allBatches = responseData.categoryGroups.flatMap((g: any) => g.batches || []);

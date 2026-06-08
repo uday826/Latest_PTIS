@@ -50,7 +50,7 @@ const routeMap = {
   'assets': '/assets/municipal-Asset',
   'renters': '/assets/revenue/manage-renters',
   'payment': '/assets/revenue/payment',
-  'configuration': '/assets/ScreenField/configuration',
+  'configuration': '/assets/configuration/master-data/asset-type',
 };
 
 /**
@@ -576,7 +576,7 @@ export function AssetSidebar({
 
         {/* Configuration Master */}
         <div className="p-2 border-t border-slate-700/50 space-y-1">
-          {isPathAllowed('/configuration') && (
+          {isPathAllowed('/assets/configuration/master-data/asset-type') && (
           <motion.button
             onClick={() => handleNavigate('configuration')}
             initial={{ opacity: 0 }}

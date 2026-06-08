@@ -37,7 +37,7 @@ export const PROJECT_SCREEN_CATALOG: ScreenItem[] = [
   { screenCode: "asset_dash", screenPath: "/dashboard" },
   { screenCode: "map_viewer", screenPath: "/map-viewer" },
   { screenCode: "revenue", screenPath: "/payment-management" },
-  { screenCode: "configuration", screenPath: "/configuration" }
+  { screenCode: "configuration", screenPath: "/assets/configuration/master-data/asset-type" }
 ];
 
 export const SCREEN_MASTER_CHANGE_EVENT = 'screen_master_change';

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Check } from "lucide-react";
-import { AssetFormStepConfig, AssetStepperProps } from "@/types/asset-types/basic-info/asset-wizard.types";
+import { AssetStepperProps } from "@/types/asset-types/basic-info/asset-wizard.types";
 
 export function AssetStepper({
   currentStepId,

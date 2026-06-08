@@ -224,5 +224,109 @@
       "errorNoMaster": "इस फ़ील्ड के लिए डेटा मास्टर नहीं मिला",
       "errorFillRequired": "कृपया सभी आवश्यक फ़ील्ड भरें"
     }
+  },
+  "configuration": {
+    "header": {
+      "title": "कॉन्फ़िगरेशन मास्टर",
+      "subtitle": "केंद्रीकृत मास्टर डेटा प्रबंधन प्रणाली",
+      "totalMasters": "कुल मास्टर"
+    },
+    "tabs": {
+      "masterData": "मास्टर डेटा",
+      "screenMaster": "स्क्रीन मास्टर",
+      "screenFieldsMaster": "स्क्रीन फ़ील्ड्स मास्टर"
+    },
+    "masterData": {
+      "title": "मास्टर डेटा",
+      "records": "मास्टर रिकॉर्ड",
+      "addNew": "नया {name} जोड़ें",
+      "searchPlaceholder": "मास्टर रिकॉर्ड खोजें...",
+      "allRecords": "सभी रिकॉर्ड",
+      "masterTypes": "मास्टर प्रकार",
+      "noDataAvailable": "कोई मास्टर डेटा उपलब्ध नहीं है।",
+      "stats": {
+        "master": "मास्टर",
+        "shown": "दिखाया गया",
+        "active": "सक्रिय"
+      },
+      "form": {
+        "addTitle": "नया {name} जोड़ें",
+        "editTitle": "{name} संपादित करें",
+        "createSubtitle": "एक नया रिकॉर्ड बनाएं",
+        "updateSubtitle": "मौजूदा रिकॉर्ड अपडेट करें",
+        "labels": {
+          "code": "कोड",
+          "name": "नाम",
+          "category": "एसेट श्रेणी",
+          "description": "विवरण",
+          "status": "स्थिति",
+          "active": "सक्रिय",
+          "inactive": "निष्क्रिय",
+          "deactivate": "हटाएं",
+          "confirmDeactivateTitle": "हटाने की पुष्टि करें",
+          "confirmDeactivateDesc": "क्या आप वाकई इस रिकॉर्ड को हटाना चाहते हैं?"
+        },
+        "placeholders": {
+          "code": "कोड दर्ज करें",
+          "name": "नाम दर्ज करें",
+          "category": "श्रेणी चुनें",
+          "description": "विवरण दर्ज करें"
+        },
+        "buttons": {
+          "save": "सहेजें",
+          "update": "अपडेट करें",
+          "cancel": "रद्द करें"
+        },
+        "errors": {
+          "fillRequired": "कृपया सभी आवश्यक फ़ील्ड भरें",
+          "codeRequired": "कोड आवश्यक है",
+          "codeTooLong15": "कोड 15 वर्णों से अधिक नहीं होना चाहिए",
+          "codeInvalidChars": "कोड में अमान्य वर्ण (केवल अक्षर, अंक, अंडरस्कोर और हाइफन)",
+          "codeDuplicate": "यह कोड पहले से ही मौजूद है",
+          "nameRequired": "नाम आवश्यक है",
+          "nameTooLong50": "नाम 50 वर्णों से अधिक नहीं होना चाहिए",
+          "nameInvalidChars": "नाम में अमान्य वर्ण (केवल अक्षर, अंक, स्थान, अंडरस्कोर और हाइफन)",
+          "nameDuplicate": "यह नाम पहले से ही मौजूद है",
+          "categoryRequired": "श्रेणी आवश्यक है",
+          "descriptionRequired": "विवरण आवश्यक है",
+          "descriptionTooLong": "विवरण 500 वर्णों से अधिक नहीं होना चाहिए",
+          "descInvalidChars": "विवरण में अमान्य वर्ण (केवल अक्षर, अंक, स्थान, अंडरस्कोर और हाइफन)"
+        }
+      },
+      "messages": {
+        "saveSuccess": "रिकॉर्ड सफलतापूर्वक सहेजा गया",
+        "saveFailed": "रिकॉर्ड सहेजने में विफल",
+        "deleteSuccess": "सफलतापूर्वक हटाया गया",
+        "deleteFailed": "रिकॉर्ड हटाने में विफल",
+        "unexpectedError": "एक अप्रत्याशित त्रुटि हुई",
+        "cannotDeleteCategoryReferenced": "इस एसेट श्रेणी को हटाया नहीं जा सकता क्योंकि इसका संदर्भ एसेट प्रकार में है।",
+        "cannotDeleteTypeReferenced": "इस एसेट प्रकार को हटाया नहीं जा सकता क्योंकि इसका संदर्भ अन्य रिकॉर्ड में है।"
+      },
+      "error": {
+        "title": "डेटा लोड करने में विफल",
+        "description": "मास्टर डेटा रिकॉर्ड लोड करते समय एक त्रुटि हुई। कृपया अपना कनेक्शन जांचें या पुनः प्रयास करें।",
+        "categoryTitle": "श्रेणी लोड करने में विफल",
+        "categoryDescription": "एसेट श्रेणियां लोड करते समय एक त्रुटि हुई। कृपया अपना कनेक्शन जांचें या पुनः प्रयास करें।",
+        "typeTitle": "प्रकार लोड करने में विफल",
+        "typeDescription": "एसेट प्रकार लोड करते समय एक त्रुटि हुई। कृपया पुनः प्रयास करें।",
+        "reload": "पेज रीलोड करें",
+        "tryAgain": "पुनः प्रयास करें",
+        "goHome": "होम पर जाएं"
+      },
+      "pagination": {
+        "previous": "पिछला",
+        "next": "अगला",
+        "pageInfo": "पेज {total} में से {current}"
+      }
+    }
+  },
+  "masterNames": {
+    "asset-category-master": "एसेट श्रेणी",
+    "asset-type-master": "एसेट प्रकार",
+    "inventory-category-master": "इन्वेंटरी श्रेणी",
+    "inventory-item-name-master": "इन्वेंटरी आइटम नाम",
+    "inventory-model-master": "इन्वेंटरी मॉडल",
+    "ownership-type-master": "स्वामित्व प्रकार",
+    "owning-department-master": "स्वामित्व विभाग"
   }
 }

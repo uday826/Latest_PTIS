@@ -224,5 +224,109 @@
       "errorNoMaster": "या फील्डसाठी डेटा मास्टर सापडला नाही",
       "errorFillRequired": "कृपया सर्व आवश्यक फील्ड भरा"
     }
+  },
+  "configuration": {
+    "header": {
+      "title": "कॉन्फिगरेशन मास्टर",
+      "subtitle": "केंद्रीकृत मास्टर डेटा व्यवस्थापन प्रणाली",
+      "totalMasters": "एकूण मास्टर"
+    },
+    "tabs": {
+      "masterData": "मास्टर डेटा",
+      "screenMaster": "स्क्रीन मास्टर",
+      "screenFieldsMaster": "स्क्रीन फील्ड्स मास्टर"
+    },
+    "masterData": {
+      "title": "मास्टर डेटा",
+      "records": "मास्टर रेकॉर्ड",
+      "addNew": "नवीन {name} जोडा",
+      "searchPlaceholder": "मास्टर रेकॉर्ड शोधा...",
+      "allRecords": "सर्व रेकॉर्ड",
+      "masterTypes": "मास्टर प्रकार",
+      "noDataAvailable": "कोणताही मास्टर डेटा उपलब्ध नाही.",
+      "stats": {
+        "master": "मास्टर",
+        "shown": "दाखवले",
+        "active": "सक्रिय"
+      },
+      "form": {
+        "addTitle": "नवीन {name} जोडा",
+        "editTitle": "{name} संपादित करा",
+        "createSubtitle": "नवीन रेकॉर्ड तयार करा",
+        "updateSubtitle": "अस्तित्वात असलेले रेकॉर्ड अपडेट करा",
+        "labels": {
+          "code": "कोड",
+          "name": "नाव",
+          "category": "मालमत्ता श्रेणी",
+          "description": "वर्णन",
+          "status": "स्थिती",
+          "active": "सक्रिय",
+          "inactive": "निष्क्रिय",
+          "deactivate": "हटवा",
+          "confirmDeactivateTitle": "हटवण्याची पुष्टी करा",
+          "confirmDeactivateDesc": "तुम्ही हे रेकॉर्ड हटवू इच्छिता याची तुम्हाला खात्री आहे का?"
+        },
+        "placeholders": {
+          "code": "कोड प्रविष्ट करा",
+          "name": "नाव प्रविष्ट करा",
+          "category": "श्रेणी निवडा",
+          "description": "वर्णन प्रविष्ट करा"
+        },
+        "buttons": {
+          "save": "जतन करा",
+          "update": "अपडेट करा",
+          "cancel": "रद्द करा"
+        },
+        "errors": {
+          "fillRequired": "कृपया सर्व आवश्यक फील्ड भरा",
+          "codeRequired": "कोड आवश्यक आहे",
+          "codeTooLong15": "कोड १५ पेक्षा जास्त नसावा",
+          "codeInvalidChars": "कोडमध्ये अवैध अक्षरे (फक्त अक्षरे, अंक, अंडरस्कोर आणि हायफन)",
+          "codeDuplicate": "हा कोड आधीच अस्तित्वात आहे",
+          "nameRequired": "नाव आवश्यक आहे",
+          "nameTooLong50": "नाव ५० पेक्षा जास्त नसावे",
+          "nameInvalidChars": "नावमध्ये अवैध अक्षरे (फक्त अक्षरे, अंक, जागा, अंडरस्कोर आणि हायफन)",
+          "nameDuplicate": "हे नाव आधीच अस्तित्वात आहे",
+          "categoryRequired": "श्रेणी आवश्यक आहे",
+          "descriptionRequired": "वर्णन आवश्यक आहे",
+          "descriptionTooLong": "वर्णन ५०० पेक्षा जास्त नसावे",
+          "descInvalidChars": "वर्णनामध्ये अवैध अक्षरे (फक्त अक्षरे, अंक, जागा, अंडरस्कोर आणि हायफन)"
+        }
+      },
+      "messages": {
+        "saveSuccess": "रेकॉर्ड यशस्वीरित्या जतन केले",
+        "saveFailed": "रेकॉर्ड जतन करण्यात अयशस्वी",
+        "deleteSuccess": "यशस्वीरित्या हटवले",
+        "deleteFailed": "रेकॉर्ड हटविण्यात अयशस्वी",
+        "unexpectedError": "एक अनपेक्षित त्रुटी आली",
+        "cannotDeleteCategoryReferenced": "या मालमत्ता श्रेणीचा मालमत्ता प्रकारात संदर्भ असल्याने ती हटवता येत नाही.",
+        "cannotDeleteTypeReferenced": "इतर रेकॉर्डमध्ये संदर्भ असल्याने हा मालमत्ता प्रकार हटवता येत नाही."
+      },
+      "pagination": {
+        "previous": "मागील",
+        "next": "पुढील",
+        "pageInfo": "पृष्ठ {current} पैकी {total}"
+      },
+      "error": {
+        "title": "डेटा लोड करणे अयशस्वी झाले",
+        "description": "मास्टर डेटा रेकॉर्ड लोड करताना त्रुटी आली. कृपया तुमचे कनेक्शन तपासा किंवा पुन्हा प्रयत्न करा.",
+        "categoryTitle": "श्रेणी लोड करणे अयशस्वी झाले",
+        "categoryDescription": "मालमत्ता श्रेणी लोड करताना त्रुटी आली. कृपया तुमचे कनेक्शन तपासा किंवा पुन्हा प्रयत्न करा.",
+        "typeTitle": "प्रकार लोड करणे अयशस्वी झाले",
+        "typeDescription": "मालमत्ता प्रकार लोड करताना त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
+        "reload": "पृष्ठ पुन्हा लोड करा",
+        "tryAgain": "पुन्हा प्रयत्न करा",
+        "goHome": "मुख्यपृष्ठावर जा"
+      }
+    }
+  },
+  "masterNames": {
+    "asset-category-master": "मालमत्ता श्रेणी",
+    "asset-type-master": "मालमत्ता प्रकार",
+    "inventory-category-master": "इन्व्हेंटरी श्रेणी",
+    "inventory-item-name-master": "इन्व्हेंटरी आयटमचे नाव",
+    "inventory-model-master": "इन्व्हेंटरी मॉडेल",
+    "ownership-type-master": "मालकी प्रकार",
+    "owning-department-master": "मालकी विभाग"
   }
 }

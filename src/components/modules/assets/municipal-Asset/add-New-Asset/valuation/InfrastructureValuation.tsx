@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { DollarSign, TrendingUp, Calculator, Building2, Activity } from "lucide-react";
+import { TrendingUp, Calculator, Building2, Activity } from "lucide-react";
 import { Input } from "@/components/common";
 
 interface InfrastructureValuationProps {

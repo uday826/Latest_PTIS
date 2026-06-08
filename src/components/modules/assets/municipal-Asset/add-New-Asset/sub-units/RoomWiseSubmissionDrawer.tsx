@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { X, Plus, Trash2, Edit2, Sparkles, Layers, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Plus, Trash2, Edit2, Layers } from "lucide-react";
 import { Input, Select } from "@/components/common";
 
 interface Room {

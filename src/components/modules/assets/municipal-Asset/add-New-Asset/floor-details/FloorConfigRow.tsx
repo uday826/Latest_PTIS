@@ -20,7 +20,6 @@ interface FloorConfigRowProps {
   onFloorChange: (_name: string, val: string) => void;
   onConTypeChange: (_name: string, val: string) => void;
   onConYrChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onAsstYrChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onUseTypeChange: (_name: string, val: string) => void;
   onSelect: (key: keyof NewFloorFormState) => (_name: string, val: string) => void;
   setField: <K extends keyof NewFloorFormState>(key: K) => (val: NewFloorFormState[K]) => void;
@@ -29,23 +28,17 @@ interface FloorConfigRowProps {
 
 export function FloorConfigRow({
   newFloor, errors, floorLevels, constructionTypes, useTypes, subUseTypes,
-  onFloorChange, onConTypeChange, onConYrChange, onAsstYrChange, onUseTypeChange, onSelect,
+  onFloorChange, onConTypeChange, onConYrChange, onUseTypeChange, onSelect,
   setField, handleAddFloor,
 }: FloorConfigRowProps) {
   const conYearNum = Number(newFloor.conYear);
-  const conYearValid =
-    newFloor.conYear.length === 4 && !isNaN(conYearNum) &&
-    conYearNum >= 1800 && conYearNum <= CURRENT_YEAR;
 
   /* ── Step-lock gates (UI only — numeric range is validated by backend) ─── */
-  const floorSelected   = !!newFloor.floor;
   const conTypeEnabled  = true;
-  const conTypeSelected = !!newFloor.conType;
   const conYrEnabled    = true;
   const useTypeEnabled  = true;
   const useTypeSelected = !!newFloor.useType;
   const subUseEnabled   = useTypeSelected;
-  const subUseSelected  = !!newFloor.subUseType;
   const numericEnabled  = true;
 
   const floorAlreadyAdded = typeof errors.floor === "string" && errors.floor.includes("already been added");

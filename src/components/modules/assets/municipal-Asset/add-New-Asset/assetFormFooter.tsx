@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
+
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   getCurrentAssetStep,
@@ -16,8 +16,8 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { uploadDocumentAction, uploadBulkDocumentsAction, fetchDocumentDefinitionsAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { validateBuildingBasicInfo } from "@/hooks/asset-hooks/building-basic-info/useBuildingBasicInfoFormValidation";
-import { validateLandBasicInfo } from "@/utils/asset-utils/basic-info/basic-info-validation-schemas";
-import { useConfirm } from "@/components/common/ConfirmProvider";
+
+
 
 function isDeepEqual(obj1: any, obj2: any): boolean {
   if (obj1 === obj2) return true;
@@ -50,6 +50,7 @@ export function AssetFormFooter() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isEditMode = searchParams.get('mode') === 'edit' || !!(searchParams.get('assetId') || searchParams.get('id'));
   const {
     formData,
     updateFormData,
@@ -65,7 +66,7 @@ export function AssetFormFooter() {
   } = useAssetForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState<{ assetName: string; assetCode: string } | null>(null);
-  const { confirm } = useConfirm();
+
 
   useEffect(() => {
     if (formData && !lastSavedFormData && setLastSavedFormData) {
@@ -100,9 +101,40 @@ export function AssetFormFooter() {
     router.push(appendQuery(withLocale(pathname, previousStep.path)));
   };
 
-  // ─── Final Submit: activate asset via PUT /AssetMaster/{id}/activate ────────
+  // ─── Final Submit ─────────────────────────────────────────────────────────────
+  // For EDIT MODE: the asset is already active. We just PUT the updated data, then show success.
+  // For NEW ASSETS: we call activate (which flips isActive=true), then show success.
   const handleFinalSubmit = async () => {
     const assetId = Number(formData.id || formData.assetId);
+
+    // ── EDIT MODE: skip activation, just save & finish ──
+    if (isEditMode) {
+      if (!assetId || assetId <= 0) {
+        toast.error("Asset ID not found. Please complete all previous steps first.");
+        return;
+      }
+      setIsSubmitting(true);
+      try {
+        const result = await submitAssetForm(formData);
+        if (result.success) {
+          toast.success("Asset updated successfully!");
+          setSuccessModal({
+            assetName: formData.assetName || "",
+            assetCode: formData.assetCode || (result as any).assetCode || "",
+          });
+        } else {
+          toast.error(`Failed to update asset: ${result.error}`);
+        }
+      } catch (error) {
+        console.error("Final edit submit error:", error);
+        toast.error("An unexpected error occurred while updating the asset.");
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // ── NEW ASSET MODE: activate, upload staged docs, then show success ──
     if (!assetId || assetId <= 0) {
       toast.error("Asset ID not found. Please complete all previous steps first.");
       return;
@@ -385,100 +417,7 @@ export function AssetFormFooter() {
     }
   };
 
-  const handleSaveDraft = async () => {
-    if (onSubmitHook) {
-      setIsSubmitting(true);
-      try {
-        const success = await onSubmitHook();
-        if (success) {
-          toast.success("Draft saved successfully!");
-        }
-      } catch (error) {
-        console.error("Save draft hook error:", error);
-        toast.error("Failed to save draft.");
-      } finally {
-        setIsSubmitting(false);
-      }
-      return;
-    }
 
-    // Validate Building or Land Basic Info step before saving draft
-    const isBuilding = formData.category === "Building Assets" || formData.category === "BUILDING";
-    const isLand = formData.category === "Land Assets" || formData.category === "LAND";
-    const isBasicInfoStep = currentStep?.key === "basic-info";
-
-    if (isBasicInfoStep && (isBuilding || isLand)) {
-      setSubmittedOnce?.(true);
-      const validationErrors = isBuilding
-        ? validateBuildingBasicInfo(formData as any)
-        : validateLandBasicInfo(formData);
-      setErrors?.(validationErrors);
-
-      if (Object.keys(validationErrors).length > 0) {
-        toast.error("Please fill in all required fields correctly before saving.");
-        return;
-      }
-    }
-
-    setIsSubmitting(true);
-    try {
-      const result = await submitAssetForm(formData);
-
-      if (result.success) {
-        const assetId = (result as any).assetId || formData.id;
-        const assetCode =
-          (result as any).assetCode ||
-          (result.data as any)?.assetCode ||
-          (result.data as any)?.assetNo ||
-          formData.assetCode;
-
-        // Persist returned IDs into local form state
-        const updates: Record<string, any> = {};
-        if (assetId) {
-          updates.id = assetId;
-          updates.assetId = assetId;
-        }
-        if (assetCode) updates.assetCode = assetCode;
-
-        if (Object.keys(updates).length > 0) {
-          updateFormData(updates);
-        }
-
-        setLastSavedFormData?.(JSON.parse(JSON.stringify({ ...formData, ...updates })));
-
-        // Sync IDs into URL search params so they survive page refreshes
-        const sp = new URLSearchParams(searchParams.toString());
-        if (assetId) {
-          sp.set("id", String(assetId));
-          sp.set("assetId", String(assetId));
-        }
-        if (assetCode) {
-          sp.set("assetCode", String(assetCode));
-        }
-
-        router.replace(pathname + "?" + sp.toString());
-
-        toast.success(
-          isBasicInfoStep
-            ? formData.id
-              ? "Basic info updated successfully!"
-              : "Basic info saved successfully!"
-            : "Asset draft saved successfully!"
-        );
-      } else {
-        toast.error(
-          isBasicInfoStep
-            ? `Failed to save basic info: ${result.error}`
-            : `Save failed: ${result.error}`
-        );
-      }
-    } catch (e) {
-      console.error("Error saving asset:", e);
-      toast.error("An unexpected error occurred while saving asset.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <>

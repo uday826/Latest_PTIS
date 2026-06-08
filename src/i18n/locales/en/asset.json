@@ -224,5 +224,109 @@
       "errorNoMaster": "Could not find data master for this field",
       "errorFillRequired": "Please fill all required fields"
     }
+  },
+  "configuration": {
+    "header": {
+      "title": "Configuration Master",
+      "subtitle": "Centralized Master Data Management System",
+      "totalMasters": "Total Masters"
+    },
+    "tabs": {
+      "masterData": "Master Data",
+      "screenMaster": "Screen Master",
+      "screenFieldsMaster": "Screen Fields Master"
+    },
+    "masterData": {
+      "title": "Master Data",
+      "records": "Master Records",
+      "addNew": "Add New {name}",
+      "searchPlaceholder": "Search master records...",
+      "allRecords": "All Records",
+      "masterTypes": "Master Types",
+      "noDataAvailable": "No master data is available.",
+      "stats": {
+        "master": "Master",
+        "shown": "Shown",
+        "active": "Active"
+      },
+      "form": {
+        "addTitle": "Add New {name}",
+        "editTitle": "Edit {name}",
+        "createSubtitle": "Create a new record",
+        "updateSubtitle": "Update existing record",
+        "labels": {
+          "code": "Code",
+          "name": "Name",
+          "category": "Asset Category",
+          "description": "Description",
+          "status": "Status",
+          "active": "Active",
+          "inactive": "Inactive",
+          "deactivate": "Delete",
+          "confirmDeactivateTitle": "Confirm Deletion",
+          "confirmDeactivateDesc": "Are you sure you want to delete this record?"
+        },
+        "placeholders": {
+          "code": "Enter code",
+          "name": "Enter name",
+          "category": "Select category",
+          "description": "Enter description"
+        },
+        "buttons": {
+          "save": "Save",
+          "update": "Update",
+          "cancel": "Cancel"
+        },
+        "errors": {
+          "fillRequired": "Please fill all required fields",
+          "codeRequired": "Code is required",
+          "codeTooLong15": "Code must not exceed 15 characters",
+          "codeInvalidChars": "Invalid characters in code (Only alphanumeric, underscore and hyphen allowed)",
+          "codeDuplicate": "This code already exists",
+          "nameRequired": "Name is required",
+          "nameTooLong50": "Name must not exceed 50 characters",
+          "nameInvalidChars": "Invalid characters in name (Only alphanumeric, spaces, underscore and hyphen allowed)",
+          "nameDuplicate": "This name already exists",
+          "categoryRequired": "Category is required",
+          "descriptionRequired": "Description is required",
+          "descriptionTooLong": "Description must not exceed 500 characters",
+          "descInvalidChars": "Invalid characters in description (Only alphanumeric, spaces, underscore and hyphen allowed)"
+        }
+      },
+      "messages": {
+        "saveSuccess": "Record saved successfully",
+        "saveFailed": "Failed to save record",
+        "deleteSuccess": "Record deleted successfully",
+        "deleteFailed": "Failed to delete record",
+        "unexpectedError": "An unexpected error occurred",
+        "cannotDeleteCategoryReferenced": "Cannot delete this Asset Category because it is referenced in Asset Type.",
+        "cannotDeleteTypeReferenced": "Cannot delete this Asset Type because it is referenced in another record."
+      },
+      "error": {
+        "title": "Data Loading Failed",
+        "description": "An error occurred while loading master data records. Please check your connection or try again.",
+        "categoryTitle": "Category Loading Failed",
+        "categoryDescription": "An error occurred while loading Asset Categories. Please check your connection or try again.",
+        "typeTitle": "Type Loading Failed",
+        "typeDescription": "An error occurred while loading Asset Types. Please try again.",
+        "reload": "Reload Page",
+        "tryAgain": "Try Again",
+        "goHome": "Go Home"
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "pageInfo": "Page {current} of {total}"
+      }
+    }
+  },
+  "masterNames": {
+    "asset-category-master": "Asset Category",
+    "asset-type-master": "Asset Type",
+    "inventory-category-master": "Inventory Category",
+    "inventory-item-name-master": "Inventory Item Name",
+    "inventory-model-master": "Inventory Model",
+    "ownership-type-master": "Ownership Type",
+    "owning-department-master": "Owning Department"
   }
 }

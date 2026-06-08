@@ -1,5 +1,4 @@
-import React from "react";
-import { Armchair, Car, Cpu, LampDesk, Option } from "lucide-react";
+
 
 export type InventoryType =
   | "furniture"

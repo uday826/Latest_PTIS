@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { X, Save, Building2, UploadCloud, FileText, IndianRupee, ImagePlus, CheckCircle2, Trash2, Edit2, Plus, Sparkles, Layers, Loader2 } from "lucide-react";
+import { X, Save, Building2, UploadCloud, FileText, IndianRupee, ImagePlus, CheckCircle2, Layers, Loader2 } from "lucide-react";
 import { Input, Select } from "@/components/common";
 import { RoomWiseSubmissionDrawer } from "./RoomWiseSubmissionDrawer";
 import { useAssetForm } from "../AssetFormContext";
@@ -47,15 +47,7 @@ function SectionBar({ icon, title, color = "bg-blue-600" }: { icon: React.ReactN
   );
 }
 
-/** Read-only info badge */
-function InfoBadge({ label, value, accent = false }: { label: string; value: string | number; accent?: boolean }) {
-  return (
-    <div className={`rounded-lg px-3 py-1 border flex flex-col justify-center h-[52px] ${accent ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200"}`}>
-      <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">{label}</p>
-      <p className={`text-sm font-bold -mt-0.5 ${accent ? "text-emerald-700" : "text-slate-800"} truncate`}>{value || "—"}</p>
-    </div>
-  );
-}
+
 
 /** Helper to calculate duration between start and end dates */
 function calculateDuration(startStr: string, endStr: string): string {

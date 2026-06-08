@@ -72,11 +72,7 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
   // Gate: asset code search is only active when both zone + ward are selected
   const canSearch = !!(selectedZoneId && selectedWardId);
 
-  // ── Locale helper
-  const getLocale = () => {
-    const segments = pathname.split("/").filter(Boolean);
-    return segments[0] || "en";
-  };
+
 
   // ──────────────────────────────────────────────────────
   // Load categories on mount (New Register)

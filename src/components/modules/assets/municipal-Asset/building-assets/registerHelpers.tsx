@@ -119,6 +119,9 @@ export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName
     carpetAreaSqMeter: record.carpetAreaSqMeter == null ? '-' : String(record.carpetAreaSqMeter),
     landAreaSqMeter: record.landAreaSqMeter == null ? '-' : String(record.landAreaSqMeter),
     createdDate: record.createdDate || record.createdAt || '',
+    // Edit context — needed to navigate to the edit form with correct category/type
+    assetCategoryId: record.assetCategoryId ?? null,
+    assetTypeId: record.assetTypeId ?? null,
   };
 }
 
@@ -215,11 +218,12 @@ export function getRegisterColumns(
     {
       key: 'id',
       label: 'Action',
-      width: '100px',
+      width: '120px',
       headerClassName: 'whitespace-nowrap text-center',
       cellClassName: 'align-middle text-center',
       render: (_, row) => (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-1.5">
+          {/* View Detail */}
           <Button
             type="button"
             onClick={() => {
@@ -233,9 +237,12 @@ export function getRegisterColumns(
             className="h-8 w-8 px-0 text-slate-600"
             aria-label={`View ${row.assetName}`}
             disabled={row.id == null}
+            title="View details"
           >
             <Eye className="h-4 w-4" />
           </Button>
+
+          {/* Print Report */}
           <Button
             type="button"
             onClick={() => {
@@ -253,13 +260,35 @@ export function getRegisterColumns(
           >
             <Printer className="h-4 w-4" />
           </Button>
+
+          {/* Edit Asset */}
           <Button
             type="button"
+            onClick={() => {
+              const segments = window.location.pathname.split('/').filter(Boolean);
+              const locale = segments[0] || 'en';
+              // Build query params so the existing multi-step form can
+              // auto-fetch & prefill the asset data via its draft-recovery logic
+              const categoryId = row.assetCategoryId ?? 1;
+              const typeId = row.assetTypeId ?? 1;
+              const params = new URLSearchParams({
+                assetId: String(row.id),
+                id: String(row.id),
+                categoryId: String(categoryId),
+                typeId: String(typeId),
+                category: row.categoryName !== '-' ? row.categoryName : '',
+                assetType: row.assetTypeName !== '-' ? row.assetTypeName : '',
+                assetCode: row.assetCode !== '-' ? row.assetCode : '',
+                mode: 'edit',
+              });
+              router.push(`/${locale}/assets/municipal-Asset/add-New-Asset/basic-Info?${params.toString()}`);
+            }}
             variant="secondary"
             size="sm"
-            className="h-8 w-8 border-emerald-200 bg-emerald-50 px-0 text-emerald-700 hover:bg-emerald-100 ml-1 mr-0.5"
+            className="h-8 w-8 border-emerald-200 bg-emerald-50 px-0 text-emerald-700 hover:bg-emerald-100"
             aria-label={`Edit ${row.assetName}`}
             disabled={row.id == null}
+            title="Edit asset"
           >
             <PencilLine className="h-4 w-4" />
           </Button>

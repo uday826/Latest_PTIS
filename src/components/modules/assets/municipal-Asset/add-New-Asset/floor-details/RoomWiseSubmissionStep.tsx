@@ -3,7 +3,7 @@
 import { Sparkles, Plus, Home, Edit2, Trash2, X, Building2 } from "lucide-react";
 import { Input, SearchSelect, Button } from "@/components/common";
 import { SubUnitDetailedConfigurator } from "../sub-units/SubUnitDetailedConfigurator";
-import type { FloorDropdownOptions, SubUnit, BulkGeneratorState, FloorEntry, RoomWiseSubmissionStepProps } from "@/types/asset/floor-details.types";
+import type { RoomWiseSubmissionStepProps } from "@/types/asset/floor-details.types";
 
 export function RoomWiseSubmissionStep({
   isOpen,
@@ -20,7 +20,6 @@ export function RoomWiseSubmissionStep({
   onSaveSubUnits,
   setActiveUnit,
   onSaveUnitDetail,
-  setLocalUnits,
 }: RoomWiseSubmissionStepProps) {
   if (!isOpen || floorId === null) return null;
   const unitTypes = dropdownOptions?.unitTypes ?? [];

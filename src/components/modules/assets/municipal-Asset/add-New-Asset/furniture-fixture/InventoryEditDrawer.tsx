@@ -1,8 +1,7 @@
 import React from "react";
 import { Drawer, Button, AddButton, Select, UploadButton, Input } from "@/components/common";
 import { Package2, Receipt, X } from "lucide-react";
-import { type InventoryType, type InventoryRow, type InventoryForm, type InvoiceForm } from "./FurnitureFixtureTypes";
-import { typeOptions, conditionMap, invoiceModeOptions, inventoryMeta, initialRows, emptyForm, emptyInvoiceForm, PAGE_SIZE, formatCurrency } from "./FurnitureFixtureConstants";
+import { type InventoryForm } from "./FurnitureFixtureTypes";
 
 interface InventoryEditDrawerProps {
   open: boolean;

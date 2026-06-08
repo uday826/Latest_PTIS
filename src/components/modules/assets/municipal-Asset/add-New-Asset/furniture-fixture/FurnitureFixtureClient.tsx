@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useEffect, useCallback } from "react";
-import { Badge, Card, CardContent, DeleteButton, EditButton, MasterTable, TableHeader } from "@/components/common";
+import { Badge, Card, CardContent, DeleteButton, EditButton, MasterTable } from "@/components/common";
 import { Package2, Image as ImageIcon, FileText } from "lucide-react";
-import { type InventoryType, type InventoryRow, type InventoryForm, type InvoiceForm } from "./FurnitureFixtureTypes";
-import { typeOptions, conditionMap, invoiceModeOptions, inventoryMeta, initialRows, emptyForm, emptyInvoiceForm, PAGE_SIZE, formatCurrency } from "./FurnitureFixtureConstants";
+import { inventoryMeta, PAGE_SIZE, formatCurrency } from "./FurnitureFixtureConstants";
 import { InventoryFormSection } from "./InventoryFormSection";
 import { InventoryEditDrawer } from "./InventoryEditDrawer";
 import { InvoiceDrawer } from "./InvoiceDrawer";

@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Input, Card, CardHeader, CardTitle, CardContent } from "@/components/common";
 import { UserCheck } from "lucide-react";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+
 import { Armchair } from "lucide-react";
 import FurnitureFixtureClient from "./FurnitureFixtureClient";
 import { useAssetForm } from "../AssetFormContext";
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export default function FurnitureFixturePage({ parentAssetId, categories = [], conditions = [], itemNames = [], itemModels = [], initialBatches = null }: Props) {
-  const { formData, handleInputChange, handleToggleChange } = useAssetForm();
+  const { formData } = useAssetForm();
 
   const typeLower = (formData.assetType || "").toLowerCase();
   const isLandFurnitureAllowed = ["garden", "park", "playground", "reserved"].some(keyword => typeLower.includes(keyword));
