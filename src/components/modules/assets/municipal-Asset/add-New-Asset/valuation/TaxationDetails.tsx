@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
-import { Input, Card, CardHeader, CardTitle, CardContent } from "@/components/common";
+import { Card, CardContent, CardHeader, CardTitle, Input } from "@/components/common";
 import { ReceiptText } from "lucide-react";
+import React from "react";
 
 interface TaxationDetailsProps {
   formData: any;

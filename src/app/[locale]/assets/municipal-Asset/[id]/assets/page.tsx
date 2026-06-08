@@ -19,7 +19,7 @@ export default async function MunicipalAssetFurniturePage({ params, searchParams
 
   // 2. Sanitize searchParams
   const sParams = await searchParams;
-  const { pageNumber, pageSize, searchTerm, sortBy, sortOrder } = sanitizeParams(sParams, {
+  sanitizeParams(sParams, {
     allowedSortColumns: ALLOWED_SORT_COLUMNS,
     maxPageSize: MAX_PAGE_SIZE,
   });

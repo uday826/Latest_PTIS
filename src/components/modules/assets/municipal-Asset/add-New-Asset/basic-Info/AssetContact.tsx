@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { Input, Card, CardHeader, CardTitle, CardContent } from "@/components/common";
+import { Card, CardContent, CardHeader, CardTitle, Input } from "@/components/common";
 import { UserCheck } from "lucide-react";
 
 import { AssetWizardStepProps } from "@/types/asset-types/basic-info/asset-wizard.types";

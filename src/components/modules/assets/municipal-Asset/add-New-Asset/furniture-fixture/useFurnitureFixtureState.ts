@@ -1,12 +1,14 @@
-import { useState, useRef, useMemo, useCallback } from "react";
+import { uploadBulkDocumentsAction, getFallbackModuleIdAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
+import { deleteInventoryBatchAction, getInventoryBatchesAction, saveInventoryBatchAction, saveSingleInventoryBatchAction, updateInventoryBatchAction, type InventoryBatchDetail, type InventoryBatchListResponse } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
 import { useConfirm } from "@/components/common";
-import { type InventoryType, type InventoryRow, type InventoryForm, type InvoiceForm, type InventoryInvoice } from "./FurnitureFixtureTypes";
-import { typeOptions, conditionMap, invoiceModeOptions, inventoryMeta, initialRows, emptyForm, emptyInvoiceForm, PAGE_SIZE, formatCurrency } from "./FurnitureFixtureConstants";
-import { enrichRows, buildCategoryGroups, calcRowCV } from "./FurnitureFixtureCV";
+import type { InventoryItemCategory, InventoryItemCondition, InventoryItemModel, InventoryItemName } from "@/lib/api/asset/inventory.service";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { InventoryItemCategory, InventoryItemCondition, InventoryItemName, InventoryItemModel } from "@/lib/api/asset/inventory.service";
-import { saveInventoryBatchAction, saveSingleInventoryBatchAction, updateInventoryBatchAction, deleteInventoryBatchAction, getInventoryBatchesAction, type InventoryBatchDetail, type InventoryBatchListResponse } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
-import { uploadBulkDocumentsAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
+import { emptyForm, emptyInvoiceForm, inventoryMeta, PAGE_SIZE, typeOptions } from "./FurnitureFixtureConstants";
+import { buildCategoryGroups, calcRowCV, enrichRows } from "./FurnitureFixtureCV";
+import { type InventoryForm, type InventoryInvoice, type InventoryRow, type InventoryType, type InvoiceForm } from "./FurnitureFixtureTypes";
+import { usePermissionsContext } from "@/lib/providers/PermissionsProvider";
+import { usePathname } from "next/navigation";
 
 /**
  * Converts server-fetched batches to client-side InventoryRow format.
@@ -66,6 +68,61 @@ export function useFurnitureFixtureState(
   parentAssetId?: number | null
 ) {
   const { confirm } = useConfirm();
+  const { screens } = usePermissionsContext();
+  const pathname = usePathname();
+
+  const [fallbackModuleId, setFallbackModuleId] = useState<number>(0);
+
+  useEffect(() => {
+    getFallbackModuleIdAction(pathname).then((id) => {
+      if (id > 0) setFallbackModuleId(id);
+    }).catch(console.error);
+  }, [pathname]);
+
+  // Dynamically derive module ID from user screen permissions
+  const currentModuleId = useMemo(() => {
+    if (!screens || screens.length === 0) return fallbackModuleId;
+    if (!pathname) return fallbackModuleId;
+    const pathLower = pathname.toLowerCase();
+    
+    // 1. Sort by longest routePath first (most specific match)
+    const sortedScreens = [...screens].sort((a, b) => (b.routePath?.length || 0) - (a.routePath?.length || 0));
+    
+    // 2. Try to find exact inclusive match
+    let currentScreen = sortedScreens.find((s) => s.routePath && pathLower.includes(s.routePath.toLowerCase()));
+    
+    // 3. Fallback: if no exact match, find any screen related to 'asset' by moduleName
+    if (!currentScreen) {
+      currentScreen = screens.find((s) => {
+        const mName = s.moduleName || (s as any).ModuleName;
+        return mName && mName.toLowerCase().includes("asset management");
+      });
+    }
+
+    if (!currentScreen) {
+      currentScreen = screens.find((s) => {
+        const mName = s.moduleName || (s as any).ModuleName;
+        return mName && mName.toLowerCase().includes("asset");
+      });
+    }
+    
+    // Check multiple possible casing for module ID from C# backend
+    let resolvedModuleId = currentScreen 
+      ? (currentScreen.moduleId || (currentScreen as any).ModuleId || (currentScreen as any).moduleID || fallbackModuleId) 
+      : fallbackModuleId;
+
+    // The database has an inactive generic "asset" module (1004). 
+    // If we resolved 1004, force the dynamic fallback (which dynamically finds Asset Management)
+    if (resolvedModuleId === 1004 && fallbackModuleId > 0 && fallbackModuleId !== 1004) {
+      resolvedModuleId = fallbackModuleId;
+    }
+      
+    console.log("Dynamically determined ModuleId:", resolvedModuleId, "Screens available:", screens?.length);
+    
+    return resolvedModuleId;
+  }, [screens, pathname, fallbackModuleId]);
+
+  const assetModuleId = currentModuleId;
   
   // Initialize rows from SSR data (initialBatches) or use empty array
   const initialRowsFromServer = useMemo(() => {
@@ -133,9 +190,7 @@ export function useFurnitureFixtureState(
           .map(n => ({ label: n.subTypeName, value: n.subTypeName }));
       }
     }
-    // Fallback to hardcoded inventoryMeta names
-    const meta = form.type ? inventoryMeta[form.type as InventoryType] : undefined;
-    return meta?.names || [];
+    return [];
   }, [itemNames, categories, form.type]);
 
   // Build Model dropdown options — filtered by selected item name
@@ -148,9 +203,7 @@ export function useFurnitureFixtureState(
           .map(m => ({ label: m.modelName, value: m.modelName }));
       }
     }
-    // Fallback to hardcoded inventoryMeta modelMap
-    const meta = form.type ? inventoryMeta[form.type as InventoryType] : undefined;
-    return meta?.modelMap?.[form.itemName] ?? [];
+    return [];
   }, [itemModels, itemNames, form.type, form.itemName]);
 
   // Build Condition dropdown options — filtered by selected category
@@ -180,9 +233,7 @@ export function useFurnitureFixtureState(
           .map(n => ({ label: n.subTypeName, value: n.subTypeName }));
       }
     }
-    // Fallback to hardcoded inventoryMeta names
-    const meta = editForm.type ? inventoryMeta[editForm.type as InventoryType] : undefined;
-    return meta?.names || [];
+    return [];
   }, [itemNames, categories, editForm.type]);
 
   // Build Edit Model dropdown options — filtered by selected item name
@@ -195,9 +246,7 @@ export function useFurnitureFixtureState(
           .map(m => ({ label: m.modelName, value: m.modelName }));
       }
     }
-    // Fallback to hardcoded inventoryMeta modelMap
-    const meta = editForm.type ? inventoryMeta[editForm.type as InventoryType] : undefined;
-    return meta?.modelMap?.[editForm.itemName] ?? [];
+    return [];
   }, [itemModels, itemNames, editForm.type, editForm.itemName]);
 
   // Build Edit Condition dropdown options — filtered by selected category
@@ -393,12 +442,21 @@ export function useFurnitureFixtureState(
         const photoFile = form.photoFile;
         const invoiceFile = draftInvoice?.invoiceFile;
         if (photoFile || invoiceFile) {
+          // Fallback: if Context failed to provide moduleId, fetch it from Master Data API via Server Action
+          let finalModuleId = assetModuleId;
+          if (finalModuleId === 0) {
+            try {
+              const id = await getFallbackModuleIdAction();
+              if (id > 0) finalModuleId = id;
+            } catch (e) {}
+          }
+
           for (const unit of batchData.units) {
             if (!unit.assetId) continue;
             
             const fd = new FormData();
             fd.append("AssetId", String(unit.assetId));
-            fd.append("ModuleId", "1004");
+            fd.append("ModuleId", finalModuleId.toString());
             fd.append("UploadedByUserId", "1");
             fd.append("IsAdHoc", "true");
             
@@ -491,8 +549,7 @@ export function useFurnitureFixtureState(
       registeredUnits: existingRow?.registeredUnits
     };
     
-    const cvData = calcRowCV(payload, dynamicRates, dynamicConditions);
-    const enrichedPayload = { ...payload, ...cvData };
+    calcRowCV(payload, dynamicRates, dynamicConditions);
 
     // If the row is registered, update via API
     if (existingRow?.batchId && existingRow?.isRegistered) {
@@ -556,11 +613,20 @@ export function useFurnitureFixtureState(
           const photoFile = editForm.photoFile;
           const invoiceFile = editDraftInvoice?.invoiceFile;
           if (photoFile || invoiceFile) {
+            // Fallback: if Context failed to provide moduleId, fetch it from Master Data API via Server Action
+            let finalModuleId = assetModuleId;
+            if (finalModuleId === 0) {
+              try {
+                const id = await getFallbackModuleIdAction(pathname);
+                if (id > 0) finalModuleId = id;
+              } catch (e) {}
+            }
+
             for (const unit of existingRow.registeredUnits) {
               if (!unit.assetId) continue;
               const fd = new FormData();
               fd.append("AssetId", String(unit.assetId));
-              fd.append("ModuleId", "1004");
+              fd.append("ModuleId", finalModuleId.toString());
               fd.append("UploadedByUserId", "1");
               fd.append("IsAdHoc", "true");
               
@@ -763,7 +829,7 @@ export function useFurnitureFixtureState(
 
       const responseData = result.data;
 
-      setRows(prev => prev.map((row, idx) => {
+      setRows(prev => prev.map((row) => {
         let matchedBatch = null;
         if (responseData && responseData.categoryGroups) {
           const allBatches = responseData.categoryGroups.flatMap((g: any) => g.batches || []);

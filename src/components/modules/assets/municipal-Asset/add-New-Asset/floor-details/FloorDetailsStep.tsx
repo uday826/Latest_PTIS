@@ -1,27 +1,24 @@
 "use client";
 
-import { Layers, Trash2, Building2 } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent, Button, Checkbox, useConfirm } from "@/components/common";
-import { RoomWiseSubmissionStep } from "./RoomWiseSubmissionStep";
-import { FloorConfigRow } from "./FloorConfigRow";
-import { MapPicker } from "../basic-Info/MapPicker";
+import { Button, Card, CardContent, CardHeader, CardTitle, Checkbox, useConfirm } from "@/components/common";
 import { useFloorAssetFlow } from "@/hooks/asset-hooks/floor-details/useFloorAssetFlow";
 import type { NewFloorFormState } from "@/types/asset/floor-details.types";
-import { useAssetForm } from "../AssetFormContext";
+import { Building2, Layers, Trash2 } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
-
-const CURRENT_YEAR = new Date().getFullYear();
+import { useAssetForm } from "../AssetFormContext";
+import { MapPicker } from "../basic-Info/MapPicker";
+import { FloorConfigRow } from "./FloorConfigRow";
+import { RoomWiseSubmissionStep } from "./RoomWiseSubmissionStep";
 
 export default function FloorDetailsPage() {
   const {
-    dropdownOptions, floors, newFloor, errors, setErrors, allChecked, totalCV,
+    dropdownOptions, floors, newFloor, errors, setErrors, allChecked,
     setNewFloor, handleAddFloor, handleDeleteFloor, handleToggleFloor, handleToggleAllFloors,
     isDrawerOpen, selectedFloorId, localUnits, bulk, activeUnit, currentFloor,
     setIsDrawerOpen, setSelectedFloorId, setLocalUnits, setBulk, setActiveUnit,
     handleGenerateBulk, handleSaveSubUnits, handleDeleteUnit,
-    formData, photoFile, photoUrl, planUrl, photoInputRef, planInputRef,
-    handlePhotoUpload, handlePlanUpload, setIsMapOpen,
+    formData, setIsMapOpen,
     isMapOpen, handleMapSelect,
   } = useFloorAssetFlow();
   const { confirm } = useConfirm();
@@ -99,12 +96,6 @@ export default function FloorDetailsPage() {
     setErrors((prev) => { const c = { ...prev }; delete c.conYear; return c; });
   };
 
-  // Asst Yr: strip non-numeric, max 4 chars
-  const onAsstYrChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/\D/g, "").slice(0, 4);
-    setNewFloor((prev) => ({ ...prev, asstYear: raw }));
-    setErrors((prev) => { const c = { ...prev }; delete c.asstYear; return c; });
-  };
 
   /* ── Label resolver for table ──────────────────────────────────────────── */
   const getLabel = (opts: { label: string; value: string }[], val: string) =>
@@ -128,7 +119,7 @@ export default function FloorDetailsPage() {
             floorLevels={availableFloorLevels} constructionTypes={constructionTypes}
             useTypes={useTypes} subUseTypes={subUseTypes}
             onFloorChange={onFloorChange} onConTypeChange={onConTypeChange}
-            onConYrChange={onConYrChange} onAsstYrChange={onAsstYrChange} onUseTypeChange={onUseTypeChange}
+            onConYrChange={onConYrChange} onUseTypeChange={onUseTypeChange}
             onSelect={onSelect} setField={setField} handleAddFloor={handleAddFloor}
           />
 

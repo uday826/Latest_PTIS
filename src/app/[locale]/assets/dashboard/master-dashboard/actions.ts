@@ -1,11 +1,13 @@
 'use server';
 
-import { assetMasterService } from '@/lib/api/asset/asset-master.service';
 import type { AssetDashboardStatsDto } from '@/lib/api/asset/asset-master.service';
-import { ApiResponse } from '@/types/common.types';
-import { logger } from '@/lib/utils/logger';
-import type { DashboardDataPayload, MunicipalAsset, DashboardCategoryItem, AssetSummaryData, AssetCategoryCount } from '@/types/asset-type/asset-dashboard.types';
+import { assetMasterService } from '@/lib/api/asset/asset-master.service';
+import { wardService } from '@/lib/api/asset/ward.service';
+import { zoneService } from '@/lib/api/asset/zone.service';
 import { mapSummaryToStats } from '@/lib/utils/asset-utils/asset-dashboard-helpers';
+import { logger } from '@/lib/utils/logger';
+import type { AssetCategoryCount, AssetSummaryData, DashboardCategoryItem, DashboardDataPayload, MunicipalAsset } from '@/types/asset-type/asset-dashboard.types';
+import { ApiResponse } from '@/types/common.types';
 
 const mapCategoryItem = (c: { categoryName?: string; category?: string; categoryId?: string | number; id?: string | number; count?: number; value?: number; color?: string; description?: string }): DashboardCategoryItem => {
   const name = String(c.categoryName || c.category || '');
@@ -121,7 +123,14 @@ export async function fetchDashboardDataAction(): Promise<ApiResponse<DashboardD
       });
     });
 
-    // 3. Fetch actual asset records for each type using /AssetMaster?AssetTypeId=X
+    // 3. Fetch actual asset records for each type and master data for lookups
+    const [zonesRes, wardsRes] = await Promise.all([
+      zoneService.getZones().catch(() => null),
+      wardService.getWards().catch(() => null)
+    ]);
+    const zonesMasterList = zonesRes?.success && zonesRes.data ? zonesRes.data : [];
+    const wardsMasterList = wardsRes?.success && wardsRes.data ? wardsRes.data : [];
+
     const allAssets: MunicipalAsset[] = [];
     if (subcategories.length > 0) {
       const assetsResults = await Promise.all(
@@ -145,35 +154,55 @@ export async function fetchDashboardDataAction(): Promise<ApiResponse<DashboardD
           const rawVal = Number(asset.marketValue ?? asset.purchaseValue ?? asset.capitalValue ?? 0);
           const assetIdNum = Number(asset.id) || index;
           
-          // Generate Thane area coordinates with offset based on asset ID for spread
-          // Thane center: 19.2183, 72.9781 with ~0.05 degree spread (~5km)
-          const baseLatitude = 19.2183;
-          const baseLongitude = 72.9781;
-          const latOffset = ((assetIdNum * 7) % 100 - 50) / 1000; // -0.05 to +0.05
-          const lngOffset = ((assetIdNum * 11) % 100 - 50) / 1000; // -0.05 to +0.05
+          const latitude = Number(asset.latitude ?? 0);
+          const longitude = Number(asset.longitude ?? 0);
+
+          // Lookup zone and ward to get the short "No" (e.g. "A", "A1") instead of descriptions
+          const assetZoneName = String(asset.zoneName || asset.zone || '').trim();
+          const assetWardName = String(asset.wardName || asset.ward || '').trim();
           
-          const latitude = asset.latitude && asset.latitude !== 0 
-            ? Number(asset.latitude) 
-            : baseLatitude + latOffset;
-          const longitude = asset.longitude && asset.longitude !== 0 
-            ? Number(asset.longitude) 
-            : baseLongitude + lngOffset;
+          let resolvedZoneNo = asset.zoneNo;
+          if (!resolvedZoneNo && assetZoneName) {
+            const foundZone = zonesMasterList.find(z => 
+              z.id === asset.zoneId || 
+              z.description === assetZoneName || 
+              z.zoneName === assetZoneName ||
+              z.ZoneName === assetZoneName
+            );
+            resolvedZoneNo = foundZone?.zoneNo || foundZone?.ZoneNo;
+          }
+          
+          let resolvedWardNo = asset.wardNo;
+          if (!resolvedWardNo && assetWardName) {
+            const foundWard = wardsMasterList.find(w => 
+              w.id === asset.wardId || 
+              w.name === assetWardName || 
+              w.wardName === assetWardName ||
+              w.WardName === assetWardName ||
+              w.description === assetWardName ||
+              w.Description === assetWardName
+            );
+            resolvedWardNo = foundWard?.wardNo || foundWard?.WardNo;
+          }
+
+          const finalZone = String(resolvedZoneNo || assetZoneName || '');
+          const finalWard = String(resolvedWardNo || assetWardName || '');
 
           allAssets.push({
             id: String(asset.id ?? assetIdNum),
             name: String(asset.assetName || asset.name || asset.assetNo || ''),
-            category: sub.categoryName as MunicipalAsset['category'],
-            subCategory: sub.typeName || String(asset.assetTypeName || ''),
-            zone: String(asset.zoneName || asset.zone || `Zone ${((assetIdNum % 3) + 1)}`),
-            ward: String(asset.wardName || asset.ward || `Ward ${((assetIdNum % 5) + 1)}`),
+            category: String(asset.assetCategoryName || asset.categoryName || sub.categoryName) as MunicipalAsset['category'],
+            subCategory: String(asset.assetTypeName || asset.typeName || sub.typeName || ''),
+            zone: finalZone,
+            ward: finalWard,
             location: String(asset.address || 'Municipal Area'),
             valueLakhs: rawVal > 1000000 ? rawVal / 100000 : rawVal,
             status: String(asset.status || 'Active'),
             latitude,
             longitude,
-            health: Number(asset.health ?? 80),
-            lastInspection: String(asset.lastInspection || asset.purchaseDate || new Date().toISOString().split('T')[0]),
-            usage: String(asset.usage || asset.occupancyStatus || 'Municipal Use'),
+            health: Number(asset.health ?? 0),
+            lastInspection: String(asset.lastInspection || asset.purchaseDate || ''),
+            usage: String(asset.usage || asset.occupancyStatus || ''),
             encroachment: asset.encroachment || { hasEncroachment: false },
             // Additional fields from AssetMaster
             department: String(asset.departmentName || ''),
@@ -190,6 +219,15 @@ export async function fetchDashboardDataAction(): Promise<ApiResponse<DashboardD
 
     const stats = mapSummaryToStats(summary as Record<string, unknown>, categories);
 
+    const allZones = Array.from(new Set(zonesMasterList.map(z => String(z.zoneNo || z.ZoneNo || z.zoneName || z.description || '')).filter(Boolean)));
+    const allWardsRaw = wardsMasterList.map(w => {
+      const wardNo = String(w.wardNo || w.WardNo || w.name || w.wardName || w.description || '');
+      const foundZone = zonesMasterList.find(z => z.id === w.zoneId);
+      const zoneNo = foundZone ? String(foundZone.zoneNo || foundZone.ZoneNo || foundZone.zoneName || foundZone.description || '') : '';
+      return { wardNo, zoneNo };
+    }).filter(w => w.wardNo);
+    const allWards = Array.from(new Map(allWardsRaw.map(w => [w.wardNo, w])).values());
+
     const payload: DashboardDataPayload = {
       stats,
       filteredAssets: allAssets,
@@ -197,6 +235,8 @@ export async function fetchDashboardDataAction(): Promise<ApiResponse<DashboardD
       zoneDistribution: [],
       acquisitionsList: [],
       auctionsList: [],
+      allZones,
+      allWards,
     };
 
     return {

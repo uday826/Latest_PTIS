@@ -1,27 +1,24 @@
 "use server";
 
-import { assetFieldDefinitionService } from "@/lib/api/asset/asset-field-definition.service";
-import { AssetFieldDefinition } from "@/lib/api/asset/asset-field-definition.service";
 import {
+  deleteDocument,
   getDocumentDefinitions,
   getDocumentsByAsset,
-  deleteDocument,
-  uploadDocument,
-  uploadBulkDocuments
+  uploadBulkDocuments,
+  uploadDocument
 } from "@/lib/api/asset/asset-document.server.service";
+import { AssetFieldDefinition, assetFieldDefinitionService } from "@/lib/api/asset/asset-field-definition.service";
 import { ApiResponse } from "@/types/common.types";
 
-import { assetMasterService } from "@/lib/api/asset/asset-master.service";
-import { apiClient } from "@/services/api.service";
 import { assetFieldValueService } from "@/lib/api/asset/asset-field-value.service";
-import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
-import { categoryTypeService } from "@/lib/api/asset/category-type.service";
+import { assetMasterService } from "@/lib/api/asset/asset-master.service";
+
 import { departmentService } from "@/lib/api/asset/department.service";
+import { moujaService } from "@/lib/api/asset/mouja.service";
 import { wardService } from "@/lib/api/asset/ward.service";
 import { zoneService } from "@/lib/api/asset/zone.service";
-import { moujaService } from "@/lib/api/asset/mouja.service";
 import { AssetFormData, AssetMasterRequest } from "@/types/asset-types/basic-info/asset-wizard.types";
+import { revalidatePath } from "next/cache";
 
 /**
  * Fetches field definitions based on selected category and type
@@ -297,15 +294,26 @@ export async function submitAssetForm(formData: AssetFormData) {
     const totalBuiltUpSqM = floors.reduce((acc: number, f: any) => acc + (f.checked ? Number(f.builtUpAreaSqM || 0) : 0), 0);
     const totalCarpetSqM = floors.reduce((acc: number, f: any) => acc + (f.checked ? Number(f.carpetAreaSqM || 0) : 0), 0);
 
-    const cookieStore = await cookies();
-    const userIdVal = cookieStore.get("user_id")?.value;
-    const userId = userIdVal ? Number(userIdVal) : 1;
+    const parsedId = Number(formData.id || (formData as any).assetId);
+    const isUpdate = !isNaN(parsedId) && parsedId > 0;
+
+    let assetNo = (formData.assetNo || formData.assetCode || "").trim();
+    if (!assetNo && isUpdate) {
+      try {
+        const existingAsset = await assetMasterService.getAssetById(parsedId);
+        if (existingAsset.success && existingAsset.data) {
+          assetNo = (existingAsset.data as any).assetNo || existingAsset.data.assetCode || "";
+        }
+      } catch (err) {
+        console.warn("Failed to fetch existing asset to preserve assetNo during update:", err);
+      }
+    }
 
     const apiRequest: AssetMasterRequest = {
       authorityId: 1,
       organizationId: 1,
       departmentId: getSafeForeignKeyId(parseNumericId(formData.departmentId || formData.department, departmentMapping), dbDeptIds, true),
-      assetNo: formData.assetCode || "",
+      assetNo: assetNo || null,
       assetName: formData.assetName || formData.assetType,
       assetCategoryId: categoryId,
       assetTypeId: typeId,
@@ -421,86 +429,12 @@ export async function submitAssetForm(formData: AssetFormData) {
       .filter((fv): fv is any => fv !== null)
     };
 
-    console.log("SUBMITTING ASSET MASTER API REQUEST PAYLOAD:", JSON.stringify(apiRequest, null, 2));
-
-    // 2. Execute POST or PUT request via Service Layer to save/update Asset Master
-    const parsedId = Number(formData.id || (formData as any).assetId);
-    const isUpdate = !isNaN(parsedId) && parsedId > 0;
-
     const response = isUpdate
       ? await assetMasterService.updateAsset(parsedId, apiRequest)
       : await assetMasterService.createAsset(apiRequest);
 
-    console.log("ASSET MASTER API RESPONSE STATUS:", response.success);
     if (!response.success) {
       console.error("ASSET MASTER API ERROR DETAILS:", response.error || response);
-      let dbCategories: any[] = [];
-      let dbTypes: any[] = [];
-      let dbConstructionTypes: any[] = [];
-      let dbUseTypes: any[] = [];
-      let dbSubUseTypes: any[] = [];
-      let dbFloors: any[] = [];
-
-      try {
-        const catRes = await categoryTypeService.getCategories();
-        if (catRes.success && catRes.data) {
-          dbCategories = catRes.data;
-        }
-        const typeRes = await categoryTypeService.getAllTypes();
-        if (typeRes.success && typeRes.data) {
-          dbTypes = typeRes.data;
-        }
-        const conRes = await apiClient.get<any[]>('/ConstructionType');
-        if (conRes.success && conRes.data) {
-          dbConstructionTypes = conRes.data;
-        }
-        const useRes = await apiClient.get<any[]>('/TypeOfUse');
-        if (useRes.success && useRes.data) {
-          dbUseTypes = useRes.data;
-        }
-        const subUseRes = await apiClient.get<any[]>('/SubTypeOfUse');
-        if (subUseRes.success && subUseRes.data) {
-          dbSubUseTypes = subUseRes.data;
-        }
-        const floorRes = await apiClient.get<any[]>('/Floor');
-        if (floorRes.success && floorRes.data) {
-          dbFloors = floorRes.data;
-        }
-      } catch (catErr) {
-        console.warn("Failed to fetch categories/types on failure:", catErr);
-      }
-
-      let dbUlb: any = null;
-      try {
-        const ulbRes = await apiClient.get<any>('/UlbConfig');
-        if (ulbRes.success && ulbRes.data) {
-          dbUlb = ulbRes.data;
-        }
-      } catch (ulbErr) {
-        console.warn("Failed to fetch UlbConfig on failure:", ulbErr);
-      }
-
-      try {
-        const fs = require("fs");
-        const logContent = `[${new Date().toISOString()}] SAVE FAILED\n` +
-          `Request Payload:\n${JSON.stringify(apiRequest, null, 2)}\n\n` +
-          `Active DB Wards: ${JSON.stringify(dbWardIds)}\n` +
-          `Active DB Zones: ${JSON.stringify(dbZoneIds)}\n` +
-          `Active DB Departments: ${JSON.stringify(dbDeptIds)}\n` +
-          `Active DB Moujas: ${JSON.stringify(dbMoujaIds)}\n` +
-          `Active DB Categories: ${JSON.stringify(dbCategories)}\n` +
-          `Active DB Types: ${JSON.stringify(dbTypes)}\n` +
-          `Active DB ConstructionTypes: ${JSON.stringify(dbConstructionTypes)}\n` +
-          `Active DB UseTypes: ${JSON.stringify(dbUseTypes)}\n` +
-          `Active DB SubUseTypes: ${JSON.stringify(dbSubUseTypes)}\n` +
-          `Active DB Floors: ${JSON.stringify(dbFloors)}\n` +
-          `Active DB UlbConfig: ${JSON.stringify(dbUlb)}\n\n` +
-          `Response Error:\n${JSON.stringify(response.error || response, null, 2)}\n` +
-          `============================================================\n\n`;
-        fs.appendFileSync("server-errors.log", logContent);
-      } catch (logErr) {
-        console.error("Failed to write to server-errors.log:", logErr);
-      }
     } else {
       console.log("ASSET MASTER API SUCCESS RESPONSE DATA:", JSON.stringify(response.data, null, 2));
     }
@@ -626,3 +560,46 @@ export const uploadBulkDocumentsAction = async (
     return { success: false, error: err.message || "Failed to upload bulk documents" };
   }
 };
+
+/**
+ * Server action to fetch the Asset module ID dynamically if screens are empty
+ */
+export async function getFallbackModuleIdAction(pathname?: string): Promise<number> {
+  try {
+    const { getModules } = await import("@/lib/api/configuration-settings/screenAccess/master-data.service");
+    const modules = await getModules();
+    
+    if (pathname) {
+      const pathLower = pathname.toLowerCase();
+      const exactMatch = modules.find((m: any) => {
+        const mName = m.moduleName || m.ModuleName;
+        return mName && pathLower.includes(mName.toLowerCase().replace(/\s+/g, '-'));
+      });
+      if (exactMatch) {
+         return exactMatch.moduleId || (exactMatch as any).ModuleId || 0;
+      }
+    }
+
+    // Prefer Asset Management specifically
+    const assetManagement = modules.find((m: any) => {
+      const mName = m.moduleName || m.ModuleName;
+      return mName && mName.toLowerCase().includes("asset management");
+    });
+    if (assetManagement) {
+      return assetManagement.moduleId || (assetManagement as any).ModuleId || 0;
+    }
+
+    // Ultimate fallback
+    const assetModule = modules.find((m: any) => {
+      const mName = m.moduleName || m.ModuleName;
+      return mName && mName.toLowerCase().includes("asset");
+    });
+    if (assetModule) {
+      return assetModule.moduleId || (assetModule as any).ModuleId || 0;
+    }
+    return 0;
+  } catch (err) {
+    console.error("Failed to fetch fallback module ID", err);
+    return 0;
+  }
+}

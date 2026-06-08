@@ -1,11 +1,11 @@
+import { AssetFormStepConfig, CategoryFlags } from "@/types/asset-types/basic-info/asset-wizard.types";
 import {
+  Armchair,
+  BadgeDollarSign,
   ClipboardList,
   Layers,
   ShieldCheck,
-  Armchair,
-  BadgeDollarSign,
 } from "lucide-react";
-import { AssetFormStepConfig, CategoryFlags } from "@/types/asset-types/basic-info/asset-wizard.types";
 export type { CategoryFlags };
 
 export const ALL_ASSET_FORM_STEPS: AssetFormStepConfig[] = [

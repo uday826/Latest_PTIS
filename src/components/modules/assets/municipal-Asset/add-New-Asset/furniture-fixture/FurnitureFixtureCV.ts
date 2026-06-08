@@ -1,4 +1,4 @@
-import type { InventoryType, InventoryRow, InventoryCategoryGroup } from "./FurnitureFixtureTypes";
+import type { InventoryCategoryGroup, InventoryRow, InventoryType } from "./FurnitureFixtureTypes";
 
 
 export const COND_FACTORS: Record<string, number> = {

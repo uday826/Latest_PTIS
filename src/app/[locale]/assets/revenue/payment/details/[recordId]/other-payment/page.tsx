@@ -1,5 +1,5 @@
-import { PaymentDetailLayout } from '@/components/modules/assets/revenue/payment/PaymentDetailLayout';
 import { OtherPaymentScreen } from '@/components/modules/assets/revenue/payment/OtherPaymentScreen';
+import { PaymentDetailLayout } from '@/components/modules/assets/revenue/payment/PaymentDetailLayout';
 import { getOtherPaymentRecordAction } from './actions';
 
 interface PageProps {

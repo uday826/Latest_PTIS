@@ -1,10 +1,10 @@
 import FurnitureFixturePage from "@/components/modules/assets/municipal-Asset/add-New-Asset/furniture-fixture/FurnitureFixtureStep";
 import {
-    inventoryService,
-    type InventoryItemCategory,
-    type InventoryItemCondition,
-    type InventoryItemName,
-    type InventoryItemModel,
+  inventoryService,
+  type InventoryItemCategory,
+  type InventoryItemCondition,
+  type InventoryItemModel,
+  type InventoryItemName,
 } from "@/lib/api/asset/inventory.service";
 import { getInventoryBatchesAction, type InventoryBatchListResponse } from "./actions";
 

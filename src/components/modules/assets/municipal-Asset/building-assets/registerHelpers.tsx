@@ -1,7 +1,7 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
-import React from 'react';
+
 import { useRouter } from 'next/navigation';
 import { Eye, PencilLine, Printer } from 'lucide-react';
 import * as XLSX from 'xlsx';

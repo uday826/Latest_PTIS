@@ -3,21 +3,21 @@
 import { useBuildingBasicInfoForm } from "@/hooks/asset-hooks/building-basic-info";
 
 // New validated components for building/land assets
-import { BuildingPropertyDetailsSection } from "./BuildingPropertyDetailsSection";
 import { BuildingOwnershipDetailsSection } from "./BuildingOwnershipDetailsSection";
+import { BuildingPropertyDetailsSection } from "./BuildingPropertyDetailsSection";
 
-import { DynamicAttributes } from "./DynamicAttributes";
-import { useAssetForm } from "../AssetFormContext";
-import React, { useState, useRef, useEffect } from "react";
+import { fetchDocumentFileAction, fetchUploadedDocumentsAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/common";
 import { ImagePlus, UploadCloud, X } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/common";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { fetchUploadedDocumentsAction, fetchDocumentFileAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
+import { useAssetForm } from "../AssetFormContext";
+import { DynamicAttributes } from "./DynamicAttributes";
 
-import type { Ward } from "@/lib/api/asset/ward.service";
-import type { Zone } from "@/lib/api/asset/zone.service";
 import type { Department } from "@/lib/api/asset/department.service";
 import type { Mouja } from "@/lib/api/asset/mouja.service";
+import type { Ward } from "@/lib/api/asset/ward.service";
+import type { Zone } from "@/lib/api/asset/zone.service";
 import type { BasicInfoPageProps } from "@/types/asset-types/basic-info/basicInfo.types";
 
 export default function BasicInfoPage({ wards = [], zones = [], departments = [], moujas = [], prefetchedFields = [], subzones = [] }: BasicInfoPageProps) {

@@ -1,9 +1,9 @@
 "use client";
 
-import React from 'react';
+import type { OverviewSidebarPhotographsProps } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
 import { Building2, Eye, Layers } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { OverviewSidebarPhotographsProps } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
+import React from 'react';
 
 export function OverviewSidebarPhotographs({
   currentAssetImages,

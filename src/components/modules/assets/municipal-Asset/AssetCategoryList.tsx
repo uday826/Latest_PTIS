@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronRight, Filter, Download, MapPin, Users, User, FileText, Check, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { AssetCategory } from '@/lib/api/asset/category-type.service';
+import { Check, ChevronDown, ChevronUp, Download, FileText, Filter, MapPin, Search, User, Users } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { AssetDetailView } from './asset-Detail-View/AssetDetailView';
-import { MOCK_DATA } from './AssetCategoryMock';
 import { AssetCategoryTable } from './AssetCategoryTable';
 
 interface Props {

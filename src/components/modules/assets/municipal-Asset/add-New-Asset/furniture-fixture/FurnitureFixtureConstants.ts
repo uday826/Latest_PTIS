@@ -1,5 +1,5 @@
 import { Armchair, Car, Cpu, LampDesk } from "lucide-react";
-import { InventoryType, TypeMeta, InventoryRow, InventoryForm, InvoiceForm } from "./FurnitureFixtureTypes";
+import { InventoryForm, InventoryRow, InventoryType, InvoiceForm, TypeMeta } from "./FurnitureFixtureTypes";
 export const PAGE_SIZE = 8;
 
 export const typeOptions = [

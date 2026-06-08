@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import { useTranslations } from 'next-intl';
-import { Layers, MapPin, Satellite, Map as MapIcon } from 'lucide-react';
 import type { DashboardMapAssetType } from '@/types/asset-type/asset-dashboard.types';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Layers, Map as MapIcon, MapPin, Satellite } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 
 // Extended asset type to handle both coordinate formats
 interface ExtendedAsset extends DashboardMapAssetType {
@@ -387,7 +387,7 @@ export function MapView({ assets, selectedAsset, onAssetClick, activeFilters, ca
         <MapController selectedAsset={selectedAsset} assets={filteredAssets} />
 
         {/* Asset Markers */}
-        {filteredAssets.map((asset) => {
+        {filteredAssets.map((asset, index) => {
           const coords = getAssetCoords(asset);
           if (!coords) return null;
           
@@ -397,7 +397,7 @@ export function MapView({ assets, selectedAsset, onAssetClick, activeFilters, ca
 
           return (
             <Marker
-              key={asset.id}
+              key={`${asset.id}-${index}`}
               position={[coords.lat, coords.lng]}
               icon={icon}
               eventHandlers={{

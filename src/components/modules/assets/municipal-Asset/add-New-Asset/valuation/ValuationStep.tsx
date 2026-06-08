@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
-import { AssetValuation } from "./AssetValuation";
-import { TaxationDetails } from "./TaxationDetails";
-import { LandValuation } from "./LandValuation";
-import { BuildingValuationSummary } from "./BuildingValuationSummary";
-import { InfrastructureValuation } from "./InfrastructureValuation";
-import { useAssetForm } from "../AssetFormContext";
-import { useSearchParams } from "next/navigation";
 import { getAssetValuationDataAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/valuation/actions";
 import { Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { useAssetForm } from "../AssetFormContext";
+import { AssetValuation } from "./AssetValuation";
+import { BuildingValuationSummary } from "./BuildingValuationSummary";
+import { InfrastructureValuation } from "./InfrastructureValuation";
+import { LandValuation } from "./LandValuation";
+import { TaxationDetails } from "./TaxationDetails";
 
 // Infrastructure asset types
 const INFRASTRUCTURE_TYPES = ["Road", "Bridge", "Subway", "Bridge/Subway", "Water Tank", "Water Tank/Reservoir"];
@@ -37,7 +37,6 @@ export default function ValuationPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [dynamicFloors, setDynamicFloors] = useState<any[]>([]);
-  const [buildingCV, setBuildingCV] = useState<any>(null);
   const [plotCV, setPlotCV] = useState<any>(null);
   const [inventoryState, setInventoryState] = useState<{
     furnitureItems: any[];
@@ -115,10 +114,6 @@ export default function ValuationPage() {
               });
               setDynamicFloors(mappedFloors);
               updateFormData({ floors: mappedFloors });
-            }
-
-            if (res.buildingCV) {
-              setBuildingCV(res.buildingCV);
             }
 
             if (res.plotCV) {

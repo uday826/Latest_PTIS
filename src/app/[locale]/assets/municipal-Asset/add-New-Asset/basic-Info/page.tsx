@@ -10,10 +10,10 @@
  */
 
 import BasicInfoPage from "@/components/modules/assets/municipal-Asset/add-New-Asset/basic-Info/BasicInfoStep";
-import { wardService } from "@/lib/api/asset/ward.service";
-import { zoneService } from "@/lib/api/asset/zone.service";
 import { departmentService } from "@/lib/api/asset/department.service";
 import { moujaService } from "@/lib/api/asset/mouja.service";
+import { wardService } from "@/lib/api/asset/ward.service";
+import { zoneService } from "@/lib/api/asset/zone.service";
 import { fetchBuildingFieldDefinitions } from "./actions";
 
 interface BuildingBasicInfoPageProps {

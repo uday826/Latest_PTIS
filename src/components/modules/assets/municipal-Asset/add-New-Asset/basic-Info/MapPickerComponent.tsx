@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import { X, MapPin, Navigation, Satellite, Layers, Map as MapIcon, Crosshair, Search, Check } from "lucide-react";
 import "leaflet/dist/leaflet.css";
+import { Check, Crosshair, Layers, Map as MapIcon, MapPin, Navigation, Satellite, Search, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
 
 // Fix for default marker icons
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;

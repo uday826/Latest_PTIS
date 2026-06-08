@@ -1,15 +1,15 @@
 "use client";
 
-import React from 'react';
-import { motion } from 'motion/react';
-import { 
-  FileText, 
-  Eye, 
-  Download
-} from 'lucide-react';
-import { Card, Button } from '@/components/common';
-import { useLocale, useTranslations } from 'next-intl';
+import { Button, Card } from '@/components/common';
 import type { AssetDetailController, DocumentItem } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
+import {
+  Download,
+  Eye,
+  FileText
+} from 'lucide-react';
+import { motion } from 'motion/react';
+import { useLocale, useTranslations } from 'next-intl';
+import React from 'react';
 
 const formatDate = (dateStr: string | undefined | null, locale: string): string => {
   if (!dateStr) return '';

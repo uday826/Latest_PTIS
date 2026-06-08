@@ -1,12 +1,12 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { CircleAlert, Eye, FileText, Hash, Layers3, Package2, SquareStack } from 'lucide-react';
 import { Button, Card, CardContent, Drawer, MasterTable } from '@/components/common';
 import type { AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
 import type { InventoryBatchDetail, InventoryUnitResponse } from '@/types/municipal-asset/furniture-fixtures.types';
-import { getInventoryBatchColumns, getInventoryUnitColumns, formatMoney, formatDate, blank } from './detailcolumn';
+import { CircleAlert, Eye, FileText, Hash, Layers3, Package2, SquareStack } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { blank, formatDate, formatMoney, getInventoryBatchColumns, getInventoryUnitColumns } from './detailcolumn';
 
 interface FurnitureFixturesTabProps {
   asset: AssetDetailRecord;

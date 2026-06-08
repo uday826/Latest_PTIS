@@ -1,4 +1,4 @@
-import type { BuildingAsset, AssetTypeOption } from './types';
+import type { AssetTypeOption, BuildingAsset } from './types';
 
 export const ASSET_TYPE_ORDER = [
   'Municipal Commercial Complex',

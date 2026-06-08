@@ -1,6 +1,6 @@
-import React from 'react';
-import { ClipboardList, FileText, Info, Map, Ruler } from 'lucide-react';
+
 import type { AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
+import { ClipboardList, FileText, Info, Map, Ruler } from 'lucide-react';
 import { getGroupedDisplayFields } from './fieldValueUtils';
 
 function blank(value?: string | number | null) {

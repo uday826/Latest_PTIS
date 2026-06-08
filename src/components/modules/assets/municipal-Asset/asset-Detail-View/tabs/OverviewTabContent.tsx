@@ -1,13 +1,13 @@
 "use client";
 
-import React from 'react';
 import { Tabs } from '@/components/common';
-import { useTranslations } from 'next-intl';
-import { CommercialComplexSummaryView } from '../commercial-complex/CommercialComplexSummaryView';
-import { CommercialComplexShopTable } from '../commercial-complex/CommercialComplexShopTable';
 import type { AssetDetailController, OverviewSubTab } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
-import { StandardBuildingOverview } from '../StandardBuildingOverview';
+import { useTranslations } from 'next-intl';
+import React from 'react';
+import { CommercialComplexShopTable } from '../commercial-complex/CommercialComplexShopTable';
+import { CommercialComplexSummaryView } from '../commercial-complex/CommercialComplexSummaryView';
 import { OverviewSidebarPhotographs } from '../OverviewSidebarPhotographs';
+import { StandardBuildingOverview } from '../StandardBuildingOverview';
 
 export function OverviewTabContent({ controller }: { controller: AssetDetailController }): React.JSX.Element {
   const {

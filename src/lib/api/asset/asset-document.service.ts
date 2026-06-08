@@ -120,7 +120,7 @@ export interface AssetDocumentBulkUploadResponseDto {
   failedUploads: BulkUploadFailureDto[];
 }
 
-const MODULE_ID_ASSET_DOCUMENT = 1004;
+
 const BASE_URL =
   typeof window !== 'undefined'
     ? (window.__RUNTIME_CONFIG__?.apiBaseUrl || appConfig.api.baseUrl || 'https://localhost:7293/api')
@@ -135,7 +135,7 @@ async function apiRequest<T>(endpoint: string, options?: RequestInit): Promise<A
     if (text) {
       try {
         data = JSON.parse(text);
-      } catch {}
+      } catch { }
     }
     if (!response.ok) {
       return { success: false, message: data?.message || `${response.status}: ${response.statusText}`, statusCode: response.status };
@@ -176,7 +176,7 @@ export const assetDocumentService = {
     const formData = new FormData();
     formData.append("File", data.file);
     formData.append("AssetId", data.assetId.toString());
-    formData.append("ModuleId", (data.moduleId || MODULE_ID_ASSET_DOCUMENT).toString());
+    formData.append("ModuleId", (data.moduleId || 0).toString());
     formData.append("DocumentDefinitionId", data.documentDefinitionId.toString());
     if (data.floorDetailId) formData.append("FloorDetailId", data.floorDetailId.toString());
     if (data.ownerUserId) formData.append("OwnerUserId", data.ownerUserId.toString());
@@ -194,7 +194,7 @@ export const assetDocumentService = {
     const formData = new FormData();
     data.files.forEach((file) => formData.append("Files", file));
     formData.append("AssetId", data.assetId.toString());
-    formData.append("ModuleId", (data.moduleId || MODULE_ID_ASSET_DOCUMENT).toString());
+    formData.append("ModuleId", (data.moduleId || 0).toString());
     if (data.floorDetailId) formData.append("FloorDetailId", data.floorDetailId.toString());
     if (data.ownerUserId) formData.append("OwnerUserId", data.ownerUserId.toString());
     formData.append("UploadedByUserId", (data.uploadedByUserId || 1).toString());

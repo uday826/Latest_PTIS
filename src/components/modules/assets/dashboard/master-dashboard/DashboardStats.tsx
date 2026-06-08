@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useCallback, useSyncExternalStore } from 'react';
+import { Card } from '@/components/common';
+import { DashboardStatsProps, FlipStatsCardProps } from '@/types/asset-type/asset-dashboard.types';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { FlipStatsCardProps, DashboardStatsProps } from '@/types/asset-type/asset-dashboard.types';
-import { Card } from '@/components/common';
+import { useCallback, useState, useSyncExternalStore } from 'react';
 
 const MotionCard = motion.create(Card);
 const subscribe = () => () => {};

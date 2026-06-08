@@ -1,13 +1,12 @@
 "use client";
 
-import React from "react";
-import { Select, Card, CardHeader, CardTitle, CardContent } from "@/components/common";
+import { Card, CardContent, CardHeader, CardTitle, Select } from "@/components/common";
 import { Landmark } from "lucide-react";
 
-import { AssetWizardStepProps } from "@/types/asset-types/basic-info/asset-wizard.types";
+import type { Department } from "@/lib/api/asset/department.service";
 import type { Ward } from "@/lib/api/asset/ward.service";
 import type { Zone } from "@/lib/api/asset/zone.service";
-import type { Department } from "@/lib/api/asset/department.service";
+import { AssetWizardStepProps } from "@/types/asset-types/basic-info/asset-wizard.types";
 import { useAssetForm } from "../AssetFormContext";
 
 export interface AssetJurisdictionProps extends AssetWizardStepProps {

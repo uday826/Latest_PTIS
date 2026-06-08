@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import { InventoryCategoryGroup, IndividualAssetUnit } from "./FurnitureFixtureTypes";
+import { InventoryCategoryGroup } from "./FurnitureFixtureTypes";
 import { inventoryMeta, formatCurrency } from "./FurnitureFixtureConstants";
-import { ChevronDown, ChevronRight, TrendingDown, Hash, Info } from "lucide-react";
+import { ChevronDown, ChevronRight, TrendingDown, Hash } from "lucide-react";
 
 interface Props {
   groups: InventoryCategoryGroup[];
@@ -14,7 +14,7 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
   const [expandedBatches, setExpandedBatches] = useState<Record<number, boolean>>({});
   const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({});
 
-  const toggleCat   = (t: string) => setExpandedCats(p => ({ ...p, [t]: !p[t] }));
+  const toggleCat = (t: string) => setExpandedCats(p => ({ ...p, [t]: !p[t] }));
   const toggleBatch = (id: number) => setExpandedBatches(p => ({ ...p, [id]: !p[id] }));
 
   const grandDep = grandPurchase - grandCV;
@@ -46,8 +46,8 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
 
           <tbody>
             {groups.map(group => {
-              const meta   = inventoryMeta[group.inventoryType as keyof typeof inventoryMeta];
-              const Icon   = meta?.icon;
+              const meta = inventoryMeta[group.inventoryType as keyof typeof inventoryMeta];
+              const Icon = meta?.icon;
               const catOpen = expandedCats[group.inventoryType];
 
               return (
@@ -87,11 +87,11 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
                     </td>
                   </tr>
 
-                  {catOpen && group.batches.map((batch, bIdx) => {
+                  {catOpen && group.batches.map((batch) => {
                     const batchOpen = expandedBatches[batch.id];
-                    const totalCV   = batch.totalCV ?? batch.total;
-                    const dep       = batch.total - totalCV;
-                    const hasUnits  = (batch.registeredUnits?.length ?? 0) > 0;
+                    const totalCV = batch.totalCV ?? batch.total;
+                    const dep = batch.total - totalCV;
+                    const hasUnits = (batch.registeredUnits?.length ?? 0) > 0;
 
                     return (
                       <React.Fragment key={`batch-${batch.id}`}>
@@ -153,7 +153,7 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
 
                         {batchOpen && batch.registeredUnits?.map(unit => (
                           <tr key={`unit-${unit.assetId}`}
-                              className="border-b border-dotted border-slate-200 bg-slate-50/70 text-xs">
+                            className="border-b border-dotted border-slate-200 bg-slate-50/70 text-xs">
                             <td className="py-2 pl-20 pr-4">
                               <div className="flex items-center gap-2">
                                 <Hash className="h-3 w-3 text-slate-400 shrink-0" />

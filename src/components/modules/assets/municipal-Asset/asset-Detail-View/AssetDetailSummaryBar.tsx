@@ -1,10 +1,10 @@
 "use client";
 
-import React from 'react';
-import { Info, Map, MapPin, FileText, Bookmark, Layers, IndianRupee, Calculator, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/common';
-import { useTranslations } from 'next-intl';
 import type { AssetDetailController } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
+import { AlertCircle, Bookmark, Calculator, CheckCircle2, FileText, IndianRupee, Info, Layers, Map, MapPin } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import React from 'react';
 
 export function AssetDetailSummaryBar({ controller }: { controller: AssetDetailController }): React.JSX.Element {
   const { asset } = controller;

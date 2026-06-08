@@ -83,6 +83,24 @@ export async function deleteDocument(id: number) {
 
 export async function uploadDocument(formData: FormData) {
   try {
+    const { getModules } = await import("@/lib/api/configuration-settings/screenAccess/master-data.service");
+    const modules = await getModules();
+    const assetManagement = modules.find((m: any) => {
+      const mName = m.moduleName || m.ModuleName;
+      return mName && mName.toLowerCase().includes("asset management");
+    });
+    
+    if (assetManagement) {
+      const dynId = assetManagement.moduleId || (assetManagement as any).ModuleId || 0;
+      if (dynId > 0 && formData.has("ModuleId")) {
+        formData.set("ModuleId", dynId.toString());
+      }
+    }
+  } catch (e) {
+    console.error("Failed to dynamically resolve ModuleId at server service level", e);
+  }
+
+  try {
     const url = `${getBaseUrl()}/AssetDocument/upload`;
     const headers = await getBinaryFetchHeaders();
     
@@ -116,6 +134,24 @@ export async function uploadDocument(formData: FormData) {
 }
 
 export async function uploadBulkDocuments(formData: FormData) {
+  try {
+    const { getModules } = await import("@/lib/api/configuration-settings/screenAccess/master-data.service");
+    const modules = await getModules();
+    const assetManagement = modules.find((m: any) => {
+      const mName = m.moduleName || m.ModuleName;
+      return mName && mName.toLowerCase().includes("asset management");
+    });
+    
+    if (assetManagement) {
+      const dynId = assetManagement.moduleId || (assetManagement as any).ModuleId || 0;
+      if (dynId > 0 && formData.has("ModuleId")) {
+        formData.set("ModuleId", dynId.toString());
+      }
+    }
+  } catch (e) {
+    console.error("Failed to dynamically resolve ModuleId at server service level", e);
+  }
+
   const url = `${getBaseUrl()}/AssetDocument/upload/bulk`;
   const headers = await getBinaryFetchHeaders();
   
@@ -134,7 +170,17 @@ export async function uploadBulkDocuments(formData: FormData) {
   }
 
   if (!response.ok || (data && data.success === false)) {
-    return { success: false, error: data.message || data.error || `Bulk upload failed with status ${response.status}`, statusCode: response.status };
+    let detailedErr = data.message || data.error || `Bulk upload failed with status ${response.status}`;
+    // If backend provided detailed failedUploads, append it to the error string
+    if (data.failedUploads && Array.isArray(data.failedUploads) && data.failedUploads.length > 0) {
+      detailedErr += ` | Details: ${data.failedUploads.map((f: any) => f.errorMessage).join(", ")}`;
+    } else if (data.data && Array.isArray(data.data.failedUploads) && data.data.failedUploads.length > 0) {
+      detailedErr += ` | Details: ${data.data.failedUploads.map((f: any) => f.errorMessage).join(", ")}`;
+    } else {
+      // Just dump the entire response object!
+      detailedErr += ` | RAW: ${JSON.stringify(data)}`;
+    }
+    return { success: false, error: detailedErr, statusCode: response.status, data: data };
   }
 
   return { success: true, data: data.items || data.data || data };

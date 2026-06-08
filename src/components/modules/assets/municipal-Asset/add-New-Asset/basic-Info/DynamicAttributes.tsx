@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/common";
-import { ListPlus } from "lucide-react";
-import { fetchFieldDefinitions } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { fetchCategories, fetchTypesByCategory } from "@/app/[locale]/assets/municipal-Asset/actions";
-import { processFieldDefinitions, ProcessedField, groupAndMergeFields, MergedFieldSection } from "@/components/modules/assets/municipal-Asset/add-New-Asset/FieldRenderer";
+import { fetchFieldDefinitions } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/common";
+import { groupAndMergeFields, MergedFieldSection, ProcessedField, processFieldDefinitions } from "@/components/modules/assets/municipal-Asset/add-New-Asset/FieldRenderer";
+import { ListPlus } from "lucide-react";
+import React from "react";
 import { DynamicFieldInput } from "./DynamicFieldInput";
 
 import type { DynamicAttributesProps } from "@/types/asset-types/basic-info/basicInfo.types";

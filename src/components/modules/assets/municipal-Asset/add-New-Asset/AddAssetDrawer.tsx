@@ -1,20 +1,20 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
-import { Plus, ChevronRight, ClipboardList, Search, CheckCircle2, Loader2, X, MapPin, AlertCircle } from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
-import { Drawer } from "@/components/common/Drawer";
-import { Select } from "@/components/common";
 import {
+  fetchAssetsByFilter,
   fetchCategories,
   fetchTypesByCategory,
-  fetchZones,
   fetchWards,
-  fetchAssetsByFilter,
+  fetchZones,
 } from "@/app/[locale]/assets/municipal-Asset/actions";
+import { Select } from "@/components/common";
+import { Drawer } from "@/components/common/Drawer";
 import { AssetCategory, AssetType } from "@/lib/api/asset/category-type.service";
-import { Zone } from "@/lib/api/asset/zone.service";
 import { Ward } from "@/lib/api/asset/ward.service";
+import { Zone } from "@/lib/api/asset/zone.service";
+import { AlertCircle, CheckCircle2, ChevronRight, ClipboardList, Loader2, MapPin, Plus, Search, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useCallback, useEffect, useState } from "react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -72,11 +72,6 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
   // Gate: asset code search is only active when both zone + ward are selected
   const canSearch = !!(selectedZoneId && selectedWardId);
 
-  // ── Locale helper
-  const getLocale = () => {
-    const segments = pathname.split("/").filter(Boolean);
-    return segments[0] || "en";
-  };
 
   // ──────────────────────────────────────────────────────
   // Load categories on mount (New Register)

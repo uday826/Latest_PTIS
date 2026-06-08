@@ -1,8 +1,7 @@
-import React from "react";
 import { AddButton, Button, Input, Select, UploadButton } from "@/components/common";
 import { Receipt } from "lucide-react";
-import { type InventoryType, type InventoryRow, type InventoryForm, type InvoiceForm } from "./FurnitureFixtureTypes";
-import { typeOptions, conditionMap, invoiceModeOptions, inventoryMeta, initialRows, emptyForm, emptyInvoiceForm, PAGE_SIZE, formatCurrency } from "./FurnitureFixtureConstants";
+import React from "react";
+import { type InventoryForm } from "./FurnitureFixtureTypes";
 
 interface InventoryFormSectionProps {
   form: InventoryForm;
@@ -68,23 +67,6 @@ export function InventoryFormSection({
     return "Specs / Reg No.";
   }, [form.type]);
 
-  const isFormValid = React.useMemo(() => {
-    const isDateValid = !!form.purchaseDate && !isNaN(new Date(form.purchaseDate).getTime()) && new Date(form.purchaseDate) <= new Date();
-
-    return (
-      !!form.type &&
-      !!form.itemName &&
-      !!form.modelName &&
-      isDateValid &&
-      !!form.condition &&
-      !!form.owningDepartment &&
-      !!form.specifications &&
-      !!form.quantity &&
-      Number(form.quantity) > 0 &&
-      !!form.unitValue &&
-      Number(form.unitValue) > 0
-    );
-  }, [form]);
 
   return (
     <div className="rounded-xl border border-[#CFD9E6] bg-[#F7FAFF] p-3">

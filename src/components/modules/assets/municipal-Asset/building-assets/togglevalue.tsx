@@ -1,7 +1,7 @@
 'use client';
 
+import { Building2, ChevronDown, Search } from 'lucide-react';
 import React from 'react';
-import { Building, Building2, ChevronDown, Search } from 'lucide-react';
 
 import { Button, Checkbox, Input } from '@/components/common';
 

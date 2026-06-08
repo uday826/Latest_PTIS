@@ -46,7 +46,7 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
         wardId={data.wardId}
         assetId={data.assetId}
         drawerAssetId={drawerAssetId ? Number(drawerAssetId) : null}
-        selectedAsset={selectedAsset}
+        selectedAsset={selectedAsset as Record<string, unknown> | null}
         assetDocuments={assetDocuments}
         applicationTypes={applicationTypes}
         initialRecords={data.records}

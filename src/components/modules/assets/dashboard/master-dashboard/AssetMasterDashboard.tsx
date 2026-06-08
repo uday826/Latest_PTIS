@@ -1,19 +1,22 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { deriveDashboardData, ICONS, mapSummaryToStats } from '@/lib/utils/asset-utils/asset-dashboard-helpers';
+import type {
+  AssetMasterDashboardProps, DashboardAuctionDetail,
+  DashboardCategoryItem,
+  DashboardContentProps,
+  DashboardDataPayload,
+  DashboardMapAssetType,
+} from '@/types/asset-type/asset-dashboard.types';
 import { AnimatePresence } from 'framer-motion';
 import { BarChart3, MapPin } from 'lucide-react';
-import type {
-  DashboardMapAssetType, AssetMasterDashboardProps, DashboardAuctionDetail, DashboardContentProps,
-  DashboardDataPayload, DashboardCategoryItem,
-} from '@/types/asset-type/asset-dashboard.types';
-import { DashboardStats as StatsSection } from './DashboardStats';
-import { DashboardMap } from './DashboardMap';
-import { DashboardAcquisition } from './DashboardAcquisition';
-import { DashboardZone } from './DashboardZone';
 import { useTranslations } from 'next-intl';
-import { ICONS, mapSummaryToStats, deriveDashboardData } from '@/lib/utils/asset-utils/asset-dashboard-helpers';
-import { EncroachmentModal, AuctionDetailModal } from './DashboardModals';
+import { useMemo, useState } from 'react';
+import { DashboardAcquisition } from './DashboardAcquisition';
+import { DashboardMap } from './DashboardMap';
+import { AuctionDetailModal, EncroachmentModal } from './DashboardModals';
+import { DashboardStats as StatsSection } from './DashboardStats';
+import { DashboardZone } from './DashboardZone';
 
 const mapCategoryItem = (c: { categoryName?: string; category?: string; categoryId?: string | number; id?: string | number; count?: number; value?: number; color?: string; description?: string }): DashboardCategoryItem => {
   const name = String(c.categoryName || c.category || '');
@@ -47,6 +50,8 @@ function DashboardContent({ initialSummary, initialCategories, initialDashboardD
     zoneDistribution: [],
     acquisitionsList: [],
     auctionsList: [],
+    allZones: [],
+    allWards: [],
   });
 
 
@@ -54,8 +59,16 @@ function DashboardContent({ initialSummary, initialCategories, initialDashboardD
 
   const data = useMemo(() => deriveDashboardData(dashboardData, selectedZone, selectedWard, drillDownCategories), [dashboardData, selectedZone, selectedWard, drillDownCategories]);
   const visibleAssets = useMemo(() => data.filteredAssets, [data.filteredAssets]);
-  const zonesList = useMemo(() => ['all', ...new Set(dashboardData.filteredAssets.map(a => a.zone))].filter(Boolean), [dashboardData.filteredAssets]);
-  const wardsList = useMemo(() => ['all', ...new Set(dashboardData.filteredAssets.map(a => a.ward))].filter(Boolean), [dashboardData.filteredAssets]);
+  const zonesList = useMemo(() => ['all', ...new Set([...(dashboardData.allZones || []), ...dashboardData.filteredAssets.map(a => a.zone)])].filter(Boolean), [dashboardData.allZones, dashboardData.filteredAssets]);
+  const wardsList = useMemo(() => {
+    const assetWards = dashboardData.filteredAssets
+      .filter(a => selectedZone === 'all' || a.zone === selectedZone)
+      .map(a => a.ward);
+    const masterWards = (dashboardData.allWards || [])
+      .filter(w => selectedZone === 'all' || w.zoneNo === selectedZone)
+      .map(w => w.wardNo);
+    return ['all', ...new Set([...masterWards, ...assetWards])].filter(Boolean);
+  }, [dashboardData.allWards, dashboardData.filteredAssets, selectedZone]);
   const encroachedAssets = useMemo(() => visibleAssets.filter(a => (a.encroachment as { hasEncroachment?: boolean })?.hasEncroachment), [visibleAssets]);
   const visibleZoneDistribution = useMemo(() => { const c: Record<string, number> = {}; visibleAssets.forEach(a => { c[a.zone] = (c[a.zone] || 0) + 1; }); return Object.entries(c).map(([name, value]) => ({ name, value })); }, [visibleAssets]);
   const activeZone = useMemo(() => (selectedZone !== 'all' && zonesList.includes(selectedZone)) ? selectedZone : 'all', [selectedZone, zonesList]);
@@ -82,8 +95,8 @@ function DashboardContent({ initialSummary, initialCategories, initialDashboardD
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="flex items-center gap-2 text-sm font-bold text-gray-600"><MapPin className="w-4.5 h-4.5 text-blue-600" /> {t('filters')}</div>
           <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
-            <select className={SELECT_CLS} value={activeZone} onChange={e => handleZoneChange(e.target.value)}>{zonesList.map(z => <option key={z} value={z}>{z === 'all' ? t('allZones') : `${z} ${t('zoneSuffix')}`}</option>)}</select>
-            <select className={SELECT_CLS} value={activeWard} onChange={e => handleWardChange(e.target.value)}>{wardsList.map(w => <option key={w} value={w}>{w === 'all' ? t('allWards') : `${t('wardPrefix')} ${w}`}</option>)}</select>
+            <select className={SELECT_CLS} value={activeZone} onChange={e => handleZoneChange(e.target.value)}>{zonesList.map(z => <option key={z} value={z}>{z === 'all' ? t('allZones') : z}</option>)}</select>
+            <select className={SELECT_CLS} value={activeWard} onChange={e => handleWardChange(e.target.value)}>{wardsList.map(w => <option key={w} value={w}>{w === 'all' ? t('allWards') : w}</option>)}</select>
           </div>
         </div>
       </div>

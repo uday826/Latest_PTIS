@@ -1,17 +1,17 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { AlertCircle, Building2, Eye } from 'lucide-react';
 import { Badge, Button, Card, CardContent, Drawer, MasterTable } from '@/components/common';
 import type { AssetChildAssetItem, AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
+import { AlertCircle, Building2, Eye } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import {
+  blank,
+  getSubUnitDetailColumns,
+  getSubUnitFloorColumns,
   getSubUnitMainColumns,
   getSubUnitRenterColumns,
-  getSubUnitRoomColumns,
-  getSubUnitFloorColumns,
-  getSubUnitDetailColumns,
-  blank
+  getSubUnitRoomColumns
 } from './detailcolumn';
 
 type SubUnitRow = AssetChildAssetItem & Record<string, unknown>;
@@ -36,7 +36,7 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
         !child.assetNo?.startsWith('EQP-')
     );
   }, [asset.childAssets]);
-  
+
   const [pageNumber, setPageNumber] = useState(1);
   const [selectedUnit, setSelectedUnit] = useState<SubUnitRow | null>(null);
   const pageSize = 10;

@@ -1,4 +1,4 @@
-import { Building2, Landmark, Building, Truck as TruckIcon, Layers } from 'lucide-react';
+import { Building, Building2, Landmark, Layers, Truck as TruckIcon } from 'lucide-react';
 
 export const getCategoryMeta = (categoryName: string) => {
   const nameLower = (categoryName || '').toLowerCase();

@@ -10,11 +10,11 @@ export const dynamic = 'force-dynamic';
  * - Video ONLY plays when navigating to Asset Management from home page
  */
 
-import { cookies } from 'next/headers';
-import { AssetMasterDashboard } from '@/components/modules/assets/dashboard/master-dashboard/AssetMasterDashboard';
 import { fetchDashboardDataAction } from '@/app/[locale]/assets/dashboard/master-dashboard/actions';
-import { authService } from '@/lib/api/auth.service';
 import { AssetIntroVideo } from '@/components/modules/assets/AssetIntroVideo';
+import { AssetMasterDashboard } from '@/components/modules/assets/dashboard/master-dashboard/AssetMasterDashboard';
+import { authService } from '@/lib/api/auth.service';
+import { cookies } from 'next/headers';
 
 export default async function AssetDashboardPage() {
     const cookieStore = await cookies();

@@ -46,7 +46,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     query.pageSize
   );
   // Clamp pageSize to the allowed options from PAGE_SIZE_OPTIONS
-  const safePageSize = PAGE_SIZE_OPTIONS.includes(rawPageSize) ? rawPageSize : 10;
+  const safePageSize = (PAGE_SIZE_OPTIONS as readonly number[]).includes(rawPageSize) ? rawPageSize : 10;
 
   const safeSearch = (query.search || '').trim().slice(0, 200);
 

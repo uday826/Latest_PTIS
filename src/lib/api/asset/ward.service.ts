@@ -9,6 +9,8 @@ export interface Ward {
   WardNo?: string;
   name?: string;
   Name?: string;
+  description?: string;
+  Description?: string;
   wardCode?: string;
   isActive?: boolean;
   zoneId?: number | string | null;
@@ -22,7 +24,7 @@ export const wardService = {
    * Get all active Wards
    */
   getWards: async (): Promise<ApiResponse<Ward[]>> => {
-    const response = await apiClient.get<any>("/Ward?pageSize=1000");
+    const response = await apiClient.get<any>("/Ward?pageSize=-1");
     if (response.success && response.data) {
       const items = Array.isArray(response.data)
         ? response.data

@@ -2,10 +2,9 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import React from 'react';
-import { AlertCircle, Download, File, Loader2 } from 'lucide-react';
 import { Button, Drawer } from '@/components/common';
 import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
+import { AlertCircle, Download, File, Loader2 } from 'lucide-react';
 
 export type LoadedDocumentFile = {
   objectUrl: string;

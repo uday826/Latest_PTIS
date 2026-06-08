@@ -1,13 +1,12 @@
 'use client';
 
-import React from 'react';
 import { CalendarClock, ShieldCheck } from 'lucide-react';
 
-import { Badge } from '@/components/common';
 import type { Column } from '@/components/common';
+import { Badge } from '@/components/common';
 
-import { formatINR } from './utils';
 import type { AssetCondition, BuildingAsset } from './types';
+import { formatINR } from './utils';
 
 function getConditionVariant(condition: AssetCondition): 'default' | 'warning' | 'destructive' {
   if (condition === 'good') return 'default';

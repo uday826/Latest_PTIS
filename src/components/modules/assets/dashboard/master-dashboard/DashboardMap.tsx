@@ -1,13 +1,13 @@
 'use client';
 
-import { useMemo, useState, useCallback, useEffect, Suspense } from 'react';
-import { Activity, Layers, MapPin, IndianRupee, Landmark, Building2, Factory, Truck } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import type { DashboardMapAssetType, DashboardMapComponentProps, DashboardSubcategorySelection } from '@/types/asset-type/asset-dashboard.types';
-import { normKey, toTitleCase, getCategoryKey } from '@/lib/utils/asset-utils/asset-dashboard-helpers';
+import { Button, Card } from '@/components/common';
 import { Badge } from '@/components/common/Badge';
-import { Card, Button } from '@/components/common';
+import { getCategoryKey, normKey, toTitleCase } from '@/lib/utils/asset-utils/asset-dashboard-helpers';
+import type { DashboardMapAssetType, DashboardMapComponentProps, DashboardSubcategorySelection } from '@/types/asset-type/asset-dashboard.types';
+import { Activity, Building2, Factory, IndianRupee, Landmark, Layers, MapPin, Truck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 
 // Load MapView with SSR disabled to avoid Leaflet/window issues on server
 const MapView = dynamic(() => import('./MapView').then((mod) => mod.MapView), { ssr: false });

@@ -1,20 +1,18 @@
 "use client";
 
-import React, { useEffect, useCallback } from "react";
-import { Badge, Card, CardContent, DeleteButton, EditButton, MasterTable, TableHeader } from "@/components/common";
-import { Package2, Image as ImageIcon, FileText } from "lucide-react";
-import { type InventoryType, type InventoryRow, type InventoryForm, type InvoiceForm } from "./FurnitureFixtureTypes";
-import { typeOptions, conditionMap, invoiceModeOptions, inventoryMeta, initialRows, emptyForm, emptyInvoiceForm, PAGE_SIZE, formatCurrency } from "./FurnitureFixtureConstants";
-import { InventoryFormSection } from "./InventoryFormSection";
+import type { InventoryBatchListResponse } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
+import { Badge, Card, CardContent, DeleteButton, EditButton, MasterTable } from "@/components/common";
+import type { InventoryItemCategory, InventoryItemCondition, InventoryItemModel, InventoryItemName } from "@/lib/api/asset/inventory.service";
+import { FileText, Image as ImageIcon, Loader2, Package2 } from "lucide-react";
+import React, { useCallback, useEffect } from "react";
+import { toast } from "sonner";
+import { useAssetForm } from "../AssetFormContext";
+import { formatCurrency, inventoryMeta, PAGE_SIZE } from "./FurnitureFixtureConstants";
+import { InventoryCVGroupTable } from "./InventoryCVGroupTable";
 import { InventoryEditDrawer } from "./InventoryEditDrawer";
+import { InventoryFormSection } from "./InventoryFormSection";
 import { InvoiceDrawer } from "./InvoiceDrawer";
 import { useFurnitureFixtureState } from "./useFurnitureFixtureState";
-import { InventoryCVGroupTable } from "./InventoryCVGroupTable";
-import type { InventoryItemCategory, InventoryItemCondition, InventoryItemName, InventoryItemModel } from "@/lib/api/asset/inventory.service";
-import type { InventoryBatchListResponse } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
-import { Loader2 } from "lucide-react";
-import { useAssetForm } from "../AssetFormContext";
-import { toast } from "sonner";
 
 interface Props {
   parentAssetId?: number | null;

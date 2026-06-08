@@ -1,10 +1,10 @@
 "use client";
 
-import React from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { Button } from '@/components/common';
 import type { ImageLightboxModalProps } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import React from 'react';
 
 export function ImageLightboxModal({
   assetName,

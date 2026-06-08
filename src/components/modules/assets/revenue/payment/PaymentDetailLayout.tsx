@@ -1,26 +1,26 @@
 'use client';
 
-import React from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import {
-  ArrowLeft,
-  MapPin,
-  Map,
-  Circle,
-  History,
-  Navigation,
-  Home,
-  Building2,
-  User,
-  FileText,
-  Calendar,
-  CreditCard,
-  Shield,
-} from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import { Tabs } from '@/components/common/Tabs';
 import type { LeaseRentPaymentDetail } from '@/types/asset/leaseRentPayment.types';
+import {
+  ArrowLeft,
+  Building2,
+  Calendar,
+  Circle,
+  CreditCard,
+  FileText,
+  History,
+  Home,
+  Map,
+  MapPin,
+  Navigation,
+  Shield,
+  User,
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import React from 'react';
 
 export type PaymentDetailTabKey = 'make-payment' | 'other-payment' | 'payment-history';
 

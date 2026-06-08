@@ -2,8 +2,8 @@
 
 import { assetMasterService } from "@/lib/api/asset/asset-master.service";
 import { categoryTypeService } from "@/lib/api/asset/category-type.service";
-import { zoneService } from "@/lib/api/asset/zone.service";
 import { wardService } from "@/lib/api/asset/ward.service";
+import { zoneService } from "@/lib/api/asset/zone.service";
 
 export async function fetchAssetRegisterPage(
   categoryId: number,
@@ -29,7 +29,7 @@ export async function fetchAssetRegisterPage(
   }
 
   const data = response.data;
-  const items = Array.isArray(data) ? data : (data.items || []);
+  const items = Array.isArray(data) ? data : (data?.items || []);
   return {
     items,
     totalCount: (data as any).totalCount || items.length,

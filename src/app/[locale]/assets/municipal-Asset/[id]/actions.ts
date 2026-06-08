@@ -1,8 +1,8 @@
 'use server';
 
-import { notFound } from 'next/navigation';
-import { municipalAssets } from '@/components/modules/assets/municipal-Asset/data/municipalAssets';
 import type { MunicipalAsset } from '@/components/modules/assets/municipal-Asset/data/municipalAssets';
+import { municipalAssets } from '@/components/modules/assets/municipal-Asset/data/municipalAssets';
+import { notFound } from 'next/navigation';
 
 /**
  * Server Action to fetch municipal asset by its unique identifier.

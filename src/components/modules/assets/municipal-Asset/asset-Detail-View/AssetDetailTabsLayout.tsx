@@ -1,15 +1,15 @@
 "use client";
 
-import React from 'react';
-import { Info, Scale, IndianRupee, FileText, Package } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { Badge, Tabs } from '@/components/common';
-import { OverviewTabContent } from './tabs/OverviewTabContent';
-import { LegalPlanningTabContent } from './tabs/LegalPlanningTabContent';
-import { ValuationTabContent } from './tabs/ValuationTabContent';
+import type { AssetDetailController, AssetDetailTab } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
+import { FileText, IndianRupee, Info, Package, Scale } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import React from 'react';
 import { DocumentsTabContent } from './tabs/DocumentsTabContent';
 import { FurnitureFixturesTabContent } from './tabs/FurnitureFixturesTabContent';
-import type { AssetDetailController, AssetDetailTab } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
+import { LegalPlanningTabContent } from './tabs/LegalPlanningTabContent';
+import { OverviewTabContent } from './tabs/OverviewTabContent';
+import { ValuationTabContent } from './tabs/ValuationTabContent';
 
 export function AssetDetailTabsLayout({ controller }: { controller: AssetDetailController }): React.JSX.Element {
   const { activeTab, setActiveTab, uploadedDocuments } = controller;

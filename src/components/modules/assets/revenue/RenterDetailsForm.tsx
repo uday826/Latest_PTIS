@@ -1,8 +1,8 @@
 'use client';
 /* eslint-disable i18next/no-literal-string */
 
+import { IndianRupee, Mail, Phone, User } from 'lucide-react';
 import React, { useState } from 'react';
-import { User, Phone, Mail, IndianRupee } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button, Label } from '@/components/common';
 

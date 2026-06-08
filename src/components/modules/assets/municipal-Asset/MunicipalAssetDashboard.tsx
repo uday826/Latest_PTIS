@@ -1,11 +1,11 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
-import React, { useState } from 'react';
-import { Building2, ChevronRight, Plus } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
-import { AddButton, Button, Card, CardContent, CardHeader, CardTitle, CancelButton } from '@/components/common';
+import { AddButton, Card, CardContent, CardHeader, CardTitle } from '@/components/common';
 import { AssetCategory, AssetType } from '@/lib/api/asset/category-type.service';
+import { Building2 } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { AssetCategoryCard } from './AssetCategoryCard';
 import { getCategoryMeta, themes } from './dashboardHelpers';
 

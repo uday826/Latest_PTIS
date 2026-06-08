@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, ChangeEvent } from "react";
-import { Camera, Map, Maximize2, UploadCloud, FileText, MapPin } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/common";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/common";
+import { Camera, FileText, Map, MapPin, Maximize2, UploadCloud } from "lucide-react";
+import { ChangeEvent, useRef, useState } from "react";
 import { useAssetForm } from "../AssetFormContext";
 import { MapPicker } from "../basic-Info/MapPicker";
 

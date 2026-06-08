@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import { Eye, Edit } from 'lucide-react';
+import { Edit, Eye } from 'lucide-react';
 import { MOCK_DATA } from './AssetCategoryMock';
 
 interface AssetCategoryTableProps {
