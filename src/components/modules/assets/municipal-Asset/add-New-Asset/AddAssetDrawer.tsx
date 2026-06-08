@@ -207,6 +207,9 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
   // ──────────────────────────────────────────────────────
   const handleNewRegisterSubmit = () => {
     if (!newData.category || !newData.assetType) return;
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("newAssetFormData");
+    }
     const cat = categories.find((c) => c.categoryName === newData.category);
     const typ = types.find((t) => {
       const label = t.assetTypeName || (t as any).typeName || "";
@@ -223,6 +226,9 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
 
   const handleExistingAssetSubmit = () => {
     if (!selectedAsset) return;
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("newAssetFormData");
+    }
     const params = new URLSearchParams({
       category: selectedAsset.categoryName,
       assetType: selectedAsset.typeName,

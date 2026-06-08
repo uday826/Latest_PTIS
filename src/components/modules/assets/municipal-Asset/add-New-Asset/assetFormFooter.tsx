@@ -210,6 +210,11 @@ export function AssetFormFooter() {
           }
         }
 
+        // Clear session storage upon successful final submit
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("newAssetFormData");
+        }
+
         // Show success modal with asset details
         setSuccessModal({
           assetName: formData.assetName || "",
