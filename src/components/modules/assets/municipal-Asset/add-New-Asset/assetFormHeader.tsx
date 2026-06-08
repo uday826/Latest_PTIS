@@ -38,6 +38,9 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
   const currentStep = getCurrentAssetStep(pathname, formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
 
   const handleBackToDashboard = () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("newAssetFormData");
+    }
     const segments = pathname.split("/").filter(Boolean);
     const locale = segments[0] || "en";
     router.push(`/${locale}/assets/municipal-Asset`);

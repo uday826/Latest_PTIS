@@ -11,6 +11,9 @@ export default function AddNewAssetPage() {
 
   const handleClose = () => {
     setIsOpen(false);
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("newAssetFormData");
+    }
     // Use setTimeout to allow the drawer exit animation to finish before navigating away
     setTimeout(() => {
       const segments = pathname.split('/').filter(Boolean);
