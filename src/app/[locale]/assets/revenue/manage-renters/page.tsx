@@ -1,6 +1,10 @@
 import { LeaseRentRegistration } from '@/components/modules/assets/revenue/LeaseRentRegistration';
 import { LeaseRentStats } from '@/components/modules/assets/revenue/LeaseRentStats';
-import { getManageRentersAssetDetailsAction, getManageRentersPageDataAction, getApplicationTypesAction } from './actions';
+import {
+  getManageRentersAssetDetailsAction,
+  getManageRentersPageDataAction,
+  getApplicationTypesAction,
+} from './registration-actions';
 import { fetchAssetDocumentsByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +22,9 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
   const data = await getManageRentersPageDataAction(query);
   const drawerAssetIdRaw = query.drawerAssetId;
   const drawerAssetId = Array.isArray(drawerAssetIdRaw) ? drawerAssetIdRaw[0] : drawerAssetIdRaw;
+  const selectedRegistration = drawerAssetId
+    ? data.records.find((record) => record.assetMasterId === Number(drawerAssetId)) ?? null
+    : null;
   const selectedAsset = drawerAssetId ? await getManageRentersAssetDetailsAction(drawerAssetId) : null;
   const assetDocuments = drawerAssetId ? (await fetchAssetDocumentsByAsset(drawerAssetId)).documents : [];
   const applicationTypes = await getApplicationTypesAction();
@@ -46,7 +53,8 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
         wardId={data.wardId}
         assetId={data.assetId}
         drawerAssetId={drawerAssetId ? Number(drawerAssetId) : null}
-        selectedAsset={selectedAsset as Record<string, unknown> | null}
+        selectedRegistration={selectedRegistration}
+        selectedAsset={selectedAsset}
         assetDocuments={assetDocuments}
         applicationTypes={applicationTypes}
         initialRecords={data.records}

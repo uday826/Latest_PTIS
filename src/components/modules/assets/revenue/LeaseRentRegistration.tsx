@@ -4,51 +4,23 @@
 import { startTransition, useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Input, Label, SearchInput, Select } from '@/components/common';
-import { LeaseRentFilters, type FilterOption } from './LeaseRentFilters';
+import { LeaseRentFilters } from './LeaseRentFilters';
 import { LeaseRentTable } from './LeaseRentTable';
-import { LeaseRentVerificationTable, type VerificationRecord } from './LeaseRentVerificationTable';
-import { LeaseRentApprovalTable, type ApprovalRecord } from './LeaseRentApprovalTable';
+import { LeaseRentVerificationTable } from './LeaseRentVerificationTable';
+import { LeaseRentApprovalTable } from './LeaseRentApprovalTable';
 import { NewLeaseRegistrationModal } from './NewLeaseRegistrationDrawer';
 import { RegistrationHistoryModal } from './RegistrationHistoryDrawer';
 import { VerificationLeaseModal } from './VerificationLeaseDrawer';
 import { ApprovalLeaseModal } from './ApprovalLeaseModal';
 import { RejectRegistrationModal } from './RejectRegistrationDrawer';
-import type { LeaseRentRecord } from './lease-rent.types';
-import type { LeaseRentRegistrationListItem } from '@/lib/api/asset/leaseRentRegistration.service';
-import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
-import type { ApplicationTypeItem } from '@/app/[locale]/assets/revenue/manage-renters/actions';
-
-type Stage = 'registration' | 'verification' | 'approval';
-
-interface LeaseRentRegistrationProps {
-  stage?: Stage;
-  initialRecords?: LeaseRentRecord[];
-  pageNumber?: number;
-  pageSize?: number;
-  totalCount?: number;
-  totalPages?: number;
-  searchTerm?: string;
-  assetCategoryId?: number | null;
-  zoneId?: number | null;
-  wardId?: number | null;
-  assetId?: number | null;
-  verificationRecords?: VerificationRecord[];
-  approvalRecords?: ApprovalRecord[];
-  drawerAssetId?: number | null;
-  selectedAsset?: Record<string, unknown> | null;
-  assetDocuments?: AssetDocumentListItem[];
-  applicationTypes?: ApplicationTypeItem[];
-  verificationDrawerId?: number | null;
-  selectedVerification?: LeaseRentRegistrationListItem | null;
-  approvalDrawerId?: number | null;
-  selectedApproval?: LeaseRentRegistrationListItem | null;
-  rejectDrawerId?: number | null;
-  selectedRejection?: LeaseRentRegistrationListItem | null;
-  categoryOptions?: FilterOption[];
-  zoneOptions?: FilterOption[];
-  wardOptions?: FilterOption[];
-  assetOptions?: FilterOption[];
-}
+import { RevertRegistrationModal } from './RevertRegistrationDrawer';
+import type {
+  ApprovalRecord,
+  AssetMasterDetails,
+  LeaseRentRecord,
+  LeaseRentRegistrationProps,
+  VerificationRecord,
+} from '../../../../types/asset/revenue.types';
 
 export function LeaseRentRegistration({
   stage = 'registration',
@@ -65,6 +37,7 @@ export function LeaseRentRegistration({
   verificationRecords = [],
   approvalRecords = [],
   drawerAssetId = null,
+  selectedRegistration = null,
   selectedAsset = null,
   assetDocuments = [],
   applicationTypes = [],
@@ -74,6 +47,8 @@ export function LeaseRentRegistration({
   selectedApproval = null,
   rejectDrawerId = null,
   selectedRejection = null,
+  revertDrawerId = null,
+  selectedRevert = null,
   categoryOptions = [],
   zoneOptions = [],
   wardOptions = [],
@@ -91,8 +66,7 @@ export function LeaseRentRegistration({
   const [toDate, setToDate] = useState('');
 
   const [selectedRecordForHistory, setSelectedRecordForHistory] = useState<LeaseRentRecord | null>(null);
-  const [selectedRecordForRegistration, setSelectedRecordForRegistration] = useState<LeaseRentRecord | null>(null);
-  const drawerAsset = selectedAsset ?? (drawerAssetId ? { assetNo: 'Asset not found' } : null);
+  const drawerAsset = (selectedAsset as AssetMasterDetails | null) ?? (drawerAssetId ? ({ assetNo: 'Asset not found' } as AssetMasterDetails) : null);
   
   const verificationDrawerOpen = verificationDrawerId != null;
   const openVerificationDrawer = useCallback(
@@ -156,6 +130,19 @@ export function LeaseRentRegistration({
   const closeRejectDrawer = useCallback(() => {
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.delete('drawerRejectId');
+    const queryString = nextParams.toString();
+    startTransition(() => {
+      router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
+      router.refresh();
+    });
+  }, [pathname, router, searchParams]);
+
+  const revertDrawerOpen = revertDrawerId != null;
+
+
+  const closeRevertDrawer = useCallback(() => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete('drawerRevertId');
     const queryString = nextParams.toString();
     startTransition(() => {
       router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
@@ -285,7 +272,6 @@ export function LeaseRentRegistration({
 
   const handleRegistrationAction = useCallback(
     (record: LeaseRentRecord) => {
-      setSelectedRecordForRegistration(record);
       if (record.assetMasterId) {
         openAssetDrawer(record.assetMasterId);
       }
@@ -319,7 +305,7 @@ export function LeaseRentRegistration({
   }, [searchQuery, searchTerm, updateQuery]);
 
   const renderStageFilters = () => {
-    if (stage === 'registration') {
+    if (stage === 'registration' || stage === 'reverted') {
       return (
         <LeaseRentFilters
           searchQuery={searchQuery}
@@ -400,7 +386,7 @@ export function LeaseRentRegistration({
   };
 
   const renderStageTable = () => {
-    if (stage === 'registration') {
+    if (stage === 'registration' || stage === 'reverted') {
       return (
         <LeaseRentTable
           records={initialRecords}
@@ -454,7 +440,7 @@ export function LeaseRentRegistration({
       {drawerAsset ? (
         <NewLeaseRegistrationModal
           asset={drawerAsset}
-          record={selectedRecordForRegistration}
+          record={selectedRegistration}
           documents={assetDocuments}
           applicationTypes={applicationTypes}
           onClose={closeAssetDrawer}
@@ -486,6 +472,13 @@ export function LeaseRentRegistration({
         <RejectRegistrationModal
           record={selectedRejection}
           onClose={closeRejectDrawer}
+        />
+      ) : null}
+
+      {revertDrawerOpen && selectedRevert ? (
+        <RevertRegistrationModal
+          record={selectedRevert}
+          onClose={closeRevertDrawer}
         />
       ) : null}
     </>

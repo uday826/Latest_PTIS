@@ -2,39 +2,33 @@
 /* eslint-disable i18next/no-literal-string */
 
 import { useState, useTransition } from 'react';
-import { toast } from 'sonner';
 import { XCircle, Loader2 } from 'lucide-react';
-import { Button, Drawer, Label } from '@/components/common';
-import { rejectLeaseRentRegistrationAction } from '@/app/[locale]/assets/revenue/manage-renters/actions';
-import type { LeaseRentRegistrationListItem } from '@/lib/api/asset/leaseRentRegistration.service';
+import { Button, Drawer, Label, useToast } from '@/components/common';
+import type { RejectRegistrationModalProps } from '../../../../types/asset/revenue.types';
+import { rejectAction } from '@/app/[locale]/assets/revenue/manage-renters/actions';
 
-interface ModalProps {
-  record: LeaseRentRegistrationListItem;
-  onClose: () => void;
-}
-
-export function RejectRegistrationModal({ record, onClose }: ModalProps) {
+export function RejectRegistrationModal({ record, onClose }: RejectRegistrationModalProps) {
   const [reason, setReason] = useState('');
   const [isPending, startTransition] = useTransition();
+  const { success: toastSuccess, error: toastError } = useToast();
 
   const handleConfirmRejection = () => {
     if (!reason.trim()) {
-      toast.error('Rejection reason is required.');
+      toastError('Reason is required for rejection.');
       return;
     }
 
     startTransition(async () => {
       try {
-        const idNum = Number(record.id);
-        const res = await rejectLeaseRentRegistrationAction(idNum, reason.trim());
-        if (res.success) {
-          toast.success(res.message || 'Registration rejected successfully');
+        const result = await rejectAction(record.id, reason);
+        if (result.success) {
+          toastSuccess(result.message || 'Request rejected successfully.');
           onClose();
         } else {
-          toast.error(res.message || 'Failed to reject registration');
+          toastError(result.message || 'Rejection failed.');
         }
-      } catch (err) {
-        toast.error('An error occurred during rejection');
+      } catch {
+        toastError('An unexpected error occurred.');
       }
     });
   };

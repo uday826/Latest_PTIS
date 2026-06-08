@@ -5,24 +5,19 @@ import { IndianRupee, Mail, Phone, User } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { Button, Label } from '@/components/common';
+import type { RenterDetailsFormData, RenterDetailsFormProps } from '../../../../types/asset/revenue.types';
 
-interface FormProps {
-  onSuccess?: () => void;
-  onCancel?: () => void;
-}
-
-export function RenterDetailsForm({ onSuccess, onCancel }: FormProps) {
-  const [formData, setFormData] = useState({
+export function RenterDetailsForm({ onSuccess, onCancel }: RenterDetailsFormProps) {
+  const [formData, setFormData] = useState<RenterDetailsFormData>({
     tenantName: '',
     mobileNo: '',
     email: '',
-    category: 'shopping-complex',
+    category: '',
     assetNumber: '',
     rentAmount: '',
     depositAmount: '',
     startDate: '',
     endDate: '',
-    frequency: 'Monthly',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -59,6 +54,7 @@ export function RenterDetailsForm({ onSuccess, onCancel }: FormProps) {
             onChange={handleChange}
             className="w-full px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all outline-none"
           >
+            <option value="">Select Asset Category</option>
             <option value="shopping-complex">Shopping Complex</option>
             <option value="plot-land">Plot / Open Land</option>
             <option value="garden">Municipal Garden</option>

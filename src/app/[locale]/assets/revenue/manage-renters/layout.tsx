@@ -2,7 +2,10 @@
 import { ReactNode } from 'react';
 import { Card, CardContent } from '@/components/common';
 import { ManageRentersTabs } from '@/components/modules/assets/revenue/ManageRentersTabs';
-import { getManageRentersTabCountsAction } from './actions';
+import { getManageRentersTabCountsAction } from './registration-actions';
+
+export const dynamic = 'force-dynamic';
+
 
 interface LayoutProps {
   children: ReactNode;

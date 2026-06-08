@@ -1,5 +1,8 @@
 import { LeaseRentRegistration } from '@/components/modules/assets/revenue/LeaseRentRegistration';
-import { getManageRentersVerificationPageDataAction, getManageRentersVerificationDetailsAction } from '../actions';
+import {
+  getManageRentersVerificationPageDataAction,
+  getManageRentersVerificationDetailsAction,
+} from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,10 +15,17 @@ export default async function ManageRentersVerificationPage({
 }: ManageRentersVerificationPageProps) {
   const query = await searchParams;
   const data = await getManageRentersVerificationPageDataAction(query);
+  
   const drawerVerificationIdRaw = query.drawerVerificationId;
   const drawerVerificationId = Array.isArray(drawerVerificationIdRaw) ? drawerVerificationIdRaw[0] : drawerVerificationIdRaw;
   const selectedVerification = drawerVerificationId
     ? await getManageRentersVerificationDetailsAction(drawerVerificationId)
+    : null;
+
+  const drawerRevertIdRaw = query.drawerRevertId;
+  const drawerRevertId = Array.isArray(drawerRevertIdRaw) ? drawerRevertIdRaw[0] : drawerRevertIdRaw;
+  const selectedRevert = drawerRevertId
+    ? await getManageRentersVerificationDetailsAction(drawerRevertId)
     : null;
 
   return (
@@ -26,6 +36,7 @@ export default async function ManageRentersVerificationPage({
         data.searchTerm,
         data.assetCategoryId ?? '',
         drawerVerificationId ?? '',
+        drawerRevertId ?? '',
       ].join('|')}
       stage="verification"
       pageNumber={data.pageNumber}
@@ -37,6 +48,8 @@ export default async function ManageRentersVerificationPage({
       verificationRecords={data.records}
       verificationDrawerId={drawerVerificationId ? Number(drawerVerificationId) : null}
       selectedVerification={selectedVerification}
+      revertDrawerId={drawerRevertId ? Number(drawerRevertId) : null}
+      selectedRevert={selectedRevert}
       categoryOptions={data.categoryOptions}
     />
   );

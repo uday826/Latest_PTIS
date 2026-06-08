@@ -1,118 +1,36 @@
 'use client';
 /* eslint-disable i18next/no-literal-string */
 
-import { useTransition, useMemo, useState, useEffect } from 'react';
+import { useEffect, useTransition, useMemo, useState } from 'react';
 import {
   Building2,
   Calendar,
   FileText,
   Grid,
-  Info,
   IndianRupee,
   MapPin,
   Phone,
   UploadCloud,
   User,
+  Users,
   X,
   Mail,
   MapPinned,
   BadgeCheck,
-  CheckCircle2,
-  AlertCircle,
   Loader2,
 } from 'lucide-react';
-import { Button, Drawer, Label, MasterTable, type Column } from '@/components/common';
-import type { LeaseRentRecord } from './lease-rent.types';
-import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
-import type { ApplicationTypeItem } from '@/app/[locale]/assets/revenue/manage-renters/actions';
-import { createLeaseRentRegistrationAction } from '@/app/[locale]/assets/revenue/manage-renters/actions';
-
-export interface AssetMasterDetails extends Record<string, unknown> {
-  id?: number;
-  assetNo?: string;
-  assetName?: string;
-  assetCategoryName?: string;
-  assetTypeName?: string;
-  zoneName?: string;
-  wardName?: string;
-  address?: string;
-  status?: string;
-  createdDate?: string;
-  updatedDate?: string | null;
-  updatedBy?: number | null;
-}
-
-type FormState = {
-  // Common
-  applicationType: string;
-  tenantName: string;
-  mobileNumber: string;
-  emailAddress: string;
-  tenantType: string;
-  aadhaarNumber: string;
-  panNumber: string;
-  pinCode: string;
-  residentialAddress: string;
-  // Lease details
-  shopNo: string;
-  shopName: string;
-  leaseType: string;
-  leaseStartDate: string;
-  leaseEndDate: string;
-  monthlyRent: string;
-  securityDeposit: string;
-  paymentFrequency: string;
-  // Renewal
-  existingTenantName: string;
-  oldLeaseStartDate: string;
-  oldLeaseEndDate: string;
-  renewalStartDate: string;
-  renewalEndDate: string;
-  previousRent: string;
-  revisedRent: string;
-  reasonForRenewal: string;
-  // Transfer
-  newTenantDetails: string;
-  newTenantMobile: string;
-  relationship: string;
-  nocFromExistingTenant: string;
-  reasonForTransfer: string;
-  // Termination
-  vacatingDate: string;
-  reasonForTermination: string;
-  pendingDues: string;
-  securityDepositRefund: string;
-  finalInspectionReport: string;
-  // General
-  remarksDescription: string;
-};
-
-interface ModalProps {
-  asset: AssetMasterDetails;
-  record?: LeaseRentRecord | null;
-  documents?: AssetDocumentListItem[];
-  applicationTypes?: ApplicationTypeItem[];
-  onClose: () => void;
-}
-
-type FieldDef = {
-  key: keyof FormState;
-  label: string;
-  icon: typeof User;
-  type: 'text' | 'date' | 'select' | 'textarea' | 'number';
-  placeholder?: string;
-  options?: string[];
-  colSpan?: 1 | 2;
-  required?: boolean;
-};
-
-type TemplateDef = {
-  title: string;
-  submitLabel: string;
-  submitIcon: typeof UploadCloud;
-  fields: FieldDef[];
-  secondaryButtons?: Array<{ label: string; icon: typeof UploadCloud; variant: 'primary' | 'secondary' | 'success' | 'delete' | 'danger' }>;
-};
+import { Button, Drawer, Label, MasterTable, type Column, useToast } from '@/components/common';
+import type {
+  ApplicationTypeItem,
+  AssetMasterDetails,
+  FieldDef,
+  FormState,
+  LeaseRentRecord,
+  NewLeaseRegistrationModalProps,
+  TemplateDef,
+} from '../../../../types/asset/revenue.types';
+import { updateAssetLeaseRentDetailsAction, createLeaseRentRegistrationAction, getPreviousTenantHistoryAction } from '@/app/[locale]/assets/revenue/manage-renters/registration-actions';
+import type { AssetLeaseRentDetailsUpdatePayload } from '@/lib/api/asset/asset-lease-rent-details.service';
 
 function isBlank(value: unknown): boolean {
   return value === null || value === undefined || value === '';
@@ -489,7 +407,6 @@ function RenderField({
     <div className={wrapperClassName}>
       <Label required={field.required} className="text-[10px] font-bold text-slate-600 flex items-center gap-1">
         <Icon className="w-3 h-3 text-slate-400" /> {field.label}
-        {field.required && <span className="text-red-500">*</span>}
       </Label>
       {field.type === 'select' ? (
         <select className={sharedInputClass} value={value} onChange={(e) => setValue(e.target.value)}>
@@ -527,7 +444,6 @@ interface OverviewTableRow extends Record<string, unknown> {
   partitionNo: string;
   shopNumber: string;
   shopEstablishmentDate: string;
-  surveyNumber: string;
   gatNumber: string;
   shopActRegistrationDate: string;
   shopActNumber: string;
@@ -545,13 +461,34 @@ interface ConstructionTableRow extends Record<string, unknown> {
   status: string;
 }
 
-export function NewLeaseRegistrationModal({ asset, record, documents = [], applicationTypes = [], onClose }: ModalProps) {
+export function NewLeaseRegistrationModal({
+  asset,
+  record,
+  documents = [],
+  applicationTypes = [],
+  onClose,
+}: NewLeaseRegistrationModalProps) {
   const [activeTab, setActiveTab] = useState<'new' | 'previous'>('new');
   const [selectedTypeId, setSelectedTypeId] = useState<number>(() =>
     getInitialApplicationTypeId(applicationTypes, record)
   );
   const [isPending, startTransition] = useTransition();
-  const [submitResult, setSubmitResult] = useState<{ success: boolean; message: string } | null>(null);
+  const { success: toastSuccess, error: toastError } = useToast();
+  const [historyItems, setHistoryItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    const recordId = Number(record?.id);
+    if (!recordId) return;
+    const loadHistory = async () => {
+      try {
+        const items = await getPreviousTenantHistoryAction(recordId);
+        setHistoryItems(items);
+      } catch {
+        console.error('Failed to load previous tenant history.');
+      }
+    };
+    loadHistory();
+  }, [record?.id]);
 
   const tabs: Array<'new' | 'previous'> = ['new', 'previous'];
 
@@ -564,43 +501,47 @@ export function NewLeaseRegistrationModal({ asset, record, documents = [], appli
     () => buildInitialFormState(selectedType?.applicationTypeName || '', asset, record),
     [selectedType, asset, record]
   );
-  const [formState, setFormState] = useState<FormState>(initialFormState);
+  const [formState, setFormState] = useState<FormState>(() => initialFormState);
 
-  useEffect(() => {
-    setFormState(initialFormState);
-  }, [initialFormState]);
+  const handleUpdateRegistration = () => {
+    const assetId = asset.id ?? record?.assetMasterId;
+    const recordId = Number(record?.id);
 
-  // Auto-clear submit result after 5 seconds
-  useEffect(() => {
-    if (!submitResult) return;
-    const t = setTimeout(() => setSubmitResult(null), 5000);
-    return () => clearTimeout(t);
-  }, [submitResult]);
-
-  const handleSendToVerification = () => {
-    const assetId = asset.id;
     if (!assetId) {
-      setSubmitResult({ success: false, message: 'Asset ID is missing. Cannot submit.' });
+      toastError('Asset ID is missing.');
       return;
     }
+
     const typeCode = selectedType?.applicationTypeCode || 'APP-NEW';
     const payload = buildSubmitData(formState, assetId, selectedTypeId, typeCode);
 
     startTransition(async () => {
       try {
-        const result = await createLeaseRentRegistrationAction(payload);
-        setSubmitResult({
-          success: result.success,
-          message: result.success
-            ? `Registration submitted successfully! ID: ${result.items?.id ?? ''}`
-            : result.message || 'Submission failed. Please try again.',
-        });
+        let result;
+        if (recordId && Number.isFinite(recordId)) {
+          const updatePayload: AssetLeaseRentDetailsUpdatePayload = {
+            id: recordId,
+            parentAssetId: asset.id ?? record?.assetMasterId ?? undefined,
+            assetNo: asset.assetNo ?? record?.assetNo ?? null,
+            assetName: asset.assetName ?? record?.shopName ?? null,
+            category: record?.assetCategory ?? record?.category ?? asset.assetCategoryName ?? null,
+            zone: asset.zoneName ?? record?.zone ?? null,
+            wardNo: asset.wardName ?? record?.ward ?? null,
+            ...payload,
+          };
+          result = await updateAssetLeaseRentDetailsAction(recordId, updatePayload);
+        } else {
+          result = await createLeaseRentRegistrationAction(payload);
+        }
+
         if (result.success) {
-          // Close drawer after a short delay on success
+          toastSuccess(result.message || 'Registration submitted successfully!');
           setTimeout(() => onClose(), 1500);
+        } else {
+          toastError(result.message || 'Submission failed.');
         }
       } catch {
-        setSubmitResult({ success: false, message: 'An unexpected error occurred. Please try again.' });
+        toastError('An unexpected error occurred. Please try again.');
       }
     });
   };
@@ -608,66 +549,44 @@ export function NewLeaseRegistrationModal({ asset, record, documents = [], appli
   const drawerTitle = (
     <div className="flex items-center gap-2">
       <FileText className="w-5 h-5 text-blue-600" />
-      <h2 className="font-bold text-sm tracking-wide text-slate-800">Asset Details — New Registration</h2>
+      <h2 className="font-bold text-sm tracking-wide text-slate-800">
+        Asset Details — New Registration
+      </h2>
     </div>
   );
 
   const drawerFooter = (
     <div className="flex flex-col gap-2 w-full">
-      {/* Result feedback banner */}
-      {submitResult && (
-        <div
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold w-full ${
-            submitResult.success
-              ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
-              : 'bg-red-50 border border-red-200 text-red-700'
-          }`}
+      <div className="flex items-center gap-3">
+        <Button onClick={onClose} variant="secondary" size="sm" icon={X} disabled={isPending}>
+          Cancel
+        </Button>
+        <Button
+          variant="success"
+          size="sm"
+          icon={isPending ? Loader2 : UploadCloud}
+          onClick={handleUpdateRegistration}
+          disabled={isPending}
+          className={isPending ? 'opacity-70 cursor-not-allowed' : ''}
         >
-          {submitResult.success ? (
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-          ) : (
-            <AlertCircle className="w-4 h-4 shrink-0" />
-          )}
-          {submitResult.message}
-        </div>
-      )}
-
-      <div className="flex items-center justify-between w-full">
-        <div className="flex items-center gap-2 text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-          <Info className="w-4 h-4" />
-          <span className="text-xs font-semibold">Live database data</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button onClick={onClose} variant="secondary" size="sm" icon={X} disabled={isPending}>
-            Cancel
-          </Button>
-          <Button
-            variant="success"
-            size="sm"
-            icon={isPending ? Loader2 : UploadCloud}
-            onClick={handleSendToVerification}
-            disabled={isPending}
-            className={isPending ? 'opacity-70 cursor-not-allowed' : ''}
-          >
-            {isPending ? 'Submitting...' : 'Send to Verification'}
-          </Button>
-        </div>
+          {isPending ? 'Submitting...' : record ? 'New Registration' : 'Submit Registration'}
+        </Button>
       </div>
     </div>
   );
 
   const assetNumber = pickFirst(asset.assetNo, asset.id);
-  const assetCategory = pickFirst(asset.assetCategoryName, asset.assetName);
-  const shopName = pickFirst(asset.assetName, asset.assetTypeName);
+  const buildingAssetName = pickFirst(record?.shopName, asset.assetName, asset.assetTypeName);
+  const assetCategory = pickFirst(record?.assetCategory, record?.category, asset.assetCategoryName, asset.assetName);
+  const shopName = pickFirst(record?.shopName, asset.assetName, asset.assetTypeName);
   const zoneWard = `${toDisplay(asset.zoneName)} - ${toDisplay(asset.wardName)}`;
   const overviewColumns: Column<OverviewTableRow>[] = [
     { key: 'zoneWardNo', label: 'Zone - Ward No', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'propertyNo', label: 'Property No', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'partitionNo', label: 'Partition No', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'propertyNo', label: 'Asset No', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'partitionNo', label: 'Shop Name', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'shopNumber', label: 'Shop Number', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'shopEstablishmentDate', label: 'Shop Establishment Date', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'surveyNumber', label: 'Survey Number', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'gatNumber', label: 'Gat Number', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'gatNumber', label: 'Asset Category', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'shopActRegistrationDate', label: 'Shop Act Registration Date', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'shopActNumber', label: 'Shop Act Number', align: 'center', cellClassName: 'whitespace-nowrap' },
   ];
@@ -675,11 +594,10 @@ export function NewLeaseRegistrationModal({ asset, record, documents = [], appli
     {
       zoneWardNo: zoneWard,
       propertyNo: pickFirst(asset.assetNo, record?.assetId),
-      partitionNo: pickFirst(asset.parentAssetName),
+      partitionNo: buildingAssetName,
       shopNumber: pickFirst(record?.shopNo, asset.assetTypeName),
       shopEstablishmentDate: toDateDisplay(asset.createdDate),
-      surveyNumber: pickFirst(asset.csn),
-      gatNumber: pickFirst(asset.floorDetailsId),
+      gatNumber: assetCategory,
       shopActRegistrationDate: toDateDisplay(asset.updatedDate),
       shopActNumber: pickFirst(asset.assetTypeId),
     },
@@ -692,20 +610,27 @@ export function NewLeaseRegistrationModal({ asset, record, documents = [], appli
     { key: 'uses', label: 'Uses', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'monthlyRent', label: 'Monthly Rent (₹)', align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
     { key: 'perSqMtRent', label: 'Per Sq.Mt. Rent', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'bharaniKaalavadi', label: 'भरणी कालावधी', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'bharaniKaalavadi', label: 'Payment Period', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'status', label: 'Status', align: 'center', cellClassName: 'whitespace-nowrap' },
   ];
   const constructionData: ConstructionTableRow[] = [
     {
-      floor: pickFirst(asset.floorDetailsId, 'Ground Floor'),
-      shopNo: pickFirst(record?.shopNo),
-      shopArea: pickFirst(asset.builtUpAreaSqMeter, asset.carpetAreaSqMeter, asset.landAreaSqMeter),
+      floor: pickFirst(record?.floorDescription, record?.floor, 'Ground Floor'),
+      shopNo: pickFirst(record?.shopNo, record?.assetNo, asset.assetTypeName),
+      shopArea: record?.totalAreaSqFt != null ? String(record.totalAreaSqFt) : '-',
       renterName: pickFirst(record?.tenantName, asset.inChargeName, asset.assetName),
-      uses: pickFirst(asset.typeOfUseName, asset.subTypeOfUseName, asset.assetCondition),
-      monthlyRent: formState.monthlyRent || formState.revisedRent ? `₹ ${toCurrencyDisplay(formState.monthlyRent || formState.revisedRent)}` : '-',
-      perSqMtRent: toCurrencyDisplay(pickFirst(asset.marketValue, asset.currentAssetValue)),
-      bharaniKaalavadi: pickFirst(asset.createdDate),
-      status: pickFirst(asset.status),
+      uses: pickFirst(record?.leaseRentType, record?.leaseType, asset.typeOfUseName, asset.subTypeOfUseName),
+      monthlyRent:
+        record?.rentAmountDisplay ||
+        (record?.rentAmount != null ? `₹ ${toCurrencyDisplay(record.rentAmount)}` : '-'),
+      perSqMtRent:
+        record?.totalAreaSqFt && record?.rentAmount
+          ? `₹ ${(Number(record.rentAmount) / Number(record.totalAreaSqFt)).toLocaleString('en-IN', {
+              maximumFractionDigits: 2,
+            })}`
+          : '-',
+      bharaniKaalavadi: pickFirst(record?.leaseDurationDisplay, record?.submittedDate, asset.createdDate),
+      status: pickFirst(record?.workflowStatus, record?.rentStatus, asset.status, 'Draft'),
     },
   ];
   const summaryRows = [
@@ -715,16 +640,11 @@ export function NewLeaseRegistrationModal({ asset, record, documents = [], appli
     { label: 'वार्षिक भाडे उत्पन्न (अपेक्षित)', value: toCurrencyDisplay(asset.marketValue ?? asset.currentAssetValue ?? formState.revisedRent ?? formState.monthlyRent) },
   ];
   const documentCards = useMemo(() => {
-    const visible = documents.slice(0, 5);
-    const fallbackLabels = ['Complex Photo', 'Asset Image', 'Aadhaar/PAN', 'Completion Certificate', 'Occupancy Certificate'];
-    return fallbackLabels.map((label, index) => {
-      const doc = visible[index];
-      return {
-        label: doc?.name || doc?.fileName || label,
-        uploaded: Boolean(doc),
-        uploadedDate: doc?.uploadedDate || null,
-      };
-    });
+    return documents.slice(0, 5).map((doc) => ({
+      label: doc.name || doc.fileName || 'Document',
+      uploaded: true,
+      uploadedDate: doc.uploadedDate || null,
+    }));
   }, [documents]);
 
   return (
@@ -736,15 +656,15 @@ export function NewLeaseRegistrationModal({ asset, record, documents = [], appli
               ASSET INFORMATION
             </span>
             <div className="grid grid-cols-[120px_1fr] gap-x-2 gap-y-2 mt-1">
-              <span className="text-[10px] text-slate-500 font-bold">Complex Name</span>
-              <span className="text-xs font-bold text-red-600">{assetCategory || '-'}</span>
+              <span className="text-[10px] text-slate-500 font-bold">Asset Name</span>
+              <span className="text-xs font-bold text-red-600">{buildingAssetName || '-'}</span>
               <span className="text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-2">Address</span>
               <span className="text-xs font-bold text-slate-700 border-t border-slate-100 pt-2">{pickFirst(asset.address)}</span>
             </div>
           </div>
 
           <DetailChip label="ASSET NUMBER" value={assetNumber} />
-          <DetailChip label="STATUS" value={asset.status} />
+          <DetailChip label="STATUS" value={pickFirst(record?.workflowStatus, record?.rentStatus, asset.status, 'Draft')} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 mb-6">
@@ -764,7 +684,7 @@ export function NewLeaseRegistrationModal({ asset, record, documents = [], appli
 
           <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col justify-center">
             <span className="text-[10px] text-slate-500 font-bold">Asset Category</span>
-            <span className="text-sm font-bold text-red-600 mb-3">{pickFirst(asset.assetCategoryName, asset.assetName)}</span>
+            <span className="text-sm font-bold text-red-600 mb-3">{assetCategory}</span>
             <span className="text-[10px] text-slate-500 font-bold">Shop Name</span>
             <span className="text-sm font-bold text-red-600">{shopName || '-'}</span>
           </div>
@@ -852,23 +772,42 @@ export function NewLeaseRegistrationModal({ asset, record, documents = [], appli
                   ) : null}
                 </>
               ) : (
-                <div className="col-span-2 grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Existing Tenant</div>
-                    <div className="mt-1 text-sm font-semibold text-slate-800">{pickFirst(record?.tenantName, asset.inChargeName, asset.assetName)}</div>
-                  </div>
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Asset Number</div>
-                    <div className="mt-1 text-sm font-semibold text-slate-800">{assetNumber}</div>
-                  </div>
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Zone / Ward</div>
-                    <div className="mt-1 text-sm font-semibold text-slate-800">{zoneWard}</div>
-                  </div>
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Address</div>
-                    <div className="mt-1 text-sm font-semibold text-slate-800">{pickFirst(asset.address)}</div>
-                  </div>
+                <div className="col-span-2 space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar p-1">
+                  {historyItems.length > 0 ? (
+                    historyItems.map((item, index) => (
+                      <div key={item.id || index} className="p-3 border border-slate-200 rounded-lg bg-slate-50 space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-bold text-slate-800">{item.tenantName}</span>
+                          <span className="text-[10px] text-slate-400 font-semibold">
+                            {item.performedDate ? new Date(item.performedDate).toLocaleDateString('en-IN') : '-'}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-600 font-semibold">
+                          Mobile: {item.tenantMobile || '-'} | Type: {item.leaseType || '-'}
+                        </div>
+                        {item.leaseStartDate && (
+                          <div className="text-[11px] text-slate-500 font-medium">
+                            Duration: {new Date(item.leaseStartDate).toLocaleDateString('en-IN')} - {item.leaseEndDate ? new Date(item.leaseEndDate).toLocaleDateString('en-IN') : 'Present'}
+                          </div>
+                        )}
+                        <div className="text-[11px] text-slate-600 font-semibold">
+                          Rent: ₹ {item.monthlyRent ? item.monthlyRent.toLocaleString('en-IN') : '-'}
+                        </div>
+                        {item.remarks && (
+                          <div className="text-[10px] text-slate-500 italic mt-1 border-t border-slate-100 pt-1">
+                            Remarks: "{item.remarks}"
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-slate-400 gap-2 py-8 bg-slate-50 border border-dashed border-slate-200 rounded-lg">
+                      <Users className="w-10 h-10 opacity-30" />
+                      <span className="text-xs font-semibold">
+                        {record?.tenantName || 'No previous tenants found'}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -918,22 +857,26 @@ export function NewLeaseRegistrationModal({ asset, record, documents = [], appli
           <div className="absolute top-1/2 left-0 right-0 h-px bg-slate-200 -z-10"></div>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
-          {documentCards.map((doc, index) => (
-            <div key={index} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-              <div className="mb-2 flex h-24 items-center justify-center rounded-md bg-slate-50 border border-slate-100">
-                <FileText className="h-8 w-8 text-slate-300" />
+        {documentCards.length > 0 ? (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+            {documentCards.map((doc, index) => (
+              <div key={index} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="mb-2 flex h-24 items-center justify-center rounded-md bg-slate-50 border border-slate-100">
+                  <FileText className="h-8 w-8 text-slate-300" />
+                </div>
+                <div className="text-center text-[10px] font-bold text-slate-700">{doc.label}</div>
+                <div className="mt-1 text-center text-[9px] font-bold text-emerald-600">View Document</div>
+                {doc.uploadedDate ? (
+                  <div className="mt-1 text-center text-[8px] text-slate-400">{toDateDisplay(doc.uploadedDate)}</div>
+                ) : null}
               </div>
-              <div className="text-center text-[10px] font-bold text-slate-700">{doc.label}</div>
-              <div className={`mt-1 text-center text-[9px] font-bold ${doc.uploaded ? 'text-emerald-600' : 'text-slate-400'}`}>
-                {doc.uploaded ? 'View Document' : 'Not uploaded'}
-              </div>
-              {doc.uploadedDate ? (
-                <div className="mt-1 text-center text-[8px] text-slate-400">{toDateDisplay(doc.uploadedDate)}</div>
-              ) : null}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500 shadow-sm">
+            No uploaded documents returned from the API.
+          </div>
+        )}
       </div>
     </Drawer>
   );

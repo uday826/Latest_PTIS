@@ -2,11 +2,7 @@
 'use client';
 
 import { Label, SearchInput, Select } from '@/components/common';
-
-export interface FilterOption {
-  label: string;
-  value: string;
-}
+import type { FilterOption } from '../../../../types/asset/revenue.types';
 
 interface FiltersProps {
   searchQuery: string;

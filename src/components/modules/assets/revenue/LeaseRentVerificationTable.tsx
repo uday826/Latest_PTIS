@@ -1,18 +1,8 @@
 'use client';
 
-import { Pencil } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { Button, MasterTable, type Column } from '@/components/common';
-
-export interface VerificationRecord extends Record<string, unknown> {
-  id: string;
-  assetId: string;
-  assetCategory: string;
-  assetSubCategory: string;
-  tenantName: string;
-  applicationType: string;
-  submittedDate: string;
-  status: string;
-}
+import type { VerificationRecord } from '../../../../types/asset/revenue.types';
 
 interface Props {
   records: VerificationRecord[];
@@ -113,9 +103,9 @@ export function LeaseRentVerificationTable({
         <Button
           type="button"
           onClick={() => onActionClick?.(row)}
-          variant="edit"
+          variant="primary"
           size="xs"
-          icon={Pencil}
+          icon={Eye}
           aria-label="Open verification"
           className={iconActionClassName}
         />
