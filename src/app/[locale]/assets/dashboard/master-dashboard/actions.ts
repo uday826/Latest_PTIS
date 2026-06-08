@@ -1,6 +1,6 @@
 'use server';
 
-import type { AssetDashboardStatsDto } from '@/lib/api/asset/asset-master.service';
+import type { AssetDashboardStatsDto } from '@/types/asset-types/asset-register.types';
 import { assetMasterService } from '@/lib/api/asset/asset-master.service';
 import { wardService } from '@/lib/api/asset/ward.service';
 import { zoneService } from '@/lib/api/asset/zone.service';

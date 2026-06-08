@@ -1,45 +1,14 @@
 import { apiClient } from "@/services/api.service";
 import { AssetMasterRequest, AssetMasterResponse } from "@/types/asset-types/basic-info/asset-wizard.types";
 import { ApiResponse } from "@/types/common.types";
+import type { 
+  AssetDashboardStatsDto, 
+  PagedAssetMasterResponse 
+} from "@/types/asset-types/asset-register.types";
 
 /**
  * Service for managing Asset Master records
  */
-/**
- * Dashboard statistics types returned by /AssetMaster/dashboard-stats
- */
-export interface AssetTypeStatsDto {
-  assetTypeId: number;
-  assetTypeName: string;
-  assetCount: number;
-}
-
-export interface AssetCategoryStatsDto {
-  categoryId: number;
-  categoryName: string;
-  categoryDescription?: string;
-  registeredAssets: number;
-  totalCategoryItem: number;
-  totalValue?: number | null;
-  assetTypeStats: AssetTypeStatsDto[];
-}
-
-export interface AssetDashboardStatsDto {
-  totalAssets: number;
-  totalCategories: number;
-  categoryStats: AssetCategoryStatsDto[];
-}
-
-/**
- * Paginated response from /AssetMaster
- */
-export interface PagedAssetMasterResponse {
-  items: AssetMasterResponse[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-}
 
 export const assetMasterService = {
   /**

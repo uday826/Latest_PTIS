@@ -23,8 +23,12 @@ export const wardService = {
   /**
    * Get all active Wards
    */
-  getWards: async (): Promise<ApiResponse<Ward[]>> => {
-    const response = await apiClient.get<any>("/Ward?pageSize=-1");
+  getWards: async (zoneId?: number | string | null): Promise<ApiResponse<Ward[]>> => {
+    let url = "/Ward?pageSize=-1";
+    if (zoneId && zoneId !== "all") {
+      url += `&ZoneId=${zoneId}`;
+    }
+    const response = await apiClient.get<any>(url);
     if (response.success && response.data) {
       const items = Array.isArray(response.data)
         ? response.data

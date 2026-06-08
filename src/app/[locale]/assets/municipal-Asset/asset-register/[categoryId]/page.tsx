@@ -1,13 +1,13 @@
-import { notFound } from 'next/navigation';
-import AssetRegisterPage from '@/components/modules/assets/municipal-Asset/building-assets/AssetRegisterPage';
+import { notFound, redirect } from 'next/navigation';
 import { parsePaginationParams } from '@/lib/utils/pagination';
+import { AssetRegisterView } from '@/components/modules/assets/municipal-Asset/building-assets/AssetRegisterView';
 import {
   fetchAssetRegisterPage,
   fetchAssetTypesByCategory,
   fetchZones,
   fetchWards,
   fetchCategoryNameById,
-} from '../actions';
+} from './actions';
 
 interface PageProps {
   params: Promise<{
@@ -19,9 +19,17 @@ interface PageProps {
     pageSize?: string;
     search?: string;
     AssetTypeId?: string;
+    assetTypeId?: string;
     ZoneId?: string;
+    zoneId?: string;
     WardId?: string;
+    wardId?: string;
   }>;
+}
+
+// Helper to read either canonical or legacy param
+function readParam(query: Record<string, string | undefined>, canonical: string, legacy: string) {
+  return query[canonical] ?? query[legacy];
 }
 
 // Helper: check if string is a valid numeric ID or 'all'
@@ -40,27 +48,28 @@ export default async function Page({ params, searchParams }: PageProps) {
     notFound();
   }
 
-  // ===== SANITIZE ALL QUERY PARAMS (same pattern as property-tax modules) =====
+  // ===== SANITIZE ALL QUERY PARAMS =====
   const { pageNumber: safePage, pageSize: rawPageSize } = parsePaginationParams(
     query.page,
     query.pageSize
   );
-  // Clamp pageSize to the allowed options from PAGE_SIZE_OPTIONS
   const safePageSize = (PAGE_SIZE_OPTIONS as readonly number[]).includes(rawPageSize) ? rawPageSize : 10;
 
   const safeSearch = (query.search || '').trim().slice(0, 200);
 
-  const safeAssetTypeId = isValidFilterValue(query.AssetTypeId ?? 'all')
-    ? (query.AssetTypeId ?? 'all') : 'all';
-  const safeZoneId = isValidFilterValue(query.ZoneId ?? 'all')
-    ? (query.ZoneId ?? 'all') : 'all';
-  const safeWardId = isValidFilterValue(query.WardId ?? 'all')
-    ? (query.WardId ?? 'all') : 'all';
+  const rawAssetTypeId = readParam(query, 'assetTypeId', 'AssetTypeId');
+  const safeAssetTypeId = isValidFilterValue(rawAssetTypeId ?? 'all') ? (rawAssetTypeId ?? 'all') : 'all';
 
-  const categoryName = await fetchCategoryNameById(parsed);
+  const rawZoneId = readParam(query, 'zoneId', 'ZoneId');
+  const safeZoneId = isValidFilterValue(rawZoneId ?? 'all') ? (rawZoneId ?? 'all') : 'all';
+
+  const rawWardId = readParam(query, 'wardId', 'WardId');
+  const safeWardId = isValidFilterValue(rawWardId ?? 'all') ? (rawWardId ?? 'all') : 'all';
+
   const updatedDate = new Date().toLocaleDateString('en-GB');
 
-  const [assetsResult, typesResult, zonesResult, wardsResult] = await Promise.all([
+  const [categoryName, assetsResult, typesResult, zonesResult, wardsResult] = await Promise.all([
+    fetchCategoryNameById(parsed),
     fetchAssetRegisterPage(
       parsed,
       safePage,
@@ -75,41 +84,74 @@ export default async function Page({ params, searchParams }: PageProps) {
       console.error('Failed to fetch zones for asset register:', error);
       return [];
     }),
-    fetchWards().catch((error) => {
+    fetchWards(safeZoneId).catch((error) => {
       console.error('Failed to fetch wards for asset register:', error);
       return [];
     }),
   ]);
 
-  return (
-  
-      <div className="flex h-[calc(100vh-140px)] overflow-hidden">
-    <div className="flex-1 p-2 bg-slate-50/50 overflow-y-auto custom-scrollbar">
-          <div className="mx-auto w-full max-w-[99%]">
-            <AssetRegisterPage
-              categoryId={parsed}
-              initialCategoryName={categoryName}
-              page={safePage}
-              pageSize={safePageSize}
-              search={safeSearch}
-              assetTypeId={safeAssetTypeId}
-              zoneId={safeZoneId}
-              wardId={safeWardId}
-              assets={assetsResult.items}
-              totalCount={assetsResult.totalCount}
-              totalPurchaseValue={assetsResult.totalPurchaseValue}
-              totalMarketValue={assetsResult.totalMarketValue}
-              totalDepreciation={assetsResult.totalDepreciation}
-              netBookValue={assetsResult.netBookValue}
-              activeAssetsCount={assetsResult.activeAssetsCount}
-              initialAssetTypes={typesResult}
-              initialZones={zonesResult}
-              initialWards={wardsResult}
-              updatedDate={updatedDate}
-            />
-          </div>
-        </div>
-      </div>
+  if (categoryName === null) {
+    notFound();
+  }
 
+  // ===== WARD / ZONE MATCH VALIDATION =====
+  let finalWardId = safeWardId;
+  if (safeZoneId !== 'all' && safeWardId !== 'all') {
+    const ward = wardsResult.find((w) => String(w.id) === safeWardId);
+    if (!ward || String(ward.zoneId) !== safeZoneId) {
+      finalWardId = 'all'; // Reset ward if it doesn't belong to the selected zone
+    }
+  }
+
+  // ===== PAGINATION BOUNDS VALIDATION =====
+  const totalPages = Math.max(1, Math.ceil(assetsResult.totalCount / safePageSize));
+  let finalPage = safePage;
+  if (safePage > totalPages) {
+    finalPage = totalPages;
+  }
+
+  // ===== CANONICAL URL REDIRECT =====
+  const canonicalQuery = new URLSearchParams();
+  if (finalPage > 1) canonicalQuery.set('page', String(finalPage));
+  if (safePageSize !== 10) canonicalQuery.set('pageSize', String(safePageSize));
+  if (safeSearch) canonicalQuery.set('search', safeSearch);
+  if (safeAssetTypeId !== 'all') canonicalQuery.set('assetTypeId', safeAssetTypeId);
+  if (safeZoneId !== 'all') canonicalQuery.set('zoneId', safeZoneId);
+  if (finalWardId !== 'all') canonicalQuery.set('wardId', finalWardId);
+
+  const isCanonical =
+    (query.page || '1') === String(finalPage) &&
+    (query.pageSize || '10') === String(safePageSize) &&
+    (query.search || '') === safeSearch &&
+    (query.assetTypeId === safeAssetTypeId || (query.assetTypeId === undefined && safeAssetTypeId === 'all')) &&
+    (query.zoneId === safeZoneId || (query.zoneId === undefined && safeZoneId === 'all')) &&
+    (query.wardId === finalWardId || (query.wardId === undefined && finalWardId === 'all')) &&
+    query.AssetTypeId === undefined &&
+    query.ZoneId === undefined &&
+    query.WardId === undefined;
+
+  if (!isCanonical) {
+    const qStr = canonicalQuery.toString();
+    const { locale } = await params;
+    redirect(`/${locale}/assets/municipal-Asset/asset-register/${categoryId}${qStr ? '?' + qStr : ''}`);
+  }
+
+  return (
+    <AssetRegisterView
+      categoryId={parsed}
+      categoryName={categoryName}
+      safeSearch={safeSearch}
+      safeAssetTypeId={safeAssetTypeId}
+      safeZoneId={safeZoneId}
+      finalWardId={finalWardId}
+      safePageSize={safePageSize}
+      finalPage={finalPage}
+      totalPages={totalPages}
+      assetsResult={assetsResult}
+      typesResult={typesResult}
+      zonesResult={zonesResult}
+      wardsResult={wardsResult}
+      updatedDate={updatedDate}
+    />
   );
 }

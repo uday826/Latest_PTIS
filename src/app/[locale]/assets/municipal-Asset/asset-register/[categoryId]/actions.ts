@@ -4,6 +4,7 @@ import { assetMasterService } from "@/lib/api/asset/asset-master.service";
 import { categoryTypeService } from "@/lib/api/asset/category-type.service";
 import { wardService } from "@/lib/api/asset/ward.service";
 import { zoneService } from "@/lib/api/asset/zone.service";
+import type { AssetRegisterPageResult } from "@/types/municipal-asset/register.types";
 
 export async function fetchAssetRegisterPage(
   categoryId: number,
@@ -13,7 +14,7 @@ export async function fetchAssetRegisterPage(
   assetTypeId?: number | string | null,
   zoneId?: number | string | null,
   wardId?: number | string | null
-) {
+): Promise<AssetRegisterPageResult> {
   const response = await assetMasterService.getAllAssetsPaginated({
     pageNumber: page,
     pageSize,
@@ -28,16 +29,30 @@ export async function fetchAssetRegisterPage(
     throw new Error("Failed to fetch asset register data");
   }
 
+  if (!response.data) {
+    return {
+      items: [],
+      totalCount: 0,
+      totalPurchaseValue: 0,
+      totalMarketValue: 0,
+      totalDepreciation: 0,
+      netBookValue: 0,
+      activeAssetsCount: 0,
+    };
+  }
+
   const data = response.data;
-  const items = Array.isArray(data) ? data : (data?.items || []);
+  // Sometimes backend returns array instead of paginated response
+  const items = Array.isArray(data) ? data : (data.items || []);
+  
   return {
     items,
-    totalCount: (data as any).totalCount || items.length,
-    totalPurchaseValue: (data as any).totalPurchaseValue || 0,
-    totalMarketValue: (data as any).totalMarketValue || 0,
-    totalDepreciation: (data as any).totalDepreciation || 0,
-    netBookValue: (data as any).netBookValue || 0,
-    activeAssetsCount: (data as any).activeAssetsCount || 0,
+    totalCount: data.totalCount || items.length,
+    totalPurchaseValue: data.totalPurchaseValue || 0,
+    totalMarketValue: data.totalMarketValue || 0,
+    totalDepreciation: data.totalDepreciation || 0,
+    netBookValue: data.netBookValue || 0,
+    activeAssetsCount: data.activeAssetsCount || 0,
   };
 }
 
@@ -67,29 +82,32 @@ export async function fetchZones() {
     }));
 }
 
-export async function fetchWards() {
-  const response = await wardService.getWards();
+export async function fetchWards(zoneId?: number | string | null) {
+  const response = await wardService.getWards(zoneId);
   if (!response.success) {
     throw new Error("Failed to fetch wards");
   }
   return (response.data || [])
     .filter((ward) => ward && ward.id != null)
-    .map((ward) => ({
-      id: Number(ward.id),
-      zoneId: ward.zoneId == null ? null : Number(ward.zoneId),
-      label: `${(ward as any).description || ward.wardNo || ward.wardName || ward.name || `Ward ${ward.id}`}${ward.wardNo ? ` (${ward.wardNo})` : ""}`,
-    }));
+    .map((ward) => {
+      const w = ward as { description?: string; wardNo?: string; wardName?: string; name?: string; id?: number };
+      return {
+        id: Number(ward.id),
+        zoneId: ward.zoneId == null ? null : Number(ward.zoneId),
+        label: `${w.description || w.wardNo || w.wardName || w.name || `Ward ${ward.id}`}${w.wardNo ? ` (${w.wardNo})` : ""}`,
+      };
+    });
 }
 
 /**
- * Fetch category name by ID — wraps categoryTypeService so pages don't import services directly
+ * Fetch category name by ID - wraps categoryTypeService so pages do not import services directly
  */
-export async function fetchCategoryNameById(categoryId: number): Promise<string> {
+export async function fetchCategoryNameById(categoryId: number): Promise<string | null> {
   const response = await categoryTypeService.getCategories();
   if (!response.success) {
     throw new Error("Failed to fetch category name");
   }
   const match = (response.data || []).find((item) => item.id === categoryId);
-  return match?.categoryName || '';
+  return match?.categoryName || null;
 }
 
