@@ -1,13 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { fetchAssetMasterById } from "@/app/[locale]/assets/actions";
 import { fetchCategories } from "@/app/[locale]/assets/municipal-Asset/actions";
+import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
-import { AssetFormData, AssetFormContextType } from "@/types/asset-types/basic-info/asset-wizard.types";
+import { AssetFormContextType, AssetFormData } from "@/types/asset-types/basic-info/asset-wizard.types";
 
-import { useSearchParams } from "next/navigation";
 import { getAssetConfig } from "@/lib/constants/asset/constants";
+import { useSearchParams } from "next/navigation";
 
 export const AssetFormContext = createContext<AssetFormContextType | undefined>(undefined);
 
@@ -24,13 +24,31 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
   };
 
   const [formData, setFormData] = useState<AssetFormData>(() => {
+    const assetIdStr = searchParams.get("assetId") || searchParams.get("id") || "0";
+    const urlAssetId = Number(assetIdStr);
+
+    if (typeof window !== "undefined") {
+      try {
+        const savedSession = sessionStorage.getItem("newAssetFormData");
+        if (savedSession) {
+          const parsed = JSON.parse(savedSession);
+          // Only use session storage if it matches the requested URL asset ID, 
+          // or if we are creating a new asset (urlAssetId === 0)
+          if (!urlAssetId || parsed.id === urlAssetId || parsed.assetId === urlAssetId) {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.error("Failed to parse session storage", e);
+      }
+    }
+
     const category = searchParams.get("category") || searchParams.get("categoryId") || "BUILDING";
     const assetType = searchParams.get("assetType") || searchParams.get("typeId") || "";
     const categoryIdStr = searchParams.get("categoryId") || "1";
     const typeIdStr = searchParams.get("typeId") || "1";
-    const assetIdStr = searchParams.get("assetId") || searchParams.get("id") || "0";
     const assetCodeStr = searchParams.get("assetCode") || "";
-    const parsedAssetId = assetIdStr ? Number(assetIdStr) : 0;
+    const parsedAssetId = urlAssetId;
 
     const config = getAssetConfig(category || "", "");
     const categoryKey = config ? config.categoryKey : (category ? category.toUpperCase() : "BUILDING");
@@ -95,6 +113,13 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
       floors: []
     };
   });
+
+  // Auto-save to sessionStorage on change
+  useEffect(() => {
+    if (typeof window !== "undefined" && formData) {
+      sessionStorage.setItem("newAssetFormData", JSON.stringify(formData));
+    }
+  }, [formData]);
 
   const [lastSavedFormData, setLastSavedFormData] = useState<AssetFormData | null>(null);
 

@@ -1,5 +1,5 @@
-import { getFilteredSteps } from '../add-New-Asset/assetFormSteps';
 import type { AssetDetailRecord, AssetDetailTabConfig, AssetDetailTabKey } from '@/types/municipal-asset/detail-tabs.types';
+import { getFilteredSteps } from '../add-New-Asset/assetFormSteps';
 
 const STEP_TO_DETAIL_TAB: Record<string, AssetDetailTabConfig> = {
   'basic-info': { key: 'overview', label: 'Overview' },

@@ -1,8 +1,5 @@
-'use client';
-/* eslint-disable i18next/no-literal-string */
-
-import { useTransition, useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { useEffect, useState, useTransition } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   FileCheck2,
   FileText,
@@ -16,18 +13,9 @@ import {
   X,
   FolderOpen,
 } from 'lucide-react';
-import { Button, Drawer, MasterTable, type Column } from '@/components/common';
-import type { LeaseRentRegistrationListItem } from '@/lib/api/asset/leaseRentRegistration.service';
-import {
-  approveLeaseRentRegistrationAction,
-  getManageRentersAssetDetailsAction,
-  revertToVerificationAction,
-} from '@/app/[locale]/assets/revenue/manage-renters/actions';
-
-interface ModalProps {
-  record: LeaseRentRegistrationListItem;
-  onClose: () => void;
-}
+import { Button, Drawer, MasterTable, type Column, useToast } from '@/components/common';
+import type { ApprovalLeaseModalProps } from '../../../../types/asset/revenue.types';
+import { approveAction, getPreviousTenantHistoryAction } from '@/app/[locale]/assets/revenue/manage-renters/actions';
 
 function isBlank(value: unknown): boolean {
   return value === null || value === undefined || value === '';
@@ -83,62 +71,60 @@ function MediaUnavailable({ label, icon: Icon }: { label: string; icon: typeof I
   );
 }
 
-export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
+export function ApprovalLeaseModal({ record, onClose }: ApprovalLeaseModalProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [asset, setAsset] = useState<any>(null);
-
-  const registration = record;
+  const { success: toastSuccess, error: toastError } = useToast();
+  const [historyItems, setHistoryItems] = useState<any[]>([]);
 
   useEffect(() => {
-    if (registration.assetId) {
-      getManageRentersAssetDetailsAction(registration.assetId).then((astData) => {
-        if (astData) setAsset(astData);
-      });
-    }
-  }, [registration.assetId]);
+    if (!record.id) return;
+    const loadHistory = async () => {
+      try {
+        const items = await getPreviousTenantHistoryAction(Number(record.id));
+        setHistoryItems(items);
+      } catch {
+        console.error('Failed to load previous tenant history.');
+      }
+    };
+    loadHistory();
+  }, [record.id]);
 
-  const handleApprove = () => {
+  const handleRevertClick = () => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set('drawerRevertId', String(record.id));
+    nextParams.delete('drawerApprovalId');
+    router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
+    router.refresh();
+  };
+
+  const handleApproveClick = () => {
     startTransition(async () => {
       try {
-        const idNum = Number(record.id);
-        const res = await approveLeaseRentRegistrationAction(idNum);
-        if (res.success) {
-          toast.success(res.message || 'Approved successfully');
+        const result = await approveAction(record.id, 'Approved from Approval Drawer');
+        if (result.success) {
+          toastSuccess(result.message || 'Request approved successfully.');
           onClose();
         } else {
-          toast.error(res.message || 'Failed to approve');
+          toastError(result.message || 'Approval failed.');
         }
-      } catch (err) {
-        toast.error('An error occurred during approval');
+      } catch {
+        toastError('An unexpected error occurred.');
       }
     });
   };
 
-  const handleRevertToVerification = () => {
-    const confirm = window.confirm('Are you sure you want to revert this request to verification?');
-    if (!confirm) return;
+  const asset = record as unknown as Record<string, unknown>;
 
-    startTransition(async () => {
-      try {
-        const idNum = Number(record.id);
-        const res = await revertToVerificationAction(idNum);
-        if (res.success) {
-          toast.success(res.message || 'Reverted to verification successfully');
-          onClose();
-        } else {
-          toast.error(res.message || 'Failed to revert');
-        }
-      } catch (err) {
-        toast.error('An error occurred during revert');
-      }
-    });
-  };
+  const registration = record;
 
   const currentTenantFields = registration
     ? [
         { l: 'Sr. No:', v: toDisplay(registration.id), l2: 'Duration:', v2: pickFirst(registration.paymentFrequency, registration.leaseType) },
-        { l: 'Application Type:', v: pickFirst(registration.applicationType, registration.leaseType), l2: 'Lease Period:', v2: `${toDateDisplay(registration.leaseStartDate)} - ${toDateDisplay(registration.leaseEndDate)}` },
-        { l: 'Tenant Name:', v: pickFirst(registration.tenantName, registration.previousTenantName, registration.shopName), vClass: 'font-bold text-slate-900', l2: 'Rent (₹):', v2: `₹ ${toCurrencyDisplay(pickFirst(registration.monthlyRent, registration.previousMonthlyRent, registration.yearlyRent))}`, v2Class: 'font-bold text-red-600' },
+        { l: 'Application Type:', v: pickFirst(registration.leaseRentType, registration.leaseType, registration.applicationTypeId), l2: 'Lease Period:', v2: `${toDateDisplay(registration.leaseStartDate)} - ${toDateDisplay(registration.leaseEndDate)}` },
+        { l: 'Tenant Name:', v: pickFirst(registration.tenantName, registration.previousTenantName, registration.shopName), vClass: 'font-bold text-slate-900', l2: 'Rent (₹):', v2: `₹ ${toCurrencyDisplay(pickFirst(registration.rentAmount, registration.rentMonthly, registration.monthlyRent))}`, v2Class: 'font-bold text-red-600' },
         { l: 'Mobile:', v: pickFirst(registration.tenantMobile, registration.previousTenantMobile), l2: 'Deposit (₹):', v2: `₹ ${toCurrencyDisplay(registration.securityDeposit)}` },
         { l: 'Tenant Type:', v: pickFirst(registration.tenantType, registration.rentStatus), l2: 'Payment Frequency:', v2: pickFirst(registration.paymentFrequency) },
         { l: 'Email:', v: pickFirst(registration.tenantEmail), l2: 'Aadhaar No:', v2: pickFirst(registration.tenantAadhaarNo) },
@@ -146,17 +132,16 @@ export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
       ]
     : [];
 
-  interface OverviewTableRow extends Record<string, unknown> {
-    zoneWardNo: string;
-    propertyNo: string;
-    partitionNo: string;
-    shopNumber: string;
-    shopEstablishmentDate: string;
-    surveyNumber: string;
-    gatNumber: string;
-    shopActRegistrationDate: string;
-    shopActNumber: string;
-  }
+interface OverviewTableRow extends Record<string, unknown> {
+  zoneWardNo: string;
+  propertyNo: string;
+  partitionNo: string;
+  shopNumber: string;
+  shopEstablishmentDate: string;
+  gatNumber: string;
+  shopActRegistrationDate: string;
+  shopActNumber: string;
+}
 
   interface ConstructionTableRow extends Record<string, unknown> {
     floor: string;
@@ -171,18 +156,18 @@ export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
   }
 
   const assetNumber = pickFirst(asset?.assetNo, registration?.assetNo, record.assetId, asset?.id);
-  const assetCategory = pickFirst(asset?.assetCategoryName, registration?.category);
+  const buildingAssetName = pickFirst(registration?.shopName, asset?.assetName, asset?.assetTypeName);
+  const assetCategory = pickFirst(registration?.assetCategory, registration?.category, asset?.assetCategoryName, asset?.assetName);
   const shopNameVal = pickFirst(registration?.shopName, asset?.assetName, asset?.assetTypeName);
   const zoneWard = `${pickFirst(asset?.zoneName, registration?.zone)} - ${pickFirst(asset?.wardName, registration?.wardNo)}`;
 
   const overviewColumns: Column<OverviewTableRow>[] = [
     { key: 'zoneWardNo', label: 'Zone - Ward No', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'propertyNo', label: 'Property No', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'partitionNo', label: 'Partition No', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'propertyNo', label: 'Asset No', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'partitionNo', label: 'Shop Name', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'shopNumber', label: 'Shop Number', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'shopEstablishmentDate', label: 'Shop Establishment Date', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'surveyNumber', label: 'Survey Number', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'gatNumber', label: 'Gat Number', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'gatNumber', label: 'Asset Category', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'shopActRegistrationDate', label: 'Shop Act Registration Date', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'shopActNumber', label: 'Shop Act Number', align: 'center', cellClassName: 'whitespace-nowrap' },
   ];
@@ -191,11 +176,10 @@ export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
     {
       zoneWardNo: zoneWard,
       propertyNo: pickFirst(asset?.assetNo, registration?.assetNo, record.assetId),
-      partitionNo: pickFirst(asset?.parentAssetName, registration?.floor),
+      partitionNo: buildingAssetName,
       shopNumber: pickFirst(registration?.shopNo, asset?.assetTypeName),
       shopEstablishmentDate: toDateDisplay(asset?.createdDate || registration?.createdDate),
-      surveyNumber: pickFirst(asset?.csn),
-      gatNumber: pickFirst(asset?.floorDetailsId),
+      gatNumber: assetCategory,
       shopActRegistrationDate: toDateDisplay(asset?.updatedDate || registration?.updatedDate),
       shopActNumber: pickFirst(asset?.assetTypeId),
     },
@@ -209,13 +193,13 @@ export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
     { key: 'uses', label: 'Uses', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'monthlyRent', label: 'Monthly Rent (₹)', align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
     { key: 'perSqMtRent', label: 'Per Sq.Mt. Rent', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'bharaniKaalavadi', label: 'भरणी कालावधी', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'bharaniKaalavadi', label: 'Payment Period', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'status', label: 'Status', align: 'center', cellClassName: 'whitespace-nowrap' },
   ];
 
   const constructionData: ConstructionTableRow[] = [
     {
-      floor: pickFirst(asset?.floorDetailsId, registration?.floor, 'Ground Floor'),
+      floor: pickFirst(asset?.floorDetailsId, registration?.floorDescription, registration?.floorId, 'Ground Floor'),
       shopNo: pickFirst(registration?.shopNo),
       shopArea: pickFirst(asset?.builtUpAreaSqMeter, asset?.carpetAreaSqMeter, asset?.landAreaSqMeter),
       renterName: pickFirst(registration?.tenantName, asset?.inChargeName, asset?.assetName),
@@ -228,7 +212,7 @@ export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
   ];
 
   const monthlyRent = registration ? pickFirst(registration.monthlyRent, registration.previousMonthlyRent) : '-';
-  const yearlyRent = registration ? pickFirst(registration.yearlyRent) : '-';
+  const yearlyRent = registration ? pickFirst(registration.rentAmount, registration.rentMonthly, registration.monthlyRent) : '-';
 
   const rentSummaryRows = [
     { l: 'सद्यस्थितीतील मासिक भाडे उत्पन्न', v: registration?.monthlyRent != null ? `₹ ${toCurrencyDisplay(registration.monthlyRent)}` : '-' },
@@ -241,7 +225,7 @@ export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
     <div className="flex items-center gap-2">
       <FileText className="w-5 h-5 text-blue-600" />
       <h2 className="font-bold text-sm tracking-wide text-slate-800">
-        Approval — {registration ? pickFirst(registration.applicationType, registration.leaseType, 'Lease Application') : 'Lease Application'}
+        Approval — {registration ? pickFirst(registration.leaseRentType, registration.leaseType, registration.applicationTypeId, 'Lease Application') : 'Lease Application'}
       </h2>
     </div>
   );
@@ -251,11 +235,11 @@ export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
       <Button onClick={onClose} variant="secondary" size="sm" icon={X} disabled={isPending}>
         Cancel
       </Button>
-      <Button variant="danger" size="sm" icon={ShieldX} onClick={handleRevertToVerification} disabled={isPending}>
+      <Button variant="danger" size="sm" icon={ShieldX} onClick={handleRevertClick} disabled={isPending}>
         Revert Request
       </Button>
-      <Button variant="success" size="sm" icon={FileCheck2} onClick={handleApprove} disabled={isPending}>
-        Approve
+      <Button variant="success" size="sm" icon={FileCheck2} onClick={handleApproveClick} disabled={isPending}>
+        {isPending ? 'Approving...' : 'Approve'}
       </Button>
     </>
   );
@@ -270,8 +254,8 @@ export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
               ASSET INFORMATION
             </span>
             <div className="grid grid-cols-[120px_1fr] gap-x-2 gap-y-2 mt-1">
-              <span className="text-[10px] text-slate-500 font-bold">Complex Name</span>
-              <span className="text-xs font-bold text-red-600">{assetCategory || '-'}</span>
+              <span className="text-[10px] text-slate-500 font-bold">Asset Name</span>
+              <span className="text-xs font-bold text-red-600">{buildingAssetName || '-'}</span>
               <span className="text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-2">Address</span>
               <span className="text-xs font-bold text-slate-800 border-t border-slate-100 pt-2">{pickFirst(registration?.tenantAddress, asset?.address)}</span>
             </div>
@@ -298,7 +282,7 @@ export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
 
           <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col justify-center">
             <span className="text-[10px] text-slate-500 font-bold">Asset Category</span>
-            <span className="text-sm font-bold text-red-600 mb-3">{pickFirst(asset?.assetCategoryName, registration?.category)}</span>
+            <span className="text-sm font-bold text-red-600 mb-3">{assetCategory}</span>
             <span className="text-[10px] text-slate-500 font-bold">Shop Name</span>
             <span className="text-sm font-bold text-red-600">{shopNameVal || '-'}</span>
             <span className="text-[10px] text-slate-500 font-bold mt-3">Workflow Status</span>
@@ -334,17 +318,48 @@ export function ApprovalLeaseModal({ record, onClose }: ModalProps) {
             </span>
             <div className="flex divide-x divide-slate-200 min-h-[150px]">
               {/* Previous tenant */}
-              <div className="flex-1 flex flex-col">
-                <div className="bg-slate-50 border-b border-slate-200 text-[#e65c00] text-[10px] font-bold py-1.5 flex items-center justify-center gap-1">
-                  <Users className="w-3.5 h-3.5" /> Previous Tenants ({registration.previousTenantName ? 1 : 0})
+              <div className="flex-1 flex flex-col max-h-[300px] overflow-y-auto custom-scrollbar">
+                <div className="bg-slate-50 border-b border-slate-200 text-[#e65c00] text-[10px] font-bold py-1.5 flex items-center justify-center gap-1 sticky top-0">
+                  <Users className="w-3.5 h-3.5" /> Previous Tenants ({historyItems.length})
                 </div>
-                <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-2 p-6">
-                  <Users className="w-10 h-10 opacity-30" />
-                  <span className="text-xs font-semibold">
-                    {registration.previousTenantName ?? 'No previous tenants'}
-                  </span>
-                  {registration.previousTenantMobile && (
-                    <span className="text-[10px] text-slate-400">{registration.previousTenantMobile}</span>
+                <div className="flex-1 p-3 space-y-3">
+                  {historyItems.length > 0 ? (
+                    historyItems.map((item, index) => (
+                      <div key={item.id || index} className="p-2 border border-slate-100 rounded bg-slate-50/50 space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-bold text-slate-800">{item.tenantName}</span>
+                          <span className="text-[8px] text-slate-400 font-semibold">
+                            {item.performedDate ? new Date(item.performedDate).toLocaleDateString('en-IN') : '-'}
+                          </span>
+                        </div>
+                        <div className="text-[9px] text-slate-500 font-semibold">
+                          Mobile: {item.tenantMobile || '-'} | Type: {item.leaseType || '-'}
+                        </div>
+                        {item.leaseStartDate && (
+                          <div className="text-[9px] text-slate-400 font-medium">
+                            Duration: {new Date(item.leaseStartDate).toLocaleDateString('en-IN')} - {item.leaseEndDate ? new Date(item.leaseEndDate).toLocaleDateString('en-IN') : 'Present'}
+                          </div>
+                        )}
+                        <div className="text-[9px] text-slate-500 font-semibold">
+                          Rent: ₹ {item.monthlyRent ? item.monthlyRent.toLocaleString('en-IN') : '-'}
+                        </div>
+                        {item.remarks && (
+                          <div className="text-[8px] text-slate-400 italic">
+                            Remarks: "{item.remarks}"
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-slate-400 gap-2 py-6">
+                      <Users className="w-8 h-8 opacity-30" />
+                      <span className="text-[10px] font-semibold">
+                        {registration.previousTenantName ?? 'No previous tenants'}
+                      </span>
+                      {registration.previousTenantMobile && (
+                        <span className="text-[9px] text-slate-400">{registration.previousTenantMobile}</span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

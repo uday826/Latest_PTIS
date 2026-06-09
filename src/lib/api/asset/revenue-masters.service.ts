@@ -57,8 +57,8 @@ export async function getZones(): Promise<ZoneOption[]> {
     .filter((zone) => zone && typeof zone.id === 'number');
 }
 
-export async function getWards(zoneId?: number | null): Promise<WardOption[]> {
-  const response = await wardService.getWards({ zoneId: zoneId ?? undefined });
+export async function getWards(_zoneId?: number | null): Promise<WardOption[]> {
+  const response = await wardService.getWards();
   if (!response.success || !response.data) return [];
 
   return response.data

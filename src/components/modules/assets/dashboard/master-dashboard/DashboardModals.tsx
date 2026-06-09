@@ -1,10 +1,10 @@
 'use client';
 
+import { Button, Card } from '@/components/common';
+import type { DashboardAuctionDetail, MunicipalAsset } from '@/types/asset-type/asset-dashboard.types';
 import { motion } from 'framer-motion';
 import { ShieldAlert, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Card, Button } from '@/components/common';
-import type { MunicipalAsset, DashboardAuctionDetail } from '@/types/asset-type/asset-dashboard.types';
 
 const MotionCard = motion.create(Card);
 const CLOSE_CLS = 'p-1.5 text-white hover:bg-white/20 hover:text-white rounded-lg min-w-0 h-auto px-0 bg-transparent border-0 flex items-center justify-center shadow-none';

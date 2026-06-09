@@ -1,11 +1,11 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Button, Card, CardContent, Tabs } from '@/components/common';
+import type { AssetDetailRecord, AssetDetailTabConfig, AssetDetailTabKey } from '@/types/municipal-asset/detail-tabs.types';
 import {
-  ArrowLeft,
   Armchair,
+  ArrowLeft,
   BadgeIndianRupee,
   Building2,
   ClipboardList,
@@ -16,15 +16,15 @@ import {
   MapPin,
   Search,
 } from 'lucide-react';
-import { Button, Card, CardContent, Tabs } from '@/components/common';
-import { OverviewTab } from './detail-tabs/OverviewTab';
-import { LegalPlanningTab } from './detail-tabs/LegalPlanningTab';
-import { ValuationTab } from './detail-tabs/ValuationTab';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import React, { useMemo, useState } from 'react';
 import { DocumentsTab } from './detail-tabs/DocumentsTab';
-import { FurnitureFixturesTab } from './detail-tabs/FurnitureFixturesTab';
 import { FloorDetailsTab } from './detail-tabs/FloorDetailsTab';
+import { FurnitureFixturesTab } from './detail-tabs/FurnitureFixturesTab';
+import { LegalPlanningTab } from './detail-tabs/LegalPlanningTab';
+import { OverviewTab } from './detail-tabs/OverviewTab';
 import { SubUnitsTab } from './detail-tabs/SubUnitsTab';
-import type { AssetDetailRecord, AssetDetailTabConfig, AssetDetailTabKey } from '@/types/municipal-asset/detail-tabs.types';
+import { ValuationTab } from './detail-tabs/ValuationTab';
 
 interface AssetDetailProps {
   asset: AssetDetailRecord;

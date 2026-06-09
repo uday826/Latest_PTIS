@@ -8,49 +8,49 @@
  * - Screen Field Options (FIELD_TYPE_OPTIONS)
  */
 
+import type {
+  MasterConfig,
+  MasterDataConfig,
+  SidebarSection
+} from '@/types/asset.types';
 import {
   // Master Module Icons
   AlertCircle,
+  BarChart3,
   Box,
   Briefcase,
   Building2,
+  ClipboardCheck,
+  ClipboardList,
+  CreditCard,
   Database,
   FileText,
+  Gavel,
   Grid3x3,
   Home,
   Layers,
+  // Sidebar Icons
+  LayoutDashboard,
+  LayoutGrid,
   List,
   Map as MapIcon,
   MapPin,
   Monitor,
   Package,
+  RefreshCw,
+  Rocket,
+  Send,
+  Settings,
   Shield,
+  ShieldAlert,
   Square,
   Tag,
   TreeDeciduous,
-  // Sidebar Icons
-  LayoutDashboard,
-  RefreshCw,
-  Gavel,
-  Zap,
-  ClipboardCheck,
-  ShieldAlert,
-  Users,
-  CreditCard,
-  Rocket,
-  BarChart3,
   TrendingUp,
-  Send,
-  ClipboardList,
+  Users,
   Wrench,
-  Settings,
-  LayoutGrid,
+  Zap,
 } from 'lucide-react';
-import type { 
-  MasterConfig, 
-  SidebarSection, 
-  MasterDataConfig 
-} from '@/types/asset.types';
 
 /* =============================================================================
    1. MASTER DATA TYPE DEFINITIONS (MASTER_CONFIGS)

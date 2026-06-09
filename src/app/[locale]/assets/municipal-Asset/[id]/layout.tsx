@@ -1,7 +1,7 @@
-import React, { Suspense } from 'react';
+import { LoadingPage } from '@/components/common';
 import { MainLayout } from '@/components/layout';
 import { AssetSidebar } from '@/components/layout/AssetSidebar';
-import { LoadingPage } from '@/components/common';
+import React, { Suspense } from 'react';
 
 export default function MunicipalAssetDetailLayout({
   children,

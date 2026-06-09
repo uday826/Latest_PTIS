@@ -3,11 +3,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import React, { useMemo, useState } from 'react';
-import { Eye, Package2, CircleAlert, FileText, Hash, Layers3, SquareStack } from 'lucide-react';
 import { Badge, Button, Card, CardContent, Drawer, MasterTable, type Column } from '@/components/common';
 import type { AssetDetailController } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
 import type { InventoryBatchDetail, InventoryBatchListResponse, InventoryUnitResponse } from '@/types/municipal-asset/furniture-fixtures.types';
+import { CircleAlert, Eye, FileText, Hash, Layers3, Package2, SquareStack } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
 
 function formatMoney(value?: number | null): string {
   if (value === null || value === undefined) return '-';

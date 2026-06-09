@@ -1,5 +1,8 @@
 import { LeaseRentRegistration } from '@/components/modules/assets/revenue/LeaseRentRegistration';
-import { getManageRentersApprovalPageDataAction, getManageRentersVerificationDetailsAction } from '../actions';
+import {
+  getManageRentersApprovalPageDataAction,
+  getManageRentersVerificationDetailsAction,
+} from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +28,12 @@ export default async function ManageRentersApprovalPage({
     ? await getManageRentersVerificationDetailsAction(drawerRejectId)
     : null;
 
+  const drawerRevertIdRaw = query.drawerRevertId;
+  const drawerRevertId = Array.isArray(drawerRevertIdRaw) ? drawerRevertIdRaw[0] : drawerRevertIdRaw;
+  const selectedRevert = drawerRevertId
+    ? await getManageRentersVerificationDetailsAction(drawerRevertId)
+    : null;
+
   return (
     <LeaseRentRegistration
       key={[
@@ -34,6 +43,7 @@ export default async function ManageRentersApprovalPage({
         data.assetCategoryId ?? '',
         drawerApprovalId ?? '',
         drawerRejectId ?? '',
+        drawerRevertId ?? '',
       ].join('|')}
       stage="approval"
       pageNumber={data.pageNumber}
@@ -47,6 +57,8 @@ export default async function ManageRentersApprovalPage({
       selectedApproval={selectedApproval}
       rejectDrawerId={drawerRejectId ? Number(drawerRejectId) : null}
       selectedRejection={selectedRejection}
+      revertDrawerId={drawerRevertId ? Number(drawerRevertId) : null}
+      selectedRevert={selectedRevert}
       categoryOptions={data.categoryOptions}
     />
   );

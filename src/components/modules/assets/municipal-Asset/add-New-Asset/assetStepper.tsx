@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
-import { Check } from "lucide-react";
 import { AssetStepperProps } from "@/types/asset-types/basic-info/asset-wizard.types";
+import { Check } from "lucide-react";
+import React from "react";
 
 export function AssetStepper({
   currentStepId,

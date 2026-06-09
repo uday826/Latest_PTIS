@@ -1,11 +1,11 @@
 "use client";
 
-import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/common';
+import type { AssetDetailController, CommercialComplexShopRow } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
 import { motion } from 'framer-motion';
 import { Building2, Store } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/common';
 import { useTranslations } from 'next-intl';
-import type { AssetDetailController, CommercialComplexShopRow } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
+import React from 'react';
 
 const MotionCard = motion.create(Card);
 

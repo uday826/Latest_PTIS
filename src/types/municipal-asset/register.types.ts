@@ -43,11 +43,27 @@ export type AssetRegisterRow = {
   assetTypeId: number | null;
 };
 
-export type AssetRegisterApiRecord = {
-  id?: number | string;
-  assetCode?: string;
+export interface AssetFieldValueDto {
+  id: number;
+  fieldDefinitionId?: number;
+  fieldName: string;
+  textValue?: string | null;
+  numberValue?: number | null;
+  dateValue?: string | null;
+  booleanValue?: boolean | null;
+}
+
+export interface AssetRegisterApiRecord {
+  id: number;
+  isActive: boolean;
+  
+  // Jurisdiction / Ownership Context
+  authorityId?: number;
+  organizationId?: number;
+  departmentId?: number;
+
+  // Identification / Category
   assetNo?: string;
-  assetId?: string;
   assetName?: string;
   name?: string;
   categoryName?: string;
@@ -57,42 +73,85 @@ export type AssetRegisterApiRecord = {
   assetTypeId?: number | null;
   departmentName?: string;
   department?: string;
+  parentAssetId?: number;
+
+  // Hierarchy
+  hierarchyLevel?: number;
+  hierarchyPath?: string;
+
+  // Location
+  address?: string;
+  wardId?: number;
+  zoneId?: number;
+  subZoneId?: number;
+  moujaId?: number;
+  latitude?: number;
+  longitude?: number;
+  csn?: string;
+
+  // Type of Use
+  typeOfUseId?: number;
+  subTypeOfUseId?: number;
+
+  // Area Details
+  builtUpAreaSqMeter?: number;
+  carpetAreaSqMeter?: number;
+  landAreaSqMeter?: number;
+  hasLift?: boolean;
+
+  // Valuation
+  purchaseValue?: number;
+  purchaseDate?: string;
+  marketValue?: number;
+  marketValueDate?: string;
+  capitalValue?: number;
+  lastCVCalculationDate?: string;
+  currentBookValue?: number;
+  depreciationRate?: number;
+  depreciation?: number; // Might be needed for the UI table
+
+  // Legal / Acquisition
+  ownershipType?: string;
+
+  // Status
+  status?: string;
+  occupancyStatus?: string;
+
+  // Revenue & Operations
+  isRevenueGenerating?: boolean;
+  operationalControl?: string;
+  assetCondition?: string;
+
+  // Floor details reference
+  floorDetailsId?: number;
+
+  // Field Values for dynamic fields
+  fieldValues?: AssetFieldValueDto[];
+
+  // Navigation property names for display
   authorityName?: string;
   organizationName?: string;
-  status?: string;
-  isActive?: boolean;
-  assetCondition?: string;
-  ownershipType?: string;
-  occupancyStatus?: string;
-  address?: string;
-  wardName?: string;
-  zoneName?: string;
+  departmentName?: string;
+  assetCategoryName?: string;
+  assetTypeName?: string;
   parentAssetName?: string;
-  latitude?: number | string | null;
-  longitude?: number | string | null;
-  csn?: string;
-  hasLift?: boolean | string | null;
-  purchaseDate?: string | null;
-  marketValueDate?: string | null;
-  capitalValue?: number | string | null;
-  lastCVCalculationDate?: string | null;
-  currentBookValue?: number | string | null;
-  depreciationRate?: number | string | null;
-  isRevenueGenerating?: boolean | string | null;
-  operationalControl?: string | null;
-  fieldValues?: unknown;
-  purchaseValue?: number | string | null;
-  marketValue?: number | string | null;
-  depreciation?: number | string | null;
-  netBookValue?: number | string | null;
-  builtUpAreaSqMeter?: number | string | null;
-  carpetAreaSqMeter?: number | string | null;
-  landAreaSqMeter?: number | string | null;
+  zoneName?: string;
+  wardName?: string;
+  moujaName?: string;
+  typeOfUseName?: string;
+  subTypeOfUseName?: string;
+  
+  // Base fields
   createdDate?: string;
-  createdAt?: string;
-};
+  updatedDate?: string;
+}
 
 export type AssetRegisterPageResult = {
   items: AssetRegisterApiRecord[];
   totalCount: number;
+  totalPurchaseValue?: number;
+  totalMarketValue?: number;
+  totalDepreciation?: number;
+  netBookValue?: number;
+  activeAssetsCount?: number;
 };

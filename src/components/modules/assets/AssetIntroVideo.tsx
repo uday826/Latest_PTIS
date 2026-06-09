@@ -160,11 +160,12 @@ export function AssetIntroVideo({ displayUlbName }: AssetIntroVideoProps) {
               onError={(e) => {
                 console.error('Video error:', e);
                 console.error('Video element:', videoRef.current);
+                handleDismiss(); // Auto-dismiss if video fails to load
               }}
               onLoadedData={() => console.log('Video loaded successfully')}
               onPlay={() => console.log('Video started playing')}
             >
-              <source src="/videos/mp__Feel_free_to_ask_me_for_the_videos_of_the_other_scenes_.mp4" type="video/mp4" />
+              <source src="/videos/Theme_Smart_City_Digital_Twin.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
 

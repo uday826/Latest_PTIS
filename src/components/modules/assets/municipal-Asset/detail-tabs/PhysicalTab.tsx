@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Map, Ruler } from 'lucide-react';
 import type { AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
+import { Map, Ruler } from 'lucide-react';
 
 function blank(value?: string | number | null) {
   return value === null || value === undefined || value === '' ? '' : String(value);

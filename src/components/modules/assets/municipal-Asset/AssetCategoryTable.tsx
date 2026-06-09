@@ -1,6 +1,5 @@
 'use client';
 
-
 import { Eye, Edit } from 'lucide-react';
 import { MOCK_DATA } from './AssetCategoryMock';
 

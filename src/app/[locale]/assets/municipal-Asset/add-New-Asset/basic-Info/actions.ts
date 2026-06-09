@@ -7,13 +7,13 @@
  * Do NOT put generic asset or master-data actions here.
  */
 
-import { assetFieldDefinitionService } from "@/lib/api/asset/asset-field-definition.service";
 import {
-  processFieldDefinitions,
   groupAndMergeFields,
-  type ProcessedField,
+  processFieldDefinitions,
   type MergedFieldSection,
+  type ProcessedField,
 } from "@/components/modules/assets/municipal-Asset/add-New-Asset/FieldRenderer";
+import { assetFieldDefinitionService } from "@/lib/api/asset/asset-field-definition.service";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

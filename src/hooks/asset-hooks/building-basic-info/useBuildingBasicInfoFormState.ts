@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type {
   BuildingBasicInfoFormData,
   BuildingBasicInfoFormErrors,
@@ -44,6 +44,26 @@ export function useBuildingBasicInfoFormState(
     Partial<Record<keyof BuildingBasicInfoFormData, boolean>>
   >({});
   const [submittedOnce, setSubmittedOnce] = useState(false);
+
+  // Sync changes from parent context/initialOverrides (like generated ID or assetCode after successful save)
+  useEffect(() => {
+    if (initialOverrides) {
+      setFormData((prev) => {
+        let changed = false;
+        const next = { ...prev };
+        for (const key in initialOverrides) {
+          if (Object.prototype.hasOwnProperty.call(initialOverrides, key)) {
+            const val = initialOverrides[key as keyof BuildingBasicInfoFormData];
+            if (val !== undefined && prev[key as keyof BuildingBasicInfoFormData] !== val) {
+              (next as any)[key] = val;
+              changed = true;
+            }
+          }
+        }
+        return changed ? next : prev;
+      });
+    }
+  }, [initialOverrides]);
 
   const updateFormData = useCallback(
     (patch: Partial<BuildingBasicInfoFormData>) => {

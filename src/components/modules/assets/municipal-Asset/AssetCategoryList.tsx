@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import { Filter, Download, MapPin, Users, User, FileText, Check, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { AssetCategory } from '@/lib/api/asset/category-type.service';
 import { AssetDetailView } from './asset-Detail-View/AssetDetailView';
-
 import { AssetCategoryTable } from './AssetCategoryTable';
 
 interface Props {

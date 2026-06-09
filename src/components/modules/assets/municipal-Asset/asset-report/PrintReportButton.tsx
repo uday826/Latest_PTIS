@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { Printer, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/common';
+import { ArrowLeft, Printer } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef } from 'react';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type PrintReportButtonProps = Record<string, never>;

@@ -1,13 +1,13 @@
 'use client';
 
-import { useMemo, useSyncExternalStore } from 'react';
-import { motion } from 'framer-motion';
-import { useTranslations } from 'next-intl';
-import { TrendingUp, Activity, CheckCircle, FileText } from 'lucide-react';
-import { Card, Button } from '@/components/common';
+import { Button, Card } from '@/components/common';
 import { Badge } from '@/components/common/Badge';
-import type { DashboardAcquisitionProps } from '@/types/asset-type/asset-dashboard.types';
 import { LAKHS_TO_CRORES } from '@/lib/utils/asset-utils/asset-dashboard-helpers';
+import type { DashboardAcquisitionProps } from '@/types/asset-type/asset-dashboard.types';
+import { motion } from 'framer-motion';
+import { Activity, CheckCircle, FileText, TrendingUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useSyncExternalStore } from 'react';
 
 const MotionCard = motion.create(Card);
 const subscribe = () => () => {};

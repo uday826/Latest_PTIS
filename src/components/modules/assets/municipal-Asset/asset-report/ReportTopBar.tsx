@@ -1,5 +1,5 @@
 import { Card } from '@/components/common';
-import { PrintReportButton, BackButton } from './PrintReportButton';
+import { BackButton, PrintReportButton } from './PrintReportButton';
 
 type ReportTopBarProps = {
   title: string;

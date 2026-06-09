@@ -450,7 +450,7 @@ export function getMovableValuation(movableData: any) {
   };
 }
 
-export function getBuildingValuation(asset: any, buildingData: any, buildingAge: number | null) {
+export function getBuildingValuation(asset: any, buildingData: any, _buildingAge: number | null) {
   if (!buildingData) return { floors: [], buildingCapitalValue: 0 };
 
   const isCommercialComplex = asset.category === 'building' && asset.assetType === 'Municipal Commercial Complex';
@@ -587,7 +587,7 @@ export const legalFallbackDetails: Record<string, any> = {
   }
 };
 
-export function getCategoryDetailedData(asset: any) {
+export function getCategoryDetailedData(_asset: any) {
   return {
     schoolDetailedData: null,
     hospitalDetailedData: null,

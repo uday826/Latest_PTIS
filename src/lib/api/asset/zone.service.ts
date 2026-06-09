@@ -20,7 +20,7 @@ export const zoneService = {
    * Get all active Zones
    */
   getZones: async (): Promise<ApiResponse<Zone[]>> => {
-    const response = await apiClient.get<any>("/Zone?pageSize=1000");
+    const response = await apiClient.get<any>("/Zone?pageSize=-1");
     if (response.success && response.data) {
       const items = Array.isArray(response.data)
         ? response.data

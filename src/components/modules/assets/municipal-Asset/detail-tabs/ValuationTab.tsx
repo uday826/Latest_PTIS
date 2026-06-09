@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import type { AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
 
 function blank(value?: string | number | null) {

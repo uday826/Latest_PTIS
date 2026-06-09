@@ -1,0 +1,101 @@
+import { AssetMasterResponse } from "@/types/asset-types/basic-info/asset-wizard.types";
+import type {
+  AssetRegisterRow,
+  AssetRegisterApiRecord,
+  AssetRegisterPageResult,
+} from "@/types/municipal-asset/register.types";
+
+export interface AssetRegisterOption {
+  id: number;
+  label: string;
+}
+
+export interface AssetRegisterWardOption extends AssetRegisterOption {
+  zoneId: number | null;
+}
+
+/**
+ * Dashboard statistics types
+ */
+export interface AssetTypeStatsDto {
+  assetTypeId: number;
+  assetTypeName: string;
+  assetCount: number;
+}
+
+export interface AssetCategoryStatsDto {
+  categoryId: number;
+  categoryName: string;
+  categoryDescription?: string;
+  registeredAssets: number;
+  totalCategoryItem: number;
+  totalValue?: number | null;
+  assetTypeStats: AssetTypeStatsDto[];
+}
+
+export interface AssetDashboardStatsDto {
+  totalAssets: number;
+  totalCategories: number;
+  categoryStats: AssetCategoryStatsDto[];
+}
+
+/**
+ * Paginated response from /AssetMaster
+ */
+export interface PagedAssetMasterResponse {
+  items: AssetMasterResponse[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
+  totalPurchaseValue?: number;
+  totalMarketValue?: number;
+  totalDepreciation?: number;
+  netBookValue?: number;
+  activeAssetsCount?: number;
+}
+
+/**
+ * Component Props for Asset Register UI
+ */
+export interface AssetRegisterViewProps {
+  categoryId: number;
+  categoryName: string | null;
+  safeSearch: string;
+  safeAssetTypeId: string;
+  safeZoneId: string;
+  finalWardId: string;
+  safePageSize: number;
+  finalPage: number;
+  totalPages: number;
+  assetsResult: AssetRegisterPageResult;
+  typesResult: AssetRegisterOption[];
+  zonesResult: AssetRegisterOption[];
+  wardsResult: AssetRegisterWardOption[];
+  updatedDate: string;
+}
+
+export interface AssetRegisterTableProps {
+  assets: AssetRegisterRow[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface AssetRegisterFiltersProps {
+  categoryId: number;
+  initialCategoryName: string;
+  search: string;
+  assetTypeId: string;
+  zoneId: string;
+  wardId: string;
+  assetTypeOptions: { label: string; value: string }[];
+  zoneOptions: { label: string; value: string }[];
+  wardOptions: { label: string; value: string }[];
+  totalCount: number;
+  pageSize: number;
+  assets: AssetRegisterApiRecord[];
+}

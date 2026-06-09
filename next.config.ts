@@ -21,6 +21,7 @@ const defaultServerActionOrigins = [
   "127.0.0.1:5000",
   "*.scipl.info.in",
   "*.sciql.info.in",
+  "*.tabamc.in",
 ];
 const extraServerActionOrigins = [
   ...new Set([...fromEnv, ...defaultServerActionOrigins]),

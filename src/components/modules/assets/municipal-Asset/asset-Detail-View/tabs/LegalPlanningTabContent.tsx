@@ -1,20 +1,20 @@
 "use client";
 
-import React from 'react';
-import { motion } from 'motion/react';
+import { Badge, Card } from '@/components/common';
+import type { AssetDetailController, BuildingDataFields, DetailSection } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
 import {
-  Scale,
-  Heart,
-  Shield,
-  Check,
-  X,
-  AlertTriangle,
   Activity,
-  LucideIcon
+  AlertTriangle,
+  Check,
+  Heart,
+  LucideIcon,
+  Scale,
+  Shield,
+  X
 } from 'lucide-react';
-import { Card, Badge } from '@/components/common';
-import type { DetailSection, BuildingDataFields, AssetDetailController } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
+import { motion } from 'motion/react';
 import { useLocale, useTranslations } from 'next-intl';
+import React from 'react';
 
 import { legalFallbackDetails } from '../../data/assetDetailMockData';
 

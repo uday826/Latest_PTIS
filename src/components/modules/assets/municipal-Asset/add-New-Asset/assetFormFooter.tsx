@@ -1,36 +1,33 @@
 "use client";
 
-
+import { activateAssetAction, fetchDocumentDefinitionsAction, submitAssetForm, uploadBulkDocumentsAction, uploadDocumentAction, getFallbackModuleIdAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
+import { validateBuildingBasicInfo } from "@/hooks/asset-hooks/building-basic-info/useBuildingBasicInfoFormValidation";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
+import { toast } from "sonner";
+import { useAssetForm } from "./AssetFormContext";
+import { usePermissionsContext } from "@/lib/providers/PermissionsProvider";
 import {
   getCurrentAssetStep,
+  getFilteredSteps,
   getNextAssetStep,
   getPreviousAssetStep,
-  getFilteredSteps,
   type CategoryFlags,
 } from "./assetFormSteps";
-import { useAssetForm } from "./AssetFormContext";
-import { submitAssetForm, activateAssetAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import AssetSuccessModal from "./AssetSuccessModal";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import { uploadDocumentAction, uploadBulkDocumentsAction, fetchDocumentDefinitionsAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
-import { validateBuildingBasicInfo } from "@/hooks/asset-hooks/building-basic-info/useBuildingBasicInfoFormValidation";
-
-
 
 function isDeepEqual(obj1: any, obj2: any): boolean {
   if (obj1 === obj2) return true;
   if (typeof obj1 !== "object" || obj1 === null || typeof obj2 !== "object" || obj2 === null) {
     return false;
   }
-  
+
   // Filter out undefined keys so that { a: 1, b: undefined } equals { a: 1 }
   const keys1 = Object.keys(obj1).filter(k => obj1[k] !== undefined);
   const keys2 = Object.keys(obj2).filter(k => obj2[k] !== undefined);
-  
+
   if (keys1.length !== keys2.length) return false;
-  
+
   for (const key of keys1) {
     if (!keys2.includes(key)) return false;
     if (!isDeepEqual(obj1[key], obj2[key])) return false;
@@ -64,9 +61,64 @@ export function AssetFormFooter() {
     basicInfoFiles,
     setBasicInfoFiles
   } = useAssetForm();
+
+  const { screens } = usePermissionsContext();
+
+  const [fallbackModuleId, setFallbackModuleId] = useState<number>(0);
+
+  useEffect(() => {
+    getFallbackModuleIdAction(pathname).then((id) => {
+      if (id > 0) setFallbackModuleId(id);
+    }).catch(console.error);
+  }, [pathname]);
+
+  // Dynamically derive module ID from user screen permissions
+  const currentModuleId = useMemo(() => {
+    if (!screens || screens.length === 0) return fallbackModuleId;
+    if (!pathname) return fallbackModuleId;
+    const pathLower = pathname.toLowerCase();
+    
+    // 1. Sort by longest routePath first (most specific match)
+    const sortedScreens = [...screens].sort((a, b) => (b.routePath?.length || 0) - (a.routePath?.length || 0));
+    
+    // 2. Try to find exact inclusive match
+    let currentScreen = sortedScreens.find((s) => s.routePath && pathLower.includes(s.routePath.toLowerCase()));
+    
+    // 3. Fallback: if no exact match, find any screen related to 'asset' by moduleName
+    if (!currentScreen) {
+      currentScreen = screens.find((s) => {
+        const mName = s.moduleName || (s as any).ModuleName;
+        return mName && mName.toLowerCase().includes("asset management");
+      });
+    }
+
+    if (!currentScreen) {
+      currentScreen = screens.find((s) => {
+        const mName = s.moduleName || (s as any).ModuleName;
+        return mName && mName.toLowerCase().includes("asset");
+      });
+    }
+    
+    // Check multiple possible casing for module ID from C# backend
+    let resolvedModuleId = currentScreen 
+      ? (currentScreen.moduleId || (currentScreen as any).ModuleId || (currentScreen as any).moduleID || fallbackModuleId) 
+      : fallbackModuleId;
+      
+    // The database has an inactive generic "asset" module (1004). 
+    // If we resolved 1004, force the dynamic fallback (which dynamically finds Asset Management)
+    if (resolvedModuleId === 1004 && fallbackModuleId > 0 && fallbackModuleId !== 1004) {
+      resolvedModuleId = fallbackModuleId;
+    }
+      
+    console.log("Dynamically determined ModuleId:", resolvedModuleId, "Screens available:", screens?.length);
+    
+    return resolvedModuleId;
+  }, [screens, pathname, fallbackModuleId]);
+
+  const assetModuleId = currentModuleId;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState<{ assetName: string; assetCode: string } | null>(null);
-
 
   useEffect(() => {
     if (formData && !lastSavedFormData && setLastSavedFormData) {
@@ -76,21 +128,21 @@ export function AssetFormFooter() {
 
   const categoryFlags: CategoryFlags | undefined =
     formData.hasFloorDetails !== undefined ? {
-      isMovable:            formData.isMovableCategory,
-      hasFloorDetails:      formData.hasFloorDetails,
-      hasInventory:         formData.hasInventory,
+      isMovable: formData.isMovableCategory,
+      hasFloorDetails: formData.hasFloorDetails,
+      hasInventory: formData.hasInventory,
       isInventoryMandatory: formData.isInventoryMandatory,
-      hasLegalCompliance:   formData.hasLegalCompliance,
+      hasLegalCompliance: formData.hasLegalCompliance,
     } : undefined;
 
-  const currentStep    = getCurrentAssetStep (pathname, formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
-  const previousStep   = getPreviousAssetStep(pathname, formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
-  const nextStep       = getNextAssetStep    (pathname, formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
+  const currentStep = getCurrentAssetStep(pathname, formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
+  const previousStep = getPreviousAssetStep(pathname, formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
+  const nextStep = getNextAssetStep(pathname, formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
 
   const queryString = searchParams.toString();
   const appendQuery = (url: string) => (queryString ? `${url}?${queryString}` : url);
 
-  const filteredSteps  = getFilteredSteps    (formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
+  const filteredSteps = getFilteredSteps(formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
   const totalSteps = filteredSteps.length;
   const currentStepId = currentStep?.id ?? 1;
   const isFirstStep = !previousStep;
@@ -166,7 +218,7 @@ export function AssetFormFooter() {
               const formDataPayload = new FormData();
               formDataPayload.append("File", item.file);
               formDataPayload.append("AssetId", assetId.toString());
-              formDataPayload.append("ModuleId", "1004");
+              formDataPayload.append("ModuleId", assetModuleId.toString());
               formDataPayload.append("DocumentDefinitionId", defId.toString());
               formDataPayload.append("DocumentTitle", item.definition.documentName);
               formDataPayload.append("DocumentType", item.definition.documentCode);
@@ -189,6 +241,11 @@ export function AssetFormFooter() {
           } finally {
             if (loadingToast !== undefined) toast.dismiss(loadingToast);
           }
+        }
+
+        // Clear session storage upon successful final submit
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("newAssetFormData");
         }
 
         // Show success modal with asset details
@@ -286,7 +343,7 @@ export function AssetFormFooter() {
         }
         return;
       }
-      
+
       // Proceed directly to save without confirmation modal
     }
 
@@ -334,7 +391,7 @@ export function AssetFormFooter() {
 
           const formDataPayload = new FormData();
           formDataPayload.append("AssetId", String(assetId || 0));
-          formDataPayload.append("ModuleId", "1004");
+          formDataPayload.append("ModuleId", assetModuleId.toString());
           formDataPayload.append("UploadedByUserId", userId.toString());
           formDataPayload.append("IsAdHoc", "true");
 
@@ -350,7 +407,7 @@ export function AssetFormFooter() {
               const planDef = defRes.data.find(d => d.documentCode?.toLowerCase().includes("plan") || d.documentName?.toLowerCase().includes("plan"));
               if (planDef) planDefId = planDef.id;
             }
-          } catch(e) {
+          } catch (e) {
             console.error("Failed to fetch definitions for basic info upload", e);
           }
 
@@ -359,7 +416,7 @@ export function AssetFormFooter() {
           if (basicInfoFiles.frontPhoto) {
             const uniqueName = `front_${basicInfoFiles.frontPhoto.name}`;
             const renamedFile = new File([basicInfoFiles.frontPhoto], uniqueName, { type: basicInfoFiles.frontPhoto.type });
-            
+
             formDataPayload.append("Files", renamedFile);
             const metaItem: any = {
               fileName: uniqueName,
@@ -367,7 +424,7 @@ export function AssetFormFooter() {
               documentTitle: "Asset Image",
             };
             if (frontPhotoDefId > 0) metaItem.documentDefinitionId = frontPhotoDefId;
-            
+
             metadata.push(metaItem);
           }
 
@@ -382,20 +439,27 @@ export function AssetFormFooter() {
               documentTitle: "Asset Photo Plan",
             };
             if (planDefId > 0) metaItem.documentDefinitionId = planDefId;
-
             metadata.push(metaItem);
           }
 
           formDataPayload.append("FileMetadataJson", JSON.stringify(metadata));
 
-          const uploadRes = await uploadBulkDocumentsAction(formDataPayload);
-
-          if (!uploadRes.success || (uploadRes.data && uploadRes.data.failureCount > 0)) {
-            const detailedError = uploadRes.data?.failedUploads?.[0]?.errorMessage || uploadRes.error || "Unknown bulk upload error";
-            console.error("Failed to bulk upload photos:", uploadRes.data?.failedUploads || uploadRes.error);
-            toast.error(`Photo upload failed: ${detailedError}`);
+          const res = await uploadBulkDocumentsAction(formDataPayload);
+          if (res.success && res.data) {
+            const failures = res.data.failureCount || 0;
+            const successes = res.data.successCount || 0;
+            if (failures > 0) {
+              const detailedError = res.data.failedUploads?.[0]?.errorMessage || "Unknown backend error";
+              toast.error(`Photo upload failed: ${successes} successful, ${failures} failed. Reason: ${detailedError}`);
+              console.error("Bulk upload partial failures:", res.data.failedUploads);
+            } else {
+              toast.success("Photos uploaded successfully!");
+              if (setBasicInfoFiles) setBasicInfoFiles({});
+            }
           } else {
-            if (setBasicInfoFiles) setBasicInfoFiles({});
+            const errorMsg = res.error || "Unknown bulk upload error";
+            toast.error(`Photo upload failed: ${errorMsg}`);
+            console.error("Failed to bulk upload photos:", errorMsg);
           }
         }
 
@@ -416,8 +480,6 @@ export function AssetFormFooter() {
       setIsSubmitting(false);
     }
   };
-
-
 
   return (
     <>

@@ -1,20 +1,20 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
-import { Plus, ChevronRight, ClipboardList, Search, CheckCircle2, Loader2, X, MapPin, AlertCircle } from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
-import { Drawer } from "@/components/common/Drawer";
-import { Select } from "@/components/common";
 import {
+  fetchAssetsByFilter,
   fetchCategories,
   fetchTypesByCategory,
-  fetchZones,
   fetchWards,
-  fetchAssetsByFilter,
+  fetchZones,
 } from "@/app/[locale]/assets/municipal-Asset/actions";
+import { Select } from "@/components/common";
+import { Drawer } from "@/components/common/Drawer";
 import { AssetCategory, AssetType } from "@/lib/api/asset/category-type.service";
-import { Zone } from "@/lib/api/asset/zone.service";
 import { Ward } from "@/lib/api/asset/ward.service";
+import { Zone } from "@/lib/api/asset/zone.service";
+import { AlertCircle, CheckCircle2, ChevronRight, ClipboardList, Loader2, MapPin, Plus, Search, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useCallback, useEffect, useState } from "react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -71,7 +71,6 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
 
   // Gate: asset code search is only active when both zone + ward are selected
   const canSearch = !!(selectedZoneId && selectedWardId);
-
 
 
   // ──────────────────────────────────────────────────────
@@ -208,6 +207,9 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
   // ──────────────────────────────────────────────────────
   const handleNewRegisterSubmit = () => {
     if (!newData.category || !newData.assetType) return;
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("newAssetFormData");
+    }
     const cat = categories.find((c) => c.categoryName === newData.category);
     const typ = types.find((t) => {
       const label = t.assetTypeName || (t as any).typeName || "";
@@ -224,6 +226,9 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
 
   const handleExistingAssetSubmit = () => {
     if (!selectedAsset) return;
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("newAssetFormData");
+    }
     const params = new URLSearchParams({
       category: selectedAsset.categoryName,
       assetType: selectedAsset.typeName,

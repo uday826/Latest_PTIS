@@ -49,6 +49,8 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
   } = useAssetForm();
 
   const stateBag = useBuildingBasicInfoFormState({
+    id: contextData.id || 0,
+    assetId: contextData.assetId || 0,
     category: contextData.category || "Building Assets",
     assetType: contextData.assetType || "",
     zone: contextData.zone || "",

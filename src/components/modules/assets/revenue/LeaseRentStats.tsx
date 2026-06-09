@@ -2,7 +2,7 @@
 
 import { CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 import { DashboardCard } from '@/components/common/DashboardCard';
-import type { LeaseRentRegistrationStats } from '@/lib/api/asset/leaseRentRegistration.service';
+import type { LeaseRentRegistrationStats } from '../../../../types/asset/revenue.types';
 
 interface StatsProps {
   stats: LeaseRentRegistrationStats;

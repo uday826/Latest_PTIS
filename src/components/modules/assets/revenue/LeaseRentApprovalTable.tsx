@@ -1,20 +1,9 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { Eye, XCircle } from 'lucide-react';
 import { Button, MasterTable, type Column } from '@/components/common';
-
-export interface ApprovalRecord extends Record<string, unknown> {
-  id: string;
-  grievanceNo: string;
-  assetId: string;
-  assetCategory: string;
-  tenantName: string;
-  leaseType: string;
-  rentAmount: number;
-  submittedDate: string;
-  status: 'Pending' | 'Approved';
-}
+import type { ApprovalRecord } from '../../../../types/asset/revenue.types';
 
 interface Props {
   records: ApprovalRecord[];
@@ -66,15 +55,15 @@ const columns: Column<ApprovalRecord>[] = [
     align: 'center',
     cellClassName: '!px-2 !py-2',
     render: (value) =>
-      String(value) === 'Approved' ? (
+      String(value).toLowerCase().includes('approved') ? (
         <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold text-emerald-600">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          Approved
+          {String(value)}
         </span>
       ) : (
         <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50/50 px-2.5 py-1 text-[10px] font-bold text-orange-600">
           <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
-          Pending
+          {String(value)}
         </span>
       ),
   },
@@ -117,10 +106,10 @@ export function LeaseRentApprovalTable({
           <Button
             type="button"
             onClick={() => onActionClick?.(row)}
-            variant="success"
+            variant="primary"
             size="xs"
-            icon={CheckCircle2}
-            aria-label="Approve"
+            icon={Eye}
+            aria-label="Open approval"
             className={iconActionClassName}
           />
           <Button

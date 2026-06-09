@@ -1,31 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 "use server";
 
-import { assetMasterService } from "@/lib/api/asset/asset-master.service";
-import { apiClient } from "@/services/api.service";
+import { createEmptyMasterData } from "@/config/asset.config";
+import { getDocumentFileRaw, getDocumentsByAsset, uploadDocument } from "@/lib/api/asset/asset-document.server.service";
 import { assetFieldDefinitionService } from "@/lib/api/asset/asset-field-definition.service";
 import { assetFieldValueService } from "@/lib/api/asset/asset-field-value.service";
-import { getDocumentFileRaw, getDocumentsByAsset, uploadDocument } from "@/lib/api/asset/asset-document.server.service";
-import { AssetFormData, AssetMasterRequest, AssetFieldValueRequest } from "@/types/asset-types/basic-info/asset-wizard.types";
-import { revalidatePath } from "next/cache";
+import { assetMasterService } from "@/lib/api/asset/asset-master.service";
 
 import { categoryTypeService } from "@/lib/api/asset/category-type.service";
 import { departmentService } from "@/lib/api/asset/department.service";
+import { moujaService } from "@/lib/api/asset/mouja.service";
 import { wardService } from "@/lib/api/asset/ward.service";
 import { zoneService } from "@/lib/api/asset/zone.service";
-import { moujaService } from "@/lib/api/asset/mouja.service";
-import { createEmptyMasterData } from "@/config/asset.config";
+import { apiClient } from "@/services/api.service";
+import { AssetFieldValueRequest, AssetFormData, AssetMasterRequest } from "@/types/asset-types/basic-info/asset-wizard.types";
 import type {
   MasterDataConfig,
   MasterDataRecord,
 } from "@/types/asset.types";
 import type {
-  AssetDocumentListItem,
   AssetChildAssetItem,
+  AssetDocumentListItem,
   AssetFieldDefinitionItem,
   AssetFloorDetailItem,
   AssetFloorSummary,
 } from "@/types/municipal-asset/detail-tabs.types";
+import { revalidatePath } from "next/cache";
 
 /**
  * Fetch all active asset categories
@@ -473,6 +473,9 @@ export async function submitAssetForm(formData: AssetFormData) {
 
 
 
+
+
+
     const floors = formData.floors || [];
     const calculatedBuildingValue = floors.reduce((acc: number, f: any) => acc + (f.checked ? Number(f.baseValue || 0) : 0), 0);
 
@@ -559,14 +562,30 @@ export async function submitAssetForm(formData: AssetFormData) {
       return null;
     };
 
+
     const totalBuiltUpSqM = floors.reduce((acc: number, f: any) => acc + (f.checked ? Number(f.builtUpAreaSqM || 0) : 0), 0);
     const totalCarpetSqM = floors.reduce((acc: number, f: any) => acc + (f.checked ? Number(f.carpetAreaSqM || 0) : 0), 0);
+
+    const parsedId = Number(formData.id || (formData as any).assetId);
+    const isUpdate = !isNaN(parsedId) && parsedId > 0;
+
+    let assetNo = (formData.assetNo || formData.assetCode || "").trim();
+    if (!assetNo && isUpdate) {
+      try {
+        const existingAsset = await assetMasterService.getAssetById(parsedId);
+        if (existingAsset.success && existingAsset.data) {
+          assetNo = (existingAsset.data as any).assetNo || existingAsset.data.assetCode || "";
+        }
+      } catch (err) {
+        console.warn("Failed to fetch existing asset to preserve assetNo during update:", err);
+      }
+    }
 
     const apiRequest: AssetMasterRequest = {
       authorityId: 1,
       organizationId: 1,
       departmentId: getSafeForeignKeyId(parseNumericId(formData.departmentId || formData.department, departmentMapping), dbDeptIds, true),
-      assetNo: formData.assetCode || "",
+      assetNo: assetNo || null,
       assetName: formData.assetName || formData.assetType,
       assetCategoryId: categoryId,
       assetTypeId: typeId,
@@ -628,61 +647,58 @@ export async function submitAssetForm(formData: AssetFormData) {
         plotNumber: formData.plotNumber,
         surveyNumber: formData.surveyNumber,
       })
-      .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "")
-      .map(([key, value]) => {
-        const definition = fieldDefs.find(
-          (d: any) =>
-            d.fieldName?.toLowerCase() === key.toLowerCase() ||
-            d.fieldCode?.toLowerCase() === key.toLowerCase()
-        );
-        
-        if (!definition) return null;
+        .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "")
+        .map(([key, value]) => {
+          const definition = fieldDefs.find(
+            (d: any) =>
+              d.fieldName?.toLowerCase() === key.toLowerCase() ||
+              d.fieldCode?.toLowerCase() === key.toLowerCase()
+          );
 
-        const fieldDefinitionId = definition.id;
+          if (!definition) return null;
 
-        let textValue: string | null = null;
-        let numberValue: number | null = null;
-        let dateValue: string | null = null;
-        let booleanValue: boolean | null = null;
+          const fieldDefinitionId = definition.id;
 
-        const fieldType = definition?.fieldType?.toLowerCase() || definition?.type?.toLowerCase() || "";
+          let textValue: string | null = null;
+          let numberValue: number | null = null;
+          let dateValue: string | null = null;
+          let booleanValue: boolean | null = null;
 
-        if (fieldType === "boolean" || typeof value === "boolean") {
-          booleanValue = typeof value === "boolean" ? value : (value === "true" || value === "1" || value === 1 || String(value).toLowerCase() === "yes");
-        } else if (fieldType === "number" || fieldType === "currency" || typeof value === "number") {
-          numberValue = Number(value);
-          if (isNaN(numberValue)) numberValue = null;
-        } else if (fieldType === "date") {
-          if (value) {
-            try {
-              dateValue = new Date(String(value)).toISOString();
-            } catch {
-              dateValue = null;
+          const fieldType = definition?.fieldType?.toLowerCase() || definition?.type?.toLowerCase() || "";
+
+          if (fieldType === "boolean" || typeof value === "boolean") {
+            booleanValue = typeof value === "boolean" ? value : (value === "true" || value === "1" || value === 1 || String(value).toLowerCase() === "yes");
+          } else if (fieldType === "number" || fieldType === "currency" || typeof value === "number") {
+            numberValue = Number(value);
+            if (isNaN(numberValue)) numberValue = null;
+          } else if (fieldType === "date") {
+            if (value) {
+              try {
+                dateValue = new Date(String(value)).toISOString();
+              } catch {
+                dateValue = null;
+              }
             }
+          } else {
+            textValue = value !== null && value !== undefined ? String(value) : null;
           }
-        } else {
-          textValue = value !== null && value !== undefined ? String(value) : null;
-        }
 
-        return {
-          fieldDefinitionId,
-          fieldName: definition.fieldName || key,
-          textValue,
-          numberValue,
-          dateValue,
-          booleanValue
-        };
-      })
-      .filter((item) => item !== null) as AssetFieldValueRequest[]
+          return {
+            fieldDefinitionId,
+            fieldName: definition.fieldName || key,
+            textValue,
+            numberValue,
+            dateValue,
+            booleanValue
+          };
+        })
+        .filter((item) => item !== null) as AssetFieldValueRequest[]
     };
 
     console.log("SUBMITTING ASSET MASTER API REQUEST PAYLOAD:", JSON.stringify(apiRequest, null, 2));
 
     // 2. Execute POST or PUT request via Service Layer to save/update Asset Master
     // Check both formData.id and formData.assetId for update detection
-    const parsedId = Number(formData.id || (formData as any).assetId);
-    const isUpdate = !isNaN(parsedId) && parsedId > 0;
-
     const response = isUpdate
       ? await assetMasterService.updateAsset(parsedId, apiRequest)
       : await assetMasterService.createAsset(apiRequest);

@@ -1,9 +1,8 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
-import { History, Plus } from 'lucide-react';
+import { History, Plus, Pencil } from 'lucide-react';
 import { Button, MasterTable, type Column } from '@/components/common';
-import type { LeaseRentRecord } from './lease-rent.types';
+import type { LeaseRentRecord } from '../../../../types/asset/revenue.types';
 
 interface TableProps {
   records: LeaseRentRecord[];
@@ -34,9 +33,9 @@ const columns: Column<LeaseRentRecord>[] = [
     render: (_value, row) => (
       <div className="space-y-0.5 leading-tight">
         <span className="inline-flex rounded bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-blue-700">
-          Rent
+          {row.leaseType}
         </span>
-        <p className="text-[9px] font-medium text-slate-400">{row.leaseType}</p>
+        <p className="text-[9px] font-medium text-slate-400">{row.leaseRentType ?? '-'}</p>
       </div>
     ),
   },
@@ -52,15 +51,37 @@ const columns: Column<LeaseRentRecord>[] = [
     ),
   },
   {
+    key: 'workflowStatus',
+    label: 'Workflow Status',
+    align: 'center',
+    cellClassName: '!px-2 !py-2',
+    render: (value) => {
+      const displayVal = value ? String(value) : 'Draft';
+      const isApproved = displayVal.toLowerCase() === 'approved';
+      const isReverted = displayVal.toLowerCase() === 'reverted';
+      const isPending = displayVal.toLowerCase() === 'pending';
+      const isVerified = displayVal.toLowerCase() === 'verified';
+      
+      let badgeClass = 'border-slate-200 bg-slate-50 text-slate-700';
+      if (isApproved) badgeClass = 'border-emerald-200 bg-emerald-50 text-emerald-700';
+      if (isReverted) badgeClass = 'border-amber-200 bg-amber-50 text-amber-700';
+      if (isPending) badgeClass = 'border-blue-200 bg-blue-50 text-blue-700';
+      if (isVerified) badgeClass = 'border-teal-200 bg-teal-50 text-teal-700';
+      
+      return (
+        <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${badgeClass}`}>
+          {displayVal}
+        </span>
+      );
+    },
+  },
+  {
     key: 'rentAmount',
     label: 'Rent Amount',
     align: 'center',
     cellClassName: '!px-2 !py-2',
-    render: (value) => (
-      <span className="font-black text-slate-800">
-        Rs. {Number(value).toLocaleString('en-IN')}{' '}
-        <span className="text-[9px] font-medium text-slate-400">(Yearly)</span>
-      </span>
+    render: (_value, row) => (
+      <span className="font-black text-slate-800">{row.rentAmountDisplay ?? `Rs. ${Number(row.rentAmount).toLocaleString('en-IN')}`}</span>
     ),
   },
 ];
@@ -97,28 +118,31 @@ export function LeaseRentTable({
       onPageSizeChange={onPageSizeChange}
       pageSizeOptions={PAGE_SIZE_OPTIONS}
       paginationConfig={{ enabled: true, showPageSizeSelector: true }}
-      renderActions={(row) => (
-        <>
-          <Button
-            type="button"
-            onClick={() => onActionClick?.(row)}
-            variant="primary"
-            size="xs"
-            icon={Plus}
-            aria-label="Add registration"
-            className={iconActionClassName}
-          />
-          <Button
-            type="button"
-            onClick={() => onHistoryClick?.(row)}
-            variant="secondary"
-            size="xs"
-            icon={History}
-            aria-label="View history"
-            className={iconActionClassName}
-          />
-        </>
-      )}
+      renderActions={(row) => {
+        const isReverted = row.workflowStatus?.toLowerCase() === 'reverted';
+        return (
+          <>
+            <Button
+              type="button"
+              onClick={() => onActionClick?.(row)}
+              variant="primary"
+              size="xs"
+              icon={isReverted ? Pencil : Plus}
+              aria-label={isReverted ? "Edit registration" : "Add registration"}
+              className={iconActionClassName}
+            />
+            <Button
+              type="button"
+              onClick={() => onHistoryClick?.(row)}
+              variant="secondary"
+              size="xs"
+              icon={History}
+              aria-label="View history"
+              className={iconActionClassName}
+            />
+          </>
+        );
+      }}
     />
   );
 }

@@ -1,13 +1,13 @@
 "use client";
 
-import React from 'react';
+import { Badge, Table } from '@/components/common';
+import { useValuationTabContent } from '@/hooks/asset-hooks/asset-detail-view-hooks/useValuationTabContent';
+import type { AssetDetailController, FloorSourceRow, ValuationFloorRow } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
+import type { TableColumn } from '@/types/common.types';
 import { Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Badge, Table } from '@/components/common';
-import { useValuationTabContent } from '@/hooks/asset-hooks/asset-detail-view-hooks/useValuationTabContent';
-import type { AssetDetailController, ValuationFloorRow, FloorSourceRow } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
-import type { TableColumn } from '@/types/common.types';
+import React from 'react';
 
 export function ValuationTabContent({ controller }: { controller: AssetDetailController }): React.JSX.Element {
   const t = useTranslations('municipalAsset');

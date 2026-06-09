@@ -1,16 +1,16 @@
 "use client";
 
-import React from "react";
-import { ClipboardList } from "lucide-react";
 import {
   Card,
+  CardContent,
   CardHeader,
   CardTitle,
-  CardContent,
   Input,
   Select,
 } from "@/components/common";
 import type { BuildingPropertyDetailsSectionProps } from "@/types/asset-types/basic-info/buildBasicInfo.types";
+import { ClipboardList } from "lucide-react";
+import React from "react";
 
 /**
  * Section A — Property Number Details
@@ -174,6 +174,8 @@ export function BuildingPropertyDetailsSection({
           required
           error={showError("mouja" as any) ? (errors as any).mouja : undefined}
         />
+
+
 
         <Input
           label={isLand ? "CSN No. / Survey Number" : "CSN No."}

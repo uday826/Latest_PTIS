@@ -2,11 +2,11 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { AlertCircle, BadgeIndianRupee, Layers } from 'lucide-react';
 import { MasterTable } from '@/components/common';
 import type { AssetDetailRecord, AssetFloorDetailItem } from '@/types/municipal-asset/detail-tabs.types';
-import { getFloorDetailsColumns, blank, formatCurrency } from './detailcolumn';
+import { AlertCircle, BadgeIndianRupee, Layers } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { blank, formatCurrency, getFloorDetailsColumns } from './detailcolumn';
 
 type FloorTableRow = AssetFloorDetailItem & Record<string, unknown>;
 

@@ -1,17 +1,17 @@
 "use client";
 
 // Asset Detail View Component - Municipal Estate Management System
-import React from 'react';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { Button, Card } from '@/components/common';
+import { useAssetDetailController } from '@/hooks/asset-hooks/asset-detail-view-hooks/useAssetDetailController';
+import type { AssetDetailViewContentProps, AssetDetailViewProps } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
+import React from 'react';
 import { MunicipalAsset, municipalAssets } from '../data/municipalAssets';
 import { AssetDetailSummaryBar } from './AssetDetailSummaryBar';
 import { AssetDetailTabsLayout } from './AssetDetailTabsLayout';
-import type { AssetDetailViewContentProps, AssetDetailViewProps } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
-import { useAssetDetailController } from '@/hooks/asset-hooks/asset-detail-view-hooks/useAssetDetailController';
 import { ImageLightboxModal } from './ImageLightboxModal';
-import { Card, Button } from '@/components/common';
 
 export function AssetDetailView({ asset: propAsset, assetId, onBack }: AssetDetailViewProps): React.JSX.Element {
   const t = useTranslations('municipalAsset');

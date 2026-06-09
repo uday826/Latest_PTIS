@@ -1,16 +1,16 @@
 "use client";
 
-import React from "react";
-import { UserCheck, Map as MapIcon } from "lucide-react";
 import {
   Card,
+  CardContent,
   CardHeader,
   CardTitle,
-  CardContent,
   Input,
   Select,
 } from "@/components/common";
 import type { BuildingOwnershipDetailsSectionProps } from "@/types/asset-types/basic-info/buildBasicInfo.types";
+import { Map as MapIcon, UserCheck } from "lucide-react";
+import React from "react";
 import { MapPicker } from "./MapPicker";
 
 /**

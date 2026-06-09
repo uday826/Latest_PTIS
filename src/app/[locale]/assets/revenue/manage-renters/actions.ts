@@ -1,27 +1,40 @@
 'use server';
 
-import {
-  getLeaseRentRegistrationList,
-  getLeaseRentRegistrationStats,
-  getLeaseRentRegistrationById,
-  createLeaseRentRegistration,
-  verifyLeaseRentRegistration,
-  approveLeaseRentRegistration,
-  rejectLeaseRentRegistration,
-  revertToRegistration,
-  revertToVerification,
-  type CreateLeaseRentRegistrationPayload,
-  type CreateLeaseRentRegistrationResponse,
-  type LeaseRentRegistrationListItem,
-  type LeaseRentRegistrationListParams,
-  type ActionResponse,
-} from '@/lib/api/asset/leaseRentRegistration.service';
+import { revalidatePath } from 'next/cache';
+import { apiClient } from '@/services/api.service';
 import { assetMasterService } from '@/lib/api/asset/asset-master.service';
 import { getAssetCategories, getAssetMasters, getWards, getZones } from '@/lib/api/asset/revenue-masters.service';
-import type { LeaseRentRecord } from '@/components/modules/assets/revenue/lease-rent.types';
-import type { FilterOption } from '@/components/modules/assets/revenue/LeaseRentFilters';
-import type { ApprovalRecord } from '@/components/modules/assets/revenue/LeaseRentApprovalTable';
-import type { VerificationRecord } from '@/components/modules/assets/revenue/LeaseRentVerificationTable';
+import {
+  createLeaseRentRegistration,
+  type CreateLeaseRentRegistrationPayload,
+  type CreateLeaseRentRegistrationResponse,
+} from '@/lib/api/asset/leaseRentRegistration.service';
+import {
+  getAssetLeaseRentDetailsList,
+  getAssetLeaseRentDetailsById,
+  updateAssetLeaseRentDetails,
+  sendToVerification,
+  verifyLeaseRent,
+  approveLeaseRent,
+  rejectLeaseRent,
+  revertToRegistration,
+  revertToVerification,
+  getPreviousTenantHistory,
+  type AssetLeaseRentDetailsListItem,
+  type AssetLeaseRentDetailsListParams,
+  type AssetLeaseRentDetailsUpdatePayload,
+} from '@/lib/api/asset/asset-lease-rent-details.service';
+import type {
+  ApprovalRecord,
+  ApplicationTypeItem,
+  LeaseRentFormSubmitData,
+  LeaseRentRecord,
+  ManageRentersApprovalPageData,
+  ManageRentersPageData,
+  ManageRentersTabCounts,
+  ManageRentersVerificationPageData,
+  VerificationRecord,
+} from '@/types/asset/revenue.types';
 
 function firstQueryValue(value: string | string[] | undefined): string {
   if (Array.isArray(value)) return value[0] ?? '';
@@ -44,144 +57,111 @@ function normalizeText(value?: string | null): string {
   return value?.trim() || '-';
 }
 
-function toLeaseRentRecord(item: LeaseRentRegistrationListItem): LeaseRentRecord {
+function pickAssetCategory(item: AssetLeaseRentDetailsListItem): string | undefined {
+  const value = item.category ?? (item as { assetCategory?: string | null }).assetCategory ?? (item as { assetCategoryName?: string | null }).assetCategoryName;
+  return value?.trim() || undefined;
+}
+
+function normalizeRentStatus(value?: string | null): LeaseRentRecord['rentStatus'] {
+  const raw = (value ?? '').trim().toLowerCase();
+  if (raw === 'inuse' || raw === 'in use' || raw === 'approved') return 'In use';
+  if (raw === 'vacant') return 'Vacant';
+  return 'Pending';
+}
+
+function toLeaseRentRecord(item: AssetLeaseRentDetailsListItem): LeaseRentRecord {
   return {
     id: String(item.id),
     assetId: item.assetNo?.trim() || String(item.assetId),
     assetMasterId: item.assetId,
     assetName: item.assetName ?? undefined,
     assetNo: item.assetNo ?? undefined,
-    shopNo: item.shopNo?.trim() || '',
-    floor: item.floor?.trim() || '-',
-    shopName: item.shopName?.trim() || item.assetName?.trim() || '-',
+    totalAreaSqFt: item.totalAreaSqFt ?? null,
+    assetCategory: pickAssetCategory(item),
+    shopNo: item.shopNo?.trim() || item.assetNo?.trim() || '',
+    floor: item.floorDescription?.trim() || item.floorId?.toString() || '-',
+    floorDescription: item.floorDescription?.trim() || undefined,
+    shopName: item.shopName?.trim() || item.assetName?.trim() || item.assetNo?.trim() || '-',
     tenantName: normalizeText(item.tenantName),
     leaseType: item.leaseType?.trim() || '-',
-    rentStatus:
-      item.rentStatus === 'InUse'
-        ? 'In use'
-        : item.rentStatus === 'Vacant'
-          ? 'Vacant'
-          : 'Pending',
-    rentAmount: item.yearlyRent ?? item.monthlyRent ?? 0,
-    category: item.category ?? undefined,
+    leaseRentType: item.leaseRentType?.trim() || undefined,
+    rentStatus: normalizeRentStatus(item.rentStatus ?? item.workflowStatus),
+    rentAmount: item.rentAmount ?? item.rentMonthly ?? item.monthlyRent ?? 0,
+    rentAmountDisplay: item.rentAmountDisplay?.trim() || undefined,
+    leaseDurationDisplay: item.leaseDurationDisplay?.trim() || undefined,
+    workflowStatus: item.workflowStatus?.trim() || undefined,
+    category: pickAssetCategory(item),
     zone: item.zone ?? undefined,
     ward: item.wardNo ?? undefined,
     submittedDate: item.createdDate ?? undefined,
   };
 }
 
-function toVerificationRecord(item: LeaseRentRegistrationListItem): VerificationRecord {
-  // Capitalize the workflowStatus for display (e.g., 'pending' -> 'Pending')
-  const rawStatus = item.workflowStatus?.trim() ?? 'pending';
+function toVerificationRecord(item: AssetLeaseRentDetailsListItem): VerificationRecord {
+  const rawStatus = item.workflowStatus?.trim() ?? item.rentStatus?.trim() ?? 'pending';
   const displayStatus = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase();
 
   return {
     id: String(item.id),
     assetId: item.assetNo?.trim() || String(item.assetId),
-    assetCategory: item.category?.trim() || '-',
-    assetSubCategory: [item.shopName, item.floor]
+    assetCategory: pickAssetCategory(item) || '-',
+    assetSubCategory: [item.shopName, item.floorDescription]
       .filter(Boolean)
       .map((value) => String(value).trim())
       .join(' | '),
     tenantName: normalizeText(item.tenantName),
-    applicationType: normalizeText(item.applicationType),
+    applicationType: normalizeText(item.leaseRentType ?? item.leaseType),
     submittedDate: item.createdDate ? item.createdDate.slice(0, 10) : '-',
     status: displayStatus,
   };
 }
 
-function toApprovalRecord(item: LeaseRentRegistrationListItem): ApprovalRecord {
+function toApprovalRecord(item: AssetLeaseRentDetailsListItem): ApprovalRecord {
+  const rawStatus = item.workflowStatus?.trim() ?? item.rentStatus?.trim() ?? 'pending';
+  const displayStatus = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase();
+
   return {
     id: String(item.id),
     grievanceNo: item.assetNo?.trim() || String(item.id),
     assetId: item.assetNo?.trim() || String(item.assetId),
-    assetCategory: item.category?.trim() || '-',
+    assetCategory: pickAssetCategory(item) || '-',
     tenantName: normalizeText(item.tenantName),
     leaseType: item.leaseType?.trim() || '-',
-    rentAmount: item.yearlyRent ?? item.monthlyRent ?? 0,
+    rentAmount: item.rentAmount ?? item.rentMonthly ?? item.monthlyRent ?? 0,
     submittedDate: item.createdDate ? item.createdDate.slice(0, 10) : '-',
-    status: 'Pending',
+    status: displayStatus,
   };
 }
 
-function baseLeaseRentQuery(query: Record<string, string | string[] | undefined>, workflowStatus?: string) {
-  const params: LeaseRentRegistrationListParams = {
+function baseLeaseRentQuery(
+  query: Record<string, string | string[] | undefined>,
+  workflowStatus?: string
+): AssetLeaseRentDetailsListParams {
+  return {
     pageNumber: parsePositiveNumber(query.pageNumber, 1),
     pageSize: parsePositiveNumber(query.pageSize, 10),
     searchTerm: firstQueryValue(query.searchTerm).trim() || undefined,
+    workflowStatus,
     assetCategoryId: parseOptionalNumber(query.assetCategoryId) ?? undefined,
     zoneId: parseOptionalNumber(query.zoneId) ?? undefined,
     wardId: parseOptionalNumber(query.wardId) ?? undefined,
     assetId: parseOptionalNumber(query.assetId) ?? undefined,
-    workflowStatus,
   };
-
-  return params;
-}
-
-export interface ManageRentersPageData {
-  records: LeaseRentRecord[];
-  stats: Awaited<ReturnType<typeof getLeaseRentRegistrationStats>>;
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
-  searchTerm: string;
-  assetCategoryId: number | null;
-  zoneId: number | null;
-  wardId: number | null;
-  assetId: number | null;
-  categoryOptions: FilterOption[];
-  zoneOptions: FilterOption[];
-  wardOptions: FilterOption[];
-  assetOptions: FilterOption[];
-}
-
-interface ManageRentersWorkflowBaseData {
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
-  searchTerm: string;
-  assetCategoryId: number | null;
-  categoryOptions: FilterOption[];
-}
-
-export interface ManageRentersVerificationPageData extends ManageRentersWorkflowBaseData {
-  records: VerificationRecord[];
-}
-
-export interface ManageRentersApprovalPageData extends ManageRentersWorkflowBaseData {
-  records: ApprovalRecord[];
-}
-
-export interface ManageRentersTabCounts {
-  registrationCount: number;
-  verificationCount: number;
-  approvalCount: number;
-}
-
-async function getWorkflowRecordCount(workflowStatus?: string): Promise<number> {
-  const result = await getLeaseRentRegistrationList({
-    pageNumber: 1,
-    pageSize: 1,
-    workflowStatus,
-  });
-
-  return result.totalCount;
 }
 
 export async function getManageRentersTabCountsAction(): Promise<ManageRentersTabCounts> {
-  const [registrationCount, verificationCount, approvalCount] = await Promise.all([
-    getWorkflowRecordCount(),
-    getWorkflowRecordCount('pending'),
-    getWorkflowRecordCount('verified'),
+  const [list, revertedList] = await Promise.all([
+    getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1 }),
+    getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1, workflowStatus: 'reverted' }),
   ]);
 
+  const stats = (list as unknown as { stats?: any }).stats;
+
   return {
-    registrationCount,
-    verificationCount,
-    approvalCount,
+    registrationCount: list.totalCount,
+    verificationCount: stats?.verificationPending ?? 0,
+    approvalCount: stats?.approvalPending ?? 0,
+    revertedCount: revertedList.totalCount,
   };
 }
 
@@ -190,14 +170,21 @@ export async function getManageRentersPageDataAction(
 ): Promise<ManageRentersPageData> {
   const params = baseLeaseRentQuery(query);
   const selectedZoneId = parseOptionalNumber(query.zoneId);
-  const [list, stats, categories, zones, wards, assets] = await Promise.all([
-    getLeaseRentRegistrationList(params),
-    getLeaseRentRegistrationStats(),
+  const [list, categories, zones, wards, assets] = await Promise.all([
+    getAssetLeaseRentDetailsList(params),
     getAssetCategories(),
     getZones(),
     getWards(selectedZoneId),
     getAssetMasters(),
   ]);
+
+  const stats = (list as unknown as { stats?: any }).stats || {
+    totalApproved: 0,
+    totalVerified: 0,
+    verificationPending: 0,
+    approvalPending: 0,
+    totalRejected: 0,
+  };
 
   return {
     records: list.items.map(toLeaseRentRecord),
@@ -235,7 +222,7 @@ export async function getManageRentersVerificationPageDataAction(
 ): Promise<ManageRentersVerificationPageData> {
   const params = baseLeaseRentQuery(query, 'pending');
   const [list, categories] = await Promise.all([
-    getLeaseRentRegistrationList(params),
+    getAssetLeaseRentDetailsList(params),
     getAssetCategories(),
   ]);
 
@@ -259,7 +246,7 @@ export async function getManageRentersApprovalPageDataAction(
 ): Promise<ManageRentersApprovalPageData> {
   const params = baseLeaseRentQuery(query, 'verified');
   const [list, categories] = await Promise.all([
-    getLeaseRentRegistrationList(params),
+    getAssetLeaseRentDetailsList(params),
     getAssetCategories(),
   ]);
 
@@ -278,6 +265,58 @@ export async function getManageRentersApprovalPageDataAction(
   };
 }
 
+export async function getManageRentersRevertedPageDataAction(
+  query: Record<string, string | string[] | undefined>
+): Promise<ManageRentersPageData> {
+  const params = baseLeaseRentQuery(query, 'reverted');
+  const selectedZoneId = parseOptionalNumber(query.zoneId);
+  const [list, categories, zones, wards, assets] = await Promise.all([
+    getAssetLeaseRentDetailsList(params),
+    getAssetCategories(),
+    getZones(),
+    getWards(selectedZoneId),
+    getAssetMasters(),
+  ]);
+
+  const stats = (list as unknown as { stats?: any }).stats || {
+    totalApproved: 0,
+    totalVerified: 0,
+    verificationPending: 0,
+    approvalPending: 0,
+    totalRejected: 0,
+  };
+
+  return {
+    records: list.items.map(toLeaseRentRecord),
+    stats,
+    pageNumber: list.pageNumber,
+    pageSize: list.pageSize,
+    totalCount: list.totalCount,
+    totalPages: list.totalPages,
+    searchTerm: firstQueryValue(query.searchTerm).trim(),
+    assetCategoryId: parseOptionalNumber(query.assetCategoryId),
+    zoneId: selectedZoneId,
+    wardId: parseOptionalNumber(query.wardId),
+    assetId: parseOptionalNumber(query.assetId),
+    categoryOptions: categories.map((category) => ({
+      label: category.categoryName,
+      value: String(category.id),
+    })),
+    zoneOptions: zones.map((zone) => ({
+      label: zone.zoneNo,
+      value: String(zone.id),
+    })),
+    wardOptions: wards.map((ward) => ({
+      label: ward.wardNo,
+      value: String(ward.id),
+    })),
+    assetOptions: assets.map((asset) => ({
+      label: asset.assetName?.trim() || asset.assetNo?.trim() || String(asset.id),
+      value: String(asset.id),
+    })),
+  };
+}
+
 export async function getManageRentersAssetDetailsAction(assetId: number | string) {
   const parsedId = Number(assetId);
   if (!Number.isFinite(parsedId) || parsedId <= 0) return null;
@@ -286,26 +325,11 @@ export async function getManageRentersAssetDetailsAction(assetId: number | strin
   return response.success ? response.data ?? null : null;
 }
 
-import { apiClient } from '@/services/api.service';
-
-export interface ApplicationTypeItem {
-  id: number;
-  applicationTypeCode: string;
-  applicationTypeName: string;
-  description: string;
-  displayOrder: number;
-  isActive: boolean;
-  createdBy: number;
-  createdDate: string;
-  updatedBy: number | null;
-  updatedDate: string | null;
-}
-
 export async function getManageRentersVerificationDetailsAction(id: number | string) {
   const parsedId = Number(id);
   if (!Number.isFinite(parsedId) || parsedId <= 0) return null;
 
-  return await getLeaseRentRegistrationById(parsedId);
+  return await getAssetLeaseRentDetailsById(parsedId);
 }
 
 export async function getApplicationTypesAction(): Promise<ApplicationTypeItem[]> {
@@ -314,34 +338,6 @@ export async function getApplicationTypesAction(): Promise<ApplicationTypeItem[]
     return [];
   }
   return response.data.items;
-}
-
-export interface LeaseRentFormSubmitData {
-  assetId: number;
-  applicationTypeId: number;
-  shopNo?: string;
-  floorId?: number;
-  shopName?: string;
-  tenantName: string;
-  tenantMobile?: string;
-  tenantEmail?: string;
-  tenantType?: string;
-  tenantAadhaarNo?: string;
-  tenantPanCardNo?: string;
-  tenantAddress?: string;
-  previousTenantName?: string;
-  previousTenantMobile?: string;
-  leaseType?: string;
-  oldLeaseStartDate?: string;
-  oldLeaseEndDate?: string;
-  leaseStartDate?: string;
-  leaseEndDate?: string;
-  terminationDate?: string;
-  previousMonthlyRent?: number;
-  monthlyRent?: number;
-  securityDeposit?: number;
-  paymentFrequency?: string;
-  reason?: string;
 }
 
 export async function createLeaseRentRegistrationAction(
@@ -355,14 +351,11 @@ export async function createLeaseRentRegistrationAction(
   function toDateStr(val: string | undefined | null): string | null {
     if (!val?.trim()) return null;
     const trimmed = val.trim();
-    // HTML date inputs produce "YYYY-MM-DD" — append time directly without timezone
     if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
       return `${trimmed}T00:00:00`;
     }
     const d = new Date(trimmed);
     if (Number.isNaN(d.getTime())) return null;
-    // Strip the milliseconds and Z suffix — .NET System.DateTime rejects UTC 'Z' format
-    // Convert: "2026-06-15T00:00:00.000Z" → "2026-06-15T00:00:00"
     return d.toISOString().replace(/\.\d{3}Z$/, '');
   }
 
@@ -396,37 +389,64 @@ export async function createLeaseRentRegistrationAction(
     reason: data.reason?.trim() || null,
   };
 
-  return createLeaseRentRegistration(payload);
+  const res = await createLeaseRentRegistration(payload);
+  revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
+  revalidatePath('/assets/revenue/manage-renters');
+  return res;
 }
 
-import { revalidatePath } from 'next/cache';
-
-export async function verifyLeaseRentRegistrationAction(id: number): Promise<ActionResponse> {
-  const result = await verifyLeaseRentRegistration(id);
+export async function updateAssetLeaseRentDetailsAction(
+  id: number,
+  payload: AssetLeaseRentDetailsUpdatePayload
+) {
+  const res = await updateAssetLeaseRentDetails(id, payload);
   revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
-  return result;
+  revalidatePath('/assets/revenue/manage-renters');
+  return res;
 }
 
-export async function approveLeaseRentRegistrationAction(id: number): Promise<ActionResponse> {
-  const result = await approveLeaseRentRegistration(id);
+export async function sendToVerificationAction(id: number, remarks?: string) {
+  const res = await sendToVerification(id, remarks);
   revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
-  return result;
+  revalidatePath('/assets/revenue/manage-renters');
+  return res;
 }
 
-export async function rejectLeaseRentRegistrationAction(id: number, rejectionReason?: string): Promise<ActionResponse> {
-  const result = await rejectLeaseRentRegistration(id, rejectionReason);
+export async function verifyAction(id: number, remarks?: string) {
+  const res = await verifyLeaseRent(id, remarks);
   revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
-  return result;
+  revalidatePath('/assets/revenue/manage-renters');
+  return res;
 }
 
-export async function revertToRegistrationAction(id: number): Promise<ActionResponse> {
-  const result = await revertToRegistration(id);
+export async function approveAction(id: number, remarks?: string) {
+  const res = await approveLeaseRent(id, remarks);
   revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
-  return result;
+  revalidatePath('/assets/revenue/manage-renters');
+  return res;
 }
 
-export async function revertToVerificationAction(id: number): Promise<ActionResponse> {
-  const result = await revertToVerification(id);
+export async function rejectAction(id: number, reason: string) {
+  const res = await rejectLeaseRent(id, reason);
   revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
-  return result;
+  revalidatePath('/assets/revenue/manage-renters');
+  return res;
+}
+
+export async function revertToRegistrationAction(id: number, remarks?: string) {
+  const res = await revertToRegistration(id, remarks);
+  revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
+  revalidatePath('/assets/revenue/manage-renters');
+  return res;
+}
+
+export async function revertToVerificationAction(id: number, remarks?: string) {
+  const res = await revertToVerification(id, remarks);
+  revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
+  revalidatePath('/assets/revenue/manage-renters');
+  return res;
+}
+
+export async function getPreviousTenantHistoryAction(id: number) {
+  return getPreviousTenantHistory(id);
 }

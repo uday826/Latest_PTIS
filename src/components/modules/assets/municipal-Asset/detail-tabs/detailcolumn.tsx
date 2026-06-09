@@ -1,14 +1,14 @@
 'use client';
 
-import React from 'react';
+
 import { Badge, type Column } from '@/components/common';
-import type { 
-  AssetFloorDetailItem, 
-  AssetChildAssetItem 
+import type {
+  AssetChildAssetItem,
+  AssetFloorDetailItem
 } from '@/types/municipal-asset/detail-tabs.types';
-import type { 
-  InventoryBatchDetail, 
-  InventoryUnitResponse 
+import type {
+  InventoryBatchDetail,
+  InventoryUnitResponse
 } from '@/types/municipal-asset/furniture-fixtures.types';
 
 // Helpers

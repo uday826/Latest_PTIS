@@ -66,6 +66,7 @@ export default getRequestConfig(async ({ locale }) => {
     assetMasterDashboardMessages,
     assetPaymentMessages,
     screenFieldMasterMessages,
+    assetRegisterMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -153,6 +154,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/assetmasterdashboard.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/AssetPayment.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/screenFieldMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/assetRegister.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
 
@@ -209,6 +211,7 @@ export default getRequestConfig(async ({ locale }) => {
       mouja: moujaMessages,
       AssetPayment: assetPaymentMessages,
       screenFieldMaster: screenFieldMasterMessages,
+      assetRegister: assetRegisterMessages,
       policyConfiguration:
         policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
     },

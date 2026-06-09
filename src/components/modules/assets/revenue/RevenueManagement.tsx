@@ -4,26 +4,32 @@
 import { useState } from 'react';
 import { LayoutDashboard, Users, CreditCard, PlusCircle, IndianRupee, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/common';
-import { RevenueDashboardCards } from './RevenueDashboardCards';
+import {
+  RevenueDashboardCards,
+} from './RevenueDashboardCards';
 import { RenterList } from './RenterList';
 import { RenterDetailsForm } from './RenterDetailsForm';
 import { PaymentSection } from './payment/PaymentSection';
+import type { ActiveTab, RevenueManagementProps } from '../../../../types/asset/revenue.types';
 
-type ActiveTab = 'dashboard' | 'renters' | 'payment';
-
-export function RevenueManagement() {
+export function RevenueManagement({
+  dashboardCards = [],
+  trendPoints = [],
+  breakdownItems = [],
+  renterRecords = [],
+  paymentPageData,
+}: RevenueManagementProps) {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [showRegisterForm, setShowRegisterForm] = useState(false);
 
   const tabs = [
-    { id: 'dashboard' as const, label: 'Analytics Dashboard', icon: LayoutDashboard, color: 'text-violet-500 bg-violet-50 border-violet-200' },
-    { id: 'renters' as const, label: 'Active Renter Directory', icon: Users, color: 'text-emerald-500 bg-emerald-50 border-emerald-200' },
-    { id: 'payment' as const, label: 'Municipal Payment Desk', icon: CreditCard, color: 'text-pink-500 bg-pink-50 border-pink-200' },
+    { id: 'dashboard' as const, label: 'Analytics Dashboard', icon: LayoutDashboard },
+    { id: 'renters' as const, label: 'Active Renter Directory', icon: Users },
+    { id: 'payment' as const, label: 'Municipal Payment Desk', icon: CreditCard },
   ];
 
   return (
     <div className="space-y-4">
-      {/* ── HEADER NAVIGATION ── */}
       <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="relative flex-shrink-0">
@@ -35,17 +41,18 @@ export function RevenueManagement() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-black text-slate-800 leading-tight tracking-tight">Revenue Management</h1>
-              <span className="px-1.5 py-0.5 rounded-full bg-violet-100 border border-violet-300 text-[8px] font-bold text-violet-700 tracking-wide uppercase">MC-REVENUE</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-violet-100 border border-violet-300 text-[8px] font-bold text-violet-700 tracking-wide uppercase">
+                MC-REVENUE
+              </span>
             </div>
             <p className="text-[10px] mt-0.5 flex items-center gap-1 font-medium text-slate-400">
               <span className="text-violet-600 font-bold">महसूल व्यवस्थापन</span>
               <span className="w-0.5 h-0.5 rounded-full bg-slate-300 inline-block" />
-              <span>Real-time Dues Monitoring, Payments Clearing, & Lease Persistence</span>
+              <span>Live API-backed revenue views only</span>
             </p>
           </div>
         </div>
 
-        {/* Action Button */}
         {activeTab === 'renters' && (
           <Button
             onClick={() => setShowRegisterForm(!showRegisterForm)}
@@ -66,7 +73,6 @@ export function RevenueManagement() {
         )}
       </div>
 
-      {/* ── TABS BAR ── */}
       <div className="bg-slate-100/60 border border-slate-200/60 rounded-xl p-1 flex items-center gap-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -93,22 +99,33 @@ export function RevenueManagement() {
         })}
       </div>
 
-      {/* ── TAB CONTENT RESOLUTION ── */}
       <div className="transition-all duration-300">
-        {activeTab === 'dashboard' && <RevenueDashboardCards />}
-        
-        {activeTab === 'renters' && (
-          showRegisterForm ? (
+        {activeTab === 'dashboard' && (
+          <RevenueDashboardCards
+            cards={dashboardCards}
+            trendPoints={trendPoints}
+            breakdownItems={breakdownItems}
+          />
+        )}
+
+        {activeTab === 'renters' &&
+          (showRegisterForm ? (
             <RenterDetailsForm
               onSuccess={() => setShowRegisterForm(false)}
               onCancel={() => setShowRegisterForm(false)}
             />
           ) : (
-            <RenterList />
-          )
-        )}
-        
-        {activeTab === 'payment' && <PaymentSection />}
+            <RenterList records={renterRecords} />
+          ))}
+
+        {activeTab === 'payment' &&
+          (paymentPageData ? (
+            <PaymentSection pageData={paymentPageData} />
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
+              No payment records supplied from the API.
+            </div>
+          ))}
       </div>
     </div>
   );

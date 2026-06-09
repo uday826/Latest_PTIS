@@ -49,6 +49,8 @@ export interface BuildingOwnershipDetailsFormData {
 export interface BuildingBasicInfoFormData
   extends BuildingPropertyDetailsFormData,
     BuildingOwnershipDetailsFormData {
+  id?: number;
+  assetId?: number;
   /**
    * EAV dynamic attributes fetched from /AssetFieldDefinition.
    * Keys are fieldNames returned by the API; values are user input.
@@ -119,6 +121,8 @@ export interface BuildingBasicInfoStepProps {
 // ─── Initial form state constant ──────────────────────────────────────────────
 
 export const INITIAL_BUILDING_BASIC_INFO: BuildingBasicInfoFormData = {
+  id: 0,
+  assetId: 0,
   // Section A
   category: "Building Assets",
   assetType: "",

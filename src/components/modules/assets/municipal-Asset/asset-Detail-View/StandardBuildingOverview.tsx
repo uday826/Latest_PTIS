@@ -1,10 +1,10 @@
 "use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Building2, Ruler, Layers, Bookmark, FileCheck } from 'lucide-react';
 import { Card } from '@/components/common';
+import { motion } from 'framer-motion';
+import { Bookmark, Building2, FileCheck, Layers, Ruler } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import React from 'react';
 
 import type { MunicipalAsset } from '@/components/modules/assets/municipal-Asset/data/municipalAssets';
 import type { BuildingDataFields } from '@/types/asset-types/asset-detail-view-types/asset-detail-view-types';
