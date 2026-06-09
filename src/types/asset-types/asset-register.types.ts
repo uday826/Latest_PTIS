@@ -86,8 +86,6 @@ export interface AssetRegisterTableProps {
 }
 
 export interface AssetRegisterFiltersProps {
-  categoryId: number;
-  initialCategoryName: string;
   search: string;
   assetTypeId: string;
   zoneId: string;
@@ -95,7 +93,43 @@ export interface AssetRegisterFiltersProps {
   assetTypeOptions: { label: string; value: string }[];
   zoneOptions: { label: string; value: string }[];
   wardOptions: { label: string; value: string }[];
+}
+
+export interface AssetRegisterExportButtonProps {
+  categoryId: number;
+  categoryName: string;
+  search: string;
+  assetTypeId: string;
+  zoneId: string;
+  wardId: string;
   totalCount: number;
   pageSize: number;
   assets: AssetRegisterApiRecord[];
+}
+
+export interface AssetRegisterHeaderSummaryProps {
+  registerSubtitle: string;
+  updatedDate: string;
+  totalCount: number;
+  totalPurchaseValue: number;
+  totalMarketValue: number;
+  totalDepreciation: number;
+  netBookValue: number;
+  activeAssetsCount: number;
+  translate: (key: string) => string;
+}
+
+export interface AssetRegisterControlsProps {
+  categoryId: number;
+  categoryName: string;
+  search: string;
+  assetTypeId: string;
+  zoneId: string;
+  wardId: string;
+  totalCount: number;
+  pageSize: number;
+  assets: AssetRegisterApiRecord[];
+  assetTypeOptions: { label: string; value: string }[];
+  zoneOptions: { label: string; value: string }[];
+  wardOptions: { label: string; value: string }[];
 }

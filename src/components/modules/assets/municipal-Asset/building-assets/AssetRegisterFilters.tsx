@@ -1,25 +1,17 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 import { useTranslations } from 'next-intl';
 import {
   SearchInput,
   SearchSelect,
-  ExportButton,
-  useToast,
 } from '@/components/common';
 import { useDebounce } from '@/hooks/useDebounce';
-import { fetchAssetRegisterPage } from '@/app/[locale]/assets/municipal-Asset/asset-register/[categoryId]/actions';
-import { exportToExcel } from './registerExport';
 import { useQueryTransition } from '@/hooks/useQueryTransition';
 import type { AssetRegisterFiltersProps } from '@/types/asset-types/asset-register.types';
 
-const EXPORT_BATCH_SIZE = 200;
-
 export function AssetRegisterFilters({
-  categoryId,
-  initialCategoryName,
   search,
   assetTypeId,
   zoneId,
@@ -27,12 +19,8 @@ export function AssetRegisterFilters({
   assetTypeOptions,
   zoneOptions,
   wardOptions,
-  totalCount,
-  pageSize,
-  assets,
 }: AssetRegisterFiltersProps) {
   const t = useTranslations('assetRegister');
-  const toast = useToast();
   const { updateQueries } = useQueryTransition();
 
   const [searchValue, setSearchValue] = useState(search);
@@ -65,61 +53,6 @@ export function AssetRegisterFilters({
 
   const handleWardChange = (newWard: string) => {
     updateQueries({ wardId: newWard === 'all' ? null : newWard, page: '1' });
-  };
-
-  const requestParams = useMemo(
-    () => ({
-      assetTypeId: assetTypeId === 'all' ? null : Number(assetTypeId),
-      zoneId: zoneId === 'all' ? null : Number(zoneId),
-      wardId: wardId === 'all' ? null : Number(wardId),
-    }),
-    [assetTypeId, zoneId, wardId]
-  );
-
-  const handleExportExcel = async () => {
-    try {
-      const totalToExport = totalCount || assets.length;
-      const firstPageSize = Math.min(EXPORT_BATCH_SIZE, Math.max(totalToExport, pageSize));
-      const exportResponse = await fetchAssetRegisterPage(
-        categoryId,
-        1,
-        firstPageSize,
-        searchValue.trim(),
-        requestParams.assetTypeId,
-        requestParams.zoneId,
-        requestParams.wardId
-      );
-
-      const firstItems = exportResponse.items || [];
-      const allItems = [...firstItems];
-      const exportTotal = exportResponse.totalCount || totalToExport || allItems.length;
-      let currentPage = 2;
-
-      while (allItems.length < exportTotal) {
-        const nextResponse = await fetchAssetRegisterPage(
-          categoryId,
-          currentPage,
-          EXPORT_BATCH_SIZE,
-          searchValue.trim(),
-          requestParams.assetTypeId,
-          requestParams.zoneId,
-          requestParams.wardId
-        );
-
-        const nextItems = nextResponse.items || [];
-        if (!nextItems.length) {
-          break;
-        }
-
-        allItems.push(...nextItems);
-        currentPage += 1;
-      }
-
-      await exportToExcel(allItems, categoryId, initialCategoryName);
-    } catch (error) {
-      console.error('Failed to export asset register Excel:', error);
-      toast.error('Failed to export asset register. Please try again.');
-    }
   };
 
   return (
@@ -171,15 +104,6 @@ export function AssetRegisterFilters({
           />
         </div>
 
-        <div className="w-full sm:w-auto">
-          <ExportButton
-            size="sm"
-            onClick={() => void handleExportExcel()}
-            className="h-9 w-full rounded-md border-slate-200 bg-white px-4 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 sm:w-auto"
-          >
-            {t('Export')}
-          </ExportButton>
-        </div>
       </div>
     </div>
   );

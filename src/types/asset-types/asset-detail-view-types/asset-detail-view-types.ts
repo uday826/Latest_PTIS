@@ -1,6 +1,6 @@
 import type React from 'react';
 import type { LucideIcon } from 'lucide-react';
-import type { MunicipalAsset } from '@/components/modules/assets/municipal-Asset/data/municipalAssets';
+import type { AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
 
 export type AssetDetailTab = 'overview' | 'legal' | 'financial' | 'documents' | 'assets';
 export type OverviewSubTab = 'summary' | 'shopDetails';
@@ -49,14 +49,14 @@ export interface ValuationTabsState {
 }
 
 export interface AssetDetailViewProps {
-  asset?: MunicipalAsset;
+  asset?: AssetDetailRecord;
   assetId?: string;
   initialTab?: string | null;
   onBack?: () => void;
 }
 
 export interface AssetDetailViewContentProps {
-  asset: MunicipalAsset;
+  asset: AssetDetailRecord;
   onBack: () => void;
 }
 
@@ -82,7 +82,7 @@ export interface OverviewSidebarPhotographsProps {
 }
 
 export interface StandardBuildingOverviewProps {
-  asset: MunicipalAsset;
+  asset: AssetDetailRecord;
   detailedData: BuildingDataFields | null | undefined;
 }
 
@@ -138,7 +138,7 @@ export interface DocumentActionPayload {
 }
 
 export interface AssetDetailController {
-  asset: MunicipalAsset;
+  asset: AssetDetailRecord;
   activeTab: AssetDetailTab;
   setActiveTab: (tab: AssetDetailTab) => void;
   uploadedDocuments: DocumentItem[];
@@ -213,7 +213,7 @@ export interface CommercialComplexShopTableResult {
 }
 
 export interface ValuationTabContentResult {
-  asset: MunicipalAsset;
+  asset: AssetDetailRecord;
   buildingData: BuildingDataFields | null | undefined;
   floors: Omit<ValuationFloorRow, 'id' | 'carpetArea' | 'builtUpArea'>[];
   buildingCapitalValue: number;
