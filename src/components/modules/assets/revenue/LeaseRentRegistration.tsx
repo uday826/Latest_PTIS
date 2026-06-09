@@ -11,7 +11,7 @@ import { LeaseRentApprovalTable } from './LeaseRentApprovalTable';
 import { NewLeaseRegistrationModal } from './NewLeaseRegistrationDrawer';
 import { RegistrationHistoryModal } from './RegistrationHistoryDrawer';
 import { VerificationLeaseModal } from './VerificationLeaseDrawer';
-import { ApprovalLeaseModal } from './ApprovalLeaseModal';
+import { ApprovalLeaseModal } from './ApprovalLeaseDrawer';
 import { RejectRegistrationModal } from './RejectRegistrationDrawer';
 import { RevertRegistrationModal } from './RevertRegistrationDrawer';
 import type {
@@ -40,6 +40,7 @@ export function LeaseRentRegistration({
   selectedRegistration = null,
   selectedAsset = null,
   assetDocuments = [],
+  assetPhotosAndPlans = [],
   applicationTypes = [],
   verificationDrawerId = null,
   selectedVerification = null,
@@ -67,7 +68,7 @@ export function LeaseRentRegistration({
 
   const [selectedRecordForHistory, setSelectedRecordForHistory] = useState<LeaseRentRecord | null>(null);
   const drawerAsset = (selectedAsset as AssetMasterDetails | null) ?? (drawerAssetId ? ({ assetNo: 'Asset not found' } as AssetMasterDetails) : null);
-  
+
   const verificationDrawerOpen = verificationDrawerId != null;
   const openVerificationDrawer = useCallback(
     (recordId: string | number) => {
@@ -335,12 +336,12 @@ export function LeaseRentRegistration({
         <div className="grid grid-cols-1 gap-4 md:grid-cols-[200px_minmax(0,1fr)_170px_170px]">
           <div className="space-y-1.5">
             <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Asset Category</Label>
-          <Select
-            value={category}
-            onChange={(_, value) => handleCategoryChange(value === 'all' ? null : value)}
-            options={[
-              { label: 'All Categories', value: 'all' },
-              ...categoryOptions,
+            <Select
+              value={category}
+              onChange={(_, value) => handleCategoryChange(value === 'all' ? null : value)}
+              options={[
+                { label: 'All Categories', value: 'all' },
+                ...categoryOptions,
               ]}
               selectSize="sm"
               className="w-full"
@@ -442,6 +443,7 @@ export function LeaseRentRegistration({
           asset={drawerAsset}
           record={selectedRegistration}
           documents={assetDocuments}
+          assetPhotosAndPlans={assetPhotosAndPlans}
           applicationTypes={applicationTypes}
           onClose={closeAssetDrawer}
         />
@@ -458,6 +460,9 @@ export function LeaseRentRegistration({
         <VerificationLeaseModal
           record={selectedVerification}
           onClose={closeVerificationDrawer}
+          assetDetails={selectedAsset}
+          documents={assetDocuments}
+          assetPhotosAndPlans={assetPhotosAndPlans}
         />
       ) : null}
 
@@ -465,6 +470,9 @@ export function LeaseRentRegistration({
         <ApprovalLeaseModal
           record={selectedApproval}
           onClose={closeApprovalDrawer}
+          assetDetails={selectedAsset}
+          documents={assetDocuments}
+          assetPhotosAndPlans={assetPhotosAndPlans}
         />
       ) : null}
 

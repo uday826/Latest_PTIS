@@ -1,7 +1,8 @@
 'use client';
 /* eslint-disable i18next/no-literal-string */
+/* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useTransition, useMemo, useState } from 'react';
+import { useCallback, useEffect, useTransition, useMemo, useState } from 'react';
 import {
   Building2,
   Calendar,
@@ -17,9 +18,23 @@ import {
   Mail,
   MapPinned,
   BadgeCheck,
+  Image as ImageIcon,
   Loader2,
 } from 'lucide-react';
 import { Button, Drawer, Label, MasterTable, type Column, useToast } from '@/components/common';
+import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
+import { uploadAssetDocumentAction } from '@/app/[locale]/assets/actions';
+import { deleteUploadedDocAction } from '@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions';
+import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
+import {
+  DocumentPreviewDrawer,
+  isImage,
+
+
+  type LoadedDocumentFile,
+  parseFileNameFromDisposition,
+} from '@/components/modules/assets/municipal-Asset/detail-tabs/documentHelpers';
+import type { PreviousTenantHistoryItem } from '@/lib/api/asset/asset-lease-rent-details.service';
 import type {
   ApplicationTypeItem,
   AssetMasterDetails,
@@ -68,6 +83,10 @@ function pickFirst(...values: unknown[]): string {
     if (!isBlank(value)) return toDisplay(value);
   }
   return '-';
+}
+
+function getFileTitle(documentItem: AssetDocumentListItem): string {
+  return documentItem.name || documentItem.fileName || 'Document';
 }
 
 function getInitialApplicationTypeId(
@@ -230,8 +249,8 @@ function buildTemplate(
     submitIcon: UploadCloud,
     fields: [
       { key: 'applicationType', label: 'Application Type', icon: FileText, type: 'select', colSpan: 2, options: typeOptions },
-      { key: 'shopNo', label: 'Shop No.', icon: Building2, type: 'text', placeholder: 'e.g. SH-001' },
-      { key: 'shopName', label: 'Shop Name', icon: Building2, type: 'text', placeholder: 'Shop / Unit name' },
+      { key: 'shopNo', label: 'Unit No.', icon: Building2, type: 'text', placeholder: 'e.g. UT-001' },
+      { key: 'shopName', label: 'Unit Name', icon: Building2, type: 'text', placeholder: 'Unit name' },
       { key: 'tenantName', label: 'Tenant Name', icon: User, type: 'text', placeholder: 'Full name', required: true },
       { key: 'mobileNumber', label: 'Mobile Number', icon: Phone, type: 'text', placeholder: '10-digit mobile', required: true },
       { key: 'emailAddress', label: 'Email Address', icon: Mail, type: 'text', placeholder: 'email@example.com' },
@@ -376,20 +395,6 @@ function DetailChip({ label, value }: { label: string; value: unknown }) {
   );
 }
 
-function PlaceholderCard({ title, subtitle, icon: Icon }: { title: string; subtitle: string; icon: typeof Building2 }) {
-  return (
-    <div className="relative h-32 rounded border border-slate-200 overflow-hidden bg-slate-100 shadow-sm flex items-center justify-center">
-      <span className="absolute top-1 left-1/2 -translate-x-1/2 bg-[#0a869e]/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
-        <Icon className="w-3 h-3" /> {title}
-      </span>
-      <div className="flex flex-col items-center justify-center text-center px-3">
-        <Icon className="h-7 w-7 text-slate-400" />
-        <div className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">{subtitle}</div>
-      </div>
-    </div>
-  );
-}
-
 function RenderField({
   field,
   value,
@@ -400,8 +405,10 @@ function RenderField({
   setValue: (value: string) => void;
 }) {
   const Icon = field.icon;
+  const isReadOnlyField = field.key === 'shopNo' || field.key === 'shopName';
   const wrapperClassName = `space-y-1 ${field.colSpan === 2 ? 'col-span-2' : ''}`;
-  const sharedInputClass = 'w-full h-8 px-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100';
+  const sharedInputClass = `w-full h-8 px-2 text-xs font-semibold text-slate-700 border border-slate-200 rounded outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100 ${isReadOnlyField ? 'bg-slate-50 cursor-not-allowed text-slate-500' : 'bg-white'
+    }`;
 
   return (
     <div className={wrapperClassName}>
@@ -429,6 +436,8 @@ function RenderField({
           className={sharedInputClass}
           placeholder={field.placeholder}
           value={value}
+          readOnly={isReadOnlyField}
+          aria-readonly={isReadOnlyField}
           onChange={(e) => setValue(e.target.value)}
           min={field.type === 'number' ? 0 : undefined}
           step={field.type === 'number' ? 'any' : undefined}
@@ -441,7 +450,7 @@ function RenderField({
 interface OverviewTableRow extends Record<string, unknown> {
   zoneWardNo: string;
   propertyNo: string;
-  partitionNo: string;
+  unitName: string;
   shopNumber: string;
   shopEstablishmentDate: string;
   gatNumber: string;
@@ -465,16 +474,35 @@ export function NewLeaseRegistrationModal({
   asset,
   record,
   documents = [],
+  assetPhotosAndPlans = [],
   applicationTypes = [],
   onClose,
 }: NewLeaseRegistrationModalProps) {
   const [activeTab, setActiveTab] = useState<'new' | 'previous'>('new');
+  const [localDocuments, setLocalDocuments] = useState<AssetDocumentListItem[]>(() => documents);
+  useEffect(() => {
+    setLocalDocuments(documents);
+  }, [documents]);
   const [selectedTypeId, setSelectedTypeId] = useState<number>(() =>
     getInitialApplicationTypeId(applicationTypes, record)
   );
   const [isPending, startTransition] = useTransition();
   const { success: toastSuccess, error: toastError } = useToast();
-  const [historyItems, setHistoryItems] = useState<any[]>([]);
+  const [historyItems, setHistoryItems] = useState<PreviousTenantHistoryItem[]>([]);
+  const [selectedDocument, setSelectedDocument] = useState<AssetDocumentListItem | null>(null);
+  const [loadedFile, setLoadedFile] = useState<LoadedDocumentFile | null>(null);
+  const [isLoadingFile, setIsLoadingFile] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
+
+  const revokeLoadedFile = useCallback(() => {
+    setLoadedFile((current) => {
+      if (current?.objectUrl) URL.revokeObjectURL(current.objectUrl);
+      return null;
+    });
+  }, []);
+
+  useEffect(() => revokeLoadedFile, [revokeLoadedFile]);
 
   useEffect(() => {
     const recordId = Number(record?.id);
@@ -503,13 +531,187 @@ export function NewLeaseRegistrationModal({
   );
   const [formState, setFormState] = useState<FormState>(() => initialFormState);
 
+  const readDocumentFile = useCallback(async (documentItem: AssetDocumentListItem) => {
+    const result = await fetchAssetDocumentFile(documentItem.id);
+    if (result.error || !result.base64) {
+      throw new Error(result.error || 'Unable to load this file.');
+    }
+
+    const binaryStr = atob(result.base64);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+
+    const blob = new Blob([bytes], {
+      type: result.contentType || documentItem.contentType || 'application/octet-stream',
+    });
+    const fileName =
+      parseFileNameFromDisposition(result.contentDisposition) ||
+      documentItem.fileName ||
+      documentItem.name;
+
+    return {
+      objectUrl: URL.createObjectURL(blob),
+      contentType: result.contentType || documentItem.contentType || 'application/octet-stream',
+      fileName,
+    } satisfies LoadedDocumentFile;
+  }, []);
+
+  const readDocumentThumbnailSrc = useCallback(async (documentItem: AssetDocumentListItem) => {
+    const result = await fetchAssetDocumentFile(documentItem.id);
+    if (result.error || !result.base64) {
+      throw new Error(result.error || 'Unable to load this file.');
+    }
+
+    const contentType = result.contentType || documentItem.contentType || 'application/octet-stream';
+    return `data:${contentType};base64,${result.base64}`;
+  }, []);
+
+  const triggerFileUpload = (type: 'aadhar' | 'pan') => {
+    const existingDoc = localDocuments.find(
+      (doc) => (doc.name || '').toLowerCase() === type.toLowerCase()
+    );
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*,application/pdf';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      const assetIdVal = asset.id ?? record?.assetMasterId;
+      if (!assetIdVal) {
+        toastError('Asset ID is missing.');
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append('File', file);
+      fd.append('AssetId', String(assetIdVal));
+      fd.append('ModuleId', '0'); // resolved dynamically on the server
+      fd.append('DocumentType', type);
+      fd.append('DocumentTitle', type);
+
+      startTransition(async () => {
+        try {
+          if (existingDoc) {
+            const delRes = await deleteUploadedDocAction(Number(existingDoc.id));
+            if (!delRes.success) {
+              toastError(delRes.error || `Failed to remove existing ${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document.`);
+              return;
+            }
+          }
+
+          const res = await uploadAssetDocumentAction(fd);
+          if (res.success && res.data) {
+            toastSuccess(`${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document replaced successfully.`);
+            const newDoc: AssetDocumentListItem = {
+              id: res.data.assetDocumentId,
+              assetId: res.data.assetId,
+              name: type, // Matches documentTitle/documentType value 'aadhar' or 'pan'
+              fileName: res.data.fileName || file.name,
+              contentType: file.type,
+              uploadedDate: new Date().toISOString(),
+              fileSize: res.data.fileSizeBytes,
+              status: 'Uploaded',
+            };
+            setLocalDocuments((prev) => {
+              const filtered = prev.filter((d) => String(d.id) !== String(existingDoc?.id));
+              return [...filtered, newDoc];
+            });
+          } else {
+            toastError(res.error || 'Failed to upload document.');
+          }
+        } catch (err: any) {
+          toastError(err?.message || 'Error uploading document.');
+        }
+      });
+    };
+    input.click();
+  };
+
   const handleUpdateRegistration = () => {
-    const assetId = asset.id ?? record?.assetMasterId;
+    const assetId = record?.assetMasterId ?? asset.id;
     const recordId = Number(record?.id);
 
     if (!assetId) {
       toastError('Asset ID is missing.');
       return;
+    }
+
+    const hasField = (key: string) => template.fields.some((f) => f.key === key);
+
+    // Validate Mobile Number (10 digits)
+    const mobileReg = /^[0-9]{10}$/;
+    if (hasField('mobileNumber') && formState.mobileNumber && !mobileReg.test(formState.mobileNumber)) {
+      toastError('Mobile number must be a valid 10-digit number.');
+      return;
+    }
+    if (hasField('newTenantMobile') && formState.newTenantMobile && !mobileReg.test(formState.newTenantMobile)) {
+      toastError('New tenant mobile number must be a valid 10-digit number.');
+      return;
+    }
+
+    // Validate Pin Code (6 digits)
+    const pinReg = /^[0-9]{6}$/;
+    if (hasField('pinCode') && formState.pinCode && !pinReg.test(formState.pinCode)) {
+      toastError('Pin code must be a valid 6-digit number.');
+      return;
+    }
+
+    // Validate PAN Number (5 letters, 4 digits, 1 letter)
+    const panReg = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i;
+    if (hasField('panNumber') && formState.panNumber && !panReg.test(formState.panNumber)) {
+      toastError('PAN card number must be in the format: ABCDE1234F.');
+      return;
+    }
+
+    // Validate Aadhaar Number (12 digits)
+    const aadhaarReg = /^[0-9]{12}$/;
+    if (hasField('aadhaarNumber') && formState.aadhaarNumber && !aadhaarReg.test(formState.aadhaarNumber)) {
+      toastError('Aadhaar number must be a valid 12-digit number.');
+      return;
+    }
+
+    // Validate dates: leaseStartDate <= leaseEndDate
+    if (hasField('leaseStartDate') && hasField('leaseEndDate') && formState.leaseStartDate && formState.leaseEndDate) {
+      const start = new Date(formState.leaseStartDate);
+      const end = new Date(formState.leaseEndDate);
+      if (start > end) {
+        toastError('Lease start date cannot be later than the lease end date.');
+        return;
+      }
+    }
+
+    // Validate renewal dates: renewalStartDate <= renewalEndDate
+    if (hasField('renewalStartDate') && hasField('renewalEndDate') && formState.renewalStartDate && formState.renewalEndDate) {
+      const start = new Date(formState.renewalStartDate);
+      const end = new Date(formState.renewalEndDate);
+      if (start > end) {
+        toastError('Renewal start date cannot be later than the renewal end date.');
+        return;
+      }
+    }
+
+    // Validate old lease dates: oldLeaseStartDate <= oldLeaseEndDate
+    if (hasField('oldLeaseStartDate') && hasField('oldLeaseEndDate') && formState.oldLeaseStartDate && formState.oldLeaseEndDate) {
+      const start = new Date(formState.oldLeaseStartDate);
+      const end = new Date(formState.oldLeaseEndDate);
+      if (start > end) {
+        toastError('Old lease start date cannot be later than the old lease end date.');
+        return;
+      }
+    }
+
+    // Validate renewal start date vs old lease end date
+    if (hasField('renewalStartDate') && hasField('oldLeaseEndDate') && formState.renewalStartDate && formState.oldLeaseEndDate) {
+      const renewalStart = new Date(formState.renewalStartDate);
+      const oldEnd = new Date(formState.oldLeaseEndDate);
+      if (renewalStart < oldEnd) {
+        toastError('Renewal start date cannot be earlier than the old lease end date.');
+        return;
+      }
     }
 
     const typeCode = selectedType?.applicationTypeCode || 'APP-NEW';
@@ -546,6 +748,55 @@ export function NewLeaseRegistrationModal({
     });
   };
 
+  const loadDocumentFile = useCallback(
+    async (documentItem: AssetDocumentListItem) => {
+      revokeLoadedFile();
+      setIsLoadingFile(true);
+      setFileError(null);
+
+      try {
+        const file = await readDocumentFile(documentItem);
+        setLoadedFile(file);
+      } catch (error) {
+        setFileError(error instanceof Error ? error.message : 'Unable to load this file.');
+      } finally {
+        setIsLoadingFile(false);
+      }
+    },
+    [readDocumentFile, revokeLoadedFile]
+  );
+
+  const openDocument = useCallback(
+    (documentItem: AssetDocumentListItem) => {
+      setSelectedDocument(documentItem);
+      void loadDocumentFile(documentItem);
+    },
+    [loadDocumentFile]
+  );
+
+  const closePreview = useCallback(() => {
+    setSelectedDocument(null);
+    setFileError(null);
+    setIsLoadingFile(false);
+    revokeLoadedFile();
+  }, [revokeLoadedFile]);
+
+  const downloadDocument = useCallback(() => {
+    if (!selectedDocument) return;
+
+    if (!loadedFile) {
+      void loadDocumentFile(selectedDocument);
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.href = loadedFile.objectUrl;
+    link.download = loadedFile.fileName || selectedDocument.fileName || selectedDocument.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [loadDocumentFile, loadedFile, selectedDocument]);
+
   const drawerTitle = (
     <div className="flex items-center gap-2">
       <FileText className="w-5 h-5 text-blue-600" />
@@ -581,20 +832,20 @@ export function NewLeaseRegistrationModal({
   const shopName = pickFirst(record?.shopName, asset.assetName, asset.assetTypeName);
   const zoneWard = `${toDisplay(asset.zoneName)} - ${toDisplay(asset.wardName)}`;
   const overviewColumns: Column<OverviewTableRow>[] = [
-    { key: 'zoneWardNo', label: 'Zone - Ward No', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'propertyNo', label: 'Asset No', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'partitionNo', label: 'Shop Name', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopNumber', label: 'Shop Number', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopEstablishmentDate', label: 'Shop Establishment Date', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'gatNumber', label: 'Asset Category', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopActRegistrationDate', label: 'Shop Act Registration Date', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopActNumber', label: 'Shop Act Number', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'zoneWardNo', label: 'Zone - Ward No', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'propertyNo', label: 'Asset No', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'unitName', label: 'Unit Name', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopNumber', label: 'Unit Number', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopEstablishmentDate', label: 'Shop Establishment Date', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'gatNumber', label: 'Asset Category', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopActRegistrationDate', label: 'Unit Act Registration Date', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopActNumber', label: 'Unit Act Number', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
   ];
   const overviewData: OverviewTableRow[] = [
     {
       zoneWardNo: zoneWard,
       propertyNo: pickFirst(asset.assetNo, record?.assetId),
-      partitionNo: buildingAssetName,
+      unitName: buildingAssetName,
       shopNumber: pickFirst(record?.shopNo, asset.assetTypeName),
       shopEstablishmentDate: toDateDisplay(asset.createdDate),
       gatNumber: assetCategory,
@@ -604,8 +855,8 @@ export function NewLeaseRegistrationModal({
   ];
   const constructionColumns: Column<ConstructionTableRow>[] = [
     { key: 'floor', label: 'Floor', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopNo', label: 'Shop No.', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopArea', label: 'Shop Area (sq.mt)', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopNo', label: 'Unit No.', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopArea', label: 'Unit Area (sq.mt)', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'renterName', label: 'Renter Name', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'uses', label: 'Uses', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'monthlyRent', label: 'Monthly Rent (₹)', align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
@@ -615,9 +866,9 @@ export function NewLeaseRegistrationModal({
   ];
   const constructionData: ConstructionTableRow[] = [
     {
-      floor: pickFirst(record?.floorDescription, record?.floor, 'Ground Floor'),
+      floor: pickFirst(record?.floorDescription, record?.floor),
       shopNo: pickFirst(record?.shopNo, record?.assetNo, asset.assetTypeName),
-      shopArea: record?.totalAreaSqFt != null ? String(record.totalAreaSqFt) : '-',
+      shopArea: record?.totalAreaSqFt != null ? String(record.totalAreaSqFt) : (pickFirst(asset?.builtUpAreaSqMeter, asset?.carpetAreaSqMeter, asset?.landAreaSqMeter) !== '-' ? String(pickFirst(asset?.builtUpAreaSqMeter, asset?.carpetAreaSqMeter, asset?.landAreaSqMeter)) : '-'),
       renterName: pickFirst(record?.tenantName, asset.inChargeName, asset.assetName),
       uses: pickFirst(record?.leaseRentType, record?.leaseType, asset.typeOfUseName, asset.subTypeOfUseName),
       monthlyRent:
@@ -626,8 +877,8 @@ export function NewLeaseRegistrationModal({
       perSqMtRent:
         record?.totalAreaSqFt && record?.rentAmount
           ? `₹ ${(Number(record.rentAmount) / Number(record.totalAreaSqFt)).toLocaleString('en-IN', {
-              maximumFractionDigits: 2,
-            })}`
+            maximumFractionDigits: 2,
+          })}`
           : '-',
       bharaniKaalavadi: pickFirst(record?.leaseDurationDisplay, record?.submittedDate, asset.createdDate),
       status: pickFirst(record?.workflowStatus, record?.rentStatus, asset.status, 'Draft'),
@@ -640,12 +891,81 @@ export function NewLeaseRegistrationModal({
     { label: 'वार्षिक भाडे उत्पन्न (अपेक्षित)', value: toCurrencyDisplay(asset.marketValue ?? asset.currentAssetValue ?? formState.revisedRent ?? formState.monthlyRent) },
   ];
   const documentCards = useMemo(() => {
-    return documents.slice(0, 5).map((doc) => ({
-      label: doc.name || doc.fileName || 'Document',
-      uploaded: true,
-      uploadedDate: doc.uploadedDate || null,
+    return localDocuments.slice(0, 5).map((doc) => ({
+      ...doc,
+      label: getFileTitle(doc),
+      isImage: isImage(doc.contentType || '', doc.fileName || doc.name || ''),
     }));
-  }, [documents]);
+  }, [localDocuments]);
+
+  const mediaCards = useMemo(() => {
+    return assetPhotosAndPlans.slice(0, 3).map((doc) => ({
+      ...doc,
+      label: getFileTitle(doc),
+      isImage: isImage(doc.contentType || '', doc.fileName || doc.name || ''),
+    }));
+  }, [assetPhotosAndPlans]);
+
+  const leftMediaPanels = [
+    {
+      title: 'Building Photo',
+      doc: mediaCards[0] ?? null,
+      fallbackIcon: Building2,
+      fallbackText: pickFirst(asset.assetName, 'Building Photo'),
+    },
+    {
+      title: 'OP Plan',
+      doc: mediaCards[1] ?? null,
+      fallbackIcon: Grid,
+      fallbackText: pickFirst(asset.zoneName, 'OP Plan'),
+    },
+    {
+      title: 'DP Plan',
+      doc: mediaCards[2] ?? null,
+      fallbackIcon: MapPinned,
+      fallbackText: pickFirst(asset.wardName, 'DP Plan'),
+    },
+  ] as const;
+
+  useEffect(() => {
+    const imageDocuments = [...documentCards, ...mediaCards].filter((doc) => doc.isImage);
+    if (imageDocuments.length === 0) {
+      void Promise.resolve().then(() => setThumbnailUrls({}));
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadThumbnails = async () => {
+      const entries = await Promise.all(
+        imageDocuments.map(async (doc) => {
+          try {
+            const src = await readDocumentThumbnailSrc(doc);
+            return [String(doc.id), src] as const;
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      if (cancelled) {
+        return;
+      }
+
+      const nextThumbs: Record<string, string> = {};
+      entries.forEach((entry) => {
+        if (!entry) return;
+        nextThumbs[entry[0]] = entry[1];
+      });
+      setThumbnailUrls(nextThumbs);
+    };
+
+    void loadThumbnails();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [documentCards, mediaCards, readDocumentThumbnailSrc]);
 
   return (
     <Drawer open={true} onClose={onClose} title={drawerTitle} width="xl" footer={drawerFooter}>
@@ -664,28 +984,37 @@ export function NewLeaseRegistrationModal({
           </div>
 
           <DetailChip label="ASSET NUMBER" value={assetNumber} />
-          <DetailChip label="STATUS" value={pickFirst(record?.workflowStatus, record?.rentStatus, asset.status, 'Draft')} />
+          <div className="bg-white border border-slate-200 rounded-lg p-3 relative mt-3 shadow-sm flex flex-col items-center justify-center gap-3">
+            <span className="absolute -top-3 bg-[#0a869e] text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm">
+              STATUS
+            </span>
+            <span className="text-sm font-black text-amber-600 mt-2">
+              {pickFirst(record?.workflowStatus, record?.rentStatus, asset.status, 'Draft')}
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 mb-6">
-          <MasterTable
-            columns={overviewColumns}
-            data={overviewData}
-            containerClassName="border border-slate-200 rounded-lg shadow-sm"
-            tableClassName="text-[10px]"
-            theadClassName="bg-slate-50"
-            pageSize={1}
-            totalCount={1}
-            totalPages={1}
-            pageNumber={1}
-            paginationConfig={{ enabled: false }}
-            maxBodyHeightClassName="max-h-none"
-          />
+          <div className="overflow-x-auto">
+            <MasterTable
+              columns={overviewColumns}
+              data={overviewData}
+              containerClassName="border border-slate-200 rounded-lg shadow-sm"
+              tableClassName="min-w-max text-[10px] table-auto"
+              theadClassName="bg-slate-50"
+              pageSize={1}
+              totalCount={1}
+              totalPages={1}
+              pageNumber={1}
+              paginationConfig={{ enabled: false }}
+              maxBodyHeightClassName="max-h-none"
+            />
+          </div>
 
           <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col justify-center">
             <span className="text-[10px] text-slate-500 font-bold">Asset Category</span>
             <span className="text-sm font-bold text-red-600 mb-3">{assetCategory}</span>
-            <span className="text-[10px] text-slate-500 font-bold">Shop Name</span>
+            <span className="text-[10px] text-slate-500 font-bold">Unit Name</span>
             <span className="text-sm font-bold text-red-600">{shopName || '-'}</span>
           </div>
         </div>
@@ -709,11 +1038,52 @@ export function NewLeaseRegistrationModal({
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr_300px] gap-4 mb-4">
-          <div className="space-y-2">
-            <PlaceholderCard title="Building Photo" subtitle={pickFirst(asset.assetName)} icon={Building2} />
-            <PlaceholderCard title="OP Plan" subtitle={pickFirst(asset.zoneName)} icon={Grid} />
-            <PlaceholderCard title="DP Plan" subtitle={pickFirst(asset.wardName)} icon={MapPinned} />
+        <div className="grid grid-cols-1 items-stretch lg:grid-cols-[240px_1fr_300px] gap-4 mb-4">
+          <div className="flex h-full flex-col gap-3 self-stretch">
+            {leftMediaPanels.map((panel) => {
+              const doc = panel.doc;
+              const thumbUrl = doc ? thumbnailUrls[String(doc.id)] : null;
+
+              return (
+                <button
+                  key={panel.title}
+                  type="button"
+                  onClick={() => {
+                    if (doc) openDocument(doc);
+                  }}
+                  className="group relative min-h-[150px] flex-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-b from-slate-900/0 via-slate-900/0 to-slate-900/15" />
+                  <span className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-[#0a869e] px-3 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm">
+                    {panel.title}
+                  </span>
+
+                  {doc && thumbUrl ? (
+                    <img
+                      src={thumbUrl}
+                      alt={panel.title}
+                      className="absolute inset-0 h-full w-full object-contain bg-slate-50 p-2"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+                      <div className="flex flex-col items-center gap-1 text-center">
+                        <panel.fallbackIcon className="h-8 w-8 text-slate-300" />
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                          {panel.fallbackText}
+                        </span>
+                        <span className="text-[9px] text-slate-400">No preview available</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {doc ? (
+                    <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-900/65 to-transparent px-2 pb-2 pt-6">
+                      <div className="text-[9px] font-semibold text-white/90">{doc.label}</div>
+                    </div>
+                  ) : null}
+                </button>
+              );
+            })}
           </div>
 
           <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex flex-col">
@@ -722,9 +1092,8 @@ export function NewLeaseRegistrationModal({
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                    activeTab === tab ? 'bg-slate-600 shadow-inner' : 'hover:bg-slate-500/80 opacity-70'
-                  }`}
+                  className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${activeTab === tab ? 'bg-slate-600 shadow-inner' : 'hover:bg-slate-500/80 opacity-70'
+                    }`}
                 >
                   {tab === 'new' ? 'New Tenant Registration' : 'Previous Tenant Information'}
                 </button>
@@ -764,6 +1133,14 @@ export function NewLeaseRegistrationModal({
                           size="sm"
                           icon={button.icon}
                           className="flex-1 min-w-[160px]"
+                          disabled={isPending}
+                          onClick={() => {
+                            if (button.label.toLowerCase().includes('aadhaar')) {
+                              triggerFileUpload('aadhar');
+                            } else if (button.label.toLowerCase().includes('pan')) {
+                              triggerFileUpload('pan');
+                            }
+                          }}
                         >
                           {button.label}
                         </Button>
@@ -795,7 +1172,7 @@ export function NewLeaseRegistrationModal({
                         </div>
                         {item.remarks && (
                           <div className="text-[10px] text-slate-500 italic mt-1 border-t border-slate-100 pt-1">
-                            Remarks: "{item.remarks}"
+                            Remarks: &quot;{item.remarks}&quot;
                           </div>
                         )}
                       </div>
@@ -836,17 +1213,6 @@ export function NewLeaseRegistrationModal({
               </table>
             </div>
 
-            <div className="bg-white border border-teal-600 rounded-lg shadow-sm relative h-32 flex items-center justify-center overflow-hidden p-1">
-              <span className="absolute top-0 left-1/2 -translate-x-1/2 bg-teal-600 text-white text-[9px] font-bold px-4 py-0.5 rounded-b shadow-sm flex items-center gap-1 z-10">
-                <Grid className="w-3 h-3" /> Property Floor Plan
-              </span>
-              <div className="text-center px-3">
-                <Grid className="mx-auto h-10 w-10 text-slate-300" />
-                <div className="mt-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  {asset.floorDetailsId ? `Floor Details #${asset.floorDetailsId}` : 'No floor plan available'}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -859,17 +1225,32 @@ export function NewLeaseRegistrationModal({
 
         {documentCards.length > 0 ? (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
-            {documentCards.map((doc, index) => (
-              <div key={index} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-                <div className="mb-2 flex h-24 items-center justify-center rounded-md bg-slate-50 border border-slate-100">
-                  <FileText className="h-8 w-8 text-slate-300" />
+            {documentCards.map((doc) => (
+              <button
+                key={String(doc.id)}
+                type="button"
+                onClick={() => openDocument(doc)}
+                className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm text-left transition hover:border-blue-200 hover:bg-blue-50/30"
+              >
+                <div className="mb-2 flex h-24 items-center justify-center rounded-md bg-slate-50 border border-slate-100 overflow-hidden">
+                  {doc.isImage && thumbnailUrls[String(doc.id)] ? (
+                    <img
+                      src={thumbnailUrls[String(doc.id)]}
+                      alt={doc.label}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : doc.isImage ? (
+                    <ImageIcon className="h-8 w-8 text-slate-300" />
+                  ) : (
+                    <FileText className="h-8 w-8 text-slate-300" />
+                  )}
                 </div>
                 <div className="text-center text-[10px] font-bold text-slate-700">{doc.label}</div>
                 <div className="mt-1 text-center text-[9px] font-bold text-emerald-600">View Document</div>
                 {doc.uploadedDate ? (
                   <div className="mt-1 text-center text-[8px] text-slate-400">{toDateDisplay(doc.uploadedDate)}</div>
                 ) : null}
-              </div>
+              </button>
             ))}
           </div>
         ) : (
@@ -878,6 +1259,15 @@ export function NewLeaseRegistrationModal({
           </div>
         )}
       </div>
+
+      <DocumentPreviewDrawer
+        selectedDocument={selectedDocument}
+        loadedFile={loadedFile}
+        isLoadingFile={isLoadingFile}
+        fileError={fileError}
+        onClose={closePreview}
+        onDownload={downloadDocument}
+      />
     </Drawer>
   );
 }

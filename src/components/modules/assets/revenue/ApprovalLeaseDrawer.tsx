@@ -14,8 +14,8 @@ import {
   MapPinned,
 } from 'lucide-react';
 import { Button, Drawer, MasterTable, type Column, useConfirm, useToast } from '@/components/common';
-import type { VerificationLeaseModalProps } from '../../../../types/asset/revenue.types';
-import { verifyAction, approveAction, getPreviousTenantHistoryAction } from '@/app/[locale]/assets/revenue/manage-renters/actions';
+import type { ApprovalLeaseModalProps } from '../../../../types/asset/revenue.types';
+import { approveAction, getPreviousTenantHistoryAction } from '@/app/[locale]/assets/revenue/manage-renters/actions';
 import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
 import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
 import {
@@ -124,13 +124,13 @@ interface ConstructionTableRow extends Record<string, unknown> {
   status: string;
 }
 
-export function VerificationLeaseModal({
+export function ApprovalLeaseModal({
   record,
   onClose,
   assetDetails = null,
   documents = [],
   assetPhotosAndPlans = [],
-}: VerificationLeaseModalProps) {
+}: ApprovalLeaseModalProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -331,23 +331,20 @@ export function VerificationLeaseModal({
   const handleRevertClick = () => {
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.set('drawerRevertId', String(record.id));
-    nextParams.delete('drawerVerificationId');
+    nextParams.delete('drawerApprovalId');
     router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
     router.refresh();
   };
 
-  const handleVerifyClick = () => {
+  const handleApproveClick = () => {
     startTransition(async () => {
       try {
-        const isVerified = String(record.workflowStatus).toLowerCase() === 'verified';
-        const action = isVerified ? approveAction : verifyAction;
-        const result = await action(record.id, 'Verified from Verification Drawer');
-
+        const result = await approveAction(record.id, 'Approved from Approval Drawer');
         if (result.success) {
-          toastSuccess(result.message || 'Workflow step processed successfully.');
+          toastSuccess(result.message || 'Request approved successfully.');
           onClose();
         } else {
-          toastError(result.message || 'Workflow step failed.');
+          toastError(result.message || 'Approval failed.');
         }
       } catch {
         toastError('An unexpected error occurred.');
@@ -448,39 +445,31 @@ export function VerificationLeaseModal({
     { l: 'वार्षिक भाडे उत्पन्न (अपेक्षित)', v: expectedAnnualRentVal ? `₹ ${toCurrencyDisplay(expectedAnnualRentVal)}` : '-' },
   ];
 
+  const drawerTitle = (
+    <div className="flex items-center gap-2">
+      <FileText className="w-5 h-5 text-blue-600" />
+      <h2 className="font-bold text-sm tracking-wide text-slate-800">
+        Approval — {pickFirst(record.leaseRentType, record.leaseType, record.applicationTypeId, 'Lease Application')}
+      </h2>
+    </div>
+  );
+
+  const drawerFooter = (
+    <>
+      <Button onClick={onClose} variant="secondary" size="sm" icon={X} disabled={isPending}>
+        Cancel
+      </Button>
+      <Button variant="danger" size="sm" icon={ShieldX} onClick={handleRevertClick} disabled={isPending}>
+        Revert to Verification
+      </Button>
+      <Button variant="success" size="sm" icon={FileCheck2} onClick={handleApproveClick} disabled={isPending}>
+        {isPending ? 'Approving...' : 'Approve'}
+      </Button>
+    </>
+  );
+
   return (
-    <Drawer
-      open={true}
-      onClose={onClose}
-      title={
-        <div className="flex items-center gap-2">
-          <FileText className="w-5 h-5 text-blue-600" />
-          <h2 className="font-bold text-sm tracking-wide text-slate-800">
-            Verification — {pickFirst(record.leaseRentType, record.leaseType, record.applicationTypeId, 'Lease Application')}
-          </h2>
-        </div>
-      }
-      width="xl"
-      footer={
-        <>
-          <Button onClick={onClose} variant="secondary" size="sm" icon={X} disabled={isPending}>
-            Cancel
-          </Button>
-          <Button variant="danger" size="sm" icon={ShieldX} onClick={handleRevertClick} disabled={isPending}>
-            Revert Request
-          </Button>
-          {String(record.workflowStatus).toLowerCase() === 'verified' ? (
-            <Button variant="success" size="sm" icon={FileCheck2} onClick={handleVerifyClick} disabled={isPending}>
-              {isPending ? 'Processing...' : 'Approve'}
-            </Button>
-          ) : (
-            <Button variant="success" size="sm" icon={FileCheck2} onClick={handleVerifyClick} disabled={isPending}>
-              {isPending ? 'Processing...' : 'Send to Approval'}
-            </Button>
-          )}
-        </>
-      }
-    >
+    <Drawer open={true} onClose={onClose} title={drawerTitle} width="xl" footer={drawerFooter}>
       <div className="p-5 bg-slate-50 min-h-full">
         {/* Asset header */}
         <div className="grid grid-cols-1 md:grid-cols-[1fr_200px_200px] gap-4 mb-4">
@@ -771,7 +760,7 @@ export function VerificationLeaseModal({
                 <tbody className="divide-y divide-slate-100 text-center">
                   {rentSummaryRows.map((row, index) => (
                     <tr key={index} className={index === 2 ? 'bg-slate-50/50' : ''}>
-                      <td className="px-2 py-2.5 border-r border-slate-200 text-left">{row.l}</td>
+                      <td className="px-2 py-2.5 border-r border-[#e2e8f0] text-left">{row.l}</td>
                       <td className="px-2 py-2.5 font-bold text-slate-800">{row.v}</td>
                     </tr>
                   ))}
