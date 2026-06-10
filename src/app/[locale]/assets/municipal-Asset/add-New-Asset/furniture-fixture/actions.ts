@@ -279,3 +279,30 @@ export async function saveInventoryBatchAction(payload: { items: any[] }) {
     };
   }
 }
+
+/**
+ * Trigger CV calculation for a movable/inventory asset.
+ * POST /api/AssetCapitalValue/movable/calculate-cv
+ * Calculates: CV = PurchaseValue × (1 - TotalDepreciation) × ConditionFactor
+ * Updates AssetMaster.CapitalValue for the asset.
+ */
+export async function calculateMovableCVAction(
+  assetId: number,
+  conditionFactor: number = 1.0
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const response = await apiClient.post<any>("/AssetCapitalValue/movable/calculate-cv", {
+      assetId,
+      valuationMethod: 1, // DepreciatedValue
+      conditionFactor,
+      createdBy: 1,
+    });
+    if (response.success) return { success: true, data: response.data };
+    return { success: false, error: response.error ?? "Movable CV calculation failed" };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Movable CV calculation failed"
+    };
+  }
+}

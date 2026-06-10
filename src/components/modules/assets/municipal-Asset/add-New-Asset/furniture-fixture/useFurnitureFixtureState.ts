@@ -3,10 +3,10 @@ import { deleteInventoryBatchAction, getInventoryBatchesAction, saveInventoryBat
 import { useConfirm } from "@/components/common";
 import type { InventoryItemCategory, InventoryItemCondition, InventoryItemModel, InventoryItemName } from "@/lib/api/asset/inventory.service";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { type InventoryType, type InventoryRow, type InventoryForm, type InvoiceForm, type InventoryInvoice } from "./FurnitureFixtureTypes";
+import { inventoryMeta, emptyForm, emptyInvoiceForm, PAGE_SIZE } from "./FurnitureFixtureConstants";
+import { enrichRows, buildCategoryGroups, calcRowCV } from "./FurnitureFixtureCV";
 import { toast } from "sonner";
-import { emptyForm, emptyInvoiceForm, inventoryMeta, PAGE_SIZE, typeOptions } from "./FurnitureFixtureConstants";
-import { buildCategoryGroups, calcRowCV, enrichRows } from "./FurnitureFixtureCV";
-import { type InventoryForm, type InventoryInvoice, type InventoryRow, type InventoryType, type InvoiceForm } from "./FurnitureFixtureTypes";
 import { usePermissionsContext } from "@/lib/providers/PermissionsProvider";
 import { usePathname } from "next/navigation";
 
@@ -30,11 +30,11 @@ function convertBatchesToRows(batches: InventoryBatchDetail[]): InventoryRow[] {
     photoName: batch.photoFileName ?? undefined,
     invoice: batch.invoiceNumber
       ? {
-          invoiceMode: "direct",
-          invoiceNumber: batch.invoiceNumber,
-          invoiceDate: batch.invoiceDate?.split("T")[0] ?? "",
-          invoiceFileName: batch.invoiceFileName ?? "",
-        }
+        invoiceMode: "direct",
+        invoiceNumber: batch.invoiceNumber,
+        invoiceDate: batch.invoiceDate?.split("T")[0] ?? "",
+        invoiceFileName: batch.invoiceFileName ?? "",
+      }
       : undefined,
     unitCV: batch.totalBatchCV / batch.quantity,
     totalCV: batch.totalBatchCV,
@@ -84,13 +84,13 @@ export function useFurnitureFixtureState(
     if (!screens || screens.length === 0) return fallbackModuleId;
     if (!pathname) return fallbackModuleId;
     const pathLower = pathname.toLowerCase();
-    
+
     // 1. Sort by longest routePath first (most specific match)
     const sortedScreens = [...screens].sort((a, b) => (b.routePath?.length || 0) - (a.routePath?.length || 0));
-    
+
     // 2. Try to find exact inclusive match
     let currentScreen = sortedScreens.find((s) => s.routePath && pathLower.includes(s.routePath.toLowerCase()));
-    
+
     // 3. Fallback: if no exact match, find any screen related to 'asset' by moduleName
     if (!currentScreen) {
       currentScreen = screens.find((s) => {
@@ -105,10 +105,10 @@ export function useFurnitureFixtureState(
         return mName && mName.toLowerCase().includes("asset");
       });
     }
-    
+
     // Check multiple possible casing for module ID from C# backend
-    let resolvedModuleId = currentScreen 
-      ? (currentScreen.moduleId || (currentScreen as any).ModuleId || (currentScreen as any).moduleID || fallbackModuleId) 
+    let resolvedModuleId = currentScreen
+      ? (currentScreen.moduleId || (currentScreen as any).ModuleId || (currentScreen as any).moduleID || fallbackModuleId)
       : fallbackModuleId;
 
     // The database has an inactive generic "asset" module (1004). 
@@ -116,14 +116,14 @@ export function useFurnitureFixtureState(
     if (resolvedModuleId === 1004 && fallbackModuleId > 0 && fallbackModuleId !== 1004) {
       resolvedModuleId = fallbackModuleId;
     }
-      
+
     console.log("Dynamically determined ModuleId:", resolvedModuleId, "Screens available:", screens?.length);
-    
+
     return resolvedModuleId;
   }, [screens, pathname, fallbackModuleId]);
 
   const assetModuleId = currentModuleId;
-  
+
   // Initialize rows from SSR data (initialBatches) or use empty array
   const initialRowsFromServer = useMemo(() => {
     if (initialBatches?.batches && initialBatches.batches.length > 0) {
@@ -171,22 +171,22 @@ export function useFurnitureFixtureState(
 
   const filteredRows = useMemo(() => filterType === "all" ? rows : rows.filter(r => r.type === filterType), [filterType, rows]);
   const paginatedRows = useMemo(() => filteredRows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE), [currentPage, filteredRows]);
-  
+
   // Build Type dropdown options from actual categories
   const dynamicCategoryOptions = useMemo(() => {
     if (categories.length > 0) {
       return categories.map(c => ({ label: c.typeName, value: c.typeName }));
     }
-    return typeOptions;
+    return [];
   }, [categories]);
 
   // Build Item Name dropdown options — filtered by selected category
   const dynamicItemNameOptions = useMemo(() => {
     if (itemNames.length > 0) {
-      const selectedCat = categories.find(c => c.typeName === form.type);
+      const selectedCat = categories.find(c => String(c.typeName).toLowerCase() === String(form.type).toLowerCase());
       if (selectedCat) {
         return itemNames
-          .filter(n => n.inventoryItemCategoryId === selectedCat.id)
+          .filter(n => String(n.inventoryItemCategoryId) === String(selectedCat.id))
           .map(n => ({ label: n.subTypeName, value: n.subTypeName }));
       }
     }
@@ -196,10 +196,10 @@ export function useFurnitureFixtureState(
   // Build Model dropdown options — filtered by selected item name
   const dynamicModelOptions = useMemo(() => {
     if (itemModels.length > 0 && itemNames.length > 0) {
-      const selectedItem = itemNames.find(n => n.subTypeName === form.itemName);
+      const selectedItem = itemNames.find(n => String(n.subTypeName).toLowerCase() === String(form.itemName).toLowerCase());
       if (selectedItem) {
         return itemModels
-          .filter(m => m.inventoryItemNameId === selectedItem.id)
+          .filter(m => String(m.inventoryItemNameId) === String(selectedItem.id))
           .map(m => ({ label: m.modelName, value: m.modelName }));
       }
     }
@@ -226,10 +226,10 @@ export function useFurnitureFixtureState(
   // Build Edit Item Name dropdown options — filtered by selected category
   const dynamicEditItemNameOptions = useMemo(() => {
     if (itemNames.length > 0) {
-      const selectedCat = categories.find(c => c.typeName === editForm.type);
+      const selectedCat = categories.find(c => String(c.typeName).toLowerCase() === String(editForm.type).toLowerCase());
       if (selectedCat) {
         return itemNames
-          .filter(n => n.inventoryItemCategoryId === selectedCat.id)
+          .filter(n => String(n.inventoryItemCategoryId) === String(selectedCat.id))
           .map(n => ({ label: n.subTypeName, value: n.subTypeName }));
       }
     }
@@ -239,10 +239,10 @@ export function useFurnitureFixtureState(
   // Build Edit Model dropdown options — filtered by selected item name
   const dynamicEditModelOptions = useMemo(() => {
     if (itemModels.length > 0 && itemNames.length > 0) {
-      const selectedItem = itemNames.find(n => n.subTypeName === editForm.itemName);
+      const selectedItem = itemNames.find(n => String(n.subTypeName).toLowerCase() === String(editForm.itemName).toLowerCase());
       if (selectedItem) {
         return itemModels
-          .filter(m => m.inventoryItemNameId === selectedItem.id)
+          .filter(m => String(m.inventoryItemNameId) === String(selectedItem.id))
           .map(m => ({ label: m.modelName, value: m.modelName }));
       }
     }
@@ -268,7 +268,7 @@ export function useFurnitureFixtureState(
 
   const enrichedRows = useMemo(() => enrichRows(rows, dynamicRates, dynamicConditions), [rows, dynamicRates, dynamicConditions]);
   const categoryGroups = useMemo(() => buildCategoryGroups(enrichedRows), [enrichedRows]);
-  
+
   const grandAssetValue = useMemo(() => rows.reduce((sum, row) => sum + row.total, 0), [rows]);
   const grandCV = useMemo(() => enrichedRows.reduce((sum, r) => sum + (r.totalCV ?? r.total), 0), [enrichedRows]);
 
@@ -361,9 +361,9 @@ export function useFurnitureFixtureState(
   // Helper function to reload data from server
   const reloadDataFromServer = async () => {
     if (!parentAssetId) return;
-    
+
     const result = await getInventoryBatchesAction(parentAssetId);
-    
+
     if (result.success && result.data?.batches) {
       const freshRows = convertBatchesToRows(result.data.batches);
       setRows(freshRows);
@@ -448,18 +448,18 @@ export function useFurnitureFixtureState(
             try {
               const id = await getFallbackModuleIdAction();
               if (id > 0) finalModuleId = id;
-            } catch (e) {}
+            } catch (e) { }
           }
 
           for (const unit of batchData.units) {
             if (!unit.assetId) continue;
-            
+
             const fd = new FormData();
             fd.append("AssetId", String(unit.assetId));
             fd.append("ModuleId", finalModuleId.toString());
             fd.append("UploadedByUserId", "1");
             fd.append("IsAdHoc", "true");
-            
+
             const metadata: any[] = [];
 
             if (photoFile) {
@@ -492,23 +492,23 @@ export function useFurnitureFixtureState(
               const uploadResult = await uploadBulkDocumentsAction(fd);
               if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
                 const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
-                console.error("Failed to upload bulk documents for assetId", unit.assetId, detailedError);
+
                 toast.error(`Document upload failed for Unit ${unit.unitNumber}: ${detailedError}`);
               } else {
                 toast.success(`Documents uploaded successfully for Unit ${unit.unitNumber}!`);
               }
             } catch (e: any) {
-              console.error("Failed to upload bulk documents for assetId", unit.assetId, e);
+
               toast.error(`Document upload exception for Unit ${unit.unitNumber}: ${e.message}`);
             }
           }
         }
       }
 
-      
+
       // Reload fresh data from server
       await reloadDataFromServer();
-      
+
       // Reset form and show success
       resetAddForm();
       setCurrentPage(1);
@@ -524,10 +524,10 @@ export function useFurnitureFixtureState(
     if (!editForm.type || !editForm.itemName || !editForm.modelName || !editForm.purchaseDate || !editForm.condition || Number(editForm.quantity) <= 0 || Number(editForm.unitValue) <= 0) {
       return setFormError("Please fill in all required fields and positive values.");
     }
-    
+
     // Find the existing row to check if it's registered
     const existingRow = rows.find(r => r.id === editingId);
-    
+
     const payload: InventoryRow = {
       id: editingId,
       type: editForm.type,
@@ -548,7 +548,7 @@ export function useFurnitureFixtureState(
       isRegistered: existingRow?.isRegistered,
       registeredUnits: existingRow?.registeredUnits
     };
-    
+
     calcRowCV(payload, dynamicRates, dynamicConditions);
 
     // If the row is registered, update via API
@@ -562,7 +562,7 @@ export function useFurnitureFixtureState(
           // Workaround: The backend's UpdateInventoryBatchDto does not support updating Quantity.
           // To update the quantity, we must delete the existing batch and create a new one.
           await deleteInventoryBatchAction(existingRow.batchId);
-          
+
           // Use the POST endpoint which supports Quantity creation
           const createPayload = {
             parentAssetId: parentAssetId!,
@@ -619,7 +619,7 @@ export function useFurnitureFixtureState(
               try {
                 const id = await getFallbackModuleIdAction(pathname);
                 if (id > 0) finalModuleId = id;
-              } catch (e) {}
+              } catch (e) { }
             }
 
             for (const unit of existingRow.registeredUnits) {
@@ -629,7 +629,7 @@ export function useFurnitureFixtureState(
               fd.append("ModuleId", finalModuleId.toString());
               fd.append("UploadedByUserId", "1");
               fd.append("IsAdHoc", "true");
-              
+
               const metadata: any[] = [];
 
               if (photoFile) {
@@ -659,27 +659,27 @@ export function useFurnitureFixtureState(
                 const uploadResult = await uploadBulkDocumentsAction(fd);
                 if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
                   const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
-                  console.error("Failed to upload document for assetId", unit.assetId, detailedError, uploadResult.data);
+
                   toast.error(`Document upload failed for Unit ${unit.unitNumber}: ${detailedError}`);
                 } else {
                   toast.success(`Documents updated successfully for Unit ${unit.unitNumber}!`);
                 }
               } catch (e: any) {
-                console.error("Failed to upload document for assetId", unit.assetId, e);
+
                 toast.error(`Document upload exception for Unit ${unit.unitNumber}: ${e.message}`);
               }
             }
           }
         }
-        
+
         // Reload fresh data from server to get recalculated CV
         await reloadDataFromServer();
-        
+
         // Only reset form after successful update
         resetEditForm();
         setCurrentPage(1);
         setIsSaving(false);
-        
+
       } catch (err: any) {
         setFormError(err.message || "Failed to update batch");
         setIsSaving(false);
@@ -694,11 +694,11 @@ export function useFurnitureFixtureState(
 
   const handleDeleteRow = async (id: number) => {
     const row = rows.find(r => r.id === id);
-    
+
     confirm({
       variant: "delete",
       title: "Delete Inventory Row",
-      description: row?.isRegistered 
+      description: row?.isRegistered
         ? "This will permanently delete the batch and all associated assets from the database. Are you sure?"
         : "Are you sure?",
       confirmText: "Delete",
@@ -715,10 +715,10 @@ export function useFurnitureFixtureState(
               setIsSaving(false);
               return;
             }
-            
+
             // Reload fresh data from server
             await reloadDataFromServer();
-            
+
           } catch (err: any) {
             setSaveError(err.message || "Failed to delete batch");
             setIsSaving(false);
@@ -736,16 +736,16 @@ export function useFurnitureFixtureState(
     setEditingId(row.id);
     setFormError("");
     setInvoiceError("");
-    
+
     // Convert row.type (lowercase-with-dashes format) to proper category name
     const matchingCategory = categories.find(c => {
       const normalized = c.typeName.toLowerCase().replace(/\s+/g, "-");
       return normalized === row.type;
     });
-    
+
     // Use category typeName if found, otherwise fallback to row.type
     const properTypeName = matchingCategory?.typeName || row.type;
-    
+
     setEditForm({
       type: properTypeName as InventoryType,
       itemName: row.itemName,
@@ -779,11 +779,11 @@ export function useFurnitureFixtureState(
   const handleSaveToBackend = async (parentAssetId: number, authorityId: number = 1, orgId: number = 1, createdBy: number = 1): Promise<{ success: boolean; error?: string }> => {
     // Filter out already registered rows - only save new ones
     const unsavedRows = rows.filter(r => !r.isRegistered && !r.batchId);
-    
+
     if (!unsavedRows.length) {
       return { success: true };
     }
-    
+
     setIsSaving(true);
     setSaveError("");
     setSaveSuccess(false);
@@ -792,34 +792,34 @@ export function useFurnitureFixtureState(
       const payload = {
         items: unsavedRows.map(row => ({
           parentAssetId,
-          inventoryType:    row.type,
-          itemName:         row.itemName,
-          modelBrand:       row.modelName,
-          specifications:   row.specifications !== "NA" ? row.specifications : null,
-          purchaseDate:     row.purchaseDate,
-          condition:        row.condition,
-          quantity:         row.quantity,
-          unitValue:        row.unitValue,
-          invoiceNumber:    row.invoice?.invoiceNumber ?? null,
-          invoiceDate:      row.invoice?.invoiceDate ?? null,
-          invoiceFileName:  row.invoice?.invoiceFileName ?? null,
+          inventoryType: row.type,
+          itemName: row.itemName,
+          modelBrand: row.modelName,
+          specifications: row.specifications !== "NA" ? row.specifications : null,
+          purchaseDate: row.purchaseDate,
+          condition: row.condition,
+          quantity: row.quantity,
+          unitValue: row.unitValue,
+          invoiceNumber: row.invoice?.invoiceNumber ?? null,
+          invoiceDate: row.invoice?.invoiceDate ?? null,
+          invoiceFileName: row.invoice?.invoiceFileName ?? null,
           owningDepartment: row.owningDepartment ?? null,
-          photoFileName:    row.photoName ?? null,
+          photoFileName: row.photoName ?? null,
           authorityId,
-          organizationId:   orgId,
+          organizationId: orgId,
           createdBy,
-          departmentId:     1,
-          units: Array.from({length: row.quantity}, (_, i) => ({
-              unitNumber: i + 1,
-              dynamicAttributes: row.unitDynamicAttributes?.[i] ?? null
+          departmentId: 1,
+          units: Array.from({ length: row.quantity }, (_, i) => ({
+            unitNumber: i + 1,
+            dynamicAttributes: row.unitDynamicAttributes?.[i] ?? null
           }))
         }))
       };
 
 
       const result = await saveInventoryBatchAction(payload);
-      
-      
+
+
       if (!result.success) {
         const errorMsg = result.error ?? "Save failed";
         setSaveError(errorMsg);
@@ -833,17 +833,17 @@ export function useFurnitureFixtureState(
         let matchedBatch = null;
         if (responseData && responseData.categoryGroups) {
           const allBatches = responseData.categoryGroups.flatMap((g: any) => g.batches || []);
-          matchedBatch = allBatches.find((b: any) => 
-             b.inventoryType === row.type && 
-             b.itemName === row.itemName &&
-             b.quantity === row.quantity
+          matchedBatch = allBatches.find((b: any) =>
+            b.inventoryType === row.type &&
+            b.itemName === row.itemName &&
+            b.quantity === row.quantity
           );
         }
 
         return {
           ...row,
-          batchId:        matchedBatch?.batchId,
-          isRegistered:   true,
+          batchId: matchedBatch?.batchId,
+          isRegistered: true,
           registeredUnits: matchedBatch?.units ?? []
         };
       }));
@@ -881,7 +881,7 @@ export function useFurnitureFixtureState(
     try {
       // Use Server Actions to securely fetch documents and avoid CORS/Auth issues
       const { fetchUploadedDocumentsAction, fetchDocumentFileAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions");
-      
+
       const docResponse = await fetchUploadedDocumentsAction(assetId, true, true);
       if (!docResponse.success || !docResponse.data) {
         return toast.error(docResponse.error || docResponse.message || "Failed to fetch documents");
@@ -889,11 +889,11 @@ export function useFurnitureFixtureState(
 
       const documents = docResponse.data;
       let targetDoc = null;
-      
+
       if (type === 'photo' && row.photoName) {
-         targetDoc = documents.find((d: any) => d.fileName === row.photoName || d.fileName === `photo_${row.photoName}`);
+        targetDoc = documents.find((d: any) => d.fileName === row.photoName || d.fileName === `photo_${row.photoName}`);
       } else if (type === 'invoice' && row.invoice?.invoiceFileName) {
-         targetDoc = documents.find((d: any) => d.fileName === row.invoice!.invoiceFileName || d.fileName === `invoice_${row.invoice!.invoiceFileName}`);
+        targetDoc = documents.find((d: any) => d.fileName === row.invoice!.invoiceFileName || d.fileName === `invoice_${row.invoice!.invoiceFileName}`);
       }
 
       if (!targetDoc) {
@@ -902,7 +902,7 @@ export function useFurnitureFixtureState(
 
       const fileRes = await fetchDocumentFileAction(targetDoc.id);
       if (!fileRes.success || !fileRes.data) {
-         return toast.error(fileRes.error || "Failed to download document");
+        return toast.error(fileRes.error || "Failed to download document");
       }
 
       // Convert base64 to Blob
@@ -913,7 +913,7 @@ export function useFurnitureFixtureState(
       }
       const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], { type: fileRes.mimeType || 'application/octet-stream' });
-      
+
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank");
 

@@ -1,6 +1,5 @@
 import { NewFloorFormState, BulkGeneratorState } from "@/types/asset/floor-details.types";
 import { ActionResult } from "@/types/common.types";
-import { FloorStepData } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 
 export const CURRENT_YEAR = new Date().getFullYear().toString();
 
@@ -27,8 +26,8 @@ export const DEFAULT_BULK: BulkGeneratorState = {
 
 // Module-scoped caching and promise locks to prevent duplicate concurrent queries
 export const cacheLock = {
-  activeInitPromise: null as Promise<ActionResult<FloorStepData>> | null,
-  cachedResult: null as ActionResult<FloorStepData> | null,
+  activeInitPromise: null as Promise<ActionResult<any>> | null,
+  cachedResult: null as ActionResult<any> | null,
   cachedAssetId: null as number | null,
 };
 

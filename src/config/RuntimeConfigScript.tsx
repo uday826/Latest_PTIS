@@ -13,13 +13,17 @@ export function RuntimeConfigScript() {
   // Validate config on server side
   validateRuntimeConfig(config);
   
-  // Serialize config to be injected into the page
-  const configScript = `window.__RUNTIME_CONFIG__ = ${JSON.stringify(config)};`;
+  // Serialize config
+  const serializedConfig = JSON.stringify(config);
   
+  // We use a hidden div with a data attribute instead of a <script> tag
+  // to completely avoid React 18+ hydration warnings regarding scripts in components.
   return (
-    <script
+    <div
       id="runtime-config"
-      dangerouslySetInnerHTML={{ __html: configScript }}
+      data-config={serializedConfig}
+      style={{ display: 'none' }}
+      aria-hidden="true"
     />
   );
 }

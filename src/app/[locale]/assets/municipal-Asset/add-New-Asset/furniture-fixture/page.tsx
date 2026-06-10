@@ -19,14 +19,6 @@ export default async function FurnitureFixturesInventoryPage({ searchParams }: P
     const parentAssetId = params.assetId 
         ? Number(params.assetId) 
         : (params.id ? Number(params.id) : null);
-    
-    console.log("🔵 [SSR page.tsx] URL params:", JSON.stringify(params));
-    console.log("🔵 [SSR page.tsx] Extracted parentAssetId:", parentAssetId);
-    console.log("🔵 [SSR page.tsx] params.id:", params.id, "params.assetId:", params.assetId);
-    
-    if (!parentAssetId) {
-        console.error("❌ [SSR page.tsx] Parent asset ID is missing from URL!");
-    }
 
     let categories: InventoryItemCategory[] = [];
     let conditions: InventoryItemCondition[] = [];
@@ -35,39 +27,28 @@ export default async function FurnitureFixturesInventoryPage({ searchParams }: P
     let initialBatches: InventoryBatchListResponse | null = null;
 
     try {
-        // Fetch master data and existing batches in parallel
-        const fetchPromises: Promise<any>[] = [
+        const masterDataPromise = Promise.all([
             inventoryService.getCategories(),
             inventoryService.getConditions(),
             inventoryService.getItemNames(),
             inventoryService.getItemModels(),
-        ];
+        ]);
+        const batchesPromise = parentAssetId && parentAssetId > 0
+            ? getInventoryBatchesAction(parentAssetId)
+            : Promise.resolve(null);
 
-        // Only fetch existing batches if we have a valid parentAssetId
-        if (parentAssetId && parentAssetId > 0) {
-            fetchPromises.push(getInventoryBatchesAction(parentAssetId));
-        }
+        const [[catRes, condRes, namesRes, modelsRes], batchesRes] = await Promise.all([masterDataPromise, batchesPromise]);
 
-        const [catRes, condRes, namesRes, modelsRes, batchesRes] = await Promise.all(fetchPromises);
+        categories = catRes.success && Array.isArray(catRes.data) ? catRes.data : [];
+        conditions = condRes.success && Array.isArray(condRes.data) ? condRes.data : [];
+        itemNames = namesRes.success && Array.isArray(namesRes.data) ? namesRes.data : [];
+        itemModels = modelsRes.success && Array.isArray(modelsRes.data) ? modelsRes.data : [];
 
-        if (catRes.success && Array.isArray(catRes.data)) {
-            categories = catRes.data;
-        }
-        if (condRes.success && Array.isArray(condRes.data)) {
-            conditions = condRes.data;
-        }
-        if (namesRes.success && Array.isArray(namesRes.data)) {
-            itemNames = namesRes.data;
-        }
-        if (modelsRes.success && Array.isArray(modelsRes.data)) {
-            itemModels = modelsRes.data;
-        }
-        // Load existing batches if available
         if (batchesRes?.success && batchesRes.data) {
             initialBatches = batchesRes.data;
         }
     } catch (error) {
-        console.error("⚠️ Failed to fetch inventory data from API on server:", error);
+
     }
 
     return (

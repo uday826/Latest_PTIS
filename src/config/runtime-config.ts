@@ -61,14 +61,23 @@ export function getServerRuntimeConfig(): RuntimeConfig {
 /**
  * Get runtime configuration (works on both server and client)
  * - Server: reads from process.env
- * - Client: reads from window.__RUNTIME_CONFIG__ (injected by server)
+ * - Client: reads from the DOM (injected by server in layout.tsx via data attribute)
  */
 export function getRuntimeConfig(): RuntimeConfig {
   if (isServer) {
     return getServerRuntimeConfig();
   }
 
-  // Client-side: read from window object (injected by server in layout.tsx)
+  // Client-side: read from the injected div to avoid React hydration issues with script tags
+  try {
+    const configEl = document.getElementById('runtime-config');
+    if (configEl && configEl.dataset.config) {
+      return JSON.parse(configEl.dataset.config) as RuntimeConfig;
+    }
+  } catch (e) {
+    console.warn('Failed to parse runtime config from DOM', e);
+  }
+  
   return window.__RUNTIME_CONFIG__ || defaultConfig;
 }
 

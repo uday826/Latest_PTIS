@@ -116,40 +116,23 @@ export function InventoryEditDrawer({
             />
           </div>
 
-          {editNameOptions.length > 0 ? (
-            <Select
-              label={editLabels.itemName}
-              value={editForm.itemName}
-              onChange={(_, val) => handleEditItemNameChange(val)}
-              options={editNameOptions}
-              placeholder="-- Select --"
-            />
-          ) : (
-            <Input
-              label={editLabels.itemName}
-              value={editForm.itemName}
-              onChange={(event) => handleEditItemNameChange(event.target.value)}
-              placeholder="Item Name"
-            />
-          )}
+          <Select
+            label={editLabels.itemName}
+            value={editForm.itemName}
+            onChange={(_, val) => handleEditItemNameChange(val)}
+            options={editNameOptions}
+            placeholder={editForm.type ? "Select item name" : "Select type first"}
+            disabled={!editForm.type}
+          />
 
-          {editNameOptions.length > 0 ? (
-            <Select
-              label={editLabels.modelName}
-              value={editForm.modelName}
-              onChange={(_, val) => updateEditForm("modelName", val)}
-              options={editModelOptions}
-              placeholder="-- Select --"
-              disabled={!editForm.itemName}
-            />
-          ) : (
-            <Input
-              label={editLabels.modelName}
-              value={editForm.modelName}
-              onChange={(event) => updateEditForm("modelName", event.target.value)}
-              placeholder="Brand / Model"
-            />
-          )}
+          <Select
+            label={editLabels.modelName}
+            value={editForm.modelName}
+            onChange={(_, val) => updateEditForm("modelName", val)}
+            options={editModelOptions}
+            placeholder={editForm.itemName ? "Select model" : "Select item name first"}
+            disabled={!editForm.itemName}
+          />
 
           {editForm.type === "furniture" ? null : (
             <Input

@@ -37,9 +37,9 @@ export async function getAssetValuationDataAction(assetId: number, isBuildingCli
       category.includes("land") ||
       category.includes("plot");
 
-    console.log("[DEBUG getAssetValuationDataAction] assetId:", assetId);
-    console.log("[DEBUG getAssetValuationDataAction] assetObj categoryName/category/categoryId/assetCategoryId:", assetObj?.categoryName, assetObj?.category, assetObj?.categoryId, assetObj?.assetCategoryId);
-    console.log("[DEBUG getAssetValuationDataAction] isBuildingClient:", isBuildingClient, "isBuilding:", isBuilding, "isLand:", isLand);
+
+
+
 
     let floorsList: any[] = [];
     let buildingCVData: any = null;
@@ -47,18 +47,18 @@ export async function getAssetValuationDataAction(assetId: number, isBuildingCli
 
     if (isBuilding) {
       // Call Building CV Calculation Endpoint
-      console.log("[DEBUG getAssetValuationDataAction] Calling calculateBuildingCV for assetId:", assetId);
+
       const cvRes = await valuationApiService.calculateBuildingCV(assetId);
-      console.log("[DEBUG getAssetValuationDataAction] calculateBuildingCV response success:", cvRes.success, "statusCode:", cvRes.statusCode, "error:", cvRes.error);
+
       
       if (cvRes.success && cvRes.data) {
         buildingCVData = cvRes.data;
-        console.log("[DEBUG getAssetValuationDataAction] calculateBuildingCV data received:", JSON.stringify(cvRes.data).slice(0, 500));
+
         // Use buildingFloorDetails from calculation response as floorsList
         floorsList = cvRes.data.buildingFloorDetails ?? [];
-        console.log("[DEBUG getAssetValuationDataAction] floorsList extracted count:", floorsList.length);
+
       } else {
-        console.warn("Building CV Calculation endpoint failed, falling back to standard floors fetch:", cvRes.error);
+
         const floorsRes = await valuationApiService.getFloorsByAsset(assetId);
         if (floorsRes.success && floorsRes.data) {
           const data = floorsRes.data as any;
@@ -72,15 +72,15 @@ export async function getAssetValuationDataAction(assetId: number, isBuildingCli
       }
     } else if (isLand) {
       // Call Plot CV Calculation Endpoint
-      console.log("[DEBUG getAssetValuationDataAction] Calling calculatePlotCV for assetId:", assetId);
+
       const cvRes = await valuationApiService.calculatePlotCV(assetId);
-      console.log("[DEBUG getAssetValuationDataAction] calculatePlotCV response success:", cvRes.success, "statusCode:", cvRes.statusCode, "error:", cvRes.error);
+
       
       if (cvRes.success && cvRes.data) {
         plotCVData = cvRes.data;
-        console.log("[DEBUG getAssetValuationDataAction] calculatePlotCV data received:", JSON.stringify(cvRes.data).slice(0, 500));
+
       } else {
-        console.warn("Plot CV Calculation endpoint failed:", cvRes.error);
+
       }
 
       // Load standard floors for land if any
@@ -143,7 +143,7 @@ export async function getAssetValuationDataAction(assetId: number, isBuildingCli
       plotCV: plotCVData
     };
   } catch (error) {
-    console.error("Error in getAssetValuationDataAction server action:", error);
+
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to load valuation data from server"

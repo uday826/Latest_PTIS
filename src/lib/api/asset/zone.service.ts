@@ -34,7 +34,7 @@ export const zoneService = {
    * Get all SubZones for Capital Value calculation
    */
   getSubZones: async (): Promise<ApiResponse<any[]>> => {
-    const response = await apiClient.get<any>("/SubZoneDetailsForCV");
+    const response = await apiClient.get<any>("/SubZoneDetailsForCV", { cacheStrategy: 300 });
     if (response.success && response.data) {
       const items = Array.isArray(response.data)
         ? response.data

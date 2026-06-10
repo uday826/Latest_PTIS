@@ -125,9 +125,33 @@ export async function fetchParentAssetsAction(): Promise<{
         })),
       };
     }
-    return { success: false, data: [], error: response.error || "Failed to fetch assets" };
+    return { success: false, data: [], error: response.error || "Failed to fetch parent assets" };
   } catch (error: any) {
-    console.error("Error in fetchParentAssetsAction:", error);
     return { success: false, data: [], error: error?.message || "Failed to fetch parent assets" };
   }
 }
+
+/**
+ * Server action to fetch subzones filtered by mouja ID.
+ */
+export async function fetchSubzonesByMoujaAction(moujaId: number | string): Promise<{
+  success: boolean;
+  data: any[];
+  error?: string;
+}> {
+  try {
+    const { apiClient } = await import("@/services/api.service");
+    // Pass the selected moujaId to the SubZoneDetailsForCV API call
+    const response = await apiClient.get<any>(`/SubZoneDetailsForCV?moujaId=${moujaId}`);
+    if (response.success && response.data) {
+      const items = Array.isArray(response.data)
+        ? response.data
+        : (response.data.items || response.data.Items || response.data.data || []);
+      return { success: true, data: items };
+    }
+    return { success: false, data: [], error: response.error || "Failed to fetch subzones" };
+  } catch (error: any) {
+    return { success: false, data: [], error: error?.message || "Failed to fetch subzones" };
+  }
+}
+

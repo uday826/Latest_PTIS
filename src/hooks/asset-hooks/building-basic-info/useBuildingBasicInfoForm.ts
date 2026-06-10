@@ -6,7 +6,7 @@
  */
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useAssetForm } from "@/components/modules/assets/municipal-Asset/add-New-Asset/AssetFormContext";
 import { useBuildingBasicInfoFormState } from "./useBuildingBasicInfoFormState";
 import { useBuildingBasicInfoFormValidation } from "./useBuildingBasicInfoFormValidation";
@@ -103,6 +103,22 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
 
   const { errors, isValid, showError, validate } =
     useBuildingBasicInfoFormValidation({ formData, touched, submittedOnce });
+
+  // Sync category and type from context if they change after mount
+  useEffect(() => {
+    baseUpdateFormData({
+      category: contextData.category || "Building Assets",
+      assetType: contextData.assetType || "",
+      categoryId: Number(contextData.categoryId) || 0,
+      typeId: Number(contextData.typeId) || 0,
+    });
+  }, [
+    contextData.category, 
+    contextData.assetType, 
+    contextData.categoryId, 
+    contextData.typeId, 
+    baseUpdateFormData
+  ]);
 
   // Keep the shared context in sync so other wizard steps see updated values
   const handleChange = useCallback(

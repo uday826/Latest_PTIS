@@ -23,6 +23,7 @@ export interface BuildingPropertyDetailsFormData {
   condition?: string;
   isRevenueGenerating?: string;
   landArea?: string;
+  valuationType?: string;
 }
 
 // ─── Section B: Ownership & Address Details ───────────────────────────────────
@@ -91,6 +92,8 @@ export interface BuildingPropertyDetailsSectionProps {
   zones?: Zone[];
   moujas?: Mouja[];
   subzones?: any[];
+  isLoadingSubzones?: boolean;
+  onMoujaChange?: (moujaId: string) => void;
 }
 
 export interface BuildingOwnershipDetailsSectionProps {
@@ -101,8 +104,10 @@ export interface BuildingOwnershipDetailsSectionProps {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => void;
   departments?: Department[];
+  ownershipTypes?: any[];
   updateFormData?: (patch: Partial<any>) => void;
 }
+
 
 export interface BuildingDynamicAttributesSectionProps {
   /** Pre-fetched field definitions from the server (SSR) */

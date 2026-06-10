@@ -2,10 +2,7 @@
 
 import {
   fetchAssetsByFilter,
-  fetchCategories,
   fetchTypesByCategory,
-  fetchWards,
-  fetchZones,
 } from "@/app/[locale]/assets/municipal-Asset/actions";
 import { Select } from "@/components/common";
 import { Drawer } from "@/components/common/Drawer";
@@ -36,11 +33,14 @@ interface ExistingAssetEntry {
 interface AddAssetDrawerProps {
   open: boolean;
   onClose: () => void;
+  initialCategories?: AssetCategory[];
+  initialZones?: Zone[];
+  initialWards?: Ward[];
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
+export function AddAssetDrawer({ open, onClose, initialCategories = [], initialZones = [], initialWards = [] }: AddAssetDrawerProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -48,7 +48,7 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
   const [mode, setMode] = useState<DrawerMode>("new");
 
   // ── "New Register" state
-  const [categories, setCategories] = useState<AssetCategory[]>([]);
+  const categories = initialCategories;
   const [types, setTypes] = useState<AssetType[]>([]);
   const [newData, setNewData] = useState({
     category: "",
@@ -56,11 +56,11 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
     categoryId: null as number | null,
     typeId: null as number | null,
   });
-  const [isCatLoading, setIsCatLoading] = useState(false);
+  const isCatLoading = false;
 
   // ── "Use Existing" state
-  const [zones, setZones] = useState<Zone[]>([]);
-  const [wards, setWards] = useState<Ward[]>([]);
+  const zones = initialZones;
+  const wards = initialWards;
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
   const [selectedWardId, setSelectedWardId] = useState<number | null>(null);
   const [assetSearch, setAssetSearch] = useState("");
@@ -73,20 +73,6 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
   const canSearch = !!(selectedZoneId && selectedWardId);
 
 
-  // ──────────────────────────────────────────────────────
-  // Load categories on mount (New Register)
-  // ──────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!open) return;
-    setIsCatLoading(true);
-    fetchCategories().then((res) => {
-      if (res.success && res.data) {
-        setCategories(Array.isArray(res.data) ? res.data : []);
-      }
-      setIsCatLoading(false);
-    });
-  }, [open]);
-
   // Load types when category changes
   useEffect(() => {
     if (!newData.category) { setTypes([]); return; }
@@ -98,19 +84,6 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
       if (res.success && res.data) setTypes(res.data);
     });
   }, [newData.category, categories]);
-
-  // ──────────────────────────────────────────────────────
-  // Load zones + wards on open
-  // ──────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!open) return;
-    fetchZones().then((res) => {
-      if (res.success && res.data) setZones(Array.isArray(res.data) ? res.data : []);
-    });
-    fetchWards().then((res) => {
-      if (res.success && res.data) setWards(Array.isArray(res.data) ? res.data : []);
-    });
-  }, [open]);
 
   // ──────────────────────────────────────────────────────
   // Fetch assets — only when zone + ward are both selected
@@ -243,7 +216,10 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
   // ──────────────────────────────────────────────────────
   // Derived options
   // ──────────────────────────────────────────────────────
-  const categoryOptions = categories.map((c) => ({ label: c.categoryName, value: c.categoryName }));
+  const categoryOptions = categories.map((c: any) => {
+    const label = c.categoryName || c.CategoryName || c.assetCategoryName || c.AssetCategoryName || "Unknown Category";
+    return { label, value: label };
+  });
   const typeOptions = types.map((t) => {
     const label = t.assetTypeName || (t as any).typeName || "Unknown Type";
     return { label, value: label };
@@ -346,7 +322,10 @@ export function AddAssetDrawer({ open, onClose }: AddAssetDrawerProps) {
                   name="category"
                   value={newData.category}
                   onChange={(e) => {
-                    const cat = categories.find((c) => c.categoryName === e.target.value);
+                    const cat = categories.find((c: any) => {
+                      const name = c.categoryName || c.CategoryName || c.assetCategoryName || c.AssetCategoryName;
+                      return name === e.target.value;
+                    });
                     setNewData({ category: e.target.value, assetType: "", categoryId: cat?.id ?? null, typeId: null });
                     setTypes([]);
                   }}

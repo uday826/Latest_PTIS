@@ -60,7 +60,7 @@ export const assetMasterService = {
    * Endpoint: GET /AssetMaster/dashboard-stats
    */
   getDashboardStats: async (): Promise<ApiResponse<AssetDashboardStatsDto>> => {
-    return apiClient.get<AssetDashboardStatsDto>("/AssetMaster/dashboard-stats");
+    return apiClient.get<AssetDashboardStatsDto>("/AssetMaster/dashboard-stats", { cacheStrategy: 300 });
   },
 
   /**

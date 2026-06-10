@@ -26,6 +26,7 @@ export function BuildingOwnershipDetailsSection({
   showError,
   handleChange,
   departments = [],
+  ownershipTypes = [],
   updateFormData,
 }: BuildingOwnershipDetailsSectionProps): React.JSX.Element {
   const [isMapOpen, setIsMapOpen] = React.useState(false);
@@ -36,6 +37,19 @@ export function BuildingOwnershipDetailsSection({
     }
     setIsMapOpen(false);
   };
+
+  const resolvedOwnershipOptions = ownershipTypes.length > 0 
+    ? ownershipTypes.map(ot => {
+        const label = ot.ownershipTypeName || ot.name || ot.code || `Ownership ${ot.id}`;
+        const value = ot.ownershipTypeName || ot.code || String(ot.id);
+        return { label, value };
+      })
+    : [
+        { label: "Municipal", value: "municipal" },
+        { label: "Leased", value: "leased" },
+        { label: "Private/Rented", value: "private" },
+      ];
+
 
   return (
     <Card
@@ -97,11 +111,7 @@ export function BuildingOwnershipDetailsSection({
           name="ownershipType"
           value={formData.ownershipType}
           onChange={handleChange}
-          options={[
-            { label: "Municipal", value: "municipal" },
-            { label: "Leased", value: "leased" },
-            { label: "Private/Rented", value: "private" },
-          ]}
+          options={resolvedOwnershipOptions}
           className="font-semibold text-sm"
           selectSize="sm"
           required
@@ -151,7 +161,6 @@ export function BuildingOwnershipDetailsSection({
           onChange={handleChange}
           placeholder="Rajesh Kumar"
           className="h-8 text-[13px]"
-          required
           error={
             showError("inChargeName") ? errors.inChargeName : undefined
           }
@@ -175,11 +184,11 @@ export function BuildingOwnershipDetailsSection({
           maxLength={10}
           type="tel"
           className="h-8 text-[13px]"
-          required
           error={
             showError("inChargeMobile") ? errors.inChargeMobile : undefined
           }
         />
+
 
         <Input
           label="Email"

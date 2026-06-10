@@ -2,7 +2,7 @@ import type React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import type { AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
 
-export type AssetDetailTab = 'overview' | 'legal' | 'financial' | 'documents' | 'assets';
+export type AssetDetailTab = 'overview' | 'legal' | 'financial' | 'documents' | 'assets' | 'allocations';
 export type OverviewSubTab = 'summary' | 'shopDetails';
 export type BuildingValuationSubTab = 'summary' | 'floors';
 export type LandValuationSubTab = 'value' | 'tax';

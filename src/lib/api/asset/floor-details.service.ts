@@ -198,5 +198,13 @@ export const floorDetailsService = {
     data: CreateChildAssetRequest
   ): Promise<ApiResponse<CreateChildAssetResponse>> => {
     return jsonRequest<CreateChildAssetResponse>("POST", "/ManageSubUnits/create", data);
+  },
+
+  /**
+   * Trigger CV (Capital Value) calculation for a specific floor detail record.
+   * Updates AssetFloorDetails.CapitalValue and propagates to all sub-units on the floor.
+   */
+  calculateFloorCV: async (floorDetailId: number): Promise<ApiResponse<any>> => {
+    return jsonRequest<any>("POST", `/AssetFloorDetails/${floorDetailId}/calculate-capital-value`);
   }
 };

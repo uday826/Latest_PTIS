@@ -11,10 +11,10 @@ import { AssetWizardStepProps } from "@/types/asset-types/basic-info/asset-wizar
 export function AssetLocationDetails({ formData, onChange }: AssetWizardStepProps) {
   const { updateFormData, handleToggleChange, errors, submittedOnce } = useAssetForm();
   const [isMapOpen, setIsMapOpen] = React.useState(false);
-  const isLand = formData.category === "LAND" || formData.category === "Land Assets";
-  const isMovable = formData.category === "MOVABLE";
-  const typesWithGeo = ["CCTV_CAMERAS", "IOT_SENSORS", "TRAFFIC_SIGNALS"];
-  const showGeo = !isMovable || typesWithGeo.includes(formData.assetType);
+  // DB-flag driven — no string matching on category names
+  const isLand    = formData.valuationType ? formData.valuationType === "LAND"    : (!formData.hasFloorDetails && !formData.isMovableCategory);
+  const isMovable = formData.valuationType ? formData.valuationType === "MOVABLE" : formData.isMovableCategory === true;
+  const showGeo   = !isMovable;
 
   const showError = (field: string) => {
     return !!((submittedOnce || formData[field as keyof typeof formData]) && errors?.[field]);

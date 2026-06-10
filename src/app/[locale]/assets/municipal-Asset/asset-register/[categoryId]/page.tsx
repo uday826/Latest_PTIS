@@ -122,7 +122,6 @@ export default async function Page({ params, searchParams }: PageProps) {
     query.AssetTypeId === undefined &&
     query.ZoneId === undefined &&
     query.WardId === undefined;
-
   if (!isCanonical) {
     const qStr = canonicalQuery.toString();
     redirect(`/${locale}/assets/municipal-Asset/asset-register/${categoryId}${qStr ? '?' + qStr : ''}`);

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useAssetForm } from "../AssetFormContext";
 import { SubUnitDetailedConfigurator } from "./SubUnitDetailedConfigurator";
 
-export function StandaloneSubUnitStep() {
+export function StandaloneSubUnitStep({ dropdownOptions }: { dropdownOptions?: any }) {
   const { formData, updateFormData } = useAssetForm();
 
   const parentBuildingId = formData.parentBuildingId;
@@ -91,6 +91,8 @@ export function StandaloneSubUnitStep() {
           parentBuildingName={parentBuildingName}
           onSave={handleSaveUnitDetail}
           onCancel={() => setActiveUnit(null)}
+          floors={parentFloors}
+          dropdownOptions={dropdownOptions}
         />
       </div>
     );

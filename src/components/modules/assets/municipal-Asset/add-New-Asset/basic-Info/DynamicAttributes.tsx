@@ -139,7 +139,7 @@ export function DynamicAttributes({
           setFields([]);
         }
       } catch (error) {
-        console.error("Error resolving or fetching field definitions:", error);
+
       } finally {
         setLoading(false);
       }

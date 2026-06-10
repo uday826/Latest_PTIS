@@ -54,6 +54,14 @@ function redirectToLogin(
 export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const { locale, pathWithoutLocale } = localeAndPathWithoutLocale(pathname);
+  const isServerActionRequest = request.method === 'POST' && request.headers.has('next-action');
+
+  // Next.js Server Actions expect a specific RSC response shape.
+  // Redirecting these POST requests from middleware causes client-side
+  // "unexpected response" errors in fetchServerAction.
+  if (isServerActionRequest) {
+    return NextResponse.next();
+  }
 
   const accessToken = request.cookies.get(AUTH_COOKIES.AUTH_TOKEN)?.value;
   const refreshToken = request.cookies.get(AUTH_COOKIES.REFRESH_TOKEN)?.value;

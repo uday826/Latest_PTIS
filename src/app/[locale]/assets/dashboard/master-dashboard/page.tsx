@@ -11,7 +11,6 @@ export const dynamic = 'force-dynamic';
  */
 
 import { fetchDashboardDataAction } from '@/app/[locale]/assets/dashboard/master-dashboard/actions';
-import { AssetIntroVideo } from '@/components/modules/assets/AssetIntroVideo';
 import { AssetMasterDashboard } from '@/components/modules/assets/dashboard/master-dashboard/AssetMasterDashboard';
 import { authService } from '@/lib/api/auth.service';
 import { cookies } from 'next/headers';
@@ -38,22 +37,9 @@ export default async function AssetMasterDashboardPage() {
     }
 
     const initialDashboardData = dashboardRes.success ? dashboardRes.data : undefined;
-    const hasPlayedAssetIntro = cookieStore.get('ntis_asset_management_intro_played')?.value === 'true';
 
     return (
         <>
-            {!hasPlayedAssetIntro && (
-                <style id="server-intro-style" dangerouslySetInnerHTML={{ __html: `
-                    body header, body footer, body main, html header, html footer, html main {
-                        display: none !important;
-                    }
-                    body, html {
-                        background-color: black !important;
-                        overflow: hidden !important;
-                    }
-                ` }} />
-            )}
-            <AssetIntroVideo displayUlbName={districtName} />
             <div className="p-2 bg-slate-50/50 overflow-y-auto custom-scrollbar">
                 <div className="mx-auto w-full max-w-[99%]">
                     <AssetMasterDashboard

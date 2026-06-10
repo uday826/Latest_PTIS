@@ -10,24 +10,39 @@ import { apiClient } from "@/services/api.service";
  * Fetch all active asset categories
  */
 export async function fetchCategories() {
-  const response = await categoryTypeService.getCategories();
-  return response;
+  try {
+    const response = await categoryTypeService.getCategories();
+    return response;
+  } catch (err: any) {
+
+    return { success: false as const, data: [], error: "Failed to fetch categories" };
+  }
 }
 
 /**
  * Fetch all active asset types
  */
 export async function fetchAllTypes() {
-  const response = await categoryTypeService.getAllTypes();
-  return response;
+  try {
+    const response = await categoryTypeService.getAllTypes();
+    return response;
+  } catch (err: any) {
+
+    return { success: false as const, data: [], error: "Failed to fetch types" };
+  }
 }
 
 /**
  * Fetch asset types for a specific category
  */
 export async function fetchTypesByCategory(categoryId: number) {
-  const response = await categoryTypeService.getTypesByCategory(categoryId);
-  return response;
+  try {
+    const response = await categoryTypeService.getTypesByCategory(categoryId);
+    return response;
+  } catch (err: any) {
+
+    return { success: false as const, data: [], error: "Failed to fetch types for category" };
+  }
 }
 
 /**
@@ -41,7 +56,7 @@ export async function fetchMunicipalAssetDashboardStats() {
       return response.data;
     }
   } catch (err) {
-    console.error("Failed to fetch dashboard stats from AssetMaster:", err);
+
   }
   return null;
 }
@@ -54,7 +69,7 @@ export async function fetchZones() {
     const response = await zoneService.getZones();
     return response;
   } catch (error) {
-    console.error("Error fetching zones:", error);
+
     return { success: false, error: "Failed to fetch zones", data: [] as any[] };
   }
 }
@@ -67,7 +82,7 @@ export async function fetchWards() {
     const response = await wardService.getWards();
     return response;
   } catch (error) {
-    console.error("Error fetching wards:", error);
+
     return { success: false, error: "Failed to fetch wards", data: [] as any[] };
   }
 }
@@ -98,7 +113,7 @@ export async function fetchAssetsByFilter(params: { zoneId?: number; wardId?: nu
     }
     return { success: false, data: [] as any[], totalCount: 0, error: response.error };
   } catch (error) {
-    console.error("Error fetching assets by filter:", error);
+
     return { success: false, data: [] as any[], totalCount: 0, error: "Failed to fetch assets" };
   }
 }

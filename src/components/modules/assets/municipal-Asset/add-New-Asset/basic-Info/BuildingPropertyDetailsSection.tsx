@@ -28,10 +28,12 @@ export function BuildingPropertyDetailsSection({
   zones = [],
   moujas = [],
   subzones = [],
+  isLoadingSubzones = false,
+  onMoujaChange,
 }: BuildingPropertyDetailsSectionProps): React.JSX.Element {
-  const isLand =
-    formData.category === "Land Assets" ||
-    formData.category === "LAND";
+  const isLand = formData.valuationType
+    ? formData.valuationType === "LAND"
+    : formData.category?.toLowerCase().includes("land");
 
   return (
     <Card
@@ -126,41 +128,16 @@ export function BuildingPropertyDetailsSection({
           required
           error={showError("ward") ? errors.ward : undefined}
         />
-
-        <Select
-          label="Subzone"
-          name="subzone"
-          value={formData.subzone}
-          onChange={handleChange}
-          options={
-            subzones && subzones.length > 0
-              ? subzones.map((s) => {
-                const label =
-                  s.subZoneName ||
-                  s.SubZoneName ||
-                  s.subZoneNo ||
-                  s.SubZoneNo ||
-                  s.name ||
-                  `Subzone ${s.id || ""}`;
-                return { label, value: String(s.id || s.subZoneNo || s.SubZoneNo || "") };
-              })
-              : [
-                { label: "Subzone A", value: "Subzone A" },
-                { label: "Subzone B", value: "Subzone B" },
-                { label: "Subzone C", value: "Subzone C" },
-              ]
-          }
-          className="font-semibold text-sm"
-          selectSize="sm"
-          required
-          error={showError("subzone" as any) ? (errors as any).subzone : undefined}
-        />
-
         <Select
           label="Mouja"
           name="mouja"
           value={formData.mouja}
-          onChange={handleChange}
+          onChange={(e) => {
+            handleChange(e);
+            if (onMoujaChange) {
+              onMoujaChange(e.target.value);
+            }
+          }}
           options={
             moujas && moujas.length > 0
               ? moujas.map((m) => {
@@ -174,6 +151,34 @@ export function BuildingPropertyDetailsSection({
           required
           error={showError("mouja" as any) ? (errors as any).mouja : undefined}
         />
+        <Select
+          label="Subzone"
+          name="subzone"
+          value={formData.subzone}
+          onChange={handleChange}
+          disabled={!formData.mouja || isLoadingSubzones}
+          options={
+            subzones && subzones.length > 0
+              ? subzones.map((s) => {
+                const label =
+                  s.subZoneName ||
+                  s.SubZoneName ||
+                  s.subZoneNo ||
+                  s.SubZoneNo ||
+                  s.name ||
+                  `Subzone ${s.id || ""}`;
+                return { label, value: String(s.id || s.subZoneNo || s.SubZoneNo || "") };
+              })
+              : []
+          }
+          className="font-semibold text-sm"
+          selectSize="sm"
+          required
+          error={showError("subzone" as any) ? (errors as any).subzone : undefined}
+        />
+
+
+
 
 
 

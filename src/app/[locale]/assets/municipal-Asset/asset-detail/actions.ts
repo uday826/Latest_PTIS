@@ -145,7 +145,7 @@ export async function fetchAssetMasterById(assetId: number | string) {
       return response.data;
     }
   } catch (err) {
-    console.error("Failed to fetch asset master by ID:", err);
+
   }
   return null;
 }
@@ -485,7 +485,7 @@ export async function fetchAssetById(id: number) {
     const response = await assetMasterService.getAssetById(id);
     return response;
   } catch (error) {
-    console.error("Error fetching asset by ID:", error);
+
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to fetch asset"

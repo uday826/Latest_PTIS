@@ -21,9 +21,13 @@ export default function FurnitureFixturePage({ parentAssetId, categories = [], c
   const typeLower = (formData.assetType || "").toLowerCase();
   const isLandFurnitureAllowed = ["garden", "park", "playground", "reserved"].some(keyword => typeLower.includes(keyword));
 
-  const isLand = formData.category === "LAND" && !isLandFurnitureAllowed;
+  // Pure DB-flag driven — valuationType from AssetCategoryMaster.ValuationType
+  const isLandCategory = formData.valuationType
+    ? formData.valuationType === "LAND"
+    : !formData.hasFloorDetails && !formData.isMovableCategory;
+  const isLand = isLandCategory && !isLandFurnitureAllowed;
 
-  // Use DB flag when available (new flow); fall back to legacy string check
+  // DB flag wins; isLand fallback only used when flags haven't loaded yet
   const showForm = formData.hasInventory !== undefined
     ? formData.hasInventory === true
     : !isLand;

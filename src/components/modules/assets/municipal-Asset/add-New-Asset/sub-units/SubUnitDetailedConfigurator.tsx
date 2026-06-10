@@ -1,12 +1,10 @@
 "use client";
 
-import { createChildAssetAction, fetchFloorStepData, getChildAssetByIdAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
+import React, { useRef, useState, useEffect } from "react";
+import { X, Save, Building2, UploadCloud, FileText, IndianRupee, ImagePlus, CheckCircle2, Layers, Loader2, Briefcase, MapPin } from "lucide-react";
 import { Input, Select } from "@/components/common";
-import { mapFloorsFromApi } from "@/hooks/asset-hooks/floor-details/useFloorAssetFlowCache";
-import { Building2, CheckCircle2, FileText, ImagePlus, IndianRupee, Layers, Loader2, Save, UploadCloud, X } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import { getChildAssetByIdAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { toast } from "sonner";
-import { useAssetForm } from "../AssetFormContext";
 import { RoomWiseSubmissionDrawer } from "./RoomWiseSubmissionDrawer";
 
 interface SubUnitDetailedConfiguratorProps {
@@ -14,6 +12,10 @@ interface SubUnitDetailedConfiguratorProps {
   parentBuildingName: string;
   onSave: (updatedUnit: any) => void;
   onCancel: () => void;
+  // Floors and dropdown options are now passed from the parent instead of fetched inside
+  floors?: any[];
+  dropdownOptions?: any;
+  departments?: { label: string; value: string }[];
 }
 
 /** Labelled field wrapper — each Field is relative so Select dropdowns position correctly */
@@ -78,24 +80,14 @@ function calculateDuration(startStr: string, endStr: string): string {
   return parts.join(", ") || "0 Days";
 }
 
-/** Helper to calculate duration in total months as an integer */
-function calculateDurationMonths(startStr: string, endStr: string): number {
-  if (!startStr || !endStr) return 0;
-  const start = new Date(startStr);
-  const end = new Date(endStr);
-  if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) return 0;
-
-  let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
-  if (end.getDate() < start.getDate()) {
-    months -= 1;
-  }
-  return Math.max(0, months);
-}
-
-export function SubUnitDetailedConfigurator({ unit, parentBuildingName, onSave, onCancel }: SubUnitDetailedConfiguratorProps) {
-  const { formData: globalFormData } = useAssetForm();
-  const [parentFloors, setParentFloors] = useState<any[]>([]);
-  const [dropdownOptions, setDropdownOptions] = useState<any>(null);
+export function SubUnitDetailedConfigurator({
+  unit,
+  parentBuildingName,
+  onSave,
+  onCancel,
+  floors: propFloors = [],
+  dropdownOptions: propDropdownOptions = null,
+}: SubUnitDetailedConfiguratorProps) {
 
   const [formData, setFormData] = useState<any>({ ...unit });
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -112,62 +104,50 @@ export function SubUnitDetailedConfigurator({ unit, parentBuildingName, onSave, 
   const [isRoomsDrawerOpen, setIsRoomsDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    async function loadFloorData() {
-      try {
-        const rawAssetId = Number(globalFormData?.id || (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("id") || new URLSearchParams(window.location.search).get("assetId") : null));
-        const assetId = isNaN(rawAssetId) || rawAssetId <= 0 ? 2 : rawAssetId;
+  // Floors and dropdown options are passed from the parent (UnitPoolPanel / RoomWiseSubmissionStep).
+  const dropdownOptions = propDropdownOptions;
+  const parentFloors    = propFloors;
+  const departments     = propDropdownOptions?.departments || []; // Extracted from dropdownOptions if passed there. Wait, the prop was added explicitly.
 
-        const res = await fetchFloorStepData(assetId);
-        if (res.success && res.data) {
-          setDropdownOptions(res.data.dropdownOptions);
-          const mapped = mapFloorsFromApi(res.data.floors);
-          setParentFloors(mapped);
-        }
-      } catch (err) {
-        console.error("Failed to load floor dropdown options and floors:", err);
-      }
-    }
-    loadFloorData();
-  }, [globalFormData?.id]);
-
-  useEffect(() => {
-    if (parentFloors.length > 0) {
-      const fId = Number(formData.floorId || formData.floorDetailsId || unit.floorId || unit.floorDetailsId);
-      const selectedFloor = parentFloors.find((f: any) => f.id === fId);
-      if (selectedFloor) {
-        setFormData((prev: any) => {
-          const resolvedFloorName = `${getLabel(dropdownOptions?.floorLevels || [], selectedFloor.floor)} Floor`;
-          if (
-            prev.conYear === selectedFloor.conYear &&
-            prev.conType === selectedFloor.conType &&
-            prev.useType === selectedFloor.useType &&
-            prev.sdrr === selectedFloor.baseValue &&
-            prev.floorName === resolvedFloorName
-          ) {
-            return prev;
-          }
-          return {
-            ...prev,
-            floorId: selectedFloor.id,
-            floorName: resolvedFloorName,
-            conYear: selectedFloor.conYear,
-            conType: selectedFloor.conType,
-            useType: selectedFloor.useType,
-            sdrr: selectedFloor.baseValue, // baseValue contains SDRR Rate!
-            floorFactor: selectedFloor.floorFactor || 1.0,
-            ageFactor: selectedFloor.ageFactor || 1.0,
-            baseValue: selectedFloor.baseValue,
-          };
-        });
-      }
-    }
-  }, [parentFloors, dropdownOptions, formData.floorId, unit.floorId, unit.floorDetailsId]);
 
   const getLabel = (opts: { label: string; value: string }[], val: string | number) => {
     if (!opts) return String(val);
     return opts.find((o) => o.value === String(val))?.label || String(val);
   };
+
+  // When user selects a floor, we don't necessarily have all factors (unless it's in parentFloors).
+  // But we allow manual entry anyway.
+  const handleFloorSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const floorId = Number(e.target.value);
+    const selected = parentFloors.find((f: any) => f.id === floorId);
+    const floorLabel = selected
+      ? `${getLabel(dropdownOptions?.floorLevels || [], selected.floor)} Floor`
+      : getLabel(dropdownOptions?.floorLevels || [], floorId) + " Floor";
+      
+    setFormData((prev: any) => ({
+      ...prev,
+      floorId,
+      floorDetailsId: floorId,
+      floorName: floorLabel,
+      // Pre-fill construction values from selected floor but user can override
+      conYear:     prev.conYear || selected?.conYear     || "",
+      conType:     prev.conType || selected?.conType     || "",
+      useType:     prev.useType || selected?.useType     || "",
+      subUseType:  prev.subUseType || selected?.subUseType || "",
+      sdrr:        selected?.baseValue || prev.sdrr || 100000,
+      floorFactor: selected?.floorFactor || prev.floorFactor || 1.0,
+      ageFactor:   selected?.ageFactor   || prev.ageFactor   || 1.0,
+    }));
+  };
+
+  // Build floor options for dropdown from master data
+  const floorSelectOptions = [
+    { label: "— Select Floor —", value: "" },
+    ...(dropdownOptions?.floorLevels || []).map((f: any) => ({
+      label: f.label,
+      value: String(f.value),
+    })),
+  ];
 
   useEffect(() => {
     if (formData.leaseStart && formData.leaseEnd) {
@@ -184,72 +164,111 @@ export function SubUnitDetailedConfigurator({ unit, parentBuildingName, onSave, 
 
   useEffect(() => {
     async function loadDetails() {
-      if (!unit.id || unit.id === 0) return;
+      const assetId = unit.id || unit.dbId;
+      if (!assetId || assetId === 0 || String(assetId).startsWith("temp_")) return;
       setLoading(true);
       try {
-        const res = await getChildAssetByIdAction(unit.id);
+        const res = await getChildAssetByIdAction(assetId);
         if (res.success && res.data) {
           const detail = res.data;
 
-          // Map rooms list
+          // Map rooms list — use new dimension-based Room shape
           if (Array.isArray(detail.roomWiseDetails)) {
-            const mappedRooms = detail.roomWiseDetails.map((r: any) => ({
-              id: r.id,
-              roomNo: r.roomNo,
-              roomType: r.roomType,
-              shape: r.shape,
-              area: r.totalAreaSqMtr ? Math.round(r.totalAreaSqMtr / 0.092903) : (r.areaSqMtr ? Math.round(r.areaSqMtr / 0.092903) : 0),
-              count: r.noOfRooms || 1,
-              outer: r.outerYesNo ? "Yes" : "No",
-              offset: r.minusYesNo ? "Yes" : "No",
-            }));
+            const mappedRooms = detail.roomWiseDetails.map((r: any) => {
+              const areaSqM  = Number(r.areaSqMtr || r.areaSqMtr || 0);
+              const areaSqFt = areaSqM * 10.7639;
+              return {
+                id:       r.id,
+                roomNo:   r.roomNo,
+                roomType: r.roomType,
+                shape:    r.shape || "Rectangle",
+                // Dimensions in meters (stored in DB)
+                length:  Number(r.lengthMtr  || 0),
+                width:   Number(r.widthMtr   || 0),
+                height:  Number(r.heightMtr  || 0),
+                base1:   Number(r.base1Mtr   || 0),
+                base2:   Number(r.base2Mtr   || 0),
+                radius:  Number(r.radiusMtr  || r.widthMtr || 0),
+                // Calculated area
+                areaSqM,
+                areaSqFt,
+                count:   Number(r.noOfRooms  || 1),
+                outer:   r.outerYesNo ? "Yes" : "No",
+                minus:   r.minusYesNo ? "Yes" : "No",
+              };
+            });
             setRoomsList(mappedRooms);
           }
 
           // Map renter and basic details to formData
-          const r = detail.renterDetails;
+          const r = Array.isArray(detail.renterDetails)
+            ? detail.renterDetails[0]
+            : (detail.renterDetailsList && detail.renterDetailsList[0]) || detail.renterDetails;
           if (r) {
             setFormData((prev: any) => ({
               ...prev,
-              renterName: r.renterName || prev.renterName || "",
+              renterName: r.renterName || r.tenantName || prev.renterName || "",
               gstNo: r.gstNo || prev.gstNo || "",
-              aadhaar: r.aadhaarCardNo || prev.aadhaar || "",
-              pan: r.panCardNo || prev.pan || "",
-              mobileNo: r.mobileNo || prev.mobileNo || "",
-              emailId: r.emailId || prev.emailId || "",
+              aadhaar: r.aadhaarCardNo || r.tenantAadhaarNo || prev.aadhaar || "",
+              pan: r.panCardNo || r.tenantPanCardNo || prev.pan || "",
+              mobileNo: r.mobileNo || r.tenantMobile || prev.mobileNo || "",
+              emailId: r.emailId || r.tenantEmail || prev.emailId || "",
               rentType: r.leaseRentType || prev.rentType || "",
-              leaseStart: r.fromDate ? r.fromDate.split("T")[0] : prev.leaseStart || "",
-              leaseEnd: r.toDate ? r.toDate.split("T")[0] : prev.leaseEnd || "",
+              leaseStart: r.fromDate ? r.fromDate.split("T")[0] : (r.leaseStartDate ? r.leaseStartDate.split("T")[0] : prev.leaseStart || ""),
+              leaseEnd: r.toDate ? r.toDate.split("T")[0] : (r.leaseEndDate ? r.leaseEndDate.split("T")[0] : prev.leaseEnd || ""),
               duration: r.duration || prev.duration || "",
-              rentFreq: r.rentFrequency || prev.rentFreq || "Monthly",
-              rentAmount: r.rentAmount || prev.rentAmount || "",
+              rentFreq: r.rentFrequency || r.paymentFrequency || prev.rentFreq || "Monthly",
+              rentAmount: r.rentAmount || r.monthlyRent || prev.rentAmount || "",
               securityDeposit: r.securityDeposit || prev.securityDeposit || "",
               depositType: r.depositType || prev.depositType || "Refundable",
             }));
           }
         }
       } catch (err) {
-        console.error("Failed to load sub-unit details:", err);
+
       } finally {
         setLoading(false);
       }
     }
     loadDetails();
-  }, [unit.id]);
+  }, [unit.id, unit.dbId]);
+
+  // Select all text when user focuses a number field — lets them immediately type a replacement value
+  const selectOnFocus = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
     setFormData((prev: any) => {
       let val = value;
-      if (typeof val === "string" && val.startsWith(" ")) {
-        val = val.trimStart();
+      if (typeof val === "string") {
+        if (val.startsWith(" ")) {
+          val = val.trimStart();
+        }
+        // Allow alphanumeric, space, hyphen, and underscore. Exclude email, date, and number fields.
+        if (type !== "email" && type !== "date" && type !== "number" && name !== "emailId") {
+          val = val.replace(/[^a-zA-Z0-9\s\-_]/g, "");
+        }
       }
-      if (name === "mobileNo") {
+
+      const lowerName = name.toLowerCase();
+
+      if (lowerName.includes("mobileno")) {
         val = val.replace(/\D/g, "").slice(0, 10);
-      }
-      if (name === "rentAmount" || name === "securityDeposit" || name === "carpetAreaSqFeet") {
+      } else if (lowerName.includes("rentamount") || lowerName.includes("securitydeposit") || lowerName.includes("carpetareasqfeet")) {
         val = val.replace(/-/g, "");
+      } else if (lowerName.includes("name") || lowerName.includes("owner") || lowerName.includes("person") || lowerName.includes("contact")) {
+        val = val.replace(/[^a-zA-Z\s.]/g, "");
+      } else if (lowerName.includes("email")) {
+        val = val.replace(/\s/g, "");
+      } else if (lowerName.includes("address") || lowerName.includes("location") || lowerName.includes("details")) {
+        val = val.replace(/[^a-zA-Z0-9\s,./#\-()]/g, "");
+      } else if (lowerName.includes("lat") || lowerName.includes("lng")) {
+        val = val.replace(/[^0-9.\-]/g, "");
+      } else if (typeof val === "string" && !lowerName.includes("date") && !lowerName.includes("type") && !lowerName.includes("freq")) {
+        // Enforce user request: allow no special characters except - and _ (and space)
+        val = val.replace(/[^a-zA-Z0-9\s\-_]/g, "");
       }
+
       const next = { ...prev, [name]: val };
       if (name === "unitNumber") {
         next.subAssetId = val;
@@ -339,6 +358,10 @@ export function SubUnitDetailedConfigurator({ unit, parentBuildingName, onSave, 
         toast.error("Renter Name is required when Lease/Rent Type is selected.");
         return;
       }
+      if (!formData.mobileNo || !formData.mobileNo.trim()) {
+        toast.error("Mobile Number is required when Lease/Rent Type is selected.");
+        return;
+      }
       if (!formData.leaseStart) {
         toast.error("Lease Start date is required.");
         return;
@@ -359,79 +382,23 @@ export function SubUnitDetailedConfigurator({ unit, parentBuildingName, onSave, 
       }
     }
 
-    const loadingToast = toast.loading("Saving configuration to database...");
+    const loadingToast = toast.loading("Saving configuration locally...");
     try {
-      const rawAssetId = Number(globalFormData.id || (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("id") || new URLSearchParams(window.location.search).get("assetId") : null));
-      const parentAssetId = isNaN(rawAssetId) || rawAssetId <= 0 ? 2 : rawAssetId;
-
-      const roomDetails = roomsList.length > 0
-        ? roomsList.map((r: any) => ({
-          roomNo: r.roomNo,
-          roomType: r.roomType,
-          shape: r.shape,
-          areaSqMtr: Number(r.area || 0) * 0.092903,
-          noOfRooms: Number(r.count || 1),
-          totalAreaSqMtr: Number(r.area || 0) * Number(r.count || 1) * 0.092903,
-          outerYesNo: r.outer === "Yes",
-          minusYesNo: r.offset === "Yes",
-        }))
-        : null;
-
-      const rentInfo = formData.rentType
-        ? {
-          leaseRentType: formData.rentType,
-          leaseStart: formData.leaseStart ? new Date(formData.leaseStart).toISOString() : null,
-          leaseEnd: formData.leaseEnd ? new Date(formData.leaseEnd).toISOString() : null,
-          duration: formData.leaseStart && formData.leaseEnd ? calculateDurationMonths(formData.leaseStart, formData.leaseEnd) : 0,
-          rentFrequency: formData.rentFreq || "Monthly",
-          rentAmount: Number(formData.rentAmount || 0),
-          securityDeposit: Number(formData.securityDeposit || 0),
-          depositType: formData.depositType || "Refundable",
-        }
-        : null;
-
-      const res = await createChildAssetAction({
-        parentAssetId,
-        assetId: Number(formData.id) && Number(formData.id) > 0 ? Number(formData.id) : 0,
-        floorDetailsId: Number(formData.floorId || formData.floorDetailsId || unit.floorId || unit.floorDetailsId || 1),
-        shopUnitName: formData.unitNumber,
-        unitNo: formData.unitNumber,
-        totalAreaSqFt: area,
-        renterName: formData.renterName || null,
-        propertyDescription: formData.propertyDescription || null,
-        zoneNo: formData.zone ? Number(String(formData.zone).replace(/\D/g, "")) : null,
-        wardNo: formData.ward ? Number(String(formData.ward).replace(/\D/g, "")) : null,
-        propertyNo: formData.propertyNo || null,
-        partitionNo: formData.partitionNo || null,
-        mobileNo: formData.mobileNo || null,
-        surveyNo: formData.surveyNo || null,
-        emailId: formData.emailId || null,
-        gstNo: formData.gstNo || null,
-        shopActNo: formData.shopActNo || null,
-        aadhaarCardNo: formData.aadhaar || null,
-        panCardNo: formData.pan || null,
-        rentInformation: rentInfo,
-        floorConfiguration: {
-          unitAreaSqFt: area,
-          calculatedCapitalValue: Number(capitalValue) || 0,
-        },
-        isRoomWiseValuationActive: roomDetails !== null,
-        roomDetails,
+      // Create local payload and just pass it to onSave. DB saving will be done in batch via pool's Save All.
+      onSave({
+        ...formData,
+        rooms: roomsList,
+        carpetAreaSqFeet: area,
+        capitalValue: Number(formData.capitalValue || 0),
+        departmentId: formData.departmentId ? Number(formData.departmentId) : null,
+        departmentName: formData.departmentName || null,
+        locationAddress: formData.locationAddress || null,
+        locationLat: formData.locationLat || null,
+        locationLng: formData.locationLng || null,
       });
-
-      if (res.success && res.data) {
-        toast.success(res.data.message || "Configuration saved successfully!", { id: loadingToast });
-        onSave({
-          ...formData,
-          rooms: roomsList,
-          carpetAreaSqFeet: area,
-          capitalValue: Number(capitalValue)
-        });
-      } else {
-        toast.error(res.error || "Failed to save configuration.", { id: loadingToast });
-      }
+      toast.success("Configuration saved locally. Click 'Save All Units' to commit.", { id: loadingToast });
     } catch (err: any) {
-      toast.error(err.message || "Failed to save configuration.", { id: loadingToast });
+      toast.error(err.message || "Failed to save configuration locally.", { id: loadingToast });
     }
   };
 
@@ -461,17 +428,28 @@ export function SubUnitDetailedConfigurator({ unit, parentBuildingName, onSave, 
     }
   };
 
-  // Mock calculated CV from existing floor factors
+  // Carpet area in SqFt — from new shape-based rooms (areaSqFt), minus deductions
   const area = roomsList.length > 0
-    ? roomsList.reduce((acc, r) => acc + (Number(r.area || 0) * Number(r.count || 1)), 0)
-    : (Number(formData.carpetAreaSqFeet) || 500);
-  const sdrr = Number(formData.sdrr) || 100000;         // from parent floor
-  const floorFactor = Number(formData.floorFactor) || 1.0;     // from parent floor
-  const ageFactor = Number(formData.ageFactor) || 1.0;       // from parent floor
-  const capitalValue = ((area / 10.764) * sdrr * floorFactor * ageFactor).toFixed(0);
-  const formattedCV = Number(capitalValue).toLocaleString("en-IN");
+    ? roomsList.reduce((acc, r) => {
+        const roomSqFt = Number(r.areaSqFt || r.area || 0) * Number(r.count || 1);
+        return (r.minus === "Yes" || r.offset === "Yes") ? acc - roomSqFt : acc + roomSqFt;
+      }, 0)
+    : (Number(formData.carpetAreaSqFeet) || 0);
+
 
   const inp = "h-8 text-xs";
+
+  // ── Unit type detection — drives which fields are shown ───────────────────
+  const rawUnitType = ((unit.unitType || formData.unitType) as string || "Flat").toLowerCase().trim();
+  const isShop       = rawUnitType.includes("shop") || rawUnitType.includes("commercial");
+  const isOffice     = rawUnitType.includes("office") || rawUnitType.includes("corporate");
+  const isRoom       = rawUnitType.includes("room") || rawUnitType.includes("chamber");
+  const isDepartment = rawUnitType.includes("department") || rawUnitType.includes("dept") || rawUnitType.includes("wing");
+  // Flat is the default (residential)
+  const sectionColor = isShop ? "bg-amber-600" : isOffice ? "bg-indigo-600" : isRoom ? "bg-violet-600" : isDepartment ? "bg-teal-600" : "bg-blue-600";
+  const sectionTitle = isShop ? "Shop & Occupant Details" : isOffice ? "Office / Tenant Details" : isRoom ? "Room Details" : isDepartment ? "Department Information" : "Resident / Owner Details";
+  // Departments are internal allocations — no rent section needed
+  const showRentSection = !isDepartment;
 
 
   return (
@@ -505,142 +483,272 @@ export function SubUnitDetailedConfigurator({ unit, parentBuildingName, onSave, 
         )}
 
         {/* ════════════════════════════════════════════
-            BASIC INFORMATION
-            Rows with decreasing z-index so dropdowns
-            in higher rows always appear over lower rows
+            TYPE-AWARE BASIC INFORMATION
+            Fields change based on unit type:
+            Flat → KYC fields  |  Shop → GST/ShopAct
+            Office → Company   |  Department → Staff
         ════════════════════════════════════════════ */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-          <SectionBar icon={<FileText className="size-3.5 text-white" />} title="Basic Information" />
+          <SectionBar icon={<FileText className="size-3.5 text-white" />} title={sectionTitle} color={sectionColor} />
           <div className="p-3 space-y-2">
 
-            {/* Row 1  z:50 */}
-            <Row z={50}>
+            {/* Row 0 — always visible: unit number + type badge */}
+            <Row z={60}>
               <Field label="Asset No.">
-                <Input name="unitNumber" value={formData.unitNumber || formData.subAssetId || ""} readOnly className={`${inp} font-bold text-slate-500 bg-slate-100 cursor-not-allowed`} />
+                <Input name="unitNumber" value={formData.unitNumber || formData.subAssetId || ""} readOnly
+                  className={`${inp} font-bold text-slate-500 bg-slate-100 cursor-not-allowed`} />
               </Field>
               <Field label="Type">
-                <Input name="unitType" value={formData.unitType || ""} readOnly className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
+                <Input name="unitType" value={formData.unitType || ""} readOnly
+                  className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
               </Field>
-              <Field label="Complex Name">
-                <Input name="complexName" value={parentBuildingName} onChange={() => { }} readOnly className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
+              <Field label="Building">
+                <Input value={parentBuildingName} readOnly
+                  className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
               </Field>
-              <Field label="Renter Name">
-                <Input name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} />
-              </Field>
-            </Row>
-
-            {/* Row 2  z:40 */}
-            <Row z={40}>
-              <Field label="Shop / Unit Name">
-                <Input name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} />
-              </Field>
-              <Field label="Property Description">
-                <Input name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} />
-              </Field>
-            </Row>
-
-            {/* Row 3  z:30 */}
-            <Row z={30}>
-              <Field label="Property No">
-                <Input name="propertyNo" value={formData.propertyNo || ""} onChange={handleChange} className={inp} />
-              </Field>
-              <Field label="Partition No">
-                <Input name="partitionNo" value={formData.partitionNo || ""} onChange={handleChange} className={inp} />
-              </Field>
-              <Field label="Mobile No">
-                <Input name="mobileNo" value={formData.mobileNo || ""} onChange={handleChange} maxLength={10} className={inp} />
-              </Field>
-            </Row>
-
-            {/* Row 4  z:20 */}
-            <Row z={20}>
-              <Field label="Email ID">
-                <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
-              </Field>
-              <Field label="Survey No">
-                <Input name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
-              </Field>
-              <Field label="GST No">
-                <Input name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} />
-              </Field>
-              <Field label="Shop Act No">
-                <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
-              </Field>
-            </Row>
-
-            {/* Row 5 – KYC & Area  z:10 */}
-            <Row z={10}>
-              <Field label="Total Area (SqFt)">
-                <Input
-                  name="carpetAreaSqFeet"
-                  type="number"
-                  min={0}
-                  value={formData.carpetAreaSqFeet === 0 ? "" : formData.carpetAreaSqFeet}
-                  onChange={handleChange}
-                  className={`${inp} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${roomsList.length > 0 ? "bg-slate-100 text-slate-500 font-mono" : "bg-emerald-50 font-semibold text-slate-800"}`}
-                />
-              </Field>
-              {/* Aadhaar */}
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <div className="flex items-end gap-2">
-                  <Field label="Aadhaar Card No" className="flex-1">
-                    <Input name="aadhaar" value={formData.aadhaar || ""} onChange={handleChange} className={inp} />
-                  </Field>
-                  <button
-                    type="button"
-                    onClick={() => aadhaarDocRef.current?.click()}
-                    className={`h-8 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center gap-1 shrink-0 transition-colors ${aadhaarFile ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"
-                      }`}
-                  >
-                    <UploadCloud className="size-3" />
-                    {aadhaarFile ? "Change" : "Upload"}
-                  </button>
-                  <input ref={aadhaarDocRef} type="file" accept="image/*,.pdf" className="hidden" onChange={handleAadhaarDoc} />
-                </div>
-                {aadhaarFile && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 border border-emerald-200 rounded text-[9px] text-emerald-700 font-medium truncate">
-                    <CheckCircle2 className="size-3 text-emerald-500 shrink-0" />
-                    <span className="truncate">{aadhaarFile.name}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* PAN */}
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <div className="flex items-end gap-2">
-                  <Field label="PAN Card No" className="flex-1">
-                    <Input name="pan" value={formData.pan || ""} onChange={handleChange} className={inp} />
-                  </Field>
-                  <button
-                    type="button"
-                    onClick={() => panDocRef.current?.click()}
-                    className={`h-8 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center gap-1 shrink-0 transition-colors ${panFile ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"
-                      }`}
-                  >
-                    <UploadCloud className="size-3" />
-                    {panFile ? "Change" : "Upload"}
-                  </button>
-                  <input ref={panDocRef} type="file" accept="image/*,.pdf" className="hidden" onChange={handlePanDoc} />
-                </div>
-                {panFile && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 border border-emerald-200 rounded text-[9px] text-emerald-700 font-medium truncate">
-                    <CheckCircle2 className="size-3 text-emerald-500 shrink-0" />
-                    <span className="truncate">{panFile.name}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* 1 empty spacer to maintain 4-col feel */}
               <div className="flex-1 min-w-0" />
             </Row>
+
+            {/* ── FLAT fields ─────────────────────────────────────── */}
+            {!isShop && !isOffice && !isRoom && !isDepartment && (<>
+              <Row z={50}>
+                <Field label={`Owner / Resident Name${formData.rentType ? " *" : ""}`}>
+                  <Input name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Full name" />
+                </Field>
+                <Field label="Mobile No">
+                  <Input name="mobileNo" value={formData.mobileNo || ""} onChange={handleChange} maxLength={10} className={inp} placeholder="10 digits" />
+                </Field>
+                <Field label="Email ID">
+                  <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} placeholder="Optional" />
+                </Field>
+                <Field label="Total Area (SqFt) *">
+                  <Input name="carpetAreaSqFeet" type="number" onFocus={selectOnFocus} min={0}
+                    value={formData.carpetAreaSqFeet === 0 ? "" : formData.carpetAreaSqFeet}
+                    onChange={handleChange}
+                    className={`${inp} ${roomsList.length > 0 ? "bg-slate-100 text-slate-500 font-mono" : "bg-emerald-50 font-semibold"}`} />
+                </Field>
+              </Row>
+              <Row z={40}>
+                {/* Aadhaar */}
+                <div className="flex flex-col gap-1 flex-1 min-w-0">
+                  <div className="flex items-end gap-2">
+                    <Field label="Aadhaar Card No" className="flex-1">
+                      <Input name="aadhaar" value={formData.aadhaar || ""} onChange={handleChange} className={inp} />
+                    </Field>
+                    <button type="button" onClick={() => aadhaarDocRef.current?.click()}
+                      className={`h-8 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center gap-1 shrink-0 ${aadhaarFile ? "bg-emerald-600 text-white" : "bg-blue-600 text-white"}`}>
+                      <UploadCloud className="size-3" />{aadhaarFile ? "Change" : "Upload"}
+                    </button>
+                    <input ref={aadhaarDocRef} type="file" accept="image/*,.pdf" className="hidden" onChange={handleAadhaarDoc} />
+                  </div>
+                  {aadhaarFile && <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 border border-emerald-200 rounded text-[9px] text-emerald-700 truncate"><CheckCircle2 className="size-3 shrink-0" /><span className="truncate">{aadhaarFile.name}</span></div>}
+                </div>
+                {/* PAN */}
+                <div className="flex flex-col gap-1 flex-1 min-w-0">
+                  <div className="flex items-end gap-2">
+                    <Field label="PAN Card No" className="flex-1">
+                      <Input name="pan" value={formData.pan || ""} onChange={handleChange} className={inp} />
+                    </Field>
+                    <button type="button" onClick={() => panDocRef.current?.click()}
+                      className={`h-8 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center gap-1 shrink-0 ${panFile ? "bg-emerald-600 text-white" : "bg-blue-600 text-white"}`}>
+                      <UploadCloud className="size-3" />{panFile ? "Change" : "Upload"}
+                    </button>
+                    <input ref={panDocRef} type="file" accept="image/*,.pdf" className="hidden" onChange={handlePanDoc} />
+                  </div>
+                  {panFile && <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 border border-emerald-200 rounded text-[9px] text-emerald-700 truncate"><CheckCircle2 className="size-3 shrink-0" /><span className="truncate">{panFile.name}</span></div>}
+                </div>
+                <Field label="Property No">
+                  <Input name="propertyNo" value={formData.propertyNo || ""} onChange={handleChange} className={inp} />
+                </Field>
+                <Field label="Survey No">
+                  <Input name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
+                </Field>
+              </Row>
+            </>)}
+
+            {/* ── SHOP fields ─────────────────────────────────────── */}
+            {isShop && (<>
+              <Row z={50}>
+                <Field label="Shop Name">
+                  <Input name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} placeholder="e.g. Sharma Grocery" />
+                </Field>
+                <Field label={`Shopkeeper / Renter Name${formData.rentType ? " *" : ""}`}>
+                  <Input name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} />
+                </Field>
+                <Field label="Mobile No">
+                  <Input name="mobileNo" value={formData.mobileNo || ""} onChange={handleChange} maxLength={10} className={inp} />
+                </Field>
+                <Field label="Email ID">
+                  <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
+                </Field>
+              </Row>
+              <Row z={40}>
+                <Field label="GST No">
+                  <Input name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
+                </Field>
+                <Field label="Shop Act No">
+                  <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                </Field>
+                <Field label="Survey No">
+                  <Input name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
+                </Field>
+                <Field label="Total Area (SqFt) *">
+                  <Input name="carpetAreaSqFeet" type="number" onFocus={selectOnFocus} min={0}
+                    value={formData.carpetAreaSqFeet === 0 ? "" : formData.carpetAreaSqFeet}
+                    onChange={handleChange}
+                    className={`${inp} ${roomsList.length > 0 ? "bg-slate-100 font-mono" : "bg-amber-50 font-semibold"}`} />
+                </Field>
+              </Row>
+            </>)}
+
+            {/* ── OFFICE fields ────────────────────────────────────── */}
+            {isOffice && (<>
+              <Row z={50}>
+                <Field label="Office / Unit Name">
+                  <Input name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} placeholder="e.g. North Wing Office" />
+                </Field>
+                <Field label={`Company / Tenant Name${formData.rentType ? " *" : ""}`}>
+                  <Input name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Company name" />
+                </Field>
+                <Field label="Contact Person">
+                  <Input name="contactPerson" value={formData.contactPerson || ""} onChange={handleChange} className={inp} />
+                </Field>
+                <Field label="Mobile No">
+                  <Input name="mobileNo" value={formData.mobileNo || ""} onChange={handleChange} maxLength={10} className={inp} />
+                </Field>
+              </Row>
+              <Row z={40}>
+                <Field label="Email ID">
+                  <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
+                </Field>
+                <Field label="Survey No">
+                  <Input name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
+                </Field>
+                <Field label="Total Area (SqFt) *">
+                  <Input name="carpetAreaSqFeet" type="number" onFocus={selectOnFocus} min={0}
+                    value={formData.carpetAreaSqFeet === 0 ? "" : formData.carpetAreaSqFeet}
+                    onChange={handleChange}
+                    className={`${inp} ${roomsList.length > 0 ? "bg-slate-100 font-mono" : "bg-indigo-50 font-semibold"}`} />
+                </Field>
+                <div className="flex-1 min-w-0" />
+              </Row>
+            </>)}
+
+            {/* ── ROOM fields ──────────────────────────────────────── */}
+            {isRoom && (<>
+              <Row z={50}>
+                <Field label="Room Type">
+                  <Input name="roomTypeDesc" value={formData.roomTypeDesc || ""} onChange={handleChange} className={inp} placeholder="e.g. Conference Room" />
+                </Field>
+                <Field label={`Occupant Name${formData.rentType ? " *" : ""}`}>
+                  <Input name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Who uses this room" />
+                </Field>
+                <Field label="Mobile No">
+                  <Input name="mobileNo" value={formData.mobileNo || ""} onChange={handleChange} maxLength={10} className={inp} />
+                </Field>
+                <Field label="Area (SqFt) *">
+                  <Input name="carpetAreaSqFeet" type="number" onFocus={selectOnFocus} min={0}
+                    value={formData.carpetAreaSqFeet === 0 ? "" : formData.carpetAreaSqFeet}
+                    onChange={handleChange}
+                    className={`${inp} ${roomsList.length > 0 ? "bg-slate-100 font-mono" : "bg-violet-50 font-semibold"}`} />
+                </Field>
+              </Row>
+              <Row z={40}>
+                <Field label="Usage / Purpose">
+                  <Input name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} placeholder="e.g. Storage, Meeting" />
+                </Field>
+                <div className="flex-1 min-w-0" />
+              </Row>
+            </>)}
+
+            {/* ── DEPARTMENT fields ────────────────────────────────── */}
+            {isDepartment && (<>
+              <Row z={50}>
+                <Field label="Department Name">
+                  <Input name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} placeholder="e.g. Finance Department" />
+                </Field>
+                <Field label="Department Head / In-Charge">
+                  <Input name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Officer name" />
+                </Field>
+                <Field label="Mobile No">
+                  <Input name="mobileNo" value={formData.mobileNo || ""} onChange={handleChange} maxLength={10} className={inp} />
+                </Field>
+                <Field label="Email ID">
+                  <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
+                </Field>
+              </Row>
+              <Row z={40}>
+                <Field label="No. of Staff">
+                  <Input name="noOfStaff" type="number" onFocus={selectOnFocus} min={0} value={formData.noOfStaff || ""} onChange={handleChange} className={inp} placeholder="Head count" />
+                </Field>
+                <Field label="Allocated Area (SqFt) *">
+                  <Input name="carpetAreaSqFeet" type="number" onFocus={selectOnFocus} min={0}
+                    value={formData.carpetAreaSqFeet === 0 ? "" : formData.carpetAreaSqFeet}
+                    onChange={handleChange}
+                    className={`${inp} ${roomsList.length > 0 ? "bg-slate-100 font-mono" : "bg-teal-50 font-semibold"}`} />
+                </Field>
+                <Field label="Remarks">
+                  <Input name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} placeholder="Optional notes" />
+                </Field>
+                <div className="flex-1 min-w-0" />
+              </Row>
+            </>)}
 
           </div>
         </div>
 
         {/* ════════════════════════════════════════════
-            RENT INFORMATION
+            DEPARTMENT & LOCATION DETAILS
         ════════════════════════════════════════════ */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm mt-3">
+          <SectionBar icon={<Briefcase className="size-3.5 text-white" />} title="Department Assignment" color="bg-cyan-600" />
+          <div className="p-3 space-y-2">
+            <Row z={30}>
+              <Field label="Department *">
+                <select
+                  name="departmentId"
+                  value={formData.departmentId || ""}
+                  onChange={(e) => {
+                    const selectedName = e.target.options[e.target.selectedIndex].text;
+                    setFormData((prev: any) => ({
+                      ...prev,
+                      departmentId: e.target.value,
+                      departmentName: e.target.value ? selectedName : "",
+                    }));
+                  }}
+                  className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-200`}
+                >
+                  <option value="">— Select Department —</option>
+                  {departments.map((d: any) => (
+                    <option key={d.value} value={d.value}>{d.label}</option>
+                  ))}
+                </select>
+              </Field>
+              <div className="flex-1 min-w-0" />
+              <div className="flex-1 min-w-0" />
+            </Row>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm mt-3">
+          <SectionBar icon={<MapPin className="size-3.5 text-white" />} title="Location Details" color="bg-rose-600" />
+          <div className="p-3 space-y-2">
+            <Row z={20}>
+              <Field label="Unit Address / Location" className="flex-[2]">
+                <Input name="locationAddress" value={formData.locationAddress || ""} onChange={handleChange} className={inp} placeholder="Address details for this specific unit" />
+              </Field>
+              <Field label="Latitude" className="flex-1">
+                <Input name="locationLat" value={formData.locationLat || ""} onChange={handleChange} className={inp} placeholder="e.g. 19.0760" />
+              </Field>
+              <Field label="Longitude" className="flex-1">
+                <Input name="locationLng" value={formData.locationLng || ""} onChange={handleChange} className={inp} placeholder="e.g. 72.8777" />
+              </Field>
+            </Row>
+          </div>
+        </div>
+
+        {/* Departments are internal allocations — they don't pay rent */}
+        {showRentSection && <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
           <SectionBar icon={<IndianRupee className="size-3.5 text-white" />} title="Rent Information" />
           <div className="p-3 space-y-2">
 
@@ -649,10 +757,10 @@ export function SubUnitDetailedConfigurator({ unit, parentBuildingName, onSave, 
                 <Select selectSize="sm" name="rentType" value={formData.rentType || ""} onChange={handleChange}
                   options={[{ label: "Commercial Lease", value: "Commercial Lease" }, { label: "Residential Rent", value: "Residential Rent" }]} className={inp} />
               </Field>
-              <Field label="Lease Start">
+              <Field label={`Lease Start${formData.rentType ? " *" : ""}`}>
                 <Input type="date" name="leaseStart" value={formData.leaseStart || ""} onChange={handleChange} className={inp} />
               </Field>
-              <Field label="Lease End">
+              <Field label={`Lease End${formData.rentType ? " *" : ""}`}>
                 <Input type="date" name="leaseEnd" value={formData.leaseEnd || ""} onChange={handleChange} className={inp} />
               </Field>
               <Field label="Duration">
@@ -665,11 +773,11 @@ export function SubUnitDetailedConfigurator({ unit, parentBuildingName, onSave, 
                 <Select selectSize="sm" name="rentFreq" value={formData.rentFreq || ""} onChange={handleChange}
                   options={[{ label: "Monthly", value: "Monthly" }, { label: "Yearly", value: "Yearly" }]} className={inp} />
               </Field>
-              <Field label="Rent Amount (₹)">
-                <Input name="rentAmount" type="number" min={0} value={formData.rentAmount || ""} onChange={handleChange} className={`${inp} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`} />
+              <Field label={`Rent Amount (₹)${formData.rentType ? " *" : ""}`}>
+                <Input name="rentAmount" type="number" onFocus={selectOnFocus} min={0} value={formData.rentAmount || ""} onChange={handleChange} className={`${inp} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`} />
               </Field>
               <Field label="Security Deposit (₹)">
-                <Input name="securityDeposit" type="number" min={0} value={formData.securityDeposit || ""} onChange={handleChange} className={`${inp} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`} />
+                <Input name="securityDeposit" type="number" onFocus={selectOnFocus} min={0} value={formData.securityDeposit || ""} onChange={handleChange} className={`${inp} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`} />
               </Field>
               <Field label="Deposit Type">
                 <Select selectSize="sm" name="depositType" value={formData.depositType || ""} onChange={handleChange}
@@ -677,45 +785,97 @@ export function SubUnitDetailedConfigurator({ unit, parentBuildingName, onSave, 
               </Field>
             </Row>
           </div>
-        </div>
+        </div>}
 
         {/* ════════════════════════════════════════════
-            FLOOR QC — Read-only display of existing floor 
-            configuration + calculated CV for this unit.
-            (The floor is already registered; we only show 
-            its config and the computed Capital Value.)
+            FLOOR & CONSTRUCTION DETAILS
+            User selects floor and enters construction
+            details for this specific sub-unit.
+            Capital Value is auto-calculated from area.
         ════════════════════════════════════════════ */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-          <SectionBar icon={<Building2 className="size-3.5 text-white" />} title="Floor QC — Existing Floor Configuration" />
+          <SectionBar icon={<Building2 className="size-3.5 text-white" />} title="Floor & Construction Details" color="bg-slate-700" />
           <div className="p-3 space-y-2">
-            {/* Floor config badges — read-only from parent floor */}
-            <Row z={20}>
-              <Field label="Floor Name">
-                <Input value={formData.floorName || "Ground Floor"} readOnly className={`${inp} bg-slate-100 text-slate-500 font-semibold cursor-not-allowed`} />
+
+            {/* Row 1: Floor selection + Con Year + Con Type */}
+            <Row z={30}>
+              <Field label="Assign to Floor *">
+                {floorSelectOptions.length > 1 ? (
+                  <select
+                    value={formData.floorId ? String(formData.floorId) : ""}
+                    onChange={handleFloorSelect}
+                    className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}
+                  >
+                    {floorSelectOptions.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className={`${inp} flex items-center px-2 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-[10px] font-semibold`}>
+                    No floors available in master data.
+                  </div>
+                )}
               </Field>
-              <Field label="Con Year">
-                <Input value={formData.conYear || "2020"} readOnly className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
+              <Field label="Construction Year *">
+                <Input
+                  name="conYear"
+                  value={formData.conYear || ""}
+                  onChange={handleChange}
+                  placeholder={`e.g. ${new Date().getFullYear()}`}
+                  maxLength={4}
+                  className={inp}
+                />
               </Field>
-              <Field label="Con Type">
-                <Input value={getLabel(dropdownOptions?.constructionTypes || [], formData.conType) || "RCC"} readOnly className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
+              <Field label="Construction Type *">
+                <select
+                  name="conType"
+                  value={formData.conType || ""}
+                  onChange={(e) => setFormData((p: any) => ({ ...p, conType: e.target.value }))}
+                  className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}
+                >
+                  <option value="">Select Con Type…</option>
+                  {(dropdownOptions?.constructionTypes || []).map((o: any) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
               </Field>
-              <Field label="Type of Use">
-                <Input value={getLabel(dropdownOptions?.useTypes || [], formData.useType) || "Commercial"} readOnly className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
+              <Field label="Type of Use *">
+                <select
+                  name="useType"
+                  value={formData.useType || ""}
+                  onChange={(e) => setFormData((p: any) => ({ ...p, useType: e.target.value, subUseType: "" }))}
+                  className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}
+                >
+                  <option value="">Select Use Type…</option>
+                  {(dropdownOptions?.useTypes || []).map((o: any) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
               </Field>
             </Row>
 
-            {/* Calculated CV highlight */}
-            <Row z={10}>
-              <Field label="Unit Area (SqFt)">
-                <Input value={area} readOnly className={`${inp} bg-slate-100 text-slate-500 font-semibold cursor-not-allowed`} />
+            {/* Row 2: Sub-Type + Area */}
+            <Row z={20}>
+              <Field label="Sub-Type of Use">
+                <select
+                  name="subUseType"
+                  value={formData.subUseType || ""}
+                  onChange={(e) => setFormData((p: any) => ({ ...p, subUseType: e.target.value }))}
+                  className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}
+                >
+                  <option value="">Select Sub-Type…</option>
+                  {(dropdownOptions?.subUseTypes || []).map((o: any) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
               </Field>
-              <Field label="SDRR Rate (₹/SqM)">
-                <Input value={sdrr.toLocaleString("en-IN")} readOnly className={`${inp} bg-slate-100 text-slate-500 font-semibold cursor-not-allowed`} />
+              <Field label="Unit Area (SqFt) — from rooms *">
+                <Input
+                  value={area}
+                  readOnly
+                  className={`${inp} bg-slate-50 text-slate-600 font-mono font-semibold cursor-default`}
+                />
               </Field>
-              <Field label="Calculated Capital Value (₹)">
-                <Input value={`₹ ${formattedCV}`} readOnly className={`${inp} bg-emerald-50 border-emerald-200 text-emerald-700 font-bold cursor-not-allowed`} />
-              </Field>
-              <div className="flex-1 min-w-0" />
             </Row>
           </div>
         </div>

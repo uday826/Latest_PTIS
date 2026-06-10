@@ -13,10 +13,8 @@ import { ApiResponse } from "@/types/common.types";
 import { assetFieldValueService } from "@/lib/api/asset/asset-field-value.service";
 import { assetMasterService } from "@/lib/api/asset/asset-master.service";
 
-import { departmentService } from "@/lib/api/asset/department.service";
-import { moujaService } from "@/lib/api/asset/mouja.service";
-import { wardService } from "@/lib/api/asset/ward.service";
-import { zoneService } from "@/lib/api/asset/zone.service";
+import { categoryTypeService } from "@/lib/api/asset/category-type.service";
+import { apiClient } from "@/services/api.service";
 import { AssetFormData, AssetMasterRequest } from "@/types/asset-types/basic-info/asset-wizard.types";
 import { revalidatePath } from "next/cache";
 
@@ -40,11 +38,11 @@ export const fetchFieldDefinitions = async (categoryId: number, typeId: number):
       }
       return [];
     } else {
-      console.error("Failed to fetch field definitions", response.error);
+
       return [];
     }
   } catch (error) {
-    console.error("Error fetching field definitions", error);
+
     return [];
   }
 };
@@ -79,7 +77,7 @@ export const fetchUploadedDocumentsAction = async (
 ): Promise<ApiResponse<any>> => {
   try {
     const res = await getDocumentsByAsset(assetId, includeAdHoc, includeDefinitionBased);
-    
+
     if (res.success && res.data) {
       const raw = res.data as any;
       const arrayData = Array.isArray(raw) ? raw : (raw.items || raw.data || []);
@@ -101,7 +99,7 @@ export const fetchDocumentFileAction = async (
     const { getDocumentFileRaw } = await import("@/lib/api/asset/asset-document.server.service");
     const res = await getDocumentFileRaw(docId);
     if (!res.ok) {
-       return { success: false, error: "Failed to download document" };
+      return { success: false, error: "Failed to download document" };
     }
     const arrayBuffer = await res.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -133,11 +131,11 @@ export const uploadDocumentAction = async (
   formData: FormData
 ): Promise<ApiResponse<any>> => {
   try {
-    console.log("Server Action Received FormData:");
-    console.log("AssetId:", formData.get("AssetId"));
-    console.log("ModuleId:", formData.get("ModuleId"));
-    console.log("DocumentType:", formData.get("DocumentType"));
-    console.log("DocumentTitle:", formData.get("DocumentTitle"));
+
+
+
+
+
 
     return await uploadDocument(formData);
   } catch (err: any) {
@@ -209,7 +207,7 @@ export async function submitAssetForm(formData: AssetFormData) {
     const categoryId = formData.categoryId ? Number(formData.categoryId) : 1;
     const typeId = formData.typeId ? Number(formData.typeId) : (typeMapping[normalizedType] || 1);
 
-    console.log(`[DEBUG TYPEID] formData.typeId: ${formData.typeId}, normalizedType: "${normalizedType}", resolved typeId: ${typeId}`);
+
 
     // Fetch definitions to resolve IDs for EAV dynamic fieldValues
     let fieldDefs: any[] = [];
@@ -219,7 +217,7 @@ export async function submitAssetForm(formData: AssetFormData) {
         fieldDefs = Array.isArray(defRes.data) ? defRes.data : ((defRes.data as any).items || (defRes.data as any).data || []);
       }
     } catch (err) {
-      console.error("Failed to fetch definitions for ID mapping in submitAssetForm:", err);
+
     }
 
     const parseNumericId = (val: any, mapping?: Record<string, number>): number | null => {
@@ -242,39 +240,21 @@ export async function submitAssetForm(formData: AssetFormData) {
     let dbMoujaIds: number[] = [];
 
     try {
-      const deptRes = await departmentService.getDepartments();
-      if (deptRes.success && deptRes.data) {
-        dbDeptIds = deptRes.data.map((d) => d.id);
-      }
-    } catch (err) {
-      console.warn("Failed to fetch departments from DB:", err);
-    }
+      const { getCachedDepartments, getCachedWards, getCachedZones, getCachedMoujas } = await import("@/lib/api/asset/cached-master-data");
 
-    try {
-      const wardRes = await wardService.getWards();
-      if (wardRes.success && wardRes.data) {
-        dbWardIds = wardRes.data.map((w) => w.id);
-      }
-    } catch (err) {
-      console.warn("Failed to fetch wards from DB:", err);
-    }
+      const [deptRes, wardRes, zoneRes, moujaRes] = await Promise.all([
+        getCachedDepartments(),
+        getCachedWards(),
+        getCachedZones(),
+        getCachedMoujas(),
+      ]);
 
-    try {
-      const zoneRes = await zoneService.getZones();
-      if (zoneRes.success && zoneRes.data) {
-        dbZoneIds = zoneRes.data.map((z) => z.id);
-      }
+      if (deptRes.success && deptRes.data) dbDeptIds = deptRes.data.map((d: any) => d.id);
+      if (wardRes.success && wardRes.data) dbWardIds = wardRes.data.map((w: any) => w.id);
+      if (zoneRes.success && zoneRes.data) dbZoneIds = zoneRes.data.map((z: any) => z.id);
+      if (moujaRes.success && moujaRes.data) dbMoujaIds = moujaRes.data.map((m: any) => m.id);
     } catch (err) {
-      console.warn("Failed to fetch zones from DB:", err);
-    }
 
-    try {
-      const moujaRes = await moujaService.getMoujas();
-      if (moujaRes.success && moujaRes.data) {
-        dbMoujaIds = moujaRes.data.map((m) => m.id);
-      }
-    } catch (err) {
-      console.warn("Failed to fetch moujas from DB:", err);
     }
 
     const getSafeForeignKeyId = (
@@ -365,8 +345,15 @@ export async function submitAssetForm(formData: AssetFormData) {
       isRevenueGenerating: formData.isRevenueGenerating !== undefined ? (typeof formData.isRevenueGenerating === "boolean" ? formData.isRevenueGenerating : (String(formData.isRevenueGenerating).toLowerCase() === "yes" || String(formData.isRevenueGenerating).toLowerCase() === "true" || formData.isRevenueGenerating === 1)) : false,
       operationalControl: formData.operationalControl || null,
       assetCondition: formData.condition || (formData as any).assetCondition || null,
+      inChargeName: formData.inChargeName || null,
+      inChargeDesignation: formData.inChargeDesignation || null,
+      inChargeMobile: formData.inChargeMobile || null,
+      inChargeEmail: formData.inChargeEmail || null,
+      locality: formData.locality || null,
+      pinCode: formData.pinCode || null,
       isActive: false,
       createdBy: 1,
+
 
       // Related dynamic attribute values (EAV Pattern mapping to AMS.AssetFieldValue)
       fieldValues: Object.entries({
@@ -375,68 +362,136 @@ export async function submitAssetForm(formData: AssetFormData) {
         plotNumber: formData.plotNumber,
         surveyNumber: formData.surveyNumber,
       })
-      .filter(([_, value]) => value !== undefined && value !== null && value !== "")
-      .map(([key, value]) => {
-        const definition = fieldDefs.find(
-          (d: any) =>
-            d.fieldName?.toLowerCase() === key.toLowerCase() ||
-            d.fieldCode?.toLowerCase() === key.toLowerCase()
-        );
-        
-        // If definition is missing, we must NOT default everything to 1, otherwise it throws a unique constraint error.
-        // But since we need an ID, we'll try to find it, or skip it if strict mapping is required.
-        // For now, if missing, we use a negative ID based on the key string so it doesn't collide, 
-        // OR we just don't send it. Let's just filter them out if not found, except for known ones.
-        if (!definition) {
-          return null; // Filtered out below
-        }
+        .filter(([_, value]) => value !== undefined && value !== null && value !== "")
+        .map(([key, value]) => {
+          const definition = fieldDefs.find(
+            (d: any) =>
+              d.fieldName?.toLowerCase() === key.toLowerCase() ||
+              d.fieldCode?.toLowerCase() === key.toLowerCase()
+          );
 
-        const fieldDefinitionId = definition.id;
-
-        let textValue: string | null = null;
-        let numberValue: number | null = null;
-        let dateValue: string | null = null;
-        let booleanValue: boolean | null = null;
-
-        const fieldType = definition?.fieldType?.toLowerCase() || definition?.type?.toLowerCase() || "";
-
-        if (fieldType === "boolean" || typeof value === "boolean") {
-          booleanValue = typeof value === "boolean" ? value : (value === "true" || value === "1" || value === 1 || String(value).toLowerCase() === "yes");
-        } else if (fieldType === "number" || fieldType === "currency" || typeof value === "number") {
-          numberValue = Number(value);
-          if (isNaN(numberValue)) numberValue = null;
-        } else if (fieldType === "date") {
-          if (value) {
-            try {
-              dateValue = new Date(String(value)).toISOString();
-            } catch {
-              dateValue = null;
-            }
+          // If definition is missing, we must NOT default everything to 1, otherwise it throws a unique constraint error.
+          // But since we need an ID, we'll try to find it, or skip it if strict mapping is required.
+          // For now, if missing, we use a negative ID based on the key string so it doesn't collide, 
+          // OR we just don't send it. Let's just filter them out if not found, except for known ones.
+          if (!definition) {
+            return null; // Filtered out below
           }
-        } else {
-          textValue = value !== null && value !== undefined ? String(value) : null;
-        }
 
-        return {
-          fieldDefinitionId,
-          fieldName: definition?.fieldName || key,
-          textValue,
-          numberValue,
-          dateValue,
-          booleanValue
-        };
-      })
-      .filter((fv): fv is any => fv !== null)
+          const fieldDefinitionId = definition.id;
+
+          let textValue: string | null = null;
+          let numberValue: number | null = null;
+          let dateValue: string | null = null;
+          let booleanValue: boolean | null = null;
+
+          const fieldType = definition?.fieldType?.toLowerCase() || definition?.type?.toLowerCase() || "";
+
+          if (fieldType === "boolean" || typeof value === "boolean") {
+            booleanValue = typeof value === "boolean" ? value : (value === "true" || value === "1" || value === 1 || String(value).toLowerCase() === "yes");
+          } else if (fieldType === "number" || fieldType === "currency" || typeof value === "number") {
+            numberValue = Number(value);
+            if (isNaN(numberValue)) numberValue = null;
+          } else if (fieldType === "date") {
+            if (value) {
+              try {
+                dateValue = new Date(String(value)).toISOString();
+              } catch {
+                dateValue = null;
+              }
+            }
+          } else {
+            textValue = value !== null && value !== undefined ? String(value) : null;
+          }
+
+          return {
+            fieldDefinitionId,
+            fieldName: definition?.fieldName || key,
+            textValue,
+            numberValue,
+            dateValue,
+            booleanValue
+          };
+        })
+        .filter((fv): fv is any => fv !== null)
     };
+
 
     const response = isUpdate
       ? await assetMasterService.updateAsset(parsedId, apiRequest)
       : await assetMasterService.createAsset(apiRequest);
 
     if (!response.success) {
-      console.error("ASSET MASTER API ERROR DETAILS:", response.error || response);
+
+      let dbCategories: any[] = [];
+      let dbTypes: any[] = [];
+      let dbConstructionTypes: any[] = [];
+      let dbUseTypes: any[] = [];
+      let dbSubUseTypes: any[] = [];
+      let dbFloors: any[] = [];
+
+      try {
+        const catRes = await categoryTypeService.getCategories();
+        if (catRes.success && catRes.data) {
+          dbCategories = catRes.data;
+        }
+        const typeRes = await categoryTypeService.getAllTypes();
+        if (typeRes.success && typeRes.data) {
+          dbTypes = typeRes.data;
+        }
+        const conRes = await apiClient.get<any[]>('/ConstructionType');
+        if (conRes.success && conRes.data) {
+          dbConstructionTypes = conRes.data;
+        }
+        const useRes = await apiClient.get<any[]>('/TypeOfUse');
+        if (useRes.success && useRes.data) {
+          dbUseTypes = useRes.data;
+        }
+        const subUseRes = await apiClient.get<any[]>('/SubTypeOfUse');
+        if (subUseRes.success && subUseRes.data) {
+          dbSubUseTypes = subUseRes.data;
+        }
+        const floorRes = await apiClient.get<any[]>('/Floor');
+        if (floorRes.success && floorRes.data) {
+          dbFloors = floorRes.data;
+        }
+      } catch (catErr) {
+
+      }
+
+      let dbUlb: any = null;
+      try {
+        const ulbRes = await apiClient.get<any>('/UlbConfig');
+        if (ulbRes.success && ulbRes.data) {
+          dbUlb = ulbRes.data;
+        }
+      } catch (ulbErr) {
+
+      }
+
+      try {
+        const fs = require("fs");
+        const logContent = `[${new Date().toISOString()}] SAVE FAILED\n` +
+          `Request Payload:\n${JSON.stringify(apiRequest, null, 2)}\n\n` +
+          `Active DB Wards: ${JSON.stringify(dbWardIds)}\n` +
+          `Active DB Zones: ${JSON.stringify(dbZoneIds)}\n` +
+          `Active DB Departments: ${JSON.stringify(dbDeptIds)}\n` +
+          `Active DB Moujas: ${JSON.stringify(dbMoujaIds)}\n` +
+          `Active DB Categories: ${JSON.stringify(dbCategories)}\n` +
+          `Active DB Types: ${JSON.stringify(dbTypes)}\n` +
+          `Active DB ConstructionTypes: ${JSON.stringify(dbConstructionTypes)}\n` +
+          `Active DB UseTypes: ${JSON.stringify(dbUseTypes)}\n` +
+          `Active DB SubUseTypes: ${JSON.stringify(dbSubUseTypes)}\n` +
+          `Active DB Floors: ${JSON.stringify(dbFloors)}\n` +
+          `Active DB UlbConfig: ${JSON.stringify(dbUlb)}\n\n` +
+          `Response Error:\n${JSON.stringify(response.error || response, null, 2)}\n` +
+          `============================================================\n\n`;
+        fs.appendFileSync("server-errors.log", logContent);
+      } catch (logErr) {
+
+      }
     } else {
-      console.log("ASSET MASTER API SUCCESS RESPONSE DATA:", JSON.stringify(response.data, null, 2));
+
     }
 
     let assetId: number | null = null;
@@ -479,7 +534,7 @@ export async function submitAssetForm(formData: AssetFormData) {
       assetId = findAssetId(resData) || (isUpdate ? parsedId : null);
 
       if (assetId && apiRequest.fieldValues && apiRequest.fieldValues.length > 0) {
-        console.log(`Saving ${apiRequest.fieldValues.length} EAV field values for asset ID: ${assetId}`);
+
         const savePromises = apiRequest.fieldValues.map(async (fv) => {
           try {
             const eavPayload = {
@@ -494,15 +549,15 @@ export async function submitAssetForm(formData: AssetFormData) {
             };
             const eavResponse = await assetFieldValueService.saveFieldValue(eavPayload);
             if (!eavResponse.success) {
-              console.error(`Failed to save EAV field value ${fv.fieldName}:`, eavResponse.error);
+
             }
           } catch (err) {
-            console.error(`Exception saving EAV field value ${fv.fieldName}:`, err);
+
           }
         });
         await Promise.all(savePromises);
       } else {
-        console.warn("Skipped saving EAV field values: assetId not found or fieldValues empty. Found assetId:", assetId);
+
       }
     }
 
@@ -519,7 +574,7 @@ export async function submitAssetForm(formData: AssetFormData) {
 
     return response;
   } catch (error) {
-    console.error("CRITICAL: Asset Submission Failed:", error);
+
     return {
       success: false,
       error: error instanceof Error ? error.message : "Internal Server Error during asset creation."
@@ -541,7 +596,7 @@ export async function activateAssetAction(assetId: number): Promise<{ success: b
     }
     return { success: false, error: response.error || "Activation failed." };
   } catch (error) {
-    console.error("CRITICAL: Asset Activation Failed:", error);
+
     return {
       success: false,
       error: error instanceof Error ? error.message : "Internal Server Error during asset activation."
@@ -568,7 +623,7 @@ export async function getFallbackModuleIdAction(pathname?: string): Promise<numb
   try {
     const { getModules } = await import("@/lib/api/configuration-settings/screenAccess/master-data.service");
     const modules = await getModules();
-    
+
     if (pathname) {
       const pathLower = pathname.toLowerCase();
       const exactMatch = modules.find((m: any) => {
@@ -576,7 +631,7 @@ export async function getFallbackModuleIdAction(pathname?: string): Promise<numb
         return mName && pathLower.includes(mName.toLowerCase().replace(/\s+/g, '-'));
       });
       if (exactMatch) {
-         return exactMatch.moduleId || (exactMatch as any).ModuleId || 0;
+        return exactMatch.moduleId || (exactMatch as any).ModuleId || 0;
       }
     }
 
