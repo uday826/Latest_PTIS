@@ -254,11 +254,16 @@ export function VerificationLeaseModal({
   }, [loadDocumentFile, loadedFile, selectedDocument]);
 
   const documentCards = useMemo(() => {
-    return documents.slice(0, 5).map((doc) => ({
-      ...doc,
-      label: getFileTitle(doc),
-      isImage: isImage(doc.contentType || '', doc.fileName || doc.name || ''),
-    }));
+    return documents
+      .filter((doc) => {
+        const name = (doc.name || '').toLowerCase();
+        return name === 'aadhar' || name === 'pan';
+      })
+      .map((doc) => ({
+        ...doc,
+        label: getFileTitle(doc),
+        isImage: isImage(doc.contentType || '', doc.fileName || doc.name || ''),
+      }));
   }, [documents]);
 
   const mediaCards = useMemo(() => {
@@ -271,20 +276,23 @@ export function VerificationLeaseModal({
 
   const leftMediaPanels = [
     {
-      title: 'Building Photo',
-      doc: mediaCards[0] ?? null,
+      title: 'Asset Photo',
+      doc: mediaCards.find((doc) => (doc.name || '').toLowerCase() === 'asset image') ?? null,
       fallbackIcon: Building2,
-      fallbackText: pickFirst(record.shopName, 'Building Photo'),
+      fallbackText: pickFirst(record.shopName, 'Asset Photo'),
     },
     {
       title: 'OP Plan',
-      doc: mediaCards[1] ?? null,
+      doc: mediaCards.find((doc) => {
+        const name = (doc.name || '').toLowerCase();
+        return name !== 'asset image' && name !== 'asset photo plan';
+      }) ?? null,
       fallbackIcon: Grid,
       fallbackText: 'OP Plan',
     },
     {
       title: 'DP Plan',
-      doc: mediaCards[2] ?? null,
+      doc: mediaCards.find((doc) => (doc.name || '').toLowerCase() === 'asset photo plan') ?? null,
       fallbackIcon: MapPinned,
       fallbackText: 'DP Plan',
     },

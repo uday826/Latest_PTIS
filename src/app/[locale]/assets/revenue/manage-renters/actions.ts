@@ -150,15 +150,16 @@ function baseLeaseRentQuery(
 }
 
 export async function getManageRentersTabCountsAction(): Promise<ManageRentersTabCounts> {
-  const [list, revertedList] = await Promise.all([
+  const [list, registeredList, revertedList] = await Promise.all([
     getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1 }),
+    getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1, workflowStatus: 'registered' }),
     getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1, workflowStatus: 'reverted' }),
   ]);
 
   const stats = (list as unknown as { stats?: any }).stats;
 
   return {
-    registrationCount: list.totalCount,
+    registrationCount: registeredList.totalCount,
     verificationCount: stats?.verificationPending ?? 0,
     approvalCount: stats?.approvalPending ?? 0,
     revertedCount: revertedList.totalCount,
@@ -168,7 +169,7 @@ export async function getManageRentersTabCountsAction(): Promise<ManageRentersTa
 export async function getManageRentersPageDataAction(
   query: Record<string, string | string[] | undefined>
 ): Promise<ManageRentersPageData> {
-  const params = baseLeaseRentQuery(query);
+  const params = baseLeaseRentQuery(query, 'registered');
   const selectedZoneId = parseOptionalNumber(query.zoneId);
   const [list, categories, zones, wards, assets] = await Promise.all([
     getAssetLeaseRentDetailsList(params),
