@@ -280,11 +280,17 @@ export interface RejectRegistrationModalProps {
 export interface ApprovalLeaseModalProps {
   record: AssetLeaseRentDetailsListItem;
   onClose: () => void;
+  assetDetails?: unknown | null;
+  documents?: import('@/types/municipal-asset/detail-tabs.types').AssetDocumentListItem[];
+  assetPhotosAndPlans?: import('@/types/municipal-asset/detail-tabs.types').AssetDocumentListItem[];
 }
 
 export interface VerificationLeaseModalProps {
   record: AssetLeaseRentDetailsListItem;
   onClose: () => void;
+  assetDetails?: unknown | null;
+  documents?: import('@/types/municipal-asset/detail-tabs.types').AssetDocumentListItem[];
+  assetPhotosAndPlans?: import('@/types/municipal-asset/detail-tabs.types').AssetDocumentListItem[];
 }
 
 export interface PaymentSectionProps {
@@ -314,6 +320,7 @@ export interface LeaseRentRegistrationProps {
   drawerAssetId?: number | null;
   selectedAsset?: unknown | null;
   assetDocuments?: import('@/types/municipal-asset/detail-tabs.types').AssetDocumentListItem[];
+  assetPhotosAndPlans?: import('@/types/municipal-asset/detail-tabs.types').AssetDocumentListItem[];
   applicationTypes?: ApplicationTypeItem[];
   selectedRegistration?: LeaseRentRecord | null;
   verificationDrawerId?: number | null;
@@ -392,6 +399,7 @@ export interface NewLeaseRegistrationModalProps {
   asset: AssetMasterDetails;
   record?: LeaseRentRecord | null;
   documents?: import('@/types/municipal-asset/detail-tabs.types').AssetDocumentListItem[];
+  assetPhotosAndPlans?: import('@/types/municipal-asset/detail-tabs.types').AssetDocumentListItem[];
   applicationTypes?: ApplicationTypeItem[];
   onClose: () => void;
 }

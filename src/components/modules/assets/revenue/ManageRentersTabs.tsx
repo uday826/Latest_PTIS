@@ -11,16 +11,17 @@ interface ManageRentersTab {
   key: ManageRentersTabKey;
   label: string;
   icon: typeof FileText;
+  countKey: keyof import('../../../../types/asset/revenue.types').ManageRentersTabCounts;
 }
 
 const tabs: ManageRentersTab[] = [
-  { key: 'registration', label: 'Registration', icon: FileText },
-  { key: 'verification', label: 'Verification', icon: Eye },
-  { key: 'approval', label: 'Approval', icon: CheckCircle },
-  { key: 'reverted', label: 'Reverted', icon: Undo2 },
+  { key: 'registration', label: 'Registration', icon: FileText, countKey: 'registrationCount' },
+  { key: 'verification', label: 'Verification', icon: Eye, countKey: 'verificationCount' },
+  { key: 'approval', label: 'Approval', icon: CheckCircle, countKey: 'approvalCount' },
+  { key: 'reverted', label: 'Reverted', icon: Undo2, countKey: 'revertedCount' },
 ];
 
-export function ManageRentersTabs({ locale, counts: _counts }: ManageRentersTabsProps) {
+export function ManageRentersTabs({ locale, counts }: ManageRentersTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -40,6 +41,8 @@ export function ManageRentersTabs({ locale, counts: _counts }: ManageRentersTabs
 
   const items = tabs.map((tab) => {
     const Icon = tab.icon;
+    const count = counts?.[tab.countKey] ?? 0;
+    const isActive = activeKey === tab.key;
 
     return {
       value: tab.key,
@@ -47,6 +50,17 @@ export function ManageRentersTabs({ locale, counts: _counts }: ManageRentersTabs
         <span className="flex items-center gap-2">
           <Icon className="h-3.5 w-3.5 text-slate-400" />
           <span>{tab.label}</span>
+          {count > 0 && (
+            <span
+              className={`inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none ${
+                isActive
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-slate-100 text-slate-500'
+              }`}
+            >
+              {count}
+            </span>
+          )}
         </span>
       ),
       content: null,

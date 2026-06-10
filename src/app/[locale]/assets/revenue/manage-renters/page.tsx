@@ -5,9 +5,18 @@ import {
   getManageRentersPageDataAction,
   getApplicationTypesAction,
 } from './registration-actions';
-import { fetchAssetDocumentsByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
+import { fetchAssetDocumentsByAsset, fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
 
 export const dynamic = 'force-dynamic';
+
+function normalizeDrawerId(value: string | string[] | undefined): number | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const trimmed = raw?.trim();
+  if (!trimmed || trimmed === '[]') return null;
+
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
 
 interface ManageRentersPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -20,13 +29,17 @@ interface ManageRentersPageProps {
 export default async function ManageRentersPage({ searchParams }: ManageRentersPageProps) {
   const query = await searchParams;
   const data = await getManageRentersPageDataAction(query);
-  const drawerAssetIdRaw = query.drawerAssetId;
-  const drawerAssetId = Array.isArray(drawerAssetIdRaw) ? drawerAssetIdRaw[0] : drawerAssetIdRaw;
+  const drawerAssetId = normalizeDrawerId(query.drawerAssetId);
   const selectedRegistration = drawerAssetId
-    ? data.records.find((record) => record.assetMasterId === Number(drawerAssetId)) ?? null
+    ? data.records.find((record) => record.assetMasterId === drawerAssetId) ?? null
     : null;
   const selectedAsset = drawerAssetId ? await getManageRentersAssetDetailsAction(drawerAssetId) : null;
-  const assetDocuments = drawerAssetId ? (await fetchAssetDocumentsByAsset(drawerAssetId)).documents : [];
+  const [assetDocuments, assetPhotosAndPlans] = drawerAssetId
+    ? await Promise.all([
+      fetchAssetDocumentsByAsset(drawerAssetId).then((result) => result.documents),
+      fetchAssetPhotosAndPlansByAsset(drawerAssetId).then((result) => result.documents),
+    ])
+    : [[], []];
   const applicationTypes = await getApplicationTypesAction();
 
   return (
@@ -38,11 +51,11 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
           data.pageSize,
           data.searchTerm,
           data.assetCategoryId ?? '',
-          data.zoneId ?? '',
-          data.wardId ?? '',
-          data.assetId ?? '',
-          drawerAssetId ?? '',
-        ].join('|')}
+        data.zoneId ?? '',
+        data.wardId ?? '',
+        data.assetId ?? '',
+        drawerAssetId ?? '',
+      ].join('|')}
         pageNumber={data.pageNumber}
         pageSize={data.pageSize}
         totalCount={data.totalCount}
@@ -52,10 +65,11 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
         zoneId={data.zoneId}
         wardId={data.wardId}
         assetId={data.assetId}
-        drawerAssetId={drawerAssetId ? Number(drawerAssetId) : null}
+        drawerAssetId={drawerAssetId}
         selectedRegistration={selectedRegistration}
         selectedAsset={selectedAsset}
         assetDocuments={assetDocuments}
+        assetPhotosAndPlans={assetPhotosAndPlans}
         applicationTypes={applicationTypes}
         initialRecords={data.records}
         categoryOptions={data.categoryOptions}
