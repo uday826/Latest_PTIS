@@ -8,11 +8,16 @@ interface DetailsPageProps {
 export default async function PaymentDetailsRedirectPage({ params, searchParams }: DetailsPageProps) {
   const { locale } = await params;
   const query = await searchParams;
-  const srNo = typeof query.srNo === 'string' ? query.srNo : null;
+  const recordId =
+    typeof query.recordId === 'string'
+      ? query.recordId
+      : typeof query.srNo === 'string'
+        ? query.srNo
+        : null;
   const next = new URLSearchParams();
 
   Object.entries(query).forEach(([key, value]) => {
-    if (key === 'srNo') return;
+    if (key === 'srNo' || key === 'recordId') return;
     if (typeof value === 'string' && value) next.set(key, value);
     if (Array.isArray(value)) {
       value.forEach((entry) => {
@@ -23,8 +28,8 @@ export default async function PaymentDetailsRedirectPage({ params, searchParams 
 
   const queryString = next.toString();
 
-  if (srNo) {
-    redirect(queryString ? `/${locale}/assets/revenue/payment/details/${srNo}/make-payment?${queryString}` : `/${locale}/assets/revenue/payment/details/${srNo}/make-payment`);
+  if (recordId) {
+    redirect(queryString ? `/${locale}/assets/revenue/payment/details/${recordId}/make-payment?${queryString}` : `/${locale}/assets/revenue/payment/details/${recordId}/make-payment`);
   }
 
   redirect(`/${locale}/assets/revenue/payment`);

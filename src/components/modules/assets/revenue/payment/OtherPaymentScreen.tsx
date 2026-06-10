@@ -1,5 +1,6 @@
 'use client';
 
+import { processOtherPaymentAction } from '@/app/[locale]/assets/revenue/payment/details/[recordId]/other-payment/actions';
 import { Button } from '@/components/common/ActionButton';
 import { Input } from '@/components/common/Input';
 import { Select } from '@/components/common/select';
@@ -7,7 +8,8 @@ import type { LeaseRentPaymentDetail } from '@/types/asset/leaseRentPayment.type
 import { IndianRupee } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { toast } from 'sonner';
 
 const PAYMENT_TYPE_VALUES = ['', 'Deposit', 'Penalty', 'Transfer Fee'] as const;
 const PAYMENT_MODE_VALUES = ['', 'Cash', 'DD', 'Cheque', 'QR', 'Online'] as const;
@@ -51,6 +53,7 @@ export function OtherPaymentScreen({
   const [bankName, setBankName] = useState('');
   const [chequeNumber, setChequeNumber] = useState('');
   const [chequeDate, setChequeDate] = useState('');
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     setPaymentType(paymentTypeFromQuery);
@@ -92,6 +95,71 @@ export function OtherPaymentScreen({
   const handlePaymentModeChange = (_e: React.ChangeEvent<HTMLSelectElement>, value: string) => {
     setPaymentMode(value);
     updateUrlParams(paymentType, value);
+  };
+
+  const handlePayNow = () => {
+    const parsedAmount = Number(amount);
+
+    if (!paymentType) {
+      toast.error('Payment type is required.');
+      return;
+    }
+
+    if (!paymentMode) {
+      toast.error('Payment mode is required.');
+      return;
+    }
+
+    if (!mobileNo.trim()) {
+      toast.error('Mobile number is required.');
+      return;
+    }
+
+    if (!email.trim()) {
+      toast.error('Email address is required.');
+      return;
+    }
+
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      toast.error('Payment amount must be greater than zero.');
+      return;
+    }
+
+    const resolvedTransactionId =
+      paymentMode === 'Online'
+        ? transactionId.trim() || bankGateway.trim()
+        : paymentMode === 'QR'
+          ? transactionId.trim() || upiId.trim()
+          : paymentMode === 'DD'
+            ? ddNumber.trim()
+            : paymentMode === 'Cheque'
+              ? chequeNumber.trim()
+              : '';
+
+    startTransition(async () => {
+      const result = await processOtherPaymentAction(params.recordId, {
+        mobile: mobileNo.trim(),
+        email: email.trim(),
+        paymentMode,
+        paymentType,
+        amount: parsedAmount,
+        penaltyAmount: paymentType === 'Penalty' ? parsedAmount : 0,
+        gstAmount: 0,
+        transactionId: resolvedTransactionId,
+      });
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success(result.message);
+      const next = new URLSearchParams(searchParams.toString());
+      const queryString = next.toString();
+      const historyPath = `/${params.locale}/assets/revenue/payment/details/${params.recordId}/payment-history`;
+      router.push(queryString ? `${historyPath}?${queryString}` : historyPath);
+      router.refresh();
+    });
   };
 
   return (
@@ -277,8 +345,14 @@ export function OtherPaymentScreen({
                 className="w-full bg-transparent outline-none font-bold text-sm text-slate-800"
               />
             </div>
-            <Button variant="success" size="sm" className="px-8 py-2.5 font-bold text-xs rounded-lg">
-              {t('payNow')}
+            <Button
+              variant="success"
+              size="sm"
+              className="px-8 py-2.5 font-bold text-xs rounded-lg"
+              onClick={handlePayNow}
+              disabled={isPending}
+            >
+              {isPending ? 'Processing...' : t('payNow')}
             </Button>
           </div>
         </div>

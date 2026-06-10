@@ -68,6 +68,7 @@ export interface AssetLeaseRentDetailsListItem {
   approvedBy?: number | null;
   approvedDate?: string | null;
   rentStatus?: string | null;
+  paymentStatus?: string | null;
   leaseDurationDisplay?: string | null;
   rentAmountDisplay?: string | null;
   id: number;
@@ -81,6 +82,7 @@ export interface AssetLeaseRentDetailsListParams {
   pageSize?: number;
   searchTerm?: string;
   workflowStatus?: string;
+  paymentStatus?: string;
   assetCategoryId?: number;
   zoneId?: number;
   wardId?: number;
@@ -95,6 +97,7 @@ function buildAssetLeaseRentDetailsQuery(params: AssetLeaseRentDetailsListParams
 
   if (params.searchTerm?.trim()) query.set('SearchTerm', params.searchTerm.trim());
   if (params.workflowStatus?.trim()) query.set('WorkflowStatus', params.workflowStatus.trim());
+  if (params.paymentStatus?.trim()) query.set('PaymentStatus', params.paymentStatus.trim());
   if (params.assetCategoryId != null) query.set('AssetCategoryId', String(params.assetCategoryId));
   if (params.zoneId != null) query.set('ZoneId', String(params.zoneId));
   if (params.wardId != null) query.set('WardId', String(params.wardId));

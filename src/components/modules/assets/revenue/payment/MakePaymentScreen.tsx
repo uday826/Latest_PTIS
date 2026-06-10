@@ -1,7 +1,9 @@
 'use client';
 
+import { processMakePaymentAction } from '@/app/[locale]/assets/revenue/payment/details/[recordId]/make-payment/actions';
 import { Button } from '@/components/common/ActionButton';
 import { Card } from '@/components/common/Card';
+import { useConfirm } from '@/components/common/ConfirmProvider';
 import { Drawer } from '@/components/common/Drawer';
 import { Input } from '@/components/common/Input';
 import { RadioGroup, RadioGroupItem } from '@/components/common/radio-group';
@@ -10,7 +12,8 @@ import type { LeaseRentPaymentDetail } from '@/types/asset/leaseRentPayment.type
 import { Calendar, IndianRupee } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { toast } from 'sonner';
 
 type PaymentMode = 'Cash' | 'DD' | 'Cheque' | 'QR / UPI' | 'Online' | '';
 
@@ -31,6 +34,14 @@ const QUERY_TO_MODE: Record<string, Exclude<PaymentMode, ''>> = {
   online: 'Online',
 };
 
+// Map internal payment type state to backend-expected values
+const PAYMENT_TYPE_MAP: Record<'monthly' | 'pending' | 'partial' | 'total', string> = {
+  monthly: 'Monthly',
+  pending: 'Pending',
+  partial: 'Partial',
+  total: 'Full', // Backend expects 'Full', not 'Total'
+};
+
 export function MakePaymentScreen({
   record,
   initialMode = '',
@@ -39,6 +50,7 @@ export function MakePaymentScreen({
   initialMode?: PaymentMode;
 }) {
   const t = useTranslations('AssetPayment.makePayment');
+  const { confirm } = useConfirm();
   const router = useRouter();
   const params = useParams<{ locale: string; recordId: string }>();
   const searchParams = useSearchParams();
@@ -54,6 +66,13 @@ export function MakePaymentScreen({
   const [isMonthDrawerOpen, setIsMonthDrawerOpen] = useState(false);
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
   const [partialAmount, setPartialAmount] = useState('');
+  const [mobile, setMobile] = useState(record.tenantMobile);
+  const [email, setEmail] = useState(record.tenantEmail);
+  const [bankName, setBankName] = useState('');
+  const [instrumentNumber, setInstrumentNumber] = useState('');
+  const [instrumentDate, setInstrumentDate] = useState('');
+  const [transactionId, setTransactionId] = useState('');
+  const [isPending, startTransition] = useTransition();
   const monthOptions = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   const pendingDemandAmount = record.pendingDue;
@@ -61,7 +80,13 @@ export function MakePaymentScreen({
   const penaltyAmount = record.penalty;
   const gstAmount = record.gst;
   const summaryTotalAmount = record.totalPayable;
-  const payNowAmount = paymentType === 'partial' ? 0 : record.totalPayable;
+  const partialNumericAmount = Number(partialAmount);
+  const payNowAmount =
+    paymentType === 'partial'
+      ? Number.isFinite(partialNumericAmount) && partialNumericAmount > 0
+        ? partialNumericAmount
+        : 0
+      : record.totalPayable;
 
   useEffect(() => {
     setSelectedMode(modeFromQuery);
@@ -83,6 +108,82 @@ export function MakePaymentScreen({
     const queryString = next.toString();
     const basePath = `/${params.locale}/assets/revenue/payment/details/${params.recordId}/make-payment`;
     router.replace(queryString ? `${basePath}?${queryString}` : basePath);
+  };
+
+  const handlePayNow = () => {
+    if (!mobile.trim()) {
+      toast.error('Mobile number is required.');
+      return;
+    }
+
+    if (!email.trim()) {
+      toast.error('Email address is required.');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+
+    if (!selectedMode) {
+      toast.error('Payment mode is required.');
+      return;
+    }
+
+    if (payNowAmount <= 0) {
+      toast.error('Payment amount must be greater than zero.');
+      return;
+    }
+
+    const resolvedTransactionId =
+      selectedMode === 'QR / UPI'
+        ? transactionId.trim()
+        : selectedMode === 'Cheque' || selectedMode === 'DD'
+          ? instrumentNumber.trim()
+          : '';
+
+    confirm({
+      variant: 'warning',
+      title: 'Confirm Payment',
+      description: `Are you sure you want to process this payment of Rs. ${payNowAmount.toLocaleString('en-IN')}?`,
+      confirmText: 'Confirm Payment',
+      cancelText: 'Cancel',
+      onConfirm: async () => {
+        startTransition(async () => {
+          try {
+            const result = await processMakePaymentAction(params.recordId, {
+              mobile: mobile.trim(),
+              email: email.trim(),
+              paymentMode: selectedMode,
+              paymentType: PAYMENT_TYPE_MAP[paymentType], // Use mapping to get correct backend value
+              amount: payNowAmount,
+              penaltyAmount,
+              gstAmount,
+              transactionId: resolvedTransactionId,
+            });
+
+            if (!result.success) {
+              toast.error(result.message);
+              return;
+            }
+
+            toast.success(result.message);
+            const next = new URLSearchParams(searchParams.toString());
+            const queryString = next.toString();
+            const historyPath = `/${params.locale}/assets/revenue/payment/details/${params.recordId}/payment-history`;
+            
+            // Await router.push before refresh to avoid microtask race conditions
+            await router.push(queryString ? `${historyPath}?${queryString}` : historyPath);
+          } catch (err) {
+            console.error('Payment confirmation error:', err);
+            toast.error('An unexpected error occurred during payment processing.');
+          }
+        });
+      },
+    });
   };
 
   return (
@@ -139,8 +240,8 @@ export function MakePaymentScreen({
 
         <Card variant="bordered" padding="none" className="bg-white border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
           <div className="grid grid-cols-3 gap-4">
-            <Input label={t('mobileNumber')} required defaultValue={record.tenantMobile} className="h-9 text-xs font-medium bg-slate-50 border-slate-200 rounded-lg" />
-            <Input label={t('emailAddress')} required defaultValue={record.tenantEmail} placeholder={t('emailAddress')} className="h-9 text-xs font-medium bg-white border-slate-200 rounded-lg placeholder:text-slate-400" />
+            <Input label={t('mobileNumber')} required value={mobile} onChange={(e) => setMobile(e.target.value)} className="h-9 text-xs font-medium bg-slate-50 border-slate-200 rounded-lg" />
+            <Input label={t('emailAddress')} required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('emailAddress')} className="h-9 text-xs font-medium bg-white border-slate-200 rounded-lg placeholder:text-slate-400" />
             <Select
               label={t('paymentMode')}
               required
@@ -165,7 +266,14 @@ export function MakePaymentScreen({
 
               {selectedMode === 'QR / UPI' && (
                 <div className="grid grid-cols-1 gap-4">
-                  <Input label={t('upiReferenceId')} required placeholder={t('enterUpiReferenceId')} className="h-9 text-xs font-medium bg-white border-slate-200 rounded-lg placeholder:text-slate-400" />
+                  <Input
+                    label={t('upiReferenceId')}
+                    required
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    placeholder={t('enterUpiReferenceId')}
+                    className="h-9 text-xs font-medium bg-white border-slate-200 rounded-lg placeholder:text-slate-400"
+                  />
                 </div>
               )}
 
@@ -180,19 +288,24 @@ export function MakePaymentScreen({
                       { label: 'HDFC Bank', value: 'HDFC' },
                       { label: 'ICICI Bank', value: 'ICICI' },
                     ]}
-                    value=""
+                    value={bankName}
+                    onChange={(_e, value) => setBankName(value)}
                     placeholder={t('selectBank')}
                     className="text-xs"
                   />
                   <Input
                     label={selectedMode === 'Cheque' ? t('chequeNumber') : t('ddNumber')}
                     required
+                    value={instrumentNumber}
+                    onChange={(e) => setInstrumentNumber(e.target.value)}
                     placeholder={selectedMode === 'Cheque' ? t('enterChequeNumber') : t('enterDdNumber')}
                     className="h-9 text-xs font-medium bg-white border-slate-200 rounded-lg placeholder:text-slate-400"
                   />
                   <Input
                     label={selectedMode === 'Cheque' ? t('chequeDate') : t('ddDate')}
                     required
+                    value={instrumentDate}
+                    onChange={(e) => setInstrumentDate(e.target.value)}
                     placeholder={t('datePlaceholder')}
                     className="h-9 text-xs font-medium bg-white border-slate-200 rounded-lg placeholder:text-slate-400"
                   />
@@ -239,7 +352,7 @@ export function MakePaymentScreen({
                 }`}
               >
                 <RadioGroupItem value="total" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                <span className={`text-xs font-semibold ${paymentType === 'total' ? 'text-blue-700' : 'text-slate-700'}`}>{t('total')}</span>
+                <span className={`text-xs font-semibold ${paymentType === 'total' ? 'text-blue-700' : 'text-slate-700'}`}>Full</span>
               </label>
             </RadioGroup>
 
@@ -279,7 +392,15 @@ export function MakePaymentScreen({
                 <span className="text-[18px] font-black text-slate-800">{payNowAmount.toLocaleString('en-IN')}</span>
               )}
             </div>
-            <Button variant="success" size="sm" className="px-6 py-2 font-bold text-xs rounded-lg">{t('payNow')}</Button>
+            <Button
+              variant="success"
+              size="sm"
+              className="px-6 py-2 font-bold text-xs rounded-lg"
+              onClick={handlePayNow}
+              disabled={isPending}
+            >
+              {isPending ? 'Processing...' : t('payNow')}
+            </Button>
           </div>
         </Card>
       </div>
