@@ -2,6 +2,7 @@ import {
   ReportConstructionTable,
   ReportFooterInfo,
   ReportMediaSection,
+  ReportMovableAssetsTable,
   ReportSummarySection,
   ReportTopBar,
   firstAvailable,
@@ -60,7 +61,75 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
     isActive,
     purchaseDate,
     marketValueDate,
+    movableAssetRows,
   } = reportData;
+
+  const firstConstructionRow = constructionRows[0] ?? {};
+
+  const wardNo = toMarathiDigits(
+    formatText(
+      firstAvailable(
+        getField(record, ['wardNo', 'wardNumber', 'wardCode', 'wardName']),
+        getField(record, ['wardId'])
+      )
+    )
+  );
+
+  const partNo = toMarathiDigits(
+    formatText(
+      firstAvailable(
+        getField(record, ['partNo', 'partNumber', 'bhagNo', 'bhagNumber']),
+        getField(record, ['blockNo', 'blockNumber'])
+      )
+    )
+  );
+
+  const plotNo = toMarathiDigits(
+    formatText(
+      firstAvailable(
+        getField(record, ['plotNo', 'plotNumber', 'plotId']),
+        getField(firstConstructionRow, ['plotNo', 'plotNumber'])
+      )
+    )
+  );
+
+  const constructionAreaSqMeter = toMarathiDigits(
+    formatText(
+      firstAvailable(
+        getField(record, [
+          'constructionAreaSqMeter',
+          'builtUpAreaSqMeter',
+          'builtupAreaSqM',
+          'totalBuiltUpAreaSqMeter',
+          'totalConstructionAreaSqMeter',
+        ]),
+        getField(firstConstructionRow, [
+          'constructionAreaSqMeter',
+          'builtUpAreaSqMeter',
+          'builtupAreaSqM',
+        ])
+      )
+    )
+  );
+
+  const openPlotAreaSqMeter = toMarathiDigits(
+    formatText(
+      firstAvailable(
+        getField(record, [
+          'openPlotAreaSqMeter',
+          'openLandAreaSqMeter',
+          'plotAreaSqMeter',
+          'landAreaSqMeter',
+        ]),
+        getField(firstConstructionRow, [
+          'openPlotAreaSqMeter',
+          'openLandAreaSqMeter',
+          'plotAreaSqMeter',
+          'landAreaSqMeter',
+        ])
+      )
+    )
+  );
 
   return (
     <div className="min-h-screen bg-[#e5e7eb] p-1 font-sans text-slate-900">
@@ -69,9 +138,9 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
         <div className="w-full overflow-x-auto print:p-0 flex justify-center custom-scrollbar">
           <div
             id="printable-report"
-            className="w-[297mm] h-[210mm] min-w-[297mm] min-h-[210mm] py-[6mm] px-[7mm] rounded-[14px] bg-white border border-gray-300 shadow-[0_8px_18px_rgba(15,23,42,0.06)] print:shadow-none print:border-none relative overflow-hidden box-border"
+            className="w-[297mm] min-w-[297mm] min-h-[210mm] py-[6mm] px-[7mm] rounded-[14px] bg-white border border-gray-300 shadow-[0_8px_18px_rgba(15,23,42,0.06)] print:shadow-none print:border-none relative box-border"
           >
-            <div className="relative z-10 font-sans text-gray-900 h-full flex flex-col">
+            <div className="relative z-10 font-sans text-gray-900 min-h-full flex flex-col">
               <ReportSummarySection
                 assetId={assetId}
                 authorityName={authorityName}
@@ -88,10 +157,19 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
                 assetCondition={assetCondition}
                 description={description}
                 operationalControl={operationalControl}
+                propertyHeaderTable={{
+                  wardNo,
+                  assetId: toMarathiDigits(assetId),
+                  partNo,
+                  citySurveyNo: toMarathiDigits(citySurvey),
+                  plotNo,
+                  constructionAreaSqMeter,
+                  openPlotAreaSqMeter,
+                }}
               />
 
-              <div className="flex flex-col gap-3 flex-1 min-h-0">
-                <div className="flex flex-col gap-3 min-w-0">
+              <div className="flex flex-row gap-3 items-start flex-1">
+                <div className="flex flex-col gap-3 min-w-0 flex-1">
                   <ReportConstructionTable
                     isBuildingCategory={isBuildingCategory}
                     constructionRows={constructionRows}
@@ -111,7 +189,11 @@ export default async function MunicipalAssetReportPage({ params }: PageProps) {
                   />
                 </div>
 
-                <div className="hidden w-82.5 flex-col gap-3 shrink-0 h-full" />
+                {movableAssetRows && movableAssetRows.length > 0 && (
+                  <div className="w-[28%] flex flex-col shrink-0">
+                    <ReportMovableAssetsTable rows={movableAssetRows} />
+                  </div>
+                )}
               </div>
 
               <ReportFooterInfo
