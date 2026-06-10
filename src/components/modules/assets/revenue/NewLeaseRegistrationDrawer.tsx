@@ -1233,9 +1233,9 @@ export function NewLeaseRegistrationModal({
 
         {documentCards.length > 0 ? (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
-            {documentCards.map((doc) => (
+            {documentCards.map((doc, idx) => (
               <button
-                key={String(doc.id)}
+                key={`${doc.id}-${idx}`}
                 type="button"
                 onClick={() => openDocument(doc)}
                 className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm text-left transition hover:border-blue-200 hover:bg-blue-50/30"

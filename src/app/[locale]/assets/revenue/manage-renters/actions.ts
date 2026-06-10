@@ -169,7 +169,7 @@ export async function getManageRentersTabCountsAction(): Promise<ManageRentersTa
 export async function getManageRentersPageDataAction(
   query: Record<string, string | string[] | undefined>
 ): Promise<ManageRentersPageData> {
-  const params = baseLeaseRentQuery(query, 'registered');
+  const params = baseLeaseRentQuery(query);
   const selectedZoneId = parseOptionalNumber(query.zoneId);
   const [list, categories, zones, wards, assets] = await Promise.all([
     getAssetLeaseRentDetailsList(params),

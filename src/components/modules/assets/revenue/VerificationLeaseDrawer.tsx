@@ -68,7 +68,7 @@ function buildWorkflowStatusDescription(record: Record<string, unknown>): string
     `Tenant Name: ${pickFirst(record.tenantName, record.previousTenantName, record.shopName)}`,
     `Lease Type: ${pickFirst(record.leaseType, record.leaseRentType)}`,
     `Payment Frequency: ${pickFirst(record.paymentFrequency)}`,
-    `Submitted Date: ${toDateDisplay(record.submittedDate ?? record.updatedDate ?? record.createdDate)}`,
+    `Submitted Date: ${toDateDisplay(record.submittedDate ?? record.createdDate ?? record.createdDate)}`,
   ];
 
   if (status.includes('verify')) {
@@ -715,9 +715,9 @@ export function VerificationLeaseModal({
 
               {documentCards.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3 mt-2 overflow-y-auto max-h-[350px]">
-                  {documentCards.map((doc) => (
+                  {documentCards.map((doc, idx) => (
                     <button
-                      key={String(doc.id)}
+                      key={`${doc.id}-${idx}`}
                       type="button"
                       onClick={() => openDocument(doc)}
                       className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm text-left transition hover:border-blue-200 hover:bg-blue-50/30 flex items-center gap-3"

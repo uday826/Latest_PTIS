@@ -50,7 +50,7 @@ export function ManageRentersTabs({ locale, counts }: ManageRentersTabsProps) {
         <span className="flex items-center gap-2">
           <Icon className="h-3.5 w-3.5 text-slate-400" />
           <span>{tab.label}</span>
-          {count > 0 && (
+          {tab.key !== 'registration' && count > 0 && (
             <span
               className={`inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none ${
                 isActive

@@ -704,9 +704,9 @@ export function ApprovalLeaseModal({
 
               {documentCards.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3 mt-2 overflow-y-auto max-h-[350px]">
-                  {documentCards.map((doc) => (
+                  {documentCards.map((doc, idx) => (
                     <button
-                      key={String(doc.id)}
+                      key={`${doc.id}-${idx}`}
                       type="button"
                       onClick={() => openDocument(doc)}
                       className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm text-left transition hover:border-blue-200 hover:bg-blue-50/30 flex items-center gap-3"
