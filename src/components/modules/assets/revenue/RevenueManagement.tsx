@@ -120,7 +120,7 @@ export function RevenueManagement({
 
         {activeTab === 'payment' &&
           (paymentPageData ? (
-            <PaymentSection pageData={paymentPageData} />
+            <PaymentSection pageData={paymentPageData as any} />
           ) : (
             <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
               No payment records supplied from the API.
