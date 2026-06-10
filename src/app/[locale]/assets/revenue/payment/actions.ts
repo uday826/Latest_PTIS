@@ -1,10 +1,14 @@
 'use server';
 
+import {
+  getAssetLeaseRentDetailsList,
+  type AssetLeaseRentDetailsListItem,
+} from '@/lib/api/asset/asset-lease-rent-details.service';
 import { categoryTypeService } from '@/lib/api/asset/category-type.service';
-import { leaseRentPaymentService } from '@/lib/api/asset/leaseRentPayment.service';
 import { wardService } from '@/lib/api/asset/ward.service';
 import { zoneService } from '@/lib/api/asset/zone.service';
-import type { LeaseRentPaymentListItem } from '@/types/asset/leaseRentPayment.types';
+
+const PAYMENT_WORKFLOW_STATUS = 'Approved';
 
 function normalizeStatus(status: string): string {
   const value = status.trim().toLowerCase();
@@ -115,14 +119,73 @@ function sortBySequenceThenId<T extends { sequenceNo?: unknown; id?: unknown }>(
   });
 }
 
-export async function getPaymentRecordsAction(): Promise<LeaseRentPaymentListItem[]> {
-  const response = await leaseRentPaymentService.getLeaseRentPayments({
+function normalizeLeaseType(item: AssetLeaseRentDetailsListItem): string {
+  return normalizeOptionText(item.leaseType) || normalizeOptionText(item.leaseRentType) || '-';
+}
+
+function normalizePaymentStatusValue(item: AssetLeaseRentDetailsListItem): string {
+  const paymentStatus = normalizeOptionText(item.paymentStatus).toLowerCase();
+  return paymentStatus === 'paid' ? 'Paid' : 'Unpaid';
+}
+
+function normalizeRentDue(item: AssetLeaseRentDetailsListItem): number {
+  return Number(
+    item.rentAmount ??
+    item.monthlyRent ??
+    item.rentMonthly ??
+    item.previousMonthlyRent ??
+    0
+  );
+}
+
+export interface PaymentRecordRow {
+  id: number;
+  assetId: number;
+  assetNo: string;
+  assetName: string;
+  zone: string;
+  wardNo: string;
+  category: string;
+  shopNo: string;
+  shopName: string;
+  tenantName: string;
+  tenantMobile: string;
+  leaseType: string;
+  rentDue: number;
+  status: string;
+}
+
+function mapAssetLeaseRentDetailsToPaymentRow(item: AssetLeaseRentDetailsListItem): PaymentRecordRow {
+  return {
+    id: item.id,
+    assetId: item.assetId,
+    assetNo: normalizeOptionText(item.assetNo) || String(item.assetId),
+    assetName: normalizeOptionText(item.assetName) || '-',
+    zone: normalizeOptionText(item.zone) || '-',
+    wardNo: normalizeOptionText(item.wardNo) || '-',
+    category:
+      normalizeOptionText(item.category) ||
+      normalizeOptionText(item.assetCategory) ||
+      normalizeOptionText(item.assetCategoryName) ||
+      '-',
+    shopNo: normalizeOptionText(item.shopNo) || '-',
+    shopName: normalizeOptionText(item.shopName) || '-',
+    tenantName: normalizeOptionText(item.tenantName) || '-',
+    tenantMobile: normalizeOptionText(item.tenantMobile) || '-',
+    leaseType: normalizeLeaseType(item),
+    rentDue: normalizeRentDue(item),
+    status: normalizePaymentStatusValue(item),
+  };
+}
+
+export async function getPaymentRecordsAction(): Promise<PaymentRecordRow[]> {
+  const response = await getAssetLeaseRentDetailsList({
     pageNumber: 1,
     pageSize: 1000,
+    workflowStatus: PAYMENT_WORKFLOW_STATUS,
   });
 
-  if (!response.success || !response.data?.items) return [];
-  return response.data.items;
+  return response.items.map(mapAssetLeaseRentDetailsToPaymentRow);
 }
 
 export interface PaymentRecordsQuery {
@@ -134,13 +197,13 @@ export interface PaymentRecordsQuery {
   leaseRentType: string;
   status: string;
   search: string;
-  sortBy: keyof LeaseRentPaymentListItem | '';
+  sortBy: keyof PaymentRecordRow | '';
   sortOrder: 'asc' | 'desc';
 }
 
 export interface PaymentRecordsPageData {
   query: PaymentRecordsQuery;
-  records: LeaseRentPaymentListItem[];
+  records: PaymentRecordRow[];
   totalEntries: number;
   totalPages: number;
   startIndex: number;
@@ -156,21 +219,22 @@ export interface PaymentFilterOptions {
 export async function getPaymentRecordsPageDataAction(
   query: PaymentRecordsQuery
 ): Promise<PaymentRecordsPageData> {
-  const response = await leaseRentPaymentService.getLeaseRentPayments({
+  const response = await getAssetLeaseRentDetailsList({
     pageNumber: 1,
     pageSize: 1000,
+    workflowStatus: PAYMENT_WORKFLOW_STATUS,
     zoneId: query.zone === 'all' ? undefined : Number(query.zone),
     wardId: query.ward === 'all' ? undefined : Number(query.ward),
     assetCategoryId: query.assetCategory === 'all' ? undefined : Number(query.assetCategory),
-    leaseType: query.leaseRentType === 'all' ? undefined : query.leaseRentType,
     paymentStatus: query.status === 'all' ? undefined : normalizeStatus(query.status),
     searchTerm: query.search.trim() || undefined,
   });
-  const allRecords = response.success && response.data?.items ? response.data.items : [];
+  const allRecords = response.items.map(mapAssetLeaseRentDetailsToPaymentRow);
   const normalizedSearch = query.search.trim().toLowerCase();
 
   const filtered = allRecords.filter((item) => {
-    const leaseMatch = query.leaseRentType === 'all' || item.leaseType === query.leaseRentType;
+    const leaseMatch =
+      query.leaseRentType === 'all' || item.leaseType.toLowerCase() === query.leaseRentType.toLowerCase();
     const statusMatch = query.status === 'all' || item.status.toLowerCase() === query.status.toLowerCase();
     const searchMatch =
       !normalizedSearch ||

@@ -891,11 +891,16 @@ export function NewLeaseRegistrationModal({
     { label: 'वार्षिक भाडे उत्पन्न (अपेक्षित)', value: toCurrencyDisplay(asset.marketValue ?? asset.currentAssetValue ?? formState.revisedRent ?? formState.monthlyRent) },
   ];
   const documentCards = useMemo(() => {
-    return localDocuments.slice(0, 5).map((doc) => ({
-      ...doc,
-      label: getFileTitle(doc),
-      isImage: isImage(doc.contentType || '', doc.fileName || doc.name || ''),
-    }));
+    return localDocuments
+      .filter((doc) => {
+        const name = (doc.name || '').toLowerCase();
+        return name === 'aadhar' || name === 'pan';
+      })
+      .map((doc) => ({
+        ...doc,
+        label: getFileTitle(doc),
+        isImage: isImage(doc.contentType || '', doc.fileName || doc.name || ''),
+      }));
   }, [localDocuments]);
 
   const mediaCards = useMemo(() => {
@@ -908,20 +913,23 @@ export function NewLeaseRegistrationModal({
 
   const leftMediaPanels = [
     {
-      title: 'Building Photo',
-      doc: mediaCards[0] ?? null,
+      title: 'Asset Photo',
+      doc: mediaCards.find((doc) => (doc.name || '').toLowerCase() === 'asset image') ?? null,
       fallbackIcon: Building2,
-      fallbackText: pickFirst(asset.assetName, 'Building Photo'),
+      fallbackText: pickFirst(asset.assetName, 'Asset Photo'),
     },
     {
       title: 'OP Plan',
-      doc: mediaCards[1] ?? null,
+      doc: mediaCards.find((doc) => {
+        const name = (doc.name || '').toLowerCase();
+        return name !== 'asset image' && name !== 'asset photo plan';
+      }) ?? null,
       fallbackIcon: Grid,
       fallbackText: pickFirst(asset.zoneName, 'OP Plan'),
     },
     {
       title: 'DP Plan',
-      doc: mediaCards[2] ?? null,
+      doc: mediaCards.find((doc) => (doc.name || '').toLowerCase() === 'asset photo plan') ?? null,
       fallbackIcon: MapPinned,
       fallbackText: pickFirst(asset.wardName, 'DP Plan'),
     },
@@ -989,7 +997,7 @@ export function NewLeaseRegistrationModal({
               STATUS
             </span>
             <span className="text-sm font-black text-amber-600 mt-2">
-              {pickFirst(record?.workflowStatus, record?.rentStatus, asset.status, 'Draft')}
+              {record?.workflowStatus || 'Draft'}
             </span>
           </div>
         </div>
@@ -1225,9 +1233,9 @@ export function NewLeaseRegistrationModal({
 
         {documentCards.length > 0 ? (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
-            {documentCards.map((doc) => (
+            {documentCards.map((doc, idx) => (
               <button
-                key={String(doc.id)}
+                key={`${doc.id}-${idx}`}
                 type="button"
                 onClick={() => openDocument(doc)}
                 className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm text-left transition hover:border-blue-200 hover:bg-blue-50/30"

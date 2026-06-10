@@ -85,7 +85,7 @@ export function LeaseRentApprovalTable({
       columns={columns}
       data={records}
       loading={false}
-      getRowKey={(row) => row.id}
+      getRowKey={(row, idx) => `${row.id}-${idx}`}
       emptyText="No approval records found."
       headerTitle="Approval Records"
       headerSubtitle="Lease and rent entries ready for approval"

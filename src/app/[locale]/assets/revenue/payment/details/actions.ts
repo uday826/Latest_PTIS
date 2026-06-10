@@ -1,28 +1,25 @@
 'use server';
 
-import { leaseRentPaymentService } from '@/lib/api/asset/leaseRentPayment.service';
-import type { LeaseRentPaymentDetail, LeaseRentPaymentListItem } from '@/types/asset/leaseRentPayment.types';
+import { getAssetLeaseRentDetailsById } from '@/lib/api/asset/asset-lease-rent-details.service';
+import type { LeaseRentPaymentDetail } from '@/types/asset/leaseRentPayment.types';
+import type { PaymentRecordRow } from '../actions';
+import { getPaymentRecordsAction } from '../actions';
+import { mapAssetLeaseRentDetailsToPaymentDetail } from './record.mapper';
 
-export async function getPaymentDetailsRecordsAction(): Promise<LeaseRentPaymentListItem[]> {
-  const response = await leaseRentPaymentService.getLeaseRentPayments({
-    pageNumber: 1,
-    pageSize: 1000,
-  });
-
-  if (!response.success || !response.data?.items) return [];
-  return response.data.items;
+export async function getPaymentDetailsRecordsAction(): Promise<PaymentRecordRow[]> {
+  return getPaymentRecordsAction();
 }
 
 export async function getPaymentDetailRecordAction(
   assetId: string | null,
-  srNoParam: string | null
+  recordIdParam: string | null
 ): Promise<LeaseRentPaymentDetail | null> {
-  if (!assetId || !srNoParam) return null;
+  if (!assetId || !recordIdParam) return null;
 
-  const srNo = Number(srNoParam);
-  if (!Number.isFinite(srNo)) return null;
+  const recordId = Number(recordIdParam);
+  if (!Number.isFinite(recordId)) return null;
 
-  const response = await leaseRentPaymentService.getLeaseRentPaymentById(srNo);
-  if (!response.success || !response.data) return null;
-  return response.data.assetId === Number(assetId) ? response.data : null;
+  const record = await getAssetLeaseRentDetailsById(recordId);
+  if (!record) return null;
+  return record.assetId === Number(assetId) ? mapAssetLeaseRentDetailsToPaymentDetail(record) : null;
 }

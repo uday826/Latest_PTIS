@@ -72,3 +72,14 @@ export interface LeaseRentPaymentHistoryResponse {
   errors: string[] | null;
   correlationId: string | null;
 }
+
+export interface ProcessLeaseRentPaymentRequest {
+  mobile: string;
+  email: string;
+  paymentMode: string;
+  paymentType: string;
+  amount: number;
+  penaltyAmount: number;
+  gstAmount: number;
+  transactionId: string;
+}

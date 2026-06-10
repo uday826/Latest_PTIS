@@ -68,7 +68,7 @@ function buildWorkflowStatusDescription(record: Record<string, unknown>): string
     `Tenant Name: ${pickFirst(record.tenantName, record.previousTenantName, record.shopName)}`,
     `Lease Type: ${pickFirst(record.leaseType, record.leaseRentType)}`,
     `Payment Frequency: ${pickFirst(record.paymentFrequency)}`,
-    `Submitted Date: ${toDateDisplay(record.submittedDate ?? record.updatedDate ?? record.createdDate)}`,
+    `Submitted Date: ${toDateDisplay(record.submittedDate ?? record.createdDate ?? record.createdDate)}`,
   ];
 
   if (status.includes('verify')) {
@@ -254,11 +254,16 @@ export function VerificationLeaseModal({
   }, [loadDocumentFile, loadedFile, selectedDocument]);
 
   const documentCards = useMemo(() => {
-    return documents.slice(0, 5).map((doc) => ({
-      ...doc,
-      label: getFileTitle(doc),
-      isImage: isImage(doc.contentType || '', doc.fileName || doc.name || ''),
-    }));
+    return documents
+      .filter((doc) => {
+        const name = (doc.name || '').toLowerCase();
+        return name === 'aadhar' || name === 'pan';
+      })
+      .map((doc) => ({
+        ...doc,
+        label: getFileTitle(doc),
+        isImage: isImage(doc.contentType || '', doc.fileName || doc.name || ''),
+      }));
   }, [documents]);
 
   const mediaCards = useMemo(() => {
@@ -271,20 +276,23 @@ export function VerificationLeaseModal({
 
   const leftMediaPanels = [
     {
-      title: 'Building Photo',
-      doc: mediaCards[0] ?? null,
+      title: 'Asset Photo',
+      doc: mediaCards.find((doc) => (doc.name || '').toLowerCase() === 'asset image') ?? null,
       fallbackIcon: Building2,
-      fallbackText: pickFirst(record.shopName, 'Building Photo'),
+      fallbackText: pickFirst(record.shopName, 'Asset Photo'),
     },
     {
       title: 'OP Plan',
-      doc: mediaCards[1] ?? null,
+      doc: mediaCards.find((doc) => {
+        const name = (doc.name || '').toLowerCase();
+        return name !== 'asset image' && name !== 'asset photo plan';
+      }) ?? null,
       fallbackIcon: Grid,
       fallbackText: 'OP Plan',
     },
     {
       title: 'DP Plan',
-      doc: mediaCards[2] ?? null,
+      doc: mediaCards.find((doc) => (doc.name || '').toLowerCase() === 'asset photo plan') ?? null,
       fallbackIcon: MapPinned,
       fallbackText: 'DP Plan',
     },
@@ -707,9 +715,9 @@ export function VerificationLeaseModal({
 
               {documentCards.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3 mt-2 overflow-y-auto max-h-[350px]">
-                  {documentCards.map((doc) => (
+                  {documentCards.map((doc, idx) => (
                     <button
-                      key={String(doc.id)}
+                      key={`${doc.id}-${idx}`}
                       type="button"
                       onClick={() => openDocument(doc)}
                       className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm text-left transition hover:border-blue-200 hover:bg-blue-50/30 flex items-center gap-3"
