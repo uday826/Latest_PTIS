@@ -10,7 +10,7 @@ import { Database, LayoutGrid, Settings } from "lucide-react";
 /* ================= CONST ================= */
 const TAB_KEYS = {
   MASTER_DATA: "master-data",
-  SCREEN_FIELDS: "screen-fields-master",
+  DEFINITIONS: "definitions",
 } as const;
 
 interface ConfigurationLayoutProps {
@@ -26,13 +26,13 @@ export function ConfigurationLayout({ children }: ConfigurationLayoutProps) {
 
   /* ================= ACTIVE TAB ================= */
   const getActiveTab = (): TabValue => {
-    if (pathname.includes("screen-fields-master")) {
-      return TAB_KEYS.SCREEN_FIELDS;
+    if (pathname.includes("definitions")) {
+      return TAB_KEYS.DEFINITIONS;
     }
     if (pathname.includes("master-data")) {
       return TAB_KEYS.MASTER_DATA;
     }
-    return TAB_KEYS.SCREEN_FIELDS;
+    return TAB_KEYS.DEFINITIONS;
   };
 
   /* ================= TAB NAVIGATION ================= */
@@ -86,10 +86,10 @@ export function ConfigurationLayout({ children }: ConfigurationLayoutProps) {
                 <span className="!leading-none !mt-[1px]">{t('screenFieldsMaster.masterData')}</span>
               </Tabs.Tab>
 
-              {/* SCREEN FIELDS MASTER */}
+              {/* SCREEN FIELDS MASTER / DEFINITIONS */}
               <Tabs.Tab
                 icon={LayoutGrid}
-                value={TAB_KEYS.SCREEN_FIELDS}
+                value={TAB_KEYS.DEFINITIONS}
                 className="!flex !items-center !gap-2 !px-6 !py-2.5 !rounded-lg !text-sm !font-semibold !transition-all !text-gray-700 hover:!bg-gray-100 hover:!text-gray-800 [&[aria-selected='true']]:!bg-blue-600 [&[aria-selected='true']]:!text-white [&[aria-selected='true']]:!shadow-sm"
               >
                 <span className="!leading-none !mt-[1px]">

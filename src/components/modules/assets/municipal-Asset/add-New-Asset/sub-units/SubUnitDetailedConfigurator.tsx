@@ -100,6 +100,7 @@ function CustomBoxedInput({ value = "", onChange, length, type = "numeric", grou
   );
 }
 
+
 interface SubUnitDetailedConfiguratorProps {
   unit: any;
   parentBuildingName: string;

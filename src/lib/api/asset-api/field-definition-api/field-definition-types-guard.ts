@@ -1,5 +1,5 @@
 import { ApiError } from '@/lib/utils/api';
-import type { AssetFieldDefinition } from '@/types/asset-type/screenfieldmaster.types';
+import type { AssetFieldDefinition } from '@/types/asset-type/definitions.types';
 
 export function isFieldDefinitionShape(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null) return false;

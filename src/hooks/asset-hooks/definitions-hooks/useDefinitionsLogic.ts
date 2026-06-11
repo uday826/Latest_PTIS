@@ -2,14 +2,17 @@
 
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import type { AssetFieldDefinition } from '@/types/asset-type/screenfieldmaster.types';
-import { saveFieldDefinitionAction, deleteFieldDefinitionAction } from '@/app/[locale]/assets/configuration/screen-fields-master/action';
+import type { AssetFieldDefinition } from '@/types/asset-type/definitions.types';
+import { saveFieldDefinitionAction, deleteFieldDefinitionAction } from '@/app/[locale]/assets/configuration/definitions/action';
+import { toast } from 'sonner';
+import { useConfirm } from '@/components/common';
 
-export function useAssetFieldsLogic(_onManageData?: (field: AssetFieldDefinition) => void, initialData?: any) {
+export function useDefinitionsLogic(_onManageData?: (field: AssetFieldDefinition) => void, initialData?: any) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const { confirm } = useConfirm();
 
   // --- URL State ---
   const categoryId = useMemo(() => {
@@ -119,22 +122,29 @@ export function useAssetFieldsLogic(_onManageData?: (field: AssetFieldDefinition
       const res = await saveFieldDefinitionAction(payload);
       if (res.success) {
         handleCloseModal();
+        toast.success(`Field definition ${formData.id ? 'updated' : 'created'} successfully`);
       } else {
-        alert(res.error || 'Failed to save field definition');
+        toast.error(res.error || 'Failed to save field definition');
       }
     });
   }, [categoryId, typeId, handleCloseModal]);
 
   const handleDeleteField = useCallback(async (id: number) => {
-    if (!confirm('Are you sure you want to delete this field definition?')) return;
-
-    startTransition(async () => {
-      const res = await deleteFieldDefinitionAction(id);
-      if (!res.success) {
-        alert(res.error || 'Failed to delete field definition');
+    confirm({
+      title: 'Confirm Deletion',
+      description: 'Are you sure you want to delete this field definition?',
+      onConfirm: async () => {
+        startTransition(async () => {
+          const res = await deleteFieldDefinitionAction(id);
+          if (res.success) {
+            toast.success('Field definition deleted successfully');
+          } else {
+            toast.error(res.error || 'Failed to delete field definition');
+          }
+        });
       }
     });
-  }, []);
+  }, [confirm]);
 
   return {
     categoryId,

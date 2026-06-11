@@ -3,7 +3,7 @@ import { Card } from '@/components/common/Card';
 import { LucideIcon } from 'lucide-react';
 
 interface MasterCardProps {
-  title: string;
+  title: React.ReactNode;
   icon?: LucideIcon;
   headerAction?: React.ReactNode;
   children: React.ReactNode;

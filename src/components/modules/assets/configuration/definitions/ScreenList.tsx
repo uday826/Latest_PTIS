@@ -15,6 +15,7 @@ interface ScreenListProps {
   onTypeSelect: (id: number | null) => void;
   onViewAllSelect?: () => void;
   isLoading?: boolean;
+  activeTab?: 'fields' | 'documents';
 }
 
 export function ScreenList({
@@ -26,8 +27,10 @@ export function ScreenList({
   onCategorySelect,
   onTypeSelect,
   onViewAllSelect,
-  isLoading
+  isLoading,
+  activeTab = 'fields',
 }: ScreenListProps): React.ReactElement {
+  const viewAllLabel = activeTab === 'documents' ? 'View All Documents' : 'View All Fields';
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({});
 
@@ -86,24 +89,26 @@ export function ScreenList({
 
       <CardContent className="flex-1 overflow-y-auto p-3 space-y-2.5">
         {/* View All Fields Toggle */}
-        <motion.div
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-          onClick={onViewAllSelect}
-          className={`flex items-center justify-between p-3 rounded-xl cursor-pointer border select-none transition-all ${
-            viewAll
-              ? 'bg-[#0b89a3] text-white border-[#0b89a3] shadow-md font-semibold'
-              : 'bg-white hover:bg-slate-50 border-gray-200 text-slate-755 hover:text-slate-800'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <div className={`p-1 rounded-lg ${viewAll ? 'bg-white/20' : 'bg-slate-100'}`}>
-              <Layers size={14} className={viewAll ? 'text-white' : 'text-slate-500'} />
+        {activeTab === 'fields' && (
+          <motion.div
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            onClick={onViewAllSelect}
+            className={`flex items-center justify-between p-3 rounded-xl cursor-pointer border select-none transition-all ${
+              viewAll
+                ? 'bg-[#0b89a3] text-white border-[#0b89a3] shadow-md font-semibold'
+                : 'bg-white hover:bg-slate-50 border-gray-200 text-slate-755 hover:text-slate-800'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <div className={`p-1 rounded-lg ${viewAll ? 'bg-white/20' : 'bg-slate-100'}`}>
+                <Layers size={14} className={viewAll ? 'text-white' : 'text-slate-500'} />
+              </div>
+              <span className="text-sm">{viewAllLabel}</span>
             </div>
-            <span className="text-sm">View All Fields</span>
-          </div>
-          <ChevronRight size={14} className={viewAll ? 'text-white' : 'text-slate-400'} />
-        </motion.div>
+            <ChevronRight size={14} className={viewAll ? 'text-white' : 'text-slate-400'} />
+          </motion.div>
+        )}
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-8 text-slate-400 gap-2">

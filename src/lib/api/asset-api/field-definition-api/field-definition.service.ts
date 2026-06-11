@@ -1,6 +1,6 @@
 import { apiClient } from '@/services/api.service';
 import { ApiError } from '@/lib/utils/api';
-import type { AssetFieldDefinition } from '@/types/asset-type/screenfieldmaster.types';
+import type { AssetFieldDefinition } from '@/types/asset-type/definitions.types';
 import { isFieldDefinitionShape, normalizeFieldDefinition } from './field-definition-types-guard';
 import { createLogger } from '@/lib/utils/server-logger';
 

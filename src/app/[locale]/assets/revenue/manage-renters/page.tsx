@@ -36,8 +36,8 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
   const selectedAsset = drawerAssetId ? await getManageRentersAssetDetailsAction(drawerAssetId) : null;
   const [assetDocuments, assetPhotosAndPlans] = drawerAssetId
     ? await Promise.all([
-      fetchAssetDocumentsByAsset(drawerAssetId).then((result) => result.documents),
-      fetchAssetPhotosAndPlansByAsset(drawerAssetId).then((result) => result.documents),
+      fetchAssetDocumentsByAsset(drawerAssetId).then((result) => result.documents).catch(() => []),
+      fetchAssetPhotosAndPlansByAsset(drawerAssetId).then((result) => result.documents).catch(() => []),
     ])
     : [[], []];
   const applicationTypes = await getApplicationTypesAction();

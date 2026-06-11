@@ -1,7 +1,7 @@
 {
   "screenFieldsMaster": {
-    "title": "Screen Fields Master",
-    "description": "Manage and configure screen fields, sections, and validation rules for municipal assets.",
+    "title": "Definitions",
+    "description": "Manage and configure screen fields, document definitions, and validation rules for municipal assets.",
     "configurationMaster": "Configuration Master",
     "centralizedSystem": "Centralized Master Data Management System",
     "masterData": "Master Data",

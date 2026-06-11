@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Monitor, Layers, Plus, LayoutList, Folder, ChevronDown, ChevronRight } from 'lucide-react';
+import { Monitor, Layers, Plus, Folder, ChevronDown, ChevronRight } from 'lucide-react';
 import { AddButton, EditButton, DeleteButton } from '@/components/common/ActionButtons';
 import { SearchInput } from '@/components/common/SearchInput';
 import { MasterCard } from '../masterData/common/MasterCard';
-import type { AssetFieldDefinition } from '@/types/asset-type/screenfieldmaster.types';
+import type { AssetFieldDefinition, AssetCategory, AssetType } from '@/types/asset-type/definitions.types';
 
 interface ScreenSectionsAndFieldsProps {
   selectedCategoryName: string | null;
@@ -14,11 +14,12 @@ interface ScreenSectionsAndFieldsProps {
   fields: AssetFieldDefinition[];
   isLoading: boolean;
   viewAll?: boolean;
-  categories?: any[];
-  types?: any[];
+  categories?: AssetCategory[];
+  types?: AssetType[];
   onAddField: () => void;
   onEditField: (field: AssetFieldDefinition) => void;
   onDeleteField: (id: number) => void;
+  tabsComponent?: React.ReactNode;
 }
 
 export function ScreenSectionsAndFields({
@@ -32,6 +33,7 @@ export function ScreenSectionsAndFields({
   onAddField,
   onEditField,
   onDeleteField,
+  tabsComponent,
 }: ScreenSectionsAndFieldsProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroupFilter, setSelectedGroupFilter] = useState('all');
@@ -90,16 +92,17 @@ export function ScreenSectionsAndFields({
 
   return (
     <MasterCard
-      title="Field Definitions"
-      icon={LayoutList}
+      title={tabsComponent}
       headerAction={
-        hasSelection && !viewAll && (
-          <AddButton
-            onClick={onAddField}
-            label="Add Field"
-            className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-md border-0 !h-8 !px-3 py-2 flex items-center gap-2"
-          />
-        )
+        <div className="flex items-center gap-4">
+          {hasSelection && !viewAll && (
+            <AddButton
+              onClick={onAddField}
+              label="Add Field"
+              className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-md border-0 !h-8 !px-3 py-2 flex items-center gap-2"
+            />
+          )}
+        </div>
       }
     >
       {/* Stats Subheader */}

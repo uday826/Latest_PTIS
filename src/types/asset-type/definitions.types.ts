@@ -1,4 +1,8 @@
 import React from 'react';
+import { AssetCategory } from './asset-category.types';
+import { AssetType } from './asset-type.types';
+export type { AssetCategory, AssetType };
+import type { AssetDocumentDefinitionDto } from '@/lib/api/asset/asset-document.service';
 import {
   Type,
   FileText,
@@ -329,9 +333,10 @@ export interface ScreenFieldsMasterProps {
   initialData?: {
     categoryId: number | null;
     typeId: number | null;
-    categoriesResult: { items: any[]; totalCount: number };
-    typesResult: { items: any[]; totalCount: number };
+    categoriesResult: { items: AssetCategory[]; totalCount: number };
+    typesResult: { items: AssetType[]; totalCount: number };
     fieldsResult: { items: AssetFieldDefinition[]; totalCount: number };
+    docDefsResult?: { items: AssetDocumentDefinitionDto[] };
   };
 }
 

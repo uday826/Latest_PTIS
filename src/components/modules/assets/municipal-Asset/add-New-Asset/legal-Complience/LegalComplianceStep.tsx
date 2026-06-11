@@ -181,7 +181,7 @@ export default function LegalCompliancePage() {
     }
 
     // Validate file extension
-    const allowedExts = definition.allowedExtensions.toLowerCase().split(",").map(e => e.trim());
+    const allowedExts = (definition.allowedExtensions || "").toLowerCase().split(",").map(e => e.trim());
     const fileExt = file.name.split(".").pop()?.toLowerCase() || "";
     if (allowedExts.length > 0 && allowedExts[0] !== "" && !allowedExts.includes(`.${fileExt}`) && !allowedExts.includes(fileExt)) {
       setUploadStates(prev => ({

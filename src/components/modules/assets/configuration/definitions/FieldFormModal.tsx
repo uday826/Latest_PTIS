@@ -9,14 +9,15 @@ import { ToggleSwitch } from '@/components/common/ToggleSwitch';
 import { ValidationMessage } from '@/components/common/ValidationMessage';
 import { SaveButton, CancelButton } from '@/components/common/ActionButtons';
 import { TextArea } from '@/components/common/Textarea';
-import type { AssetFieldDefinition } from '@/types/asset-type/screenfieldmaster.types';
+import type { AssetFieldDefinition, FieldDefinitionFormData } from '@/types/asset-type/definitions.types';
 
 interface FieldFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: any) => Promise<void>;
+  onSave: (data: FieldDefinitionFormData) => Promise<void>;
   existingField?: AssetFieldDefinition | null;
   fieldGroups: string[];
+  existingFields?: AssetFieldDefinition[];
 }
 
 export function FieldFormModal({
@@ -24,7 +25,8 @@ export function FieldFormModal({
   onClose,
   onSave,
   existingField,
-  fieldGroups = []
+  fieldGroups = [],
+  existingFields = []
 }: FieldFormModalProps): React.ReactElement {
   const [formData, setFormData] = useState({
     id: 0,
@@ -32,7 +34,7 @@ export function FieldFormModal({
     fieldName: '',
     fieldLabel: '',
     fieldType: 'text',
-    fieldGroup: 'General Info',
+    fieldGroup: '',
     isRequired: false,
     displayOrder: 1,
     defaultValue: '',
@@ -55,7 +57,7 @@ export function FieldFormModal({
         fieldName: existingField.fieldName || '',
         fieldLabel: existingField.fieldLabel || '',
         fieldType: existingField.fieldType || 'text',
-        fieldGroup: existingField.fieldGroup || 'General Info',
+        fieldGroup: existingField.fieldGroup || '',
         isRequired: !!existingField.isRequired,
         displayOrder: existingField.displayOrder || 1,
         defaultValue: existingField.defaultValue || '',
@@ -72,7 +74,7 @@ export function FieldFormModal({
         fieldName: '',
         fieldLabel: '',
         fieldType: 'text',
-        fieldGroup: 'General Info',
+        fieldGroup: '',
         isRequired: false,
         displayOrder: 1,
         defaultValue: '',
@@ -88,12 +90,110 @@ export function FieldFormModal({
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.fieldCode.trim()) newErrors.fieldCode = 'Field code is required';
-    if (!formData.fieldName.trim()) newErrors.fieldName = 'Field name is required';
-    if (!formData.fieldLabel.trim()) newErrors.fieldLabel = 'Field label is required';
+
+    // 1. Field Code validation
+    if (!formData.fieldCode.trim()) {
+      newErrors.fieldCode = 'Field code is required';
+    } else if (formData.fieldCode.length > 50) {
+      newErrors.fieldCode = 'Field code cannot exceed 50 characters';
+    } else {
+      const codePattern = /^[A-Z0-9_]+$/;
+      if (!codePattern.test(formData.fieldCode)) {
+        newErrors.fieldCode = 'Field code must contain only uppercase letters, numbers, and underscores';
+      } else {
+        const isDuplicate = existingFields.some(
+          (field) =>
+            field.fieldCode?.toUpperCase() === formData.fieldCode.toUpperCase() &&
+            field.id !== formData.id
+        );
+        if (isDuplicate) {
+          newErrors.fieldCode = 'Field code already exists for this category and type';
+        }
+      }
+    }
+
+    // 2. Field Name validation
+    if (!formData.fieldName.trim()) {
+      newErrors.fieldName = 'Field name is required';
+    } else if (formData.fieldName.length > 100) {
+      newErrors.fieldName = 'Field name cannot exceed 100 characters';
+    }
+
+    // 3. Field Label validation
+    if (!formData.fieldLabel.trim()) {
+      newErrors.fieldLabel = 'Field label is required';
+    } else if (formData.fieldLabel.length > 200) {
+      newErrors.fieldLabel = 'Field label cannot exceed 200 characters';
+    }
+
     if (!formData.fieldType) newErrors.fieldType = 'Field type is required';
-    if (!formData.fieldGroup.trim()) newErrors.fieldGroup = 'Field group is required';
-    if (formData.displayOrder < 1) newErrors.displayOrder = 'Display order must be at least 1';
+
+    // 4. Field Group validation
+    if (!formData.fieldGroup.trim()) {
+      newErrors.fieldGroup = 'Field group is required';
+    } else if (formData.fieldGroup.length > 100) {
+      newErrors.fieldGroup = 'Field group name cannot exceed 100 characters';
+    }
+    
+    if (formData.displayOrder < 1) {
+      newErrors.displayOrder = 'Display order must be at least 1';
+    }
+
+    // 5. Default value length constraint (SQL: nvarchar(500))
+    if (formData.defaultValue.trim() && formData.defaultValue.length > 500) {
+      newErrors.defaultValue = 'Default value cannot exceed 500 characters';
+    }
+
+    // 6. Constraints and defaults validation based on field type
+    if (formData.fieldType === 'number') {
+      const minVal = formData.minValue !== '' ? Number(formData.minValue) : null;
+      const maxVal = formData.maxValue !== '' ? Number(formData.maxValue) : null;
+
+      if (minVal !== null && isNaN(minVal)) {
+        newErrors.minValue = 'Minimum value must be a valid number';
+      }
+      if (maxVal !== null && isNaN(maxVal)) {
+        newErrors.maxValue = 'Maximum value must be a valid number';
+      }
+
+      if (minVal !== null && maxVal !== null && minVal > maxVal) {
+        newErrors.minValue = 'Minimum value cannot be greater than Maximum value';
+        newErrors.maxValue = 'Maximum value cannot be less than Minimum value';
+      }
+
+      if (formData.defaultValue.trim() && !newErrors.defaultValue) {
+        const defVal = Number(formData.defaultValue);
+        if (isNaN(defVal)) {
+          newErrors.defaultValue = 'Default value must be a valid number';
+        } else {
+          if (minVal !== null && defVal < minVal) {
+            newErrors.defaultValue = `Default value cannot be less than Minimum (${minVal})`;
+          }
+          if (maxVal !== null && defVal > maxVal) {
+            newErrors.defaultValue = `Default value cannot be greater than Maximum (${maxVal})`;
+          }
+        }
+      }
+    } else if (formData.fieldType === 'text' || formData.fieldType === 'textarea') {
+      const maxLen = formData.maxLength !== '' ? Number(formData.maxLength) : null;
+      if (maxLen !== null) {
+        if (isNaN(maxLen) || maxLen <= 0 || !Number.isInteger(maxLen)) {
+          newErrors.maxLength = 'Max length must be a positive integer greater than 0';
+        } else if (formData.defaultValue.trim() && !newErrors.defaultValue && formData.defaultValue.length > maxLen) {
+          newErrors.defaultValue = `Default value length (${formData.defaultValue.length}) exceeds Max Length (${maxLen})`;
+        }
+      }
+    }
+
+    // 7. JSON format validation for validationRules
+    if (formData.validationRules.trim()) {
+      try {
+        JSON.parse(formData.validationRules);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        newErrors.validationRules = 'Invalid JSON: ' + msg;
+      }
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -116,10 +216,7 @@ export function FieldFormModal({
     { label: 'Text Input', value: 'text' },
     { label: 'Text Area', value: 'textarea' },
     { label: 'Number Input', value: 'number' },
-    { label: 'Date Picker', value: 'date' },
-    { label: 'Dropdown Select', value: 'dropdown' },
-    { label: 'Checkbox Toggle', value: 'checkbox' },
-    { label: 'File Upload', value: 'file' }
+    { label: 'Date Picker', value: 'date' }
   ];
 
   const title = (
@@ -164,27 +261,29 @@ export function FieldFormModal({
     >
       <div id="field-form-container" className="px-6 py-4 space-y-4">
         {/* Status card */}
-        <div className="rounded-xl border border-slate-100 bg-slate-50/50">
-          <div className={`rounded-xl p-3 flex items-center justify-between transition-all duration-300 ${formData.isActive ? 'border border-blue-100 bg-blue-50/30' : 'border border-gray-200 bg-gray-50'}`}>
-            <div className="flex items-center gap-3">
-              <div className={`h-9 w-9 flex items-center justify-center rounded-full ${formData.isActive ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-700'}`}>
-                {formData.isActive ? <CheckCircle2 size={18} /> : <X size={18} />}
+        {existingField && (
+          <div className="rounded-xl border border-slate-100 bg-slate-50/50">
+            <div className={`rounded-xl p-3 flex items-center justify-between transition-all duration-300 ${formData.isActive ? 'border border-blue-100 bg-blue-50/30' : 'border border-gray-200 bg-gray-50'}`}>
+              <div className="flex items-center gap-3">
+                <div className={`h-9 w-9 flex items-center justify-center rounded-full ${formData.isActive ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-700'}`}>
+                  {formData.isActive ? <CheckCircle2 size={18} /> : <X size={18} />}
+                </div>
+                <div>
+                  <div className="font-medium text-slate-900 text-sm">Status</div>
+                  <div className="text-xs text-slate-500">{formData.isActive ? 'Active and visible on forms' : 'Inactive / Hidden'}</div>
+                </div>
               </div>
-              <div>
-                <div className="font-medium text-slate-900 text-sm">Status</div>
-                <div className="text-xs text-slate-500">{formData.isActive ? 'Active and visible on forms' : 'Inactive / Hidden'}</div>
-              </div>
+              <ToggleSwitch
+                checked={formData.isActive}
+                onChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                showPopup={false}
+                activeLabel="Active"
+                inactiveLabel="Inactive"
+                disabled={isPending}
+              />
             </div>
-            <ToggleSwitch
-              checked={formData.isActive}
-              onChange={(checked) => setFormData({ ...formData, isActive: checked })}
-              showPopup={false}
-              activeLabel="Active"
-              inactiveLabel="Inactive"
-              disabled={isPending}
-            />
           </div>
-        </div>
+        )}
 
         {/* General Details Grid */}
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
@@ -303,11 +402,8 @@ export function FieldFormModal({
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Required field toggle */}
-            <div className="flex items-center justify-between p-3 border rounded-lg bg-slate-50/50">
-              <div>
-                <p className="text-xs font-semibold text-slate-850">Mandatory / Required</p>
-                <p className="text-[10px] text-slate-400">User must fill this field before submitting</p>
-              </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm font-medium text-slate-700">Mandatory / Required</span>
               <ToggleSwitch
                 checked={formData.isRequired}
                 onChange={(checked) => setFormData({ ...formData, isRequired: checked })}
@@ -325,6 +421,7 @@ export function FieldFormModal({
                 onChange={(e) => setFormData({ ...formData, defaultValue: e.target.value })}
                 disabled={isPending}
                 fullWidth
+                error={errors.defaultValue}
               />
             </div>
 
@@ -338,6 +435,7 @@ export function FieldFormModal({
                 disabled={formData.fieldType !== 'number' || isPending}
                 onChange={(e) => setFormData({ ...formData, minValue: e.target.value })}
                 fullWidth
+                error={errors.minValue}
               />
             </div>
 
@@ -351,6 +449,7 @@ export function FieldFormModal({
                 disabled={formData.fieldType !== 'number' || isPending}
                 onChange={(e) => setFormData({ ...formData, maxValue: e.target.value })}
                 fullWidth
+                error={errors.maxValue}
               />
             </div>
 
@@ -364,6 +463,7 @@ export function FieldFormModal({
                 disabled={(formData.fieldType !== 'text' && formData.fieldType !== 'textarea') || isPending}
                 onChange={(e) => setFormData({ ...formData, maxLength: e.target.value })}
                 fullWidth
+                error={errors.maxLength}
               />
             </div>
 
@@ -371,13 +471,14 @@ export function FieldFormModal({
             <div className="md:col-span-2">
               <TextArea
                 label="Extra Validation / Config Json"
-                placeholder="e.g. { 'pattern': '^[A-Z0-9]+$', 'message': 'Only uppercase letters and numbers are allowed' }"
+                placeholder="e.g. { &quot;pattern&quot;: &quot;^[A-Z0-9]+$&quot;, &quot;message&quot;: &quot;Only uppercase letters and numbers are allowed&quot; }"
                 value={formData.validationRules}
                 onChange={(e) => setFormData({ ...formData, validationRules: e.target.value })}
                 rows={2}
                 disabled={isPending}
                 maxLength={1000}
               />
+              <ValidationMessage message={errors.validationRules} />
             </div>
           </div>
         </div>

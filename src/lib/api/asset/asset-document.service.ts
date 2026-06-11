@@ -146,12 +146,50 @@ async function apiRequest<T>(endpoint: string, options?: RequestInit): Promise<A
   }
 }
 
+export interface CreateDocumentDefinitionPayload {
+  assetCategoryId: number;
+  assetTypeId?: number | null;
+  documentCode: string;
+  documentName: string;
+  description?: string | null;
+  isRequired: boolean;
+  maxFileSizeMB: number;
+  allowedExtensions: string;
+  displayOrder: number;
+  isActive?: boolean;
+  createdBy?: number;
+}
+
+export interface UpdateDocumentDefinitionPayload extends CreateDocumentDefinitionPayload {
+  updatedBy?: number;
+}
+
 export const assetDocumentService = {
   getDefinitions: async (assetCategoryId: number, assetTypeId?: number): Promise<ApiResponse<AssetDocumentDefinitionDto[]>> => {
     const params = new URLSearchParams();
     params.append("assetCategoryId", assetCategoryId.toString());
     if (assetTypeId) params.append("assetTypeId", assetTypeId.toString());
     return apiRequest<AssetDocumentDefinitionDto[]>(`/AssetDocument/definitions?${params.toString()}`);
+  },
+
+  createDefinition: async (payload: CreateDocumentDefinitionPayload): Promise<ApiResponse<AssetDocumentDefinitionDto>> => {
+    return apiRequest<AssetDocumentDefinitionDto>('/AssetDocument/definitions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...payload, isActive: true, createdBy: payload.createdBy ?? 1 }),
+    });
+  },
+
+  updateDefinition: async (id: number, payload: UpdateDocumentDefinitionPayload): Promise<ApiResponse<AssetDocumentDefinitionDto>> => {
+    return apiRequest<AssetDocumentDefinitionDto>(`/AssetDocument/definitions/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...payload, isActive: true, updatedBy: payload.updatedBy ?? 1 }),
+    });
+  },
+
+  deleteDefinition: async (id: number): Promise<ApiResponse<void>> => {
+    return apiRequest<void>(`/AssetDocument/definitions/${id}`, { method: 'DELETE' });
   },
   getByAssetId: async (assetId: number, includeAdHoc: boolean = false, includeDefinitionBased: boolean = false): Promise<ApiResponse<AssetDocumentDto[]>> => {
     let url = `/AssetDocument/by-asset/${assetId}`;
