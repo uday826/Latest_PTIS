@@ -19,6 +19,13 @@ export function FloorDetailsAttachments() {
   const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const allowedExtensions = ['.bmp', '.doc', '.docx', '.gif', '.jpeg', '.jpg', '.pdf', '.png', '.ppt', '.pptx', '.tif', '.tiff', '.txt', '.webp', '.xls', '.xlsx'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedExtensions.includes(fileExt)) {
+        alert(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`);
+        e.target.value = "";
+        return;
+      }
       const url = URL.createObjectURL(file);
       setPhotoUrl(url);
     }
@@ -27,6 +34,13 @@ export function FloorDetailsAttachments() {
   const handlePlanUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const allowedExtensions = ['.bmp', '.doc', '.docx', '.gif', '.jpeg', '.jpg', '.pdf', '.png', '.ppt', '.pptx', '.tif', '.tiff', '.txt', '.webp', '.xls', '.xlsx'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedExtensions.includes(fileExt)) {
+        alert(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`);
+        e.target.value = "";
+        return;
+      }
       const url = URL.createObjectURL(file);
       setPlanUrl(url);
     }
@@ -78,7 +92,7 @@ export function FloorDetailsAttachments() {
               type="file" 
               ref={photoInputRef}
               onChange={handlePhotoUpload}
-              accept="image/*"
+              accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx"
               className="hidden"
             />
             
@@ -101,7 +115,7 @@ export function FloorDetailsAttachments() {
               type="file" 
               ref={planInputRef}
               onChange={handlePlanUpload}
-              accept="image/*,application/pdf"
+              accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx"
               className="hidden"
             />
 

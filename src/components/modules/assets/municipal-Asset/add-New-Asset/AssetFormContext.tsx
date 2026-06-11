@@ -19,6 +19,7 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
   const [stagedFiles, setStagedFiles] = useState<Record<number, { file: File; definition: any }>>({});
   const [basicInfoFiles, setBasicInfoFiles] = useState<{ frontPhoto?: File; buildingPlan?: File }>({});
   const [subunitFiles, setSubunitFiles] = useState<Record<number, { photoFile?: File | null; planFile?: File | null }>>({});
+  const [isDataLoading, setIsDataLoading] = useState(false);
 
   const registerSubmitHook = (hook: (() => Promise<boolean>) | null) => {
     setOnSubmitHook(() => hook);
@@ -284,9 +285,13 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
 
         setFormData(prev => ({ ...prev, ...updates }) as AssetFormData);
       }
+      setIsDataLoading(false);
     };
 
-    initializeFormState();
+    setIsDataLoading(true);
+    initializeFormState().catch(() => {
+      setIsDataLoading(false);
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
@@ -417,7 +422,9 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
       basicInfoFiles,
       setBasicInfoFiles,
       subunitFiles,
-      setSubunitFiles
+      setSubunitFiles,
+      isDataLoading,
+      setIsDataLoading
     }}>
       {children}
     </AssetFormContext.Provider>

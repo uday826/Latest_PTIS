@@ -107,7 +107,7 @@ export function InventoryEditDrawer({
             <input
               ref={editPhotoInputRef}
               type="file"
-              accept="image/*"
+              accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx"
               className="hidden"
               onChange={handleEditPhotoUpload}
             />

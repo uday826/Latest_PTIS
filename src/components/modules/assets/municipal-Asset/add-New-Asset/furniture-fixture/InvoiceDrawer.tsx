@@ -101,7 +101,7 @@ export function InvoiceDrawer({
                   <input
                     ref={invoiceInputRef}
                     type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
+                    accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx"
                     className="hidden"
                     onChange={handleInvoiceUpload}
                   />

@@ -17,31 +17,42 @@ import { ownershipTypeService } from './ownership-type.service';
  * This significantly reduces backend API load and improves page render performance, especially for the multi-step Asset Form.
  */
 
+const filterActive = (res: any) => {
+  if (res.success && Array.isArray(res.data)) {
+    res.data = res.data.filter((item: any) => 
+      item.isActive !== false && item.isActive !== 0 && 
+      item.IsActive !== false && item.IsActive !== 0 && 
+      item.status?.toLowerCase() !== 'inactive'
+    );
+  }
+  return res;
+};
+
 export const getCachedZones = cache(async () => {
-  return await zoneService.getZones();
+  return filterActive(await zoneService.getZones());
 });
 
 export const getCachedWards = cache(async () => {
-  return await wardService.getWards();
+  return filterActive(await wardService.getWards());
 });
 
 export const getCachedDepartments = cache(async () => {
-  return await departmentService.getDepartments();
+  return filterActive(await departmentService.getDepartments());
 });
 
 export const getCachedMoujas = cache(async () => {
-  return await moujaService.getMoujas();
+  return filterActive(await moujaService.getMoujas());
 });
 
 export const getCachedCategories = cache(async () => {
-  return await categoryTypeService.getCategories();
+  return filterActive(await categoryTypeService.getCategories());
 });
 
 export const getCachedTypes = cache(async () => {
-  return await categoryTypeService.getAllTypes();
+  return filterActive(await categoryTypeService.getAllTypes());
 });
 
 export const getCachedOwnershipTypes = cache(async () => {
-  return await ownershipTypeService.getOwnershipTypes();
+  return filterActive(await ownershipTypeService.getOwnershipTypes());
 });
 

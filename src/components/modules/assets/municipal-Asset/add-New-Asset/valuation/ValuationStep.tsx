@@ -15,7 +15,7 @@ import { Loader2 } from "lucide-react";
 const INFRASTRUCTURE_TYPES = ["Road", "Bridge", "Subway", "Bridge/Subway", "Water Tank", "Water Tank/Reservoir"];
 
 export default function ValuationPage() {
-  const { formData, handleInputChange, updateFormData, registerSubmitHook } = useAssetForm();
+  const { formData, handleInputChange, updateFormData, registerSubmitHook, setIsDataLoading } = useAssetForm();
   const searchParams = useSearchParams();
 
   // Dynamically load the current AssetId from searchParams or context exactly like Basic Info & Floor Details
@@ -66,6 +66,7 @@ export default function ValuationPage() {
   useEffect(() => {
     if (assetId > 0) {
       setIsLoading(true);
+      if (setIsDataLoading) setIsDataLoading(true);
       getAssetValuationDataAction(assetId, isBuilding)
         .then((res) => {
           if (res.success) {
@@ -214,13 +215,16 @@ export default function ValuationPage() {
             }
           }
           setIsLoading(false);
+          if (setIsDataLoading) setIsDataLoading(false);
         })
         .catch(() => {
 
           setIsLoading(false);
+          if (setIsDataLoading) setIsDataLoading(false);
         });
     } else {
       setIsLoading(false);
+      if (setIsDataLoading) setIsDataLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assetId]);

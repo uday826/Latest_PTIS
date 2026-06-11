@@ -43,7 +43,7 @@ const typeBadge: Record<string, string> = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function UnitPoolPanel({ dropdownOptions }: UnitPoolPanelProps) {
-  const { formData, registerSubmitHook, setSubunitFiles } = useAssetForm();
+  const { formData, registerSubmitHook, setSubunitFiles, setIsDataLoading } = useAssetForm();
 
   // ── Pool state ────────────────────────────────────────────────────────────
   const [pool, setPool] = useState<PoolUnit[]>([]);
@@ -82,9 +82,13 @@ export function UnitPoolPanel({ dropdownOptions }: UnitPoolPanelProps) {
       );
       if (!rawId || rawId <= 0) return;
 
+      if (setIsDataLoading) setIsDataLoading(true);
       try {
         const res = await getSubUnitsByAssetAction(rawId);
-        if (!res.success || !res.data || res.data.length === 0) return;
+        if (!res.success || !res.data || res.data.length === 0) {
+          if (setIsDataLoading) setIsDataLoading(false);
+          return;
+        }
 
         const floorsRes = await fetchFloorsByAsset(rawId);
         const parentFloorsList = floorsRes.success && Array.isArray(floorsRes.data) ? floorsRes.data : [];
@@ -155,6 +159,8 @@ export function UnitPoolPanel({ dropdownOptions }: UnitPoolPanelProps) {
         setPool((prev) => (prev.length === 0 ? existing : prev));
       } catch {
         // Silently ignore
+      } finally {
+        if (setIsDataLoading) setIsDataLoading(false);
       }
     };
     loadExisting();

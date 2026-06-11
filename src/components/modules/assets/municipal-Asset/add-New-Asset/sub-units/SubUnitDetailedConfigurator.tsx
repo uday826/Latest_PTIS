@@ -588,6 +588,13 @@ export function SubUnitDetailedConfigurator({
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const allowedExtensions = ['.bmp', '.doc', '.docx', '.gif', '.jpeg', '.jpg', '.pdf', '.png', '.ppt', '.pptx', '.tif', '.tiff', '.txt', '.webp', '.xls', '.xlsx'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedExtensions.includes(fileExt)) {
+        toast.error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`);
+        e.target.value = "";
+        return;
+      }
       setPhotoPreview(URL.createObjectURL(file));
       setPhotoFile(file);
     }
@@ -596,6 +603,13 @@ export function SubUnitDetailedConfigurator({
   const handlePlanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const allowedExtensions = ['.bmp', '.doc', '.docx', '.gif', '.jpeg', '.jpg', '.pdf', '.png', '.ppt', '.pptx', '.tif', '.tiff', '.txt', '.webp', '.xls', '.xlsx'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedExtensions.includes(fileExt)) {
+        toast.error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`);
+        e.target.value = "";
+        return;
+      }
       setPlanPreview(URL.createObjectURL(file));
       setPlanFile(file);
     }
@@ -1224,7 +1238,7 @@ export function SubUnitDetailedConfigurator({
                     </div>
                   )}
                 </div>
-                <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+                <input ref={photoRef} type="file" accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" className="hidden" onChange={handlePhotoChange} />
                 <button
                   type="button"
                   onClick={() => photoRef.current?.click()}
@@ -1258,7 +1272,7 @@ export function SubUnitDetailedConfigurator({
                     </div>
                   )}
                 </div>
-                <input ref={planRef} type="file" accept="image/*,.pdf" className="hidden" onChange={handlePlanChange} />
+                <input ref={planRef} type="file" accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" className="hidden" onChange={handlePlanChange} />
                 <button
                   type="button"
                   onClick={() => planRef.current?.click()}

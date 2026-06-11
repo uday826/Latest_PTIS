@@ -115,7 +115,13 @@ export async function fetchParentAssetsAction(): Promise<{
     const response = await assetMasterService.getAllAssets();
     if (response.success && response.data) {
       // Map and filter active assets (e.g. only assets that can be parents)
-      const list = Array.isArray(response.data) ? response.data : [];
+      let list = Array.isArray(response.data) ? response.data : [];
+      list = list.filter((item: any) => 
+        item.isActive !== false && item.isActive !== 0 && 
+        item.IsActive !== false && item.IsActive !== 0 && 
+        item.status?.toLowerCase() !== 'inactive'
+      );
+      
       return {
         success: true,
         data: list.map((item: any) => ({
@@ -144,9 +150,16 @@ export async function fetchSubzonesByMoujaAction(moujaId: number | string): Prom
     // Pass the selected moujaId to the SubZoneDetailsForCV API call
     const response = await apiClient.get<any>(`/SubZoneDetailsForCV?moujaId=${moujaId}`);
     if (response.success && response.data) {
-      const items = Array.isArray(response.data)
+      let items = Array.isArray(response.data)
         ? response.data
         : (response.data.items || response.data.Items || response.data.data || []);
+      
+      items = items.filter((item: any) => 
+        item.isActive !== false && item.isActive !== 0 && 
+        item.IsActive !== false && item.IsActive !== 0 && 
+        item.status?.toLowerCase() !== 'inactive'
+      );
+      
       return { success: true, data: items };
     }
     return { success: false, data: [], error: response.error || "Failed to fetch subzones" };

@@ -61,7 +61,8 @@ export function AssetFormFooter() {
     basicInfoFiles,
     setBasicInfoFiles,
     subunitFiles,
-    setSubunitFiles
+    setSubunitFiles,
+    isDataLoading
   } = useAssetForm();
 
   const { screens } = usePermissionsContext();
@@ -678,9 +679,9 @@ export function AssetFormFooter() {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            disabled={isFirstStep || isSubmitting}
+            disabled={isFirstStep || isSubmitting || isDataLoading}
             onClick={handlePrevious}
-            className={`rounded-xl px-5 py-2.5 text-xs font-black uppercase tracking-widest transition-all cursor-pointer ${isFirstStep || isSubmitting
+            className={`rounded-xl px-5 py-2.5 text-xs font-black uppercase tracking-widest transition-all cursor-pointer ${isFirstStep || isSubmitting || isDataLoading
               ? "cursor-not-allowed border border-slate-100 bg-slate-50 text-slate-400"
               : "border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 active:scale-[0.98]"
               }`}
@@ -694,10 +695,10 @@ export function AssetFormFooter() {
 
           <button
             type="button"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isDataLoading}
             onClick={() => handleNext()}
-            className={`flex items-center gap-2 rounded-xl px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-all min-w-[140px] justify-center cursor-pointer shadow-sm hover:shadow active:scale-[0.98] ${isSubmitting
-              ? "cursor-not-allowed bg-emerald-400 text-white"
+            className={`flex items-center gap-2 rounded-xl px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-all min-w-[140px] justify-center cursor-pointer shadow-sm hover:shadow active:scale-[0.98] ${(isSubmitting || isDataLoading)
+              ? "cursor-not-allowed bg-emerald-400 text-white opacity-70"
               : isLastStep
                 ? "bg-emerald-600 text-white hover:bg-emerald-700 ring-2 ring-emerald-300/40"
                 : "bg-blue-600 text-white hover:bg-blue-700"

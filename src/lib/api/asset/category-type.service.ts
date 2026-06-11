@@ -36,7 +36,12 @@ export const categoryTypeService = {
   getCategories: async (): Promise<ApiResponse<AssetCategory[]>> => {
     const response = await apiClient.get<any>("/AssetCategory?pageSize=1000", { cacheStrategy: 300 });
     if (response.success && response.data) {
-      const items = Array.isArray(response.data) ? response.data : (response.data.items || []);
+      let items = Array.isArray(response.data) ? response.data : (response.data.items || []);
+      items = items.filter((item: any) => 
+        item.isActive !== false && item.isActive !== 0 && 
+        item.IsActive !== false && item.IsActive !== 0 && 
+        item.status?.toLowerCase() !== 'inactive'
+      );
       return { ...response, data: items };
     }
     return response;
@@ -48,7 +53,12 @@ export const categoryTypeService = {
   getAllTypes: async (): Promise<ApiResponse<AssetType[]>> => {
     const response = await apiClient.get<any>("/AssetType?pageSize=1000", { cacheStrategy: 300 });
     if (response.success && response.data) {
-      const items = Array.isArray(response.data) ? response.data : (response.data.items || []);
+      let items = Array.isArray(response.data) ? response.data : (response.data.items || []);
+      items = items.filter((item: any) => 
+        item.isActive !== false && item.isActive !== 0 && 
+        item.IsActive !== false && item.IsActive !== 0 && 
+        item.status?.toLowerCase() !== 'inactive'
+      );
       return { ...response, data: items };
     }
     return response;

@@ -169,15 +169,21 @@ export async function fetchSubUseTypesAction(typeOfUseId: number): Promise<Actio
     if (res.success && res.data) {
       const items = res.data.items || res.data;
       if (Array.isArray(items)) {
-        const mapped = items.map((s: any) => {
-          const code = s.subTypeCode ?? s.code ?? s.id;
-          const desc = s.description ?? s.subTypeName ?? "";
-          return {
-            label: desc ? `${code} - ${desc}` : String(code),
-            value: String(s.id),
-            typeOfUseId: String(s.typeOfUseId || typeOfUseId),
-          };
-        });
+        const mapped = items
+          .filter((s: any) => 
+            s.isActive !== false && s.isActive !== 0 && 
+            s.IsActive !== false && s.IsActive !== 0 && 
+            s.status?.toLowerCase() !== 'inactive'
+          )
+          .map((s: any) => {
+            const code = s.subTypeCode ?? s.code ?? s.id;
+            const desc = s.description ?? s.subTypeName ?? "";
+            return {
+              label: desc ? `${code} - ${desc}` : String(code),
+              value: String(s.id),
+              typeOfUseId: String(s.typeOfUseId || typeOfUseId),
+            };
+          });
         return { success: true, data: mapped };
       }
     }
@@ -707,7 +713,11 @@ export async function fetchDepartmentsAction(): Promise<ActionResult<{ label: st
     if (res.success && res.data) {
       const items = Array.isArray(res.data) ? res.data : [];
       const options = items
-        .filter((d: any) => d.isActive !== false)
+        .filter((d: any) => 
+          d.isActive !== false && d.isActive !== 0 && 
+          d.IsActive !== false && d.IsActive !== 0 && 
+          d.status?.toLowerCase() !== 'inactive'
+        )
         .map((d: any) => ({
           label: d.departmentName || d.owningDepartmentName || `Dept ${d.id}`,
           value: String(d.id),

@@ -120,7 +120,7 @@ function BuildingBasicInfoContent({
   const frontPhotoRef = useRef<HTMLInputElement>(null);
   const planRef = useRef<HTMLInputElement>(null);
 
-  const { setBasicInfoFiles, basicInfoFiles, formData: globalFormData } = useAssetForm();
+  const { setBasicInfoFiles, basicInfoFiles, formData: globalFormData, setIsDataLoading } = useAssetForm();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<string | null>>, documentType: string) => {
     const file = e.target.files?.[0];
@@ -136,7 +136,17 @@ function BuildingBasicInfoContent({
         return;
       }
 
-      // 2. Duplicate file validation
+      // 2. File extension validation
+      const allowedExtensions = ['.bmp', '.doc', '.docx', '.gif', '.jpeg', '.jpg', '.pdf', '.png', '.ppt', '.pptx', '.tif', '.tiff', '.txt', '.webp', '.xls', '.xlsx'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedExtensions.includes(fileExt)) {
+        setFileErrors(prev => ({ ...prev, [key]: `Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}` }));
+        toast.error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`);
+        e.target.value = "";
+        return;
+      }
+
+      // 3. Duplicate file validation
       const otherFile = documentType === "front_photo" ? basicInfoFiles?.buildingPlan : basicInfoFiles?.frontPhoto;
       if (otherFile && otherFile.name === file.name && otherFile.size === file.size) {
         setFileErrors(prev => ({ ...prev, [key]: "You have already selected this exact file for the other document. Please select a different file." }));
@@ -174,6 +184,7 @@ function BuildingBasicInfoContent({
       const assetId = globalFormData.id || globalFormData.assetId;
       if (!assetId || (frontPhoto && buildingPlan)) return;
       
+      if (setIsDataLoading) setIsDataLoading(true);
       try {
         const res = await fetchUploadedDocumentsAction(assetId, true, true);
         if (res.success && res.data) {
@@ -222,6 +233,8 @@ function BuildingBasicInfoContent({
         }
       } catch (err) {
 
+      } finally {
+        if (setIsDataLoading) setIsDataLoading(false);
       }
     };
     
@@ -307,7 +320,7 @@ function BuildingBasicInfoContent({
             </div>
             <input 
               type="file" 
-              accept="image/*" 
+              accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" 
               className="hidden" 
               ref={frontPhotoRef} 
               onChange={(e) => handleFileChange(e, setFrontPhoto, "front_photo")} 
@@ -360,7 +373,7 @@ function BuildingBasicInfoContent({
             </div>
             <input 
               type="file" 
-              accept="image/*,.pdf" 
+              accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" 
               className="hidden" 
               ref={planRef} 
               onChange={(e) => handleFileChange(e, setBuildingPlan, "building_plan")} 
