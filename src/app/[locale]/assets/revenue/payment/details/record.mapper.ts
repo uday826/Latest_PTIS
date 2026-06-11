@@ -1,5 +1,8 @@
 import type { AssetLeaseRentDetailsListItem } from '@/lib/api/asset/asset-lease-rent-details.service';
-import type { LeaseRentPaymentDetail } from '@/types/asset/leaseRentPayment.types';
+import type {
+  AssetMasterPaymentDetail,
+  LeaseRentPaymentDetail,
+} from '@/types/asset/leaseRentPayment.types';
 
 function normalizeText(value: string | null | undefined, fallback = ''): string {
   return value?.trim() || fallback;
@@ -15,7 +18,8 @@ function normalizeAmount(...values: Array<number | null | undefined>): number {
 }
 
 export function mapAssetLeaseRentDetailsToPaymentDetail(
-  record: AssetLeaseRentDetailsListItem
+  record: AssetLeaseRentDetailsListItem,
+  assetMaster?: AssetMasterPaymentDetail | null
 ): LeaseRentPaymentDetail {
   const baseAmount = normalizeAmount(
     record.rentAmount,
@@ -28,16 +32,17 @@ export function mapAssetLeaseRentDetailsToPaymentDetail(
     leaseRentRegistrationId: record.id,
     grievanceNo: '',
     assetId: record.assetId,
-    assetNo: normalizeText(record.assetNo) || String(record.assetId),
-    assetName: normalizeText(record.assetName, '-'),
-    zone: normalizeText(record.zone, '-'),
-    wardNo: normalizeText(record.wardNo, '-'),
+    assetNo: normalizeText(record.assetNo) || normalizeText(assetMaster?.assetNo) || String(record.assetId),
+    assetName: normalizeText(record.assetName) || normalizeText(assetMaster?.assetName, '-'),
+    zone: normalizeText(record.zone) || normalizeText(assetMaster?.zoneName, '-'),
+    wardNo: normalizeText(record.wardNo) || normalizeText(assetMaster?.wardName, '-'),
     category:
       normalizeText(record.category) ||
       normalizeText(record.assetCategory) ||
-      normalizeText(record.assetCategoryName, '-'),
+      normalizeText(record.assetCategoryName) ||
+      normalizeText(assetMaster?.assetCategoryName, '-'),
     shopNo: normalizeText(record.shopNo, '-'),
-    shopName: normalizeText(record.shopName, '-'),
+    shopName: normalizeText(record.shopName) || normalizeText(assetMaster?.assetName, '-'),
     tenantName: normalizeText(record.tenantName, '-'),
     tenantMobile: normalizeText(record.tenantMobile, '-'),
     tenantEmail: normalizeText(record.tenantEmail, '-'),

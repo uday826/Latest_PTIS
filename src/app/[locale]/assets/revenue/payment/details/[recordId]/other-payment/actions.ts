@@ -14,7 +14,12 @@ export async function getOtherPaymentRecordAction(recordId: string): Promise<Lea
 
   const record = await getAssetLeaseRentDetailsById(parsedRecordId);
   if (!record) return null;
-  return mapAssetLeaseRentDetailsToPaymentDetail(record);
+
+  const assetResponse = await leaseRentPaymentService.getAssetById(record.assetId);
+  return mapAssetLeaseRentDetailsToPaymentDetail(
+    record,
+    assetResponse.success ? assetResponse.data ?? null : null
+  );
 }
 
 export interface ProcessOtherPaymentActionResult {

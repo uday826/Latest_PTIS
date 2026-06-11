@@ -83,3 +83,35 @@ export interface ProcessLeaseRentPaymentRequest {
   gstAmount: number;
   transactionId: string;
 }
+
+export interface AssetMasterPaymentDetail {
+  id: number;
+  isActive: boolean;
+  createdDate: string | null;
+  updatedDate: string | null;
+  assetNo: string;
+  assetName: string;
+  assetCategoryId: number;
+  assetTypeId: number;
+  parentAssetId: number | null;
+  address: string | null;
+  wardId: number | null;
+  zoneId: number | null;
+  subZoneId: number | null;
+  moujaId: number | null;
+  builtUpAreaSqMeter: number | null;
+  carpetAreaSqMeter: number | null;
+  landAreaSqMeter: number | null;
+  status: string | null;
+  occupancyStatus: string | null;
+  isRevenueGenerating: boolean | null;
+  floorDetailsId: number | null;
+  assetCategoryName: string | null;
+  assetTypeName: string | null;
+  parentAssetName: string | null;
+  zoneName: string | null;
+  wardName: string | null;
+  moujaName: string | null;
+  typeOfUseName: string | null;
+  subTypeOfUseName: string | null;
+}
