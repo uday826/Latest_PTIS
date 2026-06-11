@@ -85,8 +85,10 @@ function toLeaseRentRecord(item: AssetLeaseRentDetailsListItem): LeaseRentRecord
     tenantName: normalizeText(item.tenantName),
     leaseType: item.leaseType?.trim() || '-',
     leaseRentType: item.leaseRentType?.trim() || undefined,
+    applicationTypeName: item.applicationTypeName?.trim() || undefined,
     rentStatus: normalizeRentStatus(item.rentStatus ?? item.workflowStatus),
     rentAmount: item.rentAmount ?? item.rentMonthly ?? item.monthlyRent ?? 0,
+    monthlyRent: item.monthlyRent ?? item.rentAmount ?? item.rentMonthly ?? null,
     rentAmountDisplay: item.rentAmountDisplay?.trim() || undefined,
     leaseDurationDisplay: item.leaseDurationDisplay?.trim() || undefined,
     workflowStatus: item.workflowStatus?.trim() || undefined,
@@ -110,7 +112,7 @@ function toVerificationRecord(item: AssetLeaseRentDetailsListItem): Verification
       .map((value) => String(value).trim())
       .join(' | '),
     tenantName: normalizeText(item.tenantName),
-    applicationType: normalizeText(item.leaseRentType ?? item.leaseType),
+    applicationType: normalizeText(item.applicationTypeName ?? item.leaseRentType ?? item.leaseType),
     submittedDate: item.updatedDate ? item.updatedDate.slice(0, 10) : item.createdDate ? item.createdDate.slice(0, 10) : '-',
     status: displayStatus,
   };

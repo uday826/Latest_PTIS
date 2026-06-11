@@ -140,6 +140,19 @@ export function useFurnitureFixtureState(
   }, [initialBatches]);
 
   const [rows, setRows] = useState<InventoryRow[]>(initialRowsFromServer);
+  const [departments, setDepartments] = useState<{ label: string; value: string }[]>([]);
+
+  useEffect(() => {
+    const { fetchDepartmentsAction } = require("@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions");
+    fetchDepartmentsAction().then((res: any) => {
+      if (res.success && res.data) {
+        setDepartments(res.data.map((d: any) => ({
+          label: d.label,
+          value: d.label
+        })));
+      }
+    });
+  }, []);
   const [filterType, setFilterType] = useState<string>("all");
   const [form, setForm] = useState<InventoryForm>(emptyForm());
   const [editForm, setEditForm] = useState<InventoryForm>(emptyForm());
@@ -968,7 +981,8 @@ export function useFurnitureFixtureState(
     handleAddPhotoUpload, handleEditPhotoUpload, handleInvoiceUpload,
     saveInvoiceDetails, handleAddRow, handleUpdateRow,
     handleDeleteRow, handleStartEdit, openInvoiceDrawer, handleSaveToBackend,
-    handlePreviewDocument
+    handlePreviewDocument,
+    departments
   };
 }
 

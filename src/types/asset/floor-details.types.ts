@@ -66,6 +66,8 @@ export interface PoolUnit {
   conType?: string;
   useType?: string;
   subUseType?: string;
+  photoFile?: File | null;
+  planFile?: File | null;
   // Missing properties from UnitPoolPanel.tsx
   renterName?: string | null;
   mobileNo?: string | null;
@@ -140,7 +142,7 @@ export interface FloorDetailApiRequest {
   floorId: number;
   subFloorId?: number;
   constructionYear: string;
-  assessmentYear: string;
+  assessmentYear: string | null;
   constructionTypeId: number;
   typeOfUseId: number;
   subTypeOfUseId: number;
@@ -203,6 +205,7 @@ export interface SubUnitApiResponse extends SubUnitApiRequest {
 export interface FloorSelectOption {
   label: string;
   value: string;
+  typeOfUseId?: string | null;
 }
 
 export interface FloorDropdownOptions {
@@ -276,6 +279,7 @@ export interface CreateChildAssetRequest {
   parentAssetId: number;
   assetId: number;
   floorDetailsId?: number;
+  floorId?: number | null;
   complexName?: string | null;
   renterName?: string | null;
   propertyDescription?: string | null;

@@ -31,6 +31,7 @@ export interface AssetLeaseRentDetailsListItem {
   previousTenantMobile?: string | null;
   totalAreaSqFt?: number | null;
   applicationTypeId?: number | null;
+  applicationTypeName?: string | null;
   leaseType?: string | null;
   leaseRentType?: string | null;
   oldLeaseStartDate?: string | null;

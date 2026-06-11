@@ -24,6 +24,8 @@ export interface BuildingPropertyDetailsFormData {
   isRevenueGenerating?: string;
   landArea?: string;
   valuationType?: string;
+  length?: string;
+  width?: string;
 }
 
 // ─── Section B: Ownership & Address Details ───────────────────────────────────
@@ -137,6 +139,8 @@ export const INITIAL_BUILDING_BASIC_INFO: BuildingBasicInfoFormData = {
   mouja: "",
   propertyNumber: "",
   surveyNumber: "",
+  length: "",
+  width: "",
   // Section B
   assetName: "",
   department: "",

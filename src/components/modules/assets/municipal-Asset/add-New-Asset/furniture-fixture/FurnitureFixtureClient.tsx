@@ -142,6 +142,7 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
               dynamicConditionOptions={s.dynamicConditionOptions}
               dynamicItemNameOptions={s.dynamicItemNameOptions}
               dynamicModelOptions={s.dynamicModelOptions}
+              departments={s.departments}
             />
           </CardContent>
         </Card>
@@ -282,6 +283,7 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
         dynamicConditionOptions={s.dynamicEditConditionOptions}
         dynamicItemNameOptions={s.dynamicEditItemNameOptions}
         dynamicModelOptions={s.dynamicEditModelOptions}
+        departments={s.departments}
       />
 
       {s.editDrawerOpen && s.invoiceDrawerOpen && <div className="fixed top-0 right-0 z-50 h-full w-[95vw] bg-white/10 backdrop-blur-sm md:w-[900px]" />}

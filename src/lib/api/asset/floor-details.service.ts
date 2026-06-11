@@ -154,15 +154,19 @@ export const floorDetailsService = {
     });
 
     const useTypes = useList.map((u: any) => {
-      const code = u.typeCode ?? u.code ?? u.id;
+      const code = u.typeCode ?? u.code ?? u.typeOfUseId ?? u.id;
       const desc = u.description ?? u.typeName ?? "";
-      return { label: desc ? `${code} - ${desc}` : String(code), value: String(u.id) };
+      return { label: desc ? `${code} - ${desc}` : String(code), value: String(u.typeOfUseId ?? u.id) };
     });
 
     const subUseTypes = subUseList.map((s: any) => {
-      const code = s.subTypeCode ?? s.code ?? s.id;
+      const code = s.subTypeCode ?? s.code ?? s.subTypeOfUseId ?? s.id;
       const desc = s.description ?? s.subTypeName ?? "";
-      return { label: desc ? `${code} - ${desc}` : String(code), value: String(s.id) };
+      return { 
+        label: desc ? `${code} - ${desc}` : String(code), 
+        value: String(s.subTypeOfUseId ?? s.id),
+        typeOfUseId: s.typeOfUseId ? String(s.typeOfUseId) : null
+      };
     });
 
     return {

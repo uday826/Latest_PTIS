@@ -78,13 +78,6 @@ function toDateDisplay(value: unknown): string {
   return date.toLocaleDateString('en-IN');
 }
 
-function pickFirst(...values: unknown[]): string {
-  for (const value of values) {
-    if (!isBlank(value)) return toDisplay(value);
-  }
-  return '-';
-}
-
 function getFileTitle(documentItem: AssetDocumentListItem): string {
   return documentItem.name || documentItem.fileName || 'Document';
 }
@@ -122,28 +115,28 @@ function buildInitialFormState(
 ): FormState {
   return {
     applicationType: applicationTypeLabel,
-    tenantName: pickFirst(record?.tenantName, asset.inChargeName, asset.assetName) === '-' ? '' : pickFirst(record?.tenantName, asset.inChargeName, asset.assetName),
-    mobileNumber: pickFirst(asset.inChargeMobile, '') === '-' ? '' : pickFirst(asset.inChargeMobile, ''),
-    emailAddress: pickFirst(asset.inChargeEmail, '') === '-' ? '' : pickFirst(asset.inChargeEmail, ''),
+    tenantName: record?.tenantName ?? '',
+    mobileNumber: asset.inChargeMobile ?? '',
+    emailAddress: asset.inChargeEmail ?? '',
     tenantType: 'Individual',
     aadhaarNumber: '',
     panNumber: '',
-    pinCode: pickFirst(asset.pinCode, '') === '-' ? '' : pickFirst(asset.pinCode, ''),
-    residentialAddress: pickFirst(asset.address, '') === '-' ? '' : pickFirst(asset.address, ''),
-    shopNo: pickFirst(record?.shopNo, '') === '-' ? '' : pickFirst(record?.shopNo, ''),
-    shopName: pickFirst(asset.assetName, '') === '-' ? '' : pickFirst(asset.assetName, ''),
+    pinCode: asset.pinCode ?? '',
+    residentialAddress: asset.address ?? '',
+    shopNo: record?.shopNo ?? '',
+    shopName: asset.assetName ?? '',
     leaseType: 'Rent',
     leaseStartDate: '',
     leaseEndDate: '',
-    monthlyRent: pickFirst(record?.rentAmount, '') === '-' ? '' : pickFirst(record?.rentAmount, '').replace(/,/g, ''),
+    monthlyRent: record?.monthlyRent != null ? String(record.monthlyRent).replace(/,/g, '') : '',
     securityDeposit: '0',
     paymentFrequency: 'Monthly',
-    existingTenantName: pickFirst(record?.tenantName, asset.assetName, asset.assetCategoryName) === '-' ? '' : pickFirst(record?.tenantName, asset.assetName, asset.assetCategoryName),
+    existingTenantName: record?.tenantName ?? '',
     oldLeaseStartDate: toDateInputValue(record?.submittedDate ?? asset.createdDate ?? ''),
     oldLeaseEndDate: toDateInputValue(asset.updatedDate ?? ''),
     renewalStartDate: '',
     renewalEndDate: '',
-    previousRent: pickFirst(record?.rentAmount, '') === '-' ? '' : pickFirst(record?.rentAmount, '').replace(/,/g, ''),
+    previousRent: record?.monthlyRent != null ? String(record.monthlyRent).replace(/,/g, '') : '',
     revisedRent: '',
     reasonForRenewal: '',
     newTenantDetails: '',
@@ -452,20 +445,15 @@ interface OverviewTableRow extends Record<string, unknown> {
   propertyNo: string;
   unitName: string;
   shopNumber: string;
-  shopEstablishmentDate: string;
   gatNumber: string;
-  shopActRegistrationDate: string;
   shopActNumber: string;
 }
 
 interface ConstructionTableRow extends Record<string, unknown> {
-  floor: string;
   shopNo: string;
   shopArea: string;
   renterName: string;
-  uses: string;
   monthlyRent: string;
-  perSqMtRent: string;
   bharaniKaalavadi: string;
   status: string;
 }
@@ -826,62 +814,44 @@ export function NewLeaseRegistrationModal({
     </div>
   );
 
-  const assetNumber = pickFirst(asset.assetNo, asset.id);
-  const buildingAssetName = pickFirst(record?.shopName, asset.assetName, asset.assetTypeName);
-  const assetCategory = pickFirst(record?.assetCategory, record?.category, asset.assetCategoryName, asset.assetName);
-  const shopName = pickFirst(record?.shopName, asset.assetName, asset.assetTypeName);
+  const assetNumber = asset.assetNo ?? '-';
+  const buildingAssetName = asset.assetName ?? '-';
+  const assetCategory = asset.assetCategoryName ?? '-';
+  const shopName = record?.shopName ?? '-';
   const zoneWard = `${toDisplay(asset.zoneName)} - ${toDisplay(asset.wardName)}`;
   const overviewColumns: Column<OverviewTableRow>[] = [
     { key: 'zoneWardNo', label: 'Zone - Ward No', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'propertyNo', label: 'Asset No', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'unitName', label: 'Unit Name', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'shopNumber', label: 'Unit Number', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopEstablishmentDate', label: 'Shop Establishment Date', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'gatNumber', label: 'Asset Category', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopActRegistrationDate', label: 'Unit Act Registration Date', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'shopActNumber', label: 'Unit Act Number', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
   ];
   const overviewData: OverviewTableRow[] = [
     {
       zoneWardNo: zoneWard,
-      propertyNo: pickFirst(asset.assetNo, record?.assetId),
-      unitName: buildingAssetName,
-      shopNumber: pickFirst(record?.shopNo, asset.assetTypeName),
-      shopEstablishmentDate: toDateDisplay(asset.createdDate),
+      propertyNo: asset.assetNo ?? '-',
+      unitName: record?.shopName ?? '-',
+      shopNumber: record?.shopNo ?? '-',
       gatNumber: assetCategory,
-      shopActRegistrationDate: toDateDisplay(asset.updatedDate),
-      shopActNumber: pickFirst(asset.assetTypeId),
+      shopActNumber: asset.assetTypeId != null ? String(asset.assetTypeId) : '-',
     },
   ];
   const constructionColumns: Column<ConstructionTableRow>[] = [
-    { key: 'floor', label: 'Floor', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopNo', label: 'Unit No.', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'shopArea', label: 'Unit Area (sq.mt)', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'renterName', label: 'Renter Name', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'uses', label: 'Uses', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'monthlyRent', label: 'Monthly Rent (₹)', align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
-    { key: 'perSqMtRent', label: 'Per Sq.Mt. Rent', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'bharaniKaalavadi', label: 'Payment Period', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'status', label: 'Status', align: 'center', cellClassName: 'whitespace-nowrap' },
   ];
   const constructionData: ConstructionTableRow[] = [
     {
-      floor: pickFirst(record?.floorDescription, record?.floor),
-      shopNo: pickFirst(record?.shopNo, record?.assetNo, asset.assetTypeName),
-      shopArea: record?.totalAreaSqFt != null ? String(record.totalAreaSqFt) : (pickFirst(asset?.builtUpAreaSqMeter, asset?.carpetAreaSqMeter, asset?.landAreaSqMeter) !== '-' ? String(pickFirst(asset?.builtUpAreaSqMeter, asset?.carpetAreaSqMeter, asset?.landAreaSqMeter)) : '-'),
-      renterName: pickFirst(record?.tenantName, asset.inChargeName, asset.assetName),
-      uses: pickFirst(record?.leaseRentType, record?.leaseType, asset.typeOfUseName, asset.subTypeOfUseName),
-      monthlyRent:
-        record?.rentAmountDisplay ||
-        (record?.rentAmount != null ? `₹ ${toCurrencyDisplay(record.rentAmount)}` : '-'),
-      perSqMtRent:
-        record?.totalAreaSqFt && record?.rentAmount
-          ? `₹ ${(Number(record.rentAmount) / Number(record.totalAreaSqFt)).toLocaleString('en-IN', {
-            maximumFractionDigits: 2,
-          })}`
-          : '-',
-      bharaniKaalavadi: pickFirst(record?.leaseDurationDisplay, record?.submittedDate, asset.createdDate),
-      status: pickFirst(record?.workflowStatus, record?.rentStatus, asset.status, 'Draft'),
+      shopNo: record?.shopNo ?? '-',
+      shopArea: record?.totalAreaSqFt != null ? String(record.totalAreaSqFt) : '-',
+      renterName: record?.tenantName ?? '-',
+      monthlyRent: record?.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-',
+      bharaniKaalavadi: record?.leaseDurationDisplay ?? '-',
+      status: record?.workflowStatus ?? '-',
     },
   ];
   const summaryRows = [
@@ -914,24 +884,31 @@ export function NewLeaseRegistrationModal({
   const leftMediaPanels = [
     {
       title: 'Asset Photo',
-      doc: mediaCards.find((doc) => (doc.name || '').toLowerCase() === 'asset image') ?? null,
+      doc:
+        mediaCards.find((doc) => {
+          const name = (doc.name || '').toLowerCase();
+          return name.includes('asset image') || (name.includes('asset photo') && !name.includes('plan'));
+        }) ?? null,
       fallbackIcon: Building2,
-      fallbackText: pickFirst(asset.assetName, 'Asset Photo'),
+      fallbackText: 'Asset Photo',
     },
     {
       title: 'OP Plan',
       doc: mediaCards.find((doc) => {
         const name = (doc.name || '').toLowerCase();
-        return name !== 'asset image' && name !== 'asset photo plan';
+        return !name.includes('asset image') && !name.includes('asset photo') && !name.includes('asset photo plan');
       }) ?? null,
       fallbackIcon: Grid,
-      fallbackText: pickFirst(asset.zoneName, 'OP Plan'),
+      fallbackText: 'OP Plan',
     },
     {
       title: 'DP Plan',
-      doc: mediaCards.find((doc) => (doc.name || '').toLowerCase() === 'asset photo plan') ?? null,
+      doc: mediaCards.find((doc) => {
+        const name = (doc.name || '').toLowerCase();
+        return name.includes('asset photo plan');
+      }) ?? null,
       fallbackIcon: MapPinned,
-      fallbackText: pickFirst(asset.wardName, 'DP Plan'),
+      fallbackText: 'DP Plan',
     },
   ] as const;
 
@@ -987,7 +964,7 @@ export function NewLeaseRegistrationModal({
               <span className="text-[10px] text-slate-500 font-bold">Asset Name</span>
               <span className="text-xs font-bold text-red-600">{buildingAssetName || '-'}</span>
               <span className="text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-2">Address</span>
-              <span className="text-xs font-bold text-slate-700 border-t border-slate-100 pt-2">{pickFirst(asset.address)}</span>
+              <span className="text-xs font-bold text-slate-700 border-t border-slate-100 pt-2">{asset.address ?? '-'}</span>
             </div>
           </div>
 
@@ -997,7 +974,7 @@ export function NewLeaseRegistrationModal({
               STATUS
             </span>
             <span className="text-sm font-black text-amber-600 mt-2">
-              {record?.workflowStatus || 'Draft'}
+              {record?.workflowStatus ?? '-'}
             </span>
           </div>
         </div>

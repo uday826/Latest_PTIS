@@ -49,45 +49,8 @@ function toDateDisplay(value: unknown): string {
   return date.toLocaleDateString('en-IN');
 }
 
-function pickFirst(...values: unknown[]): string {
-  for (const value of values) {
-    if (!isBlank(value)) return toDisplay(value);
-  }
-  return '-';
-}
-
 function getFileTitle(documentItem: AssetDocumentListItem): string {
   return documentItem.name || documentItem.fileName || 'Document';
-}
-
-function buildWorkflowStatusDescription(record: Record<string, unknown>): string {
-  const workflowStatus = pickFirst(record.workflowStatus, record.rentStatus, 'Draft');
-  const status = workflowStatus.toLowerCase();
-  const details = [
-    `Workflow Status: ${workflowStatus}`,
-    `Tenant Name: ${pickFirst(record.tenantName, record.previousTenantName, record.shopName)}`,
-    `Lease Type: ${pickFirst(record.leaseType, record.leaseRentType)}`,
-    `Payment Frequency: ${pickFirst(record.paymentFrequency)}`,
-    `Submitted Date: ${toDateDisplay(record.submittedDate ?? record.createdDate ?? record.createdDate)}`,
-  ];
-
-  if (status.includes('verify')) {
-    details.push(`Verified Date: ${toDateDisplay(record.verifiedDate)}`);
-  }
-
-  if (status.includes('approv')) {
-    details.push(`Approved Date: ${toDateDisplay(record.approvedDate)}`);
-  }
-
-  if (status.includes('reject')) {
-    details.push(`Rejection Reason: ${pickFirst(record.rejectionReason, record.reason)}`);
-  }
-
-  if (status.includes('revert')) {
-    details.push(`Remarks: ${pickFirst(record.reason, record.rejectionReason)}`);
-  }
-
-  return details.join(' | ');
 }
 
 function InfoCard({ label, value }: { label: string; value: unknown }) {
@@ -106,20 +69,15 @@ interface OverviewTableRow extends Record<string, unknown> {
   propertyNo: string;
   unitName: string;
   shopNumber: string;
-  shopEstablishmentDate: string;
   gatNumber: string;
-  shopActRegistrationDate: string;
   shopActNumber: string;
 }
 
 interface ConstructionTableRow extends Record<string, unknown> {
-  floor: string;
   shopNo: string;
   shopArea: string;
   renterName: string;
-  uses: string;
   monthlyRent: string;
-  perSqMtRent: string;
   bharaniKaalavadi: string;
   status: string;
 }
@@ -277,22 +235,29 @@ export function VerificationLeaseModal({
   const leftMediaPanels = [
     {
       title: 'Asset Photo',
-      doc: mediaCards.find((doc) => (doc.name || '').toLowerCase() === 'asset image') ?? null,
+      doc:
+        mediaCards.find((doc) => {
+          const name = (doc.name || '').toLowerCase();
+          return name.includes('asset image') || (name.includes('asset photo') && !name.includes('plan'));
+        }) ?? null,
       fallbackIcon: Building2,
-      fallbackText: pickFirst(record.shopName, 'Asset Photo'),
+      fallbackText: 'Asset Photo',
     },
     {
       title: 'OP Plan',
       doc: mediaCards.find((doc) => {
         const name = (doc.name || '').toLowerCase();
-        return name !== 'asset image' && name !== 'asset photo plan';
+        return !name.includes('asset image') && !name.includes('asset photo') && !name.includes('asset photo plan');
       }) ?? null,
       fallbackIcon: Grid,
       fallbackText: 'OP Plan',
     },
     {
       title: 'DP Plan',
-      doc: mediaCards.find((doc) => (doc.name || '').toLowerCase() === 'asset photo plan') ?? null,
+      doc: mediaCards.find((doc) => {
+        const name = (doc.name || '').toLowerCase();
+        return name.includes('asset photo plan');
+      }) ?? null,
       fallbackIcon: MapPinned,
       fallbackText: 'DP Plan',
     },
@@ -363,90 +328,67 @@ export function VerificationLeaseModal({
     });
   };
 
-  const handleViewWorkflowStatus = () => {
-    confirm({
-      variant: 'info',
-      title: 'Workflow Status',
-      description: buildWorkflowStatusDescription(record as unknown as Record<string, unknown>),
-      confirmText: 'Close',
-      cancelText: 'Dismiss',
-      onConfirm: () => {},
-    });
-  };
-
-  const asset = (assetDetails as Record<string, any> | null) || (record as unknown as Record<string, unknown>);
+  const asset = assetDetails as Record<string, any> | null;
 
   const currentTenantFields = [
-    { l: 'Sr. No:', v: toDisplay(record.id), l2: 'Duration:', v2: pickFirst(record.paymentFrequency, record.leaseType) },
-    { l: 'Application Type:', v: pickFirst(record.leaseRentType, record.leaseType, record.applicationTypeId), l2: 'Lease Period:', v2: `${toDateDisplay(record.leaseStartDate)} - ${toDateDisplay(record.leaseEndDate)}` },
-    { l: 'Tenant Name:', v: pickFirst(record.tenantName, record.previousTenantName, record.shopName), vClass: 'font-bold text-slate-900', l2: 'Rent (₹):', v2: `₹ ${toCurrencyDisplay(pickFirst(record.rentAmount, record.rentMonthly, record.monthlyRent))}`, v2Class: 'font-bold text-red-600' },
-    { l: 'Mobile:', v: pickFirst(record.tenantMobile, record.previousTenantMobile), l2: 'Deposit (₹):', v2: `₹ ${toCurrencyDisplay(record.securityDeposit)}` },
-    { l: 'Tenant Type:', v: pickFirst(record.tenantType, record.rentStatus), l2: 'Payment Frequency:', v2: pickFirst(record.paymentFrequency) },
-    { l: 'Email:', v: pickFirst(record.tenantEmail), l2: 'Aadhaar No:', v2: pickFirst(record.tenantAadhaarNo) },
-    { l: 'PAN Card No:', v: pickFirst(record.tenantPanCardNo), l2: 'Status (Active):', v2: toDisplay(record.isActive) },
+    { l: 'Sr. No:', v: toDisplay(record.id), l2: 'Duration:', v2: record.leaseDurationDisplay ?? '-' },
+    { l: 'Application Type:', v: record.applicationTypeName ?? '-', l2: 'Lease Period:', v2: `${toDateDisplay(record.leaseStartDate)} - ${toDateDisplay(record.leaseEndDate)}` },
+    { l: 'Tenant Name:', v: record.tenantName ?? '-', vClass: 'font-bold text-slate-900', l2: 'Rent (₹):', v2: record.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-', v2Class: 'font-bold text-red-600' },
+    { l: 'Mobile:', v: record.tenantMobile ?? '-', l2: 'Deposit (₹):', v2: record.securityDeposit != null ? `₹ ${toCurrencyDisplay(record.securityDeposit)}` : '-' },
+    { l: 'Tenant Type:', v: record.tenantType ?? '-', l2: 'Payment Frequency:', v2: record.paymentFrequency ?? '-' },
+    { l: 'Email:', v: record.tenantEmail ?? '-', l2: 'Aadhaar No:', v2: record.tenantAadhaarNo ?? '-' },
+    { l: 'PAN Card No:', v: record.tenantPanCardNo ?? '-', l2: 'Status (Active):', v2: toDisplay(record.isActive) },
   ];
 
-  const assetNumber = pickFirst(asset?.assetNo, record.assetNo, record.assetId, asset?.id);
-  const buildingAssetName = pickFirst(record.shopName, asset?.assetName, asset?.assetTypeName);
-  const assetCategory = pickFirst(record.assetCategory, record.category, asset?.assetCategoryName, asset?.assetName);
-  const shopNameVal = pickFirst(record.shopName, asset?.assetName, asset?.assetTypeName);
-  const zoneWard = `${pickFirst(asset?.zoneName, record.zone)} - ${pickFirst(asset?.wardName, record.wardNo)}`;
+  const assetNumber = asset?.assetNo ?? '-';
+  const buildingAssetName = asset?.assetName ?? '-';
+  const assetCategory = asset?.assetCategoryName ?? '-';
+  const shopNameVal = record.shopName ?? '-';
+  const zoneWard = `${toDisplay(asset?.zoneName)} - ${toDisplay(asset?.wardName)}`;
 
   const overviewColumns: Column<OverviewTableRow>[] = [
     { key: 'zoneWardNo', label: 'Zone - Ward No', align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'propertyNo', label: 'Asset No', align: 'center', width: '140px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'unitName', label: 'Unit Name', align: 'center', width: '170px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'shopNumber', label: 'Unit Number', align: 'center', width: '110px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopEstablishmentDate', label: 'Shop Establishment Date', align: 'center', width: '150px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'gatNumber', label: 'Asset Category', align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopActRegistrationDate', label: 'Unit Act Registration Date', align: 'center', width: '160px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'shopActNumber', label: 'Unit Act Number', align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
   ];
 
   const overviewData: OverviewTableRow[] = [
     {
       zoneWardNo: zoneWard,
-      propertyNo: pickFirst(asset?.assetNo, record.assetNo, record.assetId),
-      unitName: buildingAssetName,
-      shopNumber: pickFirst(record.shopNo, asset?.assetTypeName),
-      shopEstablishmentDate: toDateDisplay(asset?.createdDate || record.createdDate),
+      propertyNo: asset?.assetNo ?? '-',
+      unitName: record.shopName ?? '-',
+      shopNumber: record.shopNo ?? '-',
       gatNumber: assetCategory,
-      shopActRegistrationDate: toDateDisplay(asset?.updatedDate || record.updatedDate),
-      shopActNumber: pickFirst(asset?.assetTypeId),
+      shopActNumber: asset?.assetTypeId != null ? String(asset.assetTypeId) : '-',
     },
   ];
 
   const constructionColumns: Column<ConstructionTableRow>[] = [
-    { key: 'floor', label: 'Floor', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'shopNo', label: 'Unit No.', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'shopArea', label: 'Unit Area (sq.mt)', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'renterName', label: 'Renter Name', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'uses', label: 'Uses', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'monthlyRent', label: 'Monthly Rent (₹)', align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
-    { key: 'perSqMtRent', label: 'Per Sq.Mt. Rent', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'bharaniKaalavadi', label: 'Payment Period', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'status', label: 'Status', align: 'center', cellClassName: 'whitespace-nowrap' },
   ];
 
   const constructionData: ConstructionTableRow[] = [
     {
-      floor: pickFirst(record.floorDescription, record.floorId),
-      shopNo: pickFirst(record.shopNo, record.assetNo, asset?.assetTypeName),
-      shopArea: record.totalAreaSqFt != null ? String(record.totalAreaSqFt) : (pickFirst(asset?.builtUpAreaSqMeter, asset?.carpetAreaSqMeter, asset?.landAreaSqMeter) !== '-' ? String(pickFirst(asset?.builtUpAreaSqMeter, asset?.carpetAreaSqMeter, asset?.landAreaSqMeter)) : '-'),
-      renterName: pickFirst(record.tenantName, asset?.inChargeName, asset?.assetName),
-      uses: pickFirst(record.leaseRentType, record.leaseType, asset?.typeOfUseName, asset?.subTypeOfUseName),
-      monthlyRent: record.rentAmountDisplay || (record.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : (record.rentAmount != null ? `₹ ${toCurrencyDisplay(record.rentAmount)}` : '-')),
-      perSqMtRent: record.totalAreaSqFt && (record.monthlyRent || record.rentAmount) 
-        ? `₹ ${(Number(record.monthlyRent || record.rentAmount) / Number(record.totalAreaSqFt)).toLocaleString('en-IN', { maximumFractionDigits: 2 })}` 
-        : (pickFirst(asset?.marketValue, asset?.currentAssetValue) !== '-' ? `₹ ${toCurrencyDisplay(pickFirst(asset?.marketValue, asset?.currentAssetValue))}` : '-'),
-      bharaniKaalavadi: pickFirst(record.leaseDurationDisplay, record.updatedDate, record.createdDate, asset?.createdDate),
-      status: pickFirst(record.workflowStatus, record.rentStatus, asset?.status, 'Draft'),
+      shopNo: record.shopNo ?? '-',
+      shopArea: record.totalAreaSqFt != null ? String(record.totalAreaSqFt) : '-',
+      renterName: record.tenantName ?? '-',
+      monthlyRent: record.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-',
+      bharaniKaalavadi: record.leaseDurationDisplay ?? '-',
+      status: record.workflowStatus ?? '-',
     },
   ];
 
-  const currentMonthlyRentVal = record.previousMonthlyRent || record.monthlyRent || record.rentAmount || 0;
-  const revisedRentVal = record.previousMonthlyRent ? (record.monthlyRent || record.rentAmount) : undefined;
-  const totalMonthlyRentVal = record.monthlyRent || record.rentAmount || record.previousMonthlyRent || 0;
+  const currentMonthlyRentVal = record.previousMonthlyRent ?? 0;
+  const revisedRentVal = record.monthlyRent ?? 0;
+  const totalMonthlyRentVal = record.monthlyRent ?? 0;
   const expectedAnnualRentVal = totalMonthlyRentVal ? totalMonthlyRentVal * 12 : undefined;
 
   const rentSummaryRows = [
@@ -463,9 +405,9 @@ export function VerificationLeaseModal({
       title={
         <div className="flex items-center gap-2">
           <FileText className="w-5 h-5 text-blue-600" />
-          <h2 className="font-bold text-sm tracking-wide text-slate-800">
-            Verification — {pickFirst(record.leaseRentType, record.leaseType, record.applicationTypeId, 'Lease Application')}
-          </h2>
+      <h2 className="font-bold text-sm tracking-wide text-slate-800">
+        Verification — {record.applicationTypeName ?? '-'}
+      </h2>
         </div>
       }
       width="xl"
@@ -500,11 +442,11 @@ export function VerificationLeaseModal({
               <span className="text-[10px] text-slate-500 font-bold">Asset Name</span>
               <span className="text-xs font-bold text-red-600">{buildingAssetName || '-'}</span>
               <span className="text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-2">Address</span>
-              <span className="text-xs font-bold text-slate-800 border-t border-slate-100 pt-2">{pickFirst(record.tenantAddress, asset?.address)}</span>
+              <span className="text-xs font-bold text-slate-800 border-t border-slate-100 pt-2">{record.tenantAddress ?? '-'}</span>
             </div>
           </div>
           <InfoCard label="ASSET NO" value={assetNumber} />
-          <InfoCard label="REGISTRATION ID" value={record.id} />
+          <InfoCard label="WORKFLOW STATUS" value={record.workflowStatus ?? '-'} />
         </div>
 
         {/* Overview table */}
@@ -625,13 +567,13 @@ export function VerificationLeaseModal({
                       <td className="px-3 py-1.5 bg-slate-50/50">Lease/Rent Start:</td>
                       <td className="px-3 py-1.5 border-r border-slate-100">{toDateDisplay(record.leaseStartDate)}</td>
                       <td className="px-3 py-1.5 bg-slate-50/50">Address:</td>
-                      <td className="px-3 py-1.5">{pickFirst(record.tenantAddress)}</td>
+                      <td className="px-3 py-1.5">{record.tenantAddress ?? '-'}</td>
                     </tr>
                     <tr>
                       <td className="px-3 py-1.5 bg-slate-50/50">Lease/Rent End:</td>
                       <td className="px-3 py-1.5 border-r border-slate-100">{toDateDisplay(record.leaseEndDate)}</td>
                       <td className="px-3 py-1.5 bg-slate-50/50">Reason:</td>
-                      <td className="px-3 py-1.5">{pickFirst(record.reason, record.rejectionReason)}</td>
+                      <td className="px-3 py-1.5">{record.reason ?? '-'}</td>
                     </tr>
                     {Boolean(record.oldLeaseStartDate || record.oldLeaseEndDate || record.terminationDate) && (
                       <>
@@ -786,11 +728,8 @@ export function VerificationLeaseModal({
                 </tbody>
               </table>
             </div>
-            <Button variant="primary" size="sm" className="w-full" onClick={handleViewWorkflowStatus}>
-              View Workflow Status
-            </Button>
-          </div>
         </div>
+      </div>
       </div>
 
       <DocumentPreviewDrawer

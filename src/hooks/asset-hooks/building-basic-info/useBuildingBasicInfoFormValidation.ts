@@ -27,6 +27,12 @@ export function validateBuildingBasicInfo(
   if (isLand && (!formData.landArea || String(formData.landArea).trim() === "")) {
     (errors as any).landArea = "Total Land Area is required.";
   }
+  if (isLand && (!(formData as any).length || String((formData as any).length).trim() === "")) {
+    (errors as any).length = "Length is required.";
+  }
+  if (isLand && (!(formData as any).width || String((formData as any).width).trim() === "")) {
+    (errors as any).width = "Width is required.";
+  }
 
   return errors;
 }

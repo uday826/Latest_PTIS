@@ -1,6 +1,7 @@
 'use server';
 
 import { getAssetLeaseRentDetailsById } from '@/lib/api/asset/asset-lease-rent-details.service';
+import { leaseRentPaymentService } from '@/lib/api/asset/leaseRentPayment.service';
 import type { LeaseRentPaymentDetail } from '@/types/asset/leaseRentPayment.types';
 import type { PaymentRecordRow } from '../actions';
 import { getPaymentRecordsAction } from '../actions';
@@ -21,5 +22,11 @@ export async function getPaymentDetailRecordAction(
 
   const record = await getAssetLeaseRentDetailsById(recordId);
   if (!record) return null;
-  return record.assetId === Number(assetId) ? mapAssetLeaseRentDetailsToPaymentDetail(record) : null;
+  if (record.assetId !== Number(assetId)) return null;
+
+  const assetResponse = await leaseRentPaymentService.getAssetById(record.assetId);
+  return mapAssetLeaseRentDetailsToPaymentDetail(
+    record,
+    assetResponse.success ? assetResponse.data ?? null : null
+  );
 }

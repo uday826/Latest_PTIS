@@ -59,7 +59,9 @@ export function AssetFormFooter() {
     stagedFiles,
     setStagedFiles,
     basicInfoFiles,
-    setBasicInfoFiles
+    setBasicInfoFiles,
+    subunitFiles,
+    setSubunitFiles
   } = useAssetForm();
 
   const { screens } = usePermissionsContext();
@@ -323,6 +325,95 @@ export function AssetFormFooter() {
             } else {
               const errorMsg = res.error || "Unknown bulk upload error";
               toast.error(`Photo upload failed: ${errorMsg}`);
+            }
+          } finally {
+            if (loadingToast !== undefined) toast.dismiss(loadingToast);
+          }
+        }
+
+        // Upload subunit files if they exist and haven't been uploaded yet (staged during subunit step)
+        const subunitEntries = subunitFiles ? Object.entries(subunitFiles) : [];
+        if (subunitEntries.length > 0) {
+          let loadingToast: string | number | undefined;
+          try {
+            loadingToast = toast.loading("Uploading subunit photos & plans...");
+            let uploadFailed = false;
+
+            let frontPhotoDefId = 0;
+            let planDefId = 0;
+            try {
+              const defRes = await fetchDocumentDefinitionsAction(formData.categoryId, formData.typeId || 0);
+              if (defRes.success && Array.isArray(defRes.data)) {
+                const frontDef = defRes.data.find(d => d.documentCode?.toLowerCase().includes("front") || d.documentName?.toLowerCase().includes("front"));
+                if (frontDef) frontPhotoDefId = frontDef.id;
+
+                const planDef = defRes.data.find(d => d.documentCode?.toLowerCase().includes("plan") || d.documentName?.toLowerCase().includes("plan"));
+                if (planDef) planDefId = planDef.id;
+              }
+            } catch (e) {
+              console.error("Failed to fetch definitions for subunit upload", e);
+            }
+
+            for (const [subUnitId, files] of subunitEntries) {
+              if (!files.photoFile && !files.planFile) continue;
+
+              let userId = 1;
+              try {
+                const match = document.cookie.match(/(?:^|; )user_id=([^;]*)/);
+                if (match) {
+                  userId = Number(decodeURIComponent(match[1])) || 1;
+                }
+              } catch (e) {}
+
+              const formDataPayload = new FormData();
+              formDataPayload.append("AssetId", subUnitId);
+              formDataPayload.append("ModuleId", assetModuleId.toString());
+              formDataPayload.append("UploadedByUserId", userId.toString());
+              formDataPayload.append("IsAdHoc", "true");
+
+              const metadata = [];
+
+              if (files.photoFile) {
+                const uniqueName = `front_${files.photoFile.name}`;
+                const renamedFile = new File([files.photoFile], uniqueName, { type: files.photoFile.type });
+                formDataPayload.append("Files", renamedFile);
+                const metaItem: any = {
+                  fileName: uniqueName,
+                  documentType: "front_photo",
+                  documentTitle: "Asset Image",
+                };
+                if (frontPhotoDefId > 0) metaItem.documentDefinitionId = frontPhotoDefId;
+                metadata.push(metaItem);
+              }
+
+              if (files.planFile) {
+                const uniqueName = `plan_${files.planFile.name}`;
+                const renamedFile = new File([files.planFile], uniqueName, { type: files.planFile.type });
+                formDataPayload.append("Files", renamedFile);
+                const metaItem: any = {
+                  fileName: uniqueName,
+                  documentType: "building_plan",
+                  documentTitle: "Asset Photo Plan",
+                };
+                if (planDefId > 0) metaItem.documentDefinitionId = planDefId;
+                metadata.push(metaItem);
+              }
+
+              formDataPayload.append("FileMetadataJson", JSON.stringify(metadata));
+
+              const res = await uploadBulkDocumentsAction(formDataPayload);
+              if (!res.success || (res.data && res.data.failureCount > 0)) {
+                uploadFailed = true;
+                const detailedError = res.data?.failedUploads?.[0]?.errorMessage || res.error || "Unknown error";
+                console.error(`Subunit photo upload failed for ID ${subUnitId}: ${detailedError}`);
+              }
+            }
+
+            if (uploadFailed) {
+              toast.warning("Asset activated, but some subunit documents failed to upload. You can re-upload them in Details.");
+            } else {
+              toast.success("All subunit photos & plans uploaded successfully!");
+              if (setSubunitFiles) setSubunitFiles({});
             }
           } finally {
             if (loadingToast !== undefined) toast.dismiss(loadingToast);

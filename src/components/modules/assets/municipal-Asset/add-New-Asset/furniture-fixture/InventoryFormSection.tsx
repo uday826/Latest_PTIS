@@ -18,6 +18,7 @@ interface InventoryFormSectionProps {
   dynamicConditionOptions: { label: string; value: string }[];
   dynamicItemNameOptions: { label: string; value: string }[];
   dynamicModelOptions: { label: string; value: string }[];
+  departments: { label: string; value: string }[];
 }
 
 export function InventoryFormSection({
@@ -35,6 +36,7 @@ export function InventoryFormSection({
   dynamicConditionOptions,
   dynamicItemNameOptions,
   dynamicModelOptions,
+  departments,
 }: InventoryFormSectionProps) {
   const addNameOptions = dynamicItemNameOptions;
   const addModelOptions = dynamicModelOptions;
@@ -132,14 +134,7 @@ export function InventoryFormSection({
           label="Owning Department"
           value={form.owningDepartment}
           onChange={(_, val) => updateForm("owningDepartment", val)}
-          options={[
-            { label: "Estate Management", value: "Estate Management" },
-            { label: "Public Works (PWD)", value: "Public Works (PWD)" },
-            { label: "Health & Sanitation", value: "Health & Sanitation" },
-            { label: "Water Supply", value: "Water Supply" },
-            { label: "Education", value: "Education" },
-            { label: "General Administration", value: "General Administration" },
-          ]}
+          options={departments}
           placeholder="-- Select --"
           required={true}
         />

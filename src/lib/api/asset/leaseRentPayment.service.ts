@@ -1,6 +1,7 @@
 import { apiClient } from '@/services/api.service';
 import type { ApiResponse } from '@/types/common.types';
 import type {
+  AssetMasterPaymentDetail,
   LeaseRentPaymentDetail,
   LeaseRentPaymentHistoryResponse,
   LeaseRentPaymentListResponse,
@@ -48,6 +49,14 @@ export const leaseRentPaymentService = {
   ): Promise<ApiResponse<LeaseRentPaymentHistoryResponse>> => {
     return apiClient.get<LeaseRentPaymentHistoryResponse>(
       `/LeaseRentPayment/${encodeURIComponent(String(leaseId))}/history`
+    );
+  },
+
+  getAssetById: async (
+    assetId: number | string
+  ): Promise<ApiResponse<AssetMasterPaymentDetail>> => {
+    return apiClient.get<AssetMasterPaymentDetail>(
+      `/AssetMaster/${encodeURIComponent(String(assetId))}`
     );
   },
 

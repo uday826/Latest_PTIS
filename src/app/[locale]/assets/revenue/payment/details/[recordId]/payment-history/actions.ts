@@ -11,7 +11,12 @@ export async function getPaymentHistoryRecordAction(recordId: string): Promise<L
 
   const record = await getAssetLeaseRentDetailsById(parsedRecordId);
   if (!record) return null;
-  return mapAssetLeaseRentDetailsToPaymentDetail(record);
+
+  const assetResponse = await leaseRentPaymentService.getAssetById(record.assetId);
+  return mapAssetLeaseRentDetailsToPaymentDetail(
+    record,
+    assetResponse.success ? assetResponse.data ?? null : null
+  );
 }
 
 export async function getPaymentHistoryItemsAction(recordId: string): Promise<LeaseRentPaymentHistoryItem[]> {

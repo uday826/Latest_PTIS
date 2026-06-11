@@ -69,9 +69,7 @@ export default async function BuildingBasicInfoPage({
       ownershipTypes = ownershipRes.data;
     }
   } catch (error) {
-
-
-
+    console.error("Error pre-fetching data in BuildingBasicInfoPage:", error);
   }
 
   return (

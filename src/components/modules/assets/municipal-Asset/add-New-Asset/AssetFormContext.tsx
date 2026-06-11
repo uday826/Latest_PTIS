@@ -18,6 +18,7 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
   const [onSubmitHook, setOnSubmitHook] = useState<(() => Promise<boolean>) | null>(null);
   const [stagedFiles, setStagedFiles] = useState<Record<number, { file: File; definition: any }>>({});
   const [basicInfoFiles, setBasicInfoFiles] = useState<{ frontPhoto?: File; buildingPlan?: File }>({});
+  const [subunitFiles, setSubunitFiles] = useState<Record<number, { photoFile?: File | null; planFile?: File | null }>>({});
 
   const registerSubmitHook = (hook: (() => Promise<boolean>) | null) => {
     setOnSubmitHook(() => hook);
@@ -397,7 +398,9 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
       stagedFiles,
       setStagedFiles,
       basicInfoFiles,
-      setBasicInfoFiles
+      setBasicInfoFiles,
+      subunitFiles,
+      setSubunitFiles
     }}>
       {children}
     </AssetFormContext.Provider>

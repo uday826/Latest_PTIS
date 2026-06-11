@@ -20,6 +20,7 @@ interface InventoryEditDrawerProps {
   dynamicConditionOptions: { label: string; value: string }[];
   dynamicItemNameOptions: { label: string; value: string }[];
   dynamicModelOptions: { label: string; value: string }[];
+  departments: { label: string; value: string }[];
 }
 
 export function InventoryEditDrawer({
@@ -39,6 +40,7 @@ export function InventoryEditDrawer({
   dynamicConditionOptions,
   dynamicItemNameOptions,
   dynamicModelOptions,
+  departments,
 }: InventoryEditDrawerProps) {
   const editNameOptions = dynamicItemNameOptions;
   const editModelOptions = dynamicModelOptions;
@@ -81,7 +83,7 @@ export function InventoryEditDrawer({
       footer={
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
           <Button variant="secondary" icon={X} onClick={onClose}>
-            Close
+             Close
           </Button>
           <Button variant="primary" icon={Receipt} onClick={openInvoiceDrawer}>
             {editInvoicePreviewLabel}
@@ -162,14 +164,7 @@ export function InventoryEditDrawer({
             label="Owning Department"
             value={editForm.owningDepartment}
             onChange={(_, val) => updateEditForm("owningDepartment", val)}
-            options={[
-              { label: "Estate Management", value: "Estate Management" },
-              { label: "Public Works (PWD)", value: "Public Works (PWD)" },
-              { label: "Health & Sanitation", value: "Health & Sanitation" },
-              { label: "Water Supply", value: "Water Supply" },
-              { label: "Education", value: "Education" },
-              { label: "General Administration", value: "General Administration" },
-            ]}
+            options={departments}
             placeholder="-- Select --"
           />
 

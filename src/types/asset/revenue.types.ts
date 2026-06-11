@@ -44,9 +44,11 @@ export interface LeaseRentRecord extends Record<string, unknown> {
   shopName: string;
   tenantName: string;
   leaseType: string;
+  applicationTypeName?: string;
   leaseRentType?: string;
   rentStatus: 'In use' | 'Vacant' | 'Pending';
   rentAmount: number;
+  monthlyRent?: number | null;
   rentAmountDisplay?: string;
   leaseDurationDisplay?: string;
   workflowStatus?: string;
@@ -210,6 +212,10 @@ export interface AssetMasterDetails extends Record<string, unknown> {
   zoneName?: string;
   wardName?: string;
   address?: string;
+  inChargeName?: string | null;
+  inChargeMobile?: string | null;
+  inChargeEmail?: string | null;
+  pinCode?: string | null;
   status?: string;
   createdDate?: string;
   updatedDate?: string | null;

@@ -58,6 +58,8 @@ export interface AssetFormContextType {
   setStagedFiles?: React.Dispatch<React.SetStateAction<Record<number, { file: File; definition: any }>>>;
   basicInfoFiles?: { frontPhoto?: File; buildingPlan?: File };
   setBasicInfoFiles?: React.Dispatch<React.SetStateAction<{ frontPhoto?: File; buildingPlan?: File }>>;
+  subunitFiles?: Record<number, { photoFile?: File | null; planFile?: File | null }>;
+  setSubunitFiles?: React.Dispatch<React.SetStateAction<Record<number, { photoFile?: File | null; planFile?: File | null }>>>;
   registerStepSave?: (stepKey: string, saveFn: () => Promise<{ success: boolean; error?: string }>) => void;
   unregisterStepSave?: (stepKey: string) => void;
 }
@@ -171,6 +173,8 @@ export interface AssetMasterRequest {
   builtUpAreaSqMeter?: number | null;
   carpetAreaSqMeter?: number | null;
   landAreaSqMeter?: number | null;
+  totalLength?: number | null;
+  averageWidth?: number | null;
   hasLift?: boolean;
 
   // Optional valuation
