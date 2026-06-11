@@ -44,9 +44,11 @@ export interface LeaseRentRecord extends Record<string, unknown> {
   shopName: string;
   tenantName: string;
   leaseType: string;
+  applicationTypeName?: string;
   leaseRentType?: string;
   rentStatus: 'In use' | 'Vacant' | 'Pending';
   rentAmount: number;
+  monthlyRent?: number | null;
   rentAmountDisplay?: string;
   leaseDurationDisplay?: string;
   workflowStatus?: string;
