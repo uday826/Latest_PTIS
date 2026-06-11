@@ -9,6 +9,7 @@ import { AssetRegisterTable } from '@/components/modules/assets/municipal-Asset/
 import type { AssetRegisterViewProps } from '@/types/asset-types/asset-register.types';
 
 export async function AssetRegisterView({
+  locale,
   categoryId,
   categoryName,
   safeSearch,
@@ -24,7 +25,7 @@ export async function AssetRegisterView({
   wardsResult,
   updatedDate,
 }: AssetRegisterViewProps) {
-  const t = await getTranslations('assetRegister');
+  const t = await getTranslations({ locale, namespace: 'assetRegister' });
 
   const mappedAssets = assetsResult.items.map((item: AssetRegisterApiRecord) =>
     mapAssetToRow(item, categoryName || 'Asset Register')

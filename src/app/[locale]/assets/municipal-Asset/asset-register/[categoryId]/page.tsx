@@ -129,6 +129,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 
   return (
     <AssetRegisterView
+      locale={locale}
       categoryId={parsed}
       categoryName={categoryName}
       safeSearch={safeSearch}

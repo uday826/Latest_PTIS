@@ -130,7 +130,7 @@ export function getRegisterColumns(
   router: ReturnType<typeof useRouter>
 ): Column<AssetRegisterRow>[] {
   return [
-    { key: 'assetCode', label: 'Asset ID', width: '150px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap font-semibold text-slate-900', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
+    { key: 'assetCode', label: 'Asset No', width: '150px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap font-semibold text-slate-900', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
     {
       key: 'assetName',
       label: 'Asset Name & Description',
@@ -305,7 +305,7 @@ export async function exportToExcel(
 ) {
   const exportRows = items.map((record) => {
     return {
-      'Asset ID': record.assetCode || record.assetNo || '',
+      'Asset No': record.assetCode || record.assetNo || '',
       'Asset Name': record.assetName || record.name || '',
       'Category': record.categoryName || categoryName || '',
       'Sub-Category': record.assetTypeName || '',

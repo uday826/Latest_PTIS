@@ -11,7 +11,7 @@ export async function exportToExcel(
 ) {
   const exportRows = items.map((record) => {
     return {
-      'Asset ID': record.assetNo || '',
+      'Asset No': record.assetNo || '',
       'Asset Name': record.assetName || '',
       'Category': record.assetCategoryName || categoryName || '',
       'Sub-Category': record.assetTypeName || '',
@@ -32,6 +32,7 @@ export async function exportToExcel(
       'Last CV Date': formatDate(record.lastCVCalculationDate || undefined),
       'Current Book Value': record.currentBookValue == null ? '' : String(record.currentBookValue),
       'Depreciation Rate': record.depreciationRate == null ? '' : String(record.depreciationRate),
+      'Depreciation': record.depreciation == null ? '' : String(record.depreciation),
       'Revenue Generating': formatBoolean(record.isRevenueGenerating),
       'Operational Control': record.operationalControl || '',
       'Field Values': formatFieldValue(record.fieldValues),
@@ -39,6 +40,14 @@ export async function exportToExcel(
       'Ownership Type': record.ownershipType || '',
       'Asset Condition': record.assetCondition || '',
       'Status': record.status || (record.isActive ? 'Active' : 'Inactive'),
+      'Net Book Value':
+        record.currentBookValue != null
+          ? String(record.currentBookValue)
+          : record.capitalValue != null
+            ? String(record.capitalValue)
+            : record.marketValue == null
+              ? ''
+              : String(record.marketValue),
       'Built-Up Area (Sq.M)': record.builtUpAreaSqMeter == null ? '' : String(record.builtUpAreaSqMeter),
       'Carpet Area (Sq.M)': record.carpetAreaSqMeter == null ? '' : String(record.carpetAreaSqMeter),
       'Land Area (Sq.M)': record.landAreaSqMeter == null ? '' : String(record.landAreaSqMeter),
