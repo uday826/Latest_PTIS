@@ -23,6 +23,10 @@ export interface CategoryFlags {
 
 export interface AssetFormData {
   category: string;
+  categoryCode?: string;
+  // DB-driven valuation type: BUILDING | LAND | INFRASTRUCTURE | MOVABLE | GENERIC
+  // Set from AssetCategoryMaster.ValuationType — never derive from string matching
+  valuationType?: string;
   assetType: string;
   assetName: string;
   assetCode: string;
@@ -151,6 +155,13 @@ export interface AssetMasterRequest {
   occupancyStatus?: string | null;
   operationalControl?: string | null;
   assetCondition?: string | null;
+  inChargeName?: string | null;
+  inChargeDesignation?: string | null;
+  inChargeMobile?: string | null;
+  inChargeEmail?: string | null;
+  locality?: string | null;
+  pinCode?: string | null;
+
 
   // Optional location
   latitude?: number | null;

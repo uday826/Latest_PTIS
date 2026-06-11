@@ -55,6 +55,12 @@ export default function MunicipalAssetDashboard({
         categoryName: category.categoryName,
         categoryCode: `CAT-${category.categoryId}`,
         isActive: true,
+        isMovable: false,
+        hasFloorDetails: false,
+        hasInventory: false,
+        isInventoryMandatory: false,
+        hasLegalCompliance: false,
+        valuationType: "GENERIC",
       }));
     }
     return [];

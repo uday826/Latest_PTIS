@@ -4,7 +4,9 @@ import {
   fetchAssetMasterById,
   fetchAssetPhotosAndPlansByAsset,
 } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
+import { getInventoryBatchesAction } from '@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions';
 import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
+import type { ReportMovableAssetRow } from './ReportMovableAssetsTable';
 import {
   type ApiRecord,
   formatBooleanMarathi,
@@ -39,6 +41,7 @@ export type EstateReportViewModel = {
   marketValueDate: string;
   isBuildingCategory: boolean;
   constructionRows: Array<ApiRecord>;
+  movableAssetRows: ReportMovableAssetRow[];
   onSpotSrc: string | null;
   dpPlanSrc: string | null;
   digitalPlanSrc: string | null;
@@ -94,6 +97,37 @@ export async function getEstateReportViewModel(id: string): Promise<EstateReport
         ? record.floorDetails
         : [];
 
+  // Map inventory type strings from the API to our group keys
+  function mapInventoryTypeToGroup(inventoryType: string): ReportMovableAssetRow['group'] {
+    const t = (inventoryType || '').toLowerCase().replace(/[\s-]+/g, '');
+    if (t.includes('vehicle') || t === 'vehicle') return 'vehicle';
+    if (t.includes('furniture') || t === 'furniture') return 'furniture';
+    if (t.includes('equipment') || t === 'itequipment' || t === 'itequipment' || t.includes('electronic') || t.includes('electronicfixture')) return 'equipment';
+    return 'other';
+  }
+
+  // Build movable asset rows from inventory data
+  let movableAssetRows: ReportMovableAssetRow[] = [];
+  try {
+    const assetIdNum = Number(getField(record, ['id', 'assetId']) ?? NaN);
+    if (Number.isFinite(assetIdNum)) {
+      const inventoryResult = await getInventoryBatchesAction(assetIdNum);
+      if (inventoryResult.success && inventoryResult.data?.batches?.length) {
+        movableAssetRows = inventoryResult.data.batches.map((batch, idx) => ({
+          id: batch.batchId ?? `inv-${idx}`,
+          group: mapInventoryTypeToGroup(batch.inventoryType),
+          name: batch.itemName || batch.inventoryType || 'Item',
+          quantity: batch.quantity ?? null,
+          value: batch.totalBatchValue ?? batch.unitValue ?? null,
+          imageSrc: batch.photoFileName ? null : null, // photoFileName is the filename, would need separate fetch
+        }));
+      }
+    }
+  } catch (e) {
+    console.error('Error fetching movable asset inventory:', e);
+    // Non-fatal - movable assets remain empty
+  }
+
   return {
     record,
     title: pickText(record, ['assetName', 'name', 'assetTypeName', 'assetType', 'categoryName', 'assetCategoryName']),
@@ -118,6 +152,7 @@ export async function getEstateReportViewModel(id: string): Promise<EstateReport
     marketValueDate: formatDateMarathi(getField(record, ['marketValueDate'])),
     isBuildingCategory,
     constructionRows: rowValues.length ? (rowValues as Array<ApiRecord>) : [],
+    movableAssetRows,
     onSpotSrc,
     dpPlanSrc,
     digitalPlanSrc: dpPlanSrc,

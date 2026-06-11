@@ -62,6 +62,11 @@ export interface CreateSubUnitRequest {
   floorConfiguration?: FloorConfigurationDto;
   isRoomWiseValuationActive?: boolean;
   roomDetails?: RoomDetailDto[];
+  // Department & Location
+  departmentId?: number;
+  locationAddress?: string;
+  locationLat?: string;
+  locationLng?: string;
 }
 
 export interface SubUnitResponseDto {

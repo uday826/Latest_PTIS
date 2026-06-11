@@ -55,7 +55,7 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
 
   const handleBack = () => {
     const next = new URLSearchParams();
-    const listKeys = ['PageSize', 'PageNumber', 'Zone', 'Ward', 'AssetCategory', 'LeaseRentType', 'Status', 'Search', 'SortBy', 'SortOrder'];
+    const listKeys = ['PageSize', 'PageNumber', 'ZoneId', 'WardId', 'AssetCategoryId', 'LeaseRentType', 'Status', 'Search', 'SortBy', 'SortOrder'];
 
     listKeys.forEach((key) => {
       const value = searchParams.get(key);

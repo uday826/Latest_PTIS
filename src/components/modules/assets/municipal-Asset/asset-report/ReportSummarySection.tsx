@@ -1,4 +1,16 @@
+import React from 'react';
 import Image from 'next/image';
+import { DynamicQRCode } from './DynamicQRCode';
+
+type ReportPropertyHeaderTableProps = {
+  wardNo: string;
+  assetId: string;
+  partNo: string;
+  citySurveyNo: string;
+  plotNo: string;
+  constructionAreaSqMeter: string;
+  openPlotAreaSqMeter: string;
+};
 
 type ReportSummarySectionProps = {
   assetId: string;
@@ -16,7 +28,73 @@ type ReportSummarySectionProps = {
   assetCondition: string;
   description: string;
   operationalControl: string;
+  propertyHeaderTable?: ReportPropertyHeaderTableProps;
 };
+
+const columns = [
+  {
+    key: 'wardNo',
+    label: (
+      <>
+        वॉर्ड क्र.
+      </>
+    ),
+  },
+  {
+    key: 'assetId',
+    label: (
+      <>
+        मालमत्ता
+        <br />
+        आय डी
+      </>
+    ),
+  },
+  {
+    key: 'partNo',
+    label: (
+      <>
+        भाग क्र.
+      </>
+    ),
+  },
+  {
+    key: 'citySurveyNo',
+    label: (
+      <>
+        सिटी सर्वे क्र.
+      </>
+    ),
+  },
+  {
+    key: 'plotNo',
+    label: (
+      <>
+        प्लॉट क्र.
+      </>
+    ),
+  },
+  {
+    key: 'constructionAreaSqMeter',
+    label: (
+      <>
+        बांधकाम क्षेत्रफळ
+        <br />
+        (चौ. मी.)
+      </>
+    ),
+  },
+  {
+    key: 'openPlotAreaSqMeter',
+    label: (
+      <>
+        खुला भूखंड क्षेत्रफळ
+        <br />
+        (चौ. मी.)
+      </>
+    ),
+  },
+] as const;
 
 export function ReportSummarySection({
   assetId,
@@ -34,6 +112,7 @@ export function ReportSummarySection({
   assetCondition,
   description,
   operationalControl,
+  propertyHeaderTable,
 }: ReportSummarySectionProps) {
   return (
     <>
@@ -56,20 +135,51 @@ export function ReportSummarySection({
           </div>
         </div>
 
-        <div className="flex flex-col items-center shrink-0 w-25 relative z-20 pt-1">
-          <div className="border border-[#b0b6c2] p-1 rounded-md w-full bg-white shadow-sm flex items-center justify-center min-h-6">
-            <Image
-              src="/qr.png"
-              alt="QR code"
-              width={60}
-              height={60}
-              className="h-15 w-15 object-cover"
-              priority
-            />
+        {propertyHeaderTable && (
+          <div className="overflow-hidden rounded-[10px] border border-[#b0b6c2] bg-white shadow-sm mx-2 mt-1.5" style={{ maxWidth: '460px' }}>
+            <table className="w-full table-fixed border-collapse text-center text-[9px] font-bold leading-[1.1] text-[#0d4380]">
+              <thead>
+                <tr className="bg-gray-100/80">
+                  {columns.map((column, index) => (
+                    <th
+                      key={column.key}
+                      className={[
+                        'border-b border-[#b0b6c2] px-1 py-0.5 align-middle',
+                        index !== columns.length - 1 ? 'border-r border-[#b0b6c2]' : '',
+                      ].join(' ')}
+                    >
+                      {column.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr className="bg-white align-middle">
+                  {columns.map((column, index) => (
+                    <td
+                      key={column.key}
+                      className={[
+                        'px-1 py-0.5 align-middle text-[9px] font-bold text-[#0d4380]',
+                        index !== columns.length - 1 ? 'border-r border-[#e2e8f0]' : '',
+                      ].join(' ')}
+                    >
+                      {propertyHeaderTable[column.key] || '-'}
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div className="relative border border-[#b0b6c2] rounded-md w-31 mt-1.5 pt-1.25 pb-1 flex justify-center bg-white shadow-sm z-10">
-            <div className="absolute -top-2.25 bg-[#175294] text-white text-[9px] px-3 py-0.5 rounded-sm font-bold tracking-widest leading-none shadow-sm">मालमत्ता क्रमांक</div>
-            <div className="font-black text-[9px] tracking-widest text-gray-900 leading-none mt-0.5">{assetId}</div>
+        )}
+
+        <div className="flex flex-col items-center shrink-0 w-28 relative z-20 pt-1">
+          <div className="border border-[#b0b6c2] p-1 rounded-md w-25 bg-white shadow-sm flex items-center justify-center min-h-6">
+            <DynamicQRCode assetId={assetId.toString()} />
+          </div>
+          <div className="relative border border-[#b0b6c2] rounded-md w-full mt-2.5 pt-2 pb-1.5 px-1.5 flex justify-center bg-white shadow-sm z-10">
+            <div className="absolute -top-2 bg-[#175294] text-white text-[8px] px-2.5 py-0.5 rounded-sm font-bold tracking-wider leading-none shadow-sm whitespace-nowrap">मालमत्ता क्रमांक</div>
+            <div className="font-black text-[8px] tracking-widest text-gray-900 leading-[1.2] text-center break-all mt-0.5">{assetId}</div>
           </div>
         </div>
       </div>

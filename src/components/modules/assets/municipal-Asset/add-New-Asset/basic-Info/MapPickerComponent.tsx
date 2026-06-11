@@ -184,8 +184,8 @@ export function MapPickerComponent({ isOpen, onClose, onSelect, initialLat, init
           setShouldRecenter(true);
           setTimeout(() => setShouldRecenter(false), 100);
         },
-        (err) => {
-          console.error("Geolocation error:", err);
+        (_err) => {
+
           alert("Unable to get your location. Please enable location services.");
         },
         { enableHighAccuracy: true }
@@ -214,7 +214,7 @@ export function MapPickerComponent({ isOpen, onClose, onSelect, initialLat, init
         alert("Location not found. Try a different search term.");
       }
     } catch (error) {
-      console.error("Search error:", error);
+
       alert("Search failed. Please try again.");
     } finally {
       setIsSearching(false);

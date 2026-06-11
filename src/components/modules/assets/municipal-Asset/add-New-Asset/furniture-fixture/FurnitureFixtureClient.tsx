@@ -14,6 +14,7 @@ import type { InventoryBatchListResponse } from "@/app/[locale]/assets/municipal
 import { Loader2 } from "lucide-react";
 import { useAssetForm } from "../AssetFormContext";
 import { toast } from "sonner";
+import { calculateMovableCVAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
 
 interface Props {
   parentAssetId?: number | null;
@@ -63,8 +64,17 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
       return false;
     }
 
+    // 4. Trigger movable CV calculation for the parent asset
+    // POST /api/AssetCapitalValue/movable/calculate-cv
+    // Updates AssetMaster.CapitalValue = PurchaseValue × (1 - depreciation) × conditionFactor
+    if (parentAssetId && parentAssetId > 0) {
+      try {
+        await calculateMovableCVAction(parentAssetId, 1.0);
+      } catch { /* non-fatal — CV visible on valuation step */ }
+    }
+
     return true;
-  }, [s.rows, s.form, formData.isInventoryMandatory, formData.isMovableCategory]);
+  }, [s.rows, s.form, formData.isInventoryMandatory, formData.isMovableCategory, parentAssetId]);
 
   useEffect(() => {
     if (registerSubmitHook) {

@@ -7,6 +7,7 @@ import {
   fetchChildAssetsByParent,
 } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
 import { Card, CardContent } from '@/components/common';
+import { AssetDetailClientWrapper } from '@/components/modules/assets/municipal-Asset/AssetDetailClientWrapper';
 import { AssetDetailView, type AssetDetailRecord } from '@/components/modules/assets/municipal-Asset/AssetDetailView';
 import { getAssetDetailTabs } from '@/components/modules/assets/municipal-Asset/detail-tabs/detailTabConfig';
 
@@ -59,19 +60,6 @@ export default async function AssetDetailPage({
     shouldFetchInventory ? getInventoryBatchesAction(Number(id)) : Promise.resolve({ success: false, data: null, error: null }),
   ]);
 
-  const floorCandidates = Array.from(
-    new Set(
-      (floorResult.floorSummary?.floorDetails ?? [])
-        .flatMap((row) => [row.floorId, row.id])
-        .filter((value): value is number | string => value !== null && value !== undefined && value !== '')
-    )
-  );
-
-  const assetLevelFloorId = (asset as { floorDetailsId?: number | string | null } | null | undefined)?.floorDetailsId ?? null;
-  if (assetLevelFloorId !== null && assetLevelFloorId !== undefined && assetLevelFloorId !== '') {
-    floorCandidates.push(assetLevelFloorId);
-  }
-
   let childAssetResult: { childAssets: AssetDetailRecord['childAssets']; totalSubAssets: number; error: string | null } = {
     childAssets: [],
     totalSubAssets: 0,
@@ -99,36 +87,26 @@ export default async function AssetDetailPage({
 
   if (!assetDetail) {
     return (
-    
-        <div className="flex h-[calc(100vh-140px)] overflow-hidden">
-     
-          <div className="flex-1 overflow-y-auto bg-slate-50/50 p-4">
+      <AssetDetailClientWrapper>
+        <div className="flex h-full items-center justify-center">
             <Card variant="bordered" className="mx-auto w-full max-w-350 border-slate-200 shadow-sm">
               <CardContent className="p-6 text-sm text-slate-600">
                 Asset not found.
               </CardContent>
             </Card>
-          </div>
         </div>
-
+      </AssetDetailClientWrapper>
     );
   }
 
   return (
-
-      <div className="flex h-[calc(100vh-140px)] overflow-hidden">
-    
-        <div className="flex-1 overflow-y-auto bg-slate-50/50 p-2 custom-scrollbar">
-          <div className="mx-auto w-full max-w-[99%]">
-            <AssetDetailView
-              asset={assetDetail}
-              initialDocumentId={initialDocumentId}
-              initialTab={initialTab}
-              tabs={detailTabs}
-            />
-          </div>
-        </div>
-      </div>
-
+    <AssetDetailClientWrapper>
+      <AssetDetailView
+        asset={assetDetail}
+        initialDocumentId={initialDocumentId}
+        initialTab={initialTab}
+        tabs={detailTabs}
+      />
+    </AssetDetailClientWrapper>
   );
 }

@@ -72,7 +72,7 @@ export async function getWards(_zoneId?: number | null): Promise<WardOption[]> {
 }
 
 export async function getAssetCategories(): Promise<CategoryOption[]> {
-  const response = await apiClient.get<unknown>('/AssetCategory?PageSize=1000');
+  const response = await apiClient.get<unknown>('/AssetCategory?PageSize=-1');
   if (!response.success) return [];
   return asArray<CategoryOption>(response.data).filter(
     (category) => category && typeof category.id === 'number'
@@ -80,7 +80,7 @@ export async function getAssetCategories(): Promise<CategoryOption[]> {
 }
 
 export async function getAssetMasters(): Promise<AssetMasterOption[]> {
-  const response = await apiClient.get<unknown>('/AssetMaster?PageSize=1000');
+  const response = await apiClient.get<unknown>('/AssetMaster?PageSize=-1');
   if (!response.success) return [];
   return asArray<AssetMasterOption>(response.data)
     .filter((asset) => asset && typeof asset.id === 'number')

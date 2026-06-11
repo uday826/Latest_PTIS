@@ -1,9 +1,14 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { AssetStepper } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetStepper";
-import { AssetFormFooter } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetFormFooter";
 import { getFilteredSteps, getCurrentAssetStep, type CategoryFlags } from "@/components/modules/assets/municipal-Asset/add-New-Asset/assetFormSteps";
+
+const AssetFormFooter = dynamic(
+  () => import("./assetFormFooter").then((mod) => mod.AssetFormFooter),
+  { ssr: false }
+);
 import { Home, PencilLine } from "lucide-react";
 
 import { AssetFormProvider, useAssetForm } from "@/components/modules/assets/municipal-Asset/add-New-Asset/AssetFormContext";

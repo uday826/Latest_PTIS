@@ -93,7 +93,7 @@ function toLeaseRentRecord(item: AssetLeaseRentDetailsListItem): LeaseRentRecord
     category: pickAssetCategory(item),
     zone: item.zone ?? undefined,
     ward: item.wardNo ?? undefined,
-    submittedDate: item.createdDate ?? undefined,
+    submittedDate: item.updatedDate ?? item.createdDate ?? undefined,
   };
 }
 
@@ -111,7 +111,7 @@ function toVerificationRecord(item: AssetLeaseRentDetailsListItem): Verification
       .join(' | '),
     tenantName: normalizeText(item.tenantName),
     applicationType: normalizeText(item.leaseRentType ?? item.leaseType),
-    submittedDate: item.createdDate ? item.createdDate.slice(0, 10) : '-',
+    submittedDate: item.updatedDate ? item.updatedDate.slice(0, 10) : item.createdDate ? item.createdDate.slice(0, 10) : '-',
     status: displayStatus,
   };
 }
@@ -128,7 +128,7 @@ function toApprovalRecord(item: AssetLeaseRentDetailsListItem): ApprovalRecord {
     tenantName: normalizeText(item.tenantName),
     leaseType: item.leaseType?.trim() || '-',
     rentAmount: item.rentAmount ?? item.rentMonthly ?? item.monthlyRent ?? 0,
-    submittedDate: item.createdDate ? item.createdDate.slice(0, 10) : '-',
+    submittedDate: item.updatedDate ? item.updatedDate.slice(0, 10) : item.createdDate ? item.createdDate.slice(0, 10) : '-',
     status: displayStatus,
   };
 }
@@ -150,15 +150,16 @@ function baseLeaseRentQuery(
 }
 
 export async function getManageRentersTabCountsAction(): Promise<ManageRentersTabCounts> {
-  const [list, revertedList] = await Promise.all([
+  const [list, registeredList, revertedList] = await Promise.all([
     getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1 }),
+    getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1, workflowStatus: 'registered' }),
     getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1, workflowStatus: 'reverted' }),
   ]);
 
   const stats = (list as unknown as { stats?: any }).stats;
 
   return {
-    registrationCount: list.totalCount,
+    registrationCount: registeredList.totalCount,
     verificationCount: stats?.verificationPending ?? 0,
     approvalCount: stats?.approvalPending ?? 0,
     revertedCount: revertedList.totalCount,

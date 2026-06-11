@@ -18,17 +18,18 @@ import type { Department } from "@/lib/api/asset/department.service";
 import type { Mouja } from "@/lib/api/asset/mouja.service";
 import type { Ward } from "@/lib/api/asset/ward.service";
 import type { Zone } from "@/lib/api/asset/zone.service";
+import type { OwnershipType } from "@/lib/api/asset/ownership-type.service";
 import type { BasicInfoPageProps } from "@/types/asset-types/basic-info/basicInfo.types";
 
-export default function BasicInfoPage({ wards = [], zones = [], departments = [], moujas = [], prefetchedFields = [], subzones = [] }: BasicInfoPageProps) {
+export default function BasicInfoPage({ wards = [], zones = [], departments = [], moujas = [], prefetchedFields = [], ownershipTypes = [] }: BasicInfoPageProps) {
   return (
     <BuildingBasicInfoContent
       wards={wards}
       zones={zones}
       departments={departments}
       moujas={moujas}
+      ownershipTypes={ownershipTypes}
       prefetchedFields={prefetchedFields}
-      subzones={subzones}
     />
   );
 }
@@ -42,15 +43,15 @@ function BuildingBasicInfoContent({
   zones = [],
   departments = [],
   moujas = [],
+  ownershipTypes = [],
   prefetchedFields = [],
-  subzones = []
 }: {
   wards?: Ward[];
   zones?: Zone[];
   departments?: Department[];
   moujas?: Mouja[];
+  ownershipTypes?: OwnershipType[];
   prefetchedFields?: any[];
-  subzones?: any[];
 }) {
   const {
     formData,
@@ -60,6 +61,57 @@ function BuildingBasicInfoContent({
     handleAttributeChange,
     updateFormData,
   } = useBuildingBasicInfoForm();
+
+  const [dynamicSubzones, setDynamicSubzones] = useState<any[]>([]);
+  const [isLoadingSubzones, setIsLoadingSubzones] = useState(false);
+
+  // Load subzones initially if mouja is set in formData on mount
+  useEffect(() => {
+    if (formData.mouja) {
+      const loadInitialSubzones = async () => {
+        setIsLoadingSubzones(true);
+        try {
+          const { fetchSubzonesByMoujaAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/basic-Info/actions");
+          const res = await fetchSubzonesByMoujaAction(formData.mouja);
+          if (res.success && res.data) {
+            setDynamicSubzones(res.data);
+          }
+        } catch (err) {
+          console.error("Failed to load initial subzones:", err);
+        } finally {
+          setIsLoadingSubzones(false);
+        }
+      };
+      loadInitialSubzones();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleMoujaChange = async (moujaId: string) => {
+    // Clear subzone selection first in the form state
+    updateFormData({ subzone: "" });
+
+    if (!moujaId) {
+      setDynamicSubzones([]);
+      return;
+    }
+
+    setIsLoadingSubzones(true);
+    try {
+      const { fetchSubzonesByMoujaAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/basic-Info/actions");
+      const res = await fetchSubzonesByMoujaAction(moujaId);
+      if (res.success && res.data) {
+        setDynamicSubzones(res.data);
+      } else {
+        setDynamicSubzones([]);
+      }
+    } catch (err) {
+      console.error("Failed to load subzones:", err);
+    } finally {
+      setIsLoadingSubzones(false);
+    }
+  };
+
 
   const [frontPhoto, setFrontPhoto] = useState<string | null>(null);
   const [buildingPlan, setBuildingPlan] = useState<string | null>(null);
@@ -126,7 +178,7 @@ function BuildingBasicInfoContent({
         const res = await fetchUploadedDocumentsAction(assetId, true, true);
         if (res.success && res.data) {
           const docs: any[] = res.data;
-          console.log("Fetched docs for basic info images:", docs);
+
           
           // Front Photo
           if (!frontPhoto && !basicInfoFiles?.frontPhoto) {
@@ -137,13 +189,13 @@ function BuildingBasicInfoContent({
               d.documentCode?.toLowerCase().includes("front") ||
               d.documentName?.toLowerCase().includes("front")
             );
-            console.log("Found frontDoc:", frontDoc);
+
             if (frontDoc) {
               const fileRes = await fetchDocumentFileAction(frontDoc.id);
               if (fileRes.success && fileRes.data) {
                 setFrontPhoto(`data:${fileRes.mimeType};base64,${fileRes.data}`);
               } else {
-                console.log("Failed to fetch front photo binary", fileRes.error);
+
               }
             }
           }
@@ -157,19 +209,19 @@ function BuildingBasicInfoContent({
               d.documentCode?.toLowerCase().includes("plan") ||
               d.documentName?.toLowerCase().includes("plan")
             );
-            console.log("Found planDoc:", planDoc);
+
             if (planDoc) {
               const fileRes = await fetchDocumentFileAction(planDoc.id);
               if (fileRes.success && fileRes.data) {
                 setBuildingPlan(`data:${fileRes.mimeType};base64,${fileRes.data}`);
               } else {
-                console.log("Failed to fetch plan photo binary", fileRes.error);
+
               }
             }
           }
         }
       } catch (err) {
-        console.error("Failed to load basic info images", err);
+
       }
     };
     
@@ -193,7 +245,9 @@ function BuildingBasicInfoContent({
           wards={wards}
           zones={zones}
           moujas={moujas}
-          subzones={subzones}
+          subzones={dynamicSubzones}
+          isLoadingSubzones={isLoadingSubzones}
+          onMoujaChange={handleMoujaChange}
         />
 
         {/* Section B — Ownership Details & Address Details */}
@@ -203,8 +257,10 @@ function BuildingBasicInfoContent({
           showError={showError}
           handleChange={handleChange}
           departments={departments}
+          ownershipTypes={ownershipTypes}
           updateFormData={updateFormData}
         />
+
 
         {/* Section C — Dynamic Attributes */}
         <DynamicAttributes

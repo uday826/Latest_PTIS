@@ -83,47 +83,25 @@ export function InventoryFormSection({
 
 
 
-        {addNameOptions.length > 0 ? (
-          <Select
-            label={addLabels.itemName}
-            value={form.itemName}
-            onChange={(_, val) => handleItemNameChange(val)}
-            options={addNameOptions}
-            placeholder="-- Select --"
-            disabled={!form.type}
-            required={true}
-          />
-        ) : (
-          <Input
-            label={addLabels.itemName}
-            value={form.itemName}
-            onChange={(event) => handleItemNameChange(event.target.value)}
-            placeholder="Item Name"
-            disabled={!form.type}
-            required={true}
-          />
-        )}
+        <Select
+          label={addLabels.itemName}
+          value={form.itemName}
+          onChange={(_, val) => handleItemNameChange(val)}
+          options={addNameOptions}
+          placeholder={form.type ? "Select item name" : "Select type first"}
+          disabled={!form.type}
+          required={true}
+        />
 
-        {addNameOptions.length > 0 ? (
-          <Select
-            label={addLabels.modelName}
-            value={form.modelName}
-            onChange={(_, val) => updateForm("modelName", val)}
-            options={addModelOptions}
-            placeholder="-- Select --"
-            disabled={!form.itemName}
-            required={true}
-          />
-        ) : (
-          <Input
-            label={addLabels.modelName}
-            value={form.modelName}
-            onChange={(event) => updateForm("modelName", event.target.value)}
-            placeholder="Brand / Model"
-            disabled={!form.itemName}
-            required={true}
-          />
-        )}
+        <Select
+          label={addLabels.modelName}
+          value={form.modelName}
+          onChange={(_, val) => updateForm("modelName", val)}
+          options={addModelOptions}
+          placeholder={form.itemName ? "Select model" : "Select item name first"}
+          disabled={!form.itemName}
+          required={true}
+        />
 
         <Input
           label={addLabels.specifications}

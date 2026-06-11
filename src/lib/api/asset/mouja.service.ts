@@ -16,7 +16,7 @@ export const moujaService = {
    * Get all active Moujas
    */
   getMoujas: async (): Promise<ApiResponse<Mouja[]>> => {
-    const response = await apiClient.get<any>("/Mouja?pageSize=1000");
+    const response = await apiClient.get<any>("/Mouja?pageSize=1000", { cacheStrategy: 300 });
     if (response.success) {
       const items = Array.isArray(response.data)
         ? response.data

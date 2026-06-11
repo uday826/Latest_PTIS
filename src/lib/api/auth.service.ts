@@ -194,6 +194,13 @@ export const authService = {
     });
   },
 
+  /** POST `/Auth/refresh` to get a new access token using a refresh token */
+  async refreshToken(refreshToken: string): Promise<ApiResponse<AuthLoginApiBody>> {
+    return authJsonRequest<AuthLoginApiBody>('POST', '/Auth/refresh', {
+      refreshToken,
+    });
+  },
+
   /** GET `/UlbConfig` — council branding for login UI and cookies. */
   async getUlbConfig(): Promise<ApiResponse<UlbConfigApiBody>> {
     const res = await authJsonRequest<unknown>('GET', '/UlbConfig');

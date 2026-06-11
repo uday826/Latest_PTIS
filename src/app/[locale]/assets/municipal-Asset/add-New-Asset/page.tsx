@@ -1,26 +1,16 @@
-"use client";
+import { AddAssetDrawerClient } from "@/components/modules/assets/municipal-Asset/add-New-Asset/AddAssetDrawerClient";
+import { getCachedCategories, getCachedZones, getCachedWards } from "@/lib/api/asset/cached-master-data";
 
-import { useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { AddAssetDrawer } from "@/components/modules/assets/municipal-Asset/add-New-Asset/AddAssetDrawer";
+export default async function AddNewAssetPage() {
+  const [categoriesRes, zonesRes, wardsRes] = await Promise.all([
+    getCachedCategories(),
+    getCachedZones(),
+    getCachedWards(),
+  ]);
 
-export default function AddNewAssetPage() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(true);
-
-  const handleClose = () => {
-    setIsOpen(false);
-    if (typeof window !== "undefined") {
-      sessionStorage.removeItem("newAssetFormData");
-    }
-    // Use setTimeout to allow the drawer exit animation to finish before navigating away
-    setTimeout(() => {
-      const segments = pathname.split('/').filter(Boolean);
-      const locale = segments[0] || 'en';
-      router.push(`/${locale}/assets/municipal-Asset`);
-    }, 300);
-  };
+  const initialCategories = categoriesRes.success && Array.isArray(categoriesRes.data) ? categoriesRes.data : [];
+  const initialZones = zonesRes.success && Array.isArray(zonesRes.data) ? zonesRes.data : [];
+  const initialWards = wardsRes.success && Array.isArray(wardsRes.data) ? wardsRes.data : [];
 
   return (
     <div className="flex h-[calc(100vh-120px)] items-center justify-center bg-slate-50/50 rounded-3xl border border-slate-100">
@@ -28,7 +18,11 @@ export default function AddNewAssetPage() {
         <div className="size-10 mx-auto rounded-full border-4 border-slate-200 border-t-violet-400 animate-spin" />
         <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">Opening Registration</p>
       </div>
-      <AddAssetDrawer open={isOpen} onClose={handleClose} />
+      <AddAssetDrawerClient 
+        initialCategories={initialCategories}
+        initialZones={initialZones}
+        initialWards={initialWards}
+      />
     </div>
   );
 }

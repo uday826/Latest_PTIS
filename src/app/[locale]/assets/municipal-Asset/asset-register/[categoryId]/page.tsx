@@ -27,20 +27,18 @@ interface PageProps {
   }>;
 }
 
-// Helper to read either canonical or legacy param
 function readParam(query: Record<string, string | undefined>, canonical: string, legacy: string) {
   return query[canonical] ?? query[legacy];
 }
 
-// Helper: check if string is a valid numeric ID or 'all'
 function isValidFilterValue(value: string): boolean {
-  return value === 'all' || (/^\d+$/.test(value) && Number.isFinite(Number(value)));
+  return value === 'all' || /^\d+$/.test(value);
 }
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const;
 
 export default async function Page({ params, searchParams }: PageProps) {
-  const { categoryId } = await params;
+  const { locale, categoryId } = await params;
   const query = await searchParams;
   const parsed = Number(categoryId);
 
@@ -48,24 +46,18 @@ export default async function Page({ params, searchParams }: PageProps) {
     notFound();
   }
 
-  // ===== SANITIZE ALL QUERY PARAMS =====
   const { pageNumber: safePage, pageSize: rawPageSize } = parsePaginationParams(
     query.page,
     query.pageSize
   );
-  const safePageSize = (PAGE_SIZE_OPTIONS as readonly number[]).includes(rawPageSize) ? rawPageSize : 10;
-
+  const safePageSize = PAGE_SIZE_OPTIONS.includes(rawPageSize as (typeof PAGE_SIZE_OPTIONS)[number]) ? rawPageSize : 10;
   const safeSearch = (query.search || '').trim().slice(0, 200);
-
   const rawAssetTypeId = readParam(query, 'assetTypeId', 'AssetTypeId');
-  const safeAssetTypeId = isValidFilterValue(rawAssetTypeId ?? 'all') ? (rawAssetTypeId ?? 'all') : 'all';
-
   const rawZoneId = readParam(query, 'zoneId', 'ZoneId');
-  const safeZoneId = isValidFilterValue(rawZoneId ?? 'all') ? (rawZoneId ?? 'all') : 'all';
-
   const rawWardId = readParam(query, 'wardId', 'WardId');
+  const safeAssetTypeId = isValidFilterValue(rawAssetTypeId ?? 'all') ? (rawAssetTypeId ?? 'all') : 'all';
+  const safeZoneId = isValidFilterValue(rawZoneId ?? 'all') ? (rawZoneId ?? 'all') : 'all';
   const safeWardId = isValidFilterValue(rawWardId ?? 'all') ? (rawWardId ?? 'all') : 'all';
-
   const updatedDate = new Date().toLocaleDateString('en-GB');
 
   const [categoryName, assetsResult, typesResult, zonesResult, wardsResult] = await Promise.all([
@@ -90,27 +82,28 @@ export default async function Page({ params, searchParams }: PageProps) {
     }),
   ]);
 
+  if (assetsResult.error) {
+    throw new Error(assetsResult.error);
+  }
+
   if (categoryName === null) {
     notFound();
   }
 
-  // ===== WARD / ZONE MATCH VALIDATION =====
   let finalWardId = safeWardId;
   if (safeZoneId !== 'all' && safeWardId !== 'all') {
     const ward = wardsResult.find((w) => String(w.id) === safeWardId);
     if (!ward || String(ward.zoneId) !== safeZoneId) {
-      finalWardId = 'all'; // Reset ward if it doesn't belong to the selected zone
+      finalWardId = 'all';
     }
   }
 
-  // ===== PAGINATION BOUNDS VALIDATION =====
   const totalPages = Math.max(1, Math.ceil(assetsResult.totalCount / safePageSize));
   let finalPage = safePage;
   if (safePage > totalPages) {
     finalPage = totalPages;
   }
 
-  // ===== CANONICAL URL REDIRECT =====
   const canonicalQuery = new URLSearchParams();
   if (finalPage > 1) canonicalQuery.set('page', String(finalPage));
   if (safePageSize !== 10) canonicalQuery.set('pageSize', String(safePageSize));
@@ -129,10 +122,8 @@ export default async function Page({ params, searchParams }: PageProps) {
     query.AssetTypeId === undefined &&
     query.ZoneId === undefined &&
     query.WardId === undefined;
-
   if (!isCanonical) {
     const qStr = canonicalQuery.toString();
-    const { locale } = await params;
     redirect(`/${locale}/assets/municipal-Asset/asset-register/${categoryId}${qStr ? '?' + qStr : ''}`);
   }
 

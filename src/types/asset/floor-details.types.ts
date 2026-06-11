@@ -25,6 +25,8 @@ export interface FloorEntry {
   floorFactor: string;
   ageFactor: number;
   units: SubUnit[];
+  // Set to true when carpet/built-up area was auto-calculated from sub-units
+  isAreaFromSubUnits?: boolean;
 }
 
 /* ── Sub-unit record stored per floor ───────────────────────────────────────*/
@@ -37,6 +39,43 @@ export interface SubUnit {
   baseValue: number;
   floorId?: number;
   floorDetailsId?: number;
+}
+
+/* ── Pool unit: generated locally against parent asset ──────────────────── */
+export interface PoolUnit {
+  tempId: string;                   // local-only ID until saved to DB
+  dbId: number | null;              // DB ID after save (null = not yet saved)
+  unitNumber: string;               // e.g. FLAT-101
+  unitType: string;                 // Flat | Shop | Office | Room | Department
+  selectedFloorId: number | null;   // floor master ID (null = not yet assigned)
+  selectedFloorLabel: string;       // display name for the assigned floor
+  carpetAreaSqFt: number;           // 0 until rooms are configured
+  rooms: any[];                     // room-wise details
+  renterDetails: any | null;        // rent / owner KYC info
+  isSaved: boolean;                 // true once persisted in DB
+  isModified: boolean;              // true when details changed after save
+  // Department assignment
+  departmentId?: number | null;
+  departmentName?: string;
+  // Location tracking
+  locationAddress?: string;
+  locationLat?: string;
+  locationLng?: string;
+  // Construction details (per-unit, set in configurator)
+  conYear?: string;
+  conType?: string;
+  useType?: string;
+  subUseType?: string;
+  // Missing properties from UnitPoolPanel.tsx
+  renterName?: string | null;
+  mobileNo?: string | null;
+  emailId?: string | null;
+  gstNo?: string | null;
+  aadhaarCardNo?: string | null;
+  panCardNo?: string | null;
+  propertyDescription?: string | null;
+  capitalValue?: number;
+  rentInformation?: RentInformationDto | null;
 }
 
 /* ── Form state for the "add new floor" row ─────────────────────────────────*/
@@ -84,6 +123,7 @@ export interface RoomWiseSubmissionStepProps {
   bulk: BulkGeneratorState;
   activeUnit: SubUnit | null;
   dropdownOptions?: FloorDropdownOptions | null;
+  allFloors?: FloorEntry[];   // all building floors — passed to unit configurator
   onBulkChange: (updated: Partial<BulkGeneratorState>) => void;
   onGenerateBulk: () => void;
   onDeleteUnit: (id: number) => void;
@@ -176,12 +216,13 @@ export interface FloorDropdownOptions {
 /* ── ManageSubUnits API Types ────────────────────────────────────────────── */
 export interface BulkGenerateChildAssetsRequest {
   parentAssetId: number;
-  floorDetailsId: number;
   type: string;
-  prefix: string;
-  startNumber: number;
   count: number;
-  areaSqFt: number;
+  // Optional fields — floor/prefix/startNumber no longer needed from frontend
+  floorDetailsId?: number;
+  prefix?: string;
+  startNumber?: number;
+  areaSqFt?: number;
   createdBy?: number;
 }
 
@@ -257,6 +298,12 @@ export interface CreateChildAssetRequest {
   floorConfiguration?: FloorConfigurationDto | null;
   isRoomWiseValuationActive: boolean;
   roomDetails?: RoomDetailDto[] | null;
+  // Department & Location
+  departmentId?: number | null;
+  locationAddress?: string | null;
+  locationLat?: string | null;
+  locationLng?: string | null;
+  rooms?: any[] | null;
 }
 
 export interface CreateChildAssetResponse {

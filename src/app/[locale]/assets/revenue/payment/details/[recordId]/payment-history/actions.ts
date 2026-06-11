@@ -1,12 +1,17 @@
 'use server';
 
+import { getAssetLeaseRentDetailsById } from '@/lib/api/asset/asset-lease-rent-details.service';
 import { leaseRentPaymentService } from '@/lib/api/asset/leaseRentPayment.service';
 import type { LeaseRentPaymentDetail, LeaseRentPaymentHistoryItem } from '@/types/asset/leaseRentPayment.types';
+import { mapAssetLeaseRentDetailsToPaymentDetail } from '../../record.mapper';
 
 export async function getPaymentHistoryRecordAction(recordId: string): Promise<LeaseRentPaymentDetail | null> {
-  const response = await leaseRentPaymentService.getLeaseRentPaymentById(recordId);
-  if (!response.success || !response.data) return null;
-  return response.data;
+  const parsedRecordId = Number(recordId);
+  if (!Number.isFinite(parsedRecordId)) return null;
+
+  const record = await getAssetLeaseRentDetailsById(parsedRecordId);
+  if (!record) return null;
+  return mapAssetLeaseRentDetailsToPaymentDetail(record);
 }
 
 export async function getPaymentHistoryItemsAction(recordId: string): Promise<LeaseRentPaymentHistoryItem[]> {

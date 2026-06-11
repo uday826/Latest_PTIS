@@ -33,23 +33,23 @@ export function AssetIntroVideo({ displayUlbName }: AssetIntroVideoProps) {
 
     // Check if window is available (client-side only)
     if (typeof window === 'undefined') {
-      console.log('Window not available, skipping video (SSR)');
+
       return;
     }
 
     // Use a very specific key for asset management intro only
     const hasPlayedAssetIntro = sessionStorage.getItem('ntis_asset_management_intro_played');
 
-    console.log('AssetIntroVideo mounted, ntis_asset_management_intro_played:', hasPlayedAssetIntro);
-    console.log('Current URL:', window.location.pathname);
+
+
 
     // Only show if NOT played and we're on asset dashboard route
     const isAssetDashboardRoute = window.location.pathname.includes('/assets/dashboard');
 
-    console.log('Is asset dashboard route:', isAssetDashboardRoute);
+
 
     if (!hasPlayedAssetIntro && isAssetDashboardRoute) {
-      console.log('Showing video...');
+
       setIsVisible(true);
 
       // Allow skipping after 3 seconds
@@ -61,7 +61,7 @@ export function AssetIntroVideo({ displayUlbName }: AssetIntroVideoProps) {
         clearTimeout(skipTimer);
       };
     } else {
-      console.log('Video skipped. Already played:', !!hasPlayedAssetIntro, 'Is asset route:', isAssetDashboardRoute);
+
       // Safely clear/disable the server-side style tag without deleting it
       const serverStyle = document.getElementById('server-intro-style') as HTMLStyleElement;
       if (serverStyle) {
@@ -95,7 +95,7 @@ export function AssetIntroVideo({ displayUlbName }: AssetIntroVideoProps) {
   }, [isVisible]);
 
   const handleDismiss = () => {
-    console.log('Video dismissed');
+
     sessionStorage.setItem('ntis_asset_management_intro_played', 'true');
     // Set cookie for 1 year so server knows they have played it
     document.cookie = "ntis_asset_management_intro_played=true; path=/; max-age=31536000";

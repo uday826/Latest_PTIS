@@ -154,4 +154,5 @@ export type AssetRegisterPageResult = {
   totalDepreciation?: number;
   netBookValue?: number;
   activeAssetsCount?: number;
+  error?: string | null;
 };

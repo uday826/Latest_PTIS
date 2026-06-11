@@ -5,6 +5,7 @@ import type {
   LeaseRentPaymentHistoryResponse,
   LeaseRentPaymentListResponse,
   LeaseRentPaymentQueryParams,
+  ProcessLeaseRentPaymentRequest,
 } from '@/types/asset/leaseRentPayment.types';
 
 function buildLeaseRentPaymentQuery(params: LeaseRentPaymentQueryParams = {}): string {
@@ -47,6 +48,16 @@ export const leaseRentPaymentService = {
   ): Promise<ApiResponse<LeaseRentPaymentHistoryResponse>> => {
     return apiClient.get<LeaseRentPaymentHistoryResponse>(
       `/LeaseRentPayment/${encodeURIComponent(String(leaseId))}/history`
+    );
+  },
+
+  processLeaseRentPayment: async (
+    leaseId: number | string,
+    payload: ProcessLeaseRentPaymentRequest
+  ): Promise<ApiResponse<unknown>> => {
+    return apiClient.post<unknown>(
+      `/LeaseRentPayment/${encodeURIComponent(String(leaseId))}/process`,
+      payload
     );
   },
 };

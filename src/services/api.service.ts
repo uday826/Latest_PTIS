@@ -7,6 +7,8 @@ import { cookies } from 'next/headers';
 import { getAppConfig } from '@/config/app.config';
 import { ApiResponse } from '@/types/common.types';
 import { handleHttpUnauthorized } from '@/lib/utils/session-unauthorized.server';
+import { authService } from '@/lib/api/auth.service';
+import { AUTH_COOKIES, SECURE_COOKIE_OPTIONS } from '@/components/modules/login/constants';
 
 export const LOCAL_HTTPS_RE = /^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//;
 interface ApiError extends Error {
@@ -15,6 +17,8 @@ interface ApiError extends Error {
 }
 
 let relaxedTlsDispatcher: unknown;
+
+let refreshPromise: Promise<boolean> | null = null;
 
 async function serverFetch(url: string, init: RequestInit): Promise<Response> {
   const isDev = process.env.NODE_ENV === 'development' && process.env.NTIS_STRICT_LOCAL_TLS !== '1';
@@ -157,17 +161,39 @@ class ApiClient {
     return 'An error occurred';
   }
 
+  private pendingQueue: Array<() => void> = [];
+  private isRefreshing = false;
+
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {},
-    requireAuth = true
+    options: RequestInit & { cacheStrategy?: RequestCache | number } = {},
+    requireAuth = true,
+    isRetry = false
   ): Promise<ApiResponse<T>> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
     const skipAuth = !requireAuth || this.isPublicEndpoint(endpoint);
 
+    // If a refresh is currently in progress, queue this request to wait for it.
+    if (this.isRefreshing && !skipAuth && !isRetry) {
+      await new Promise<void>((resolve) => this.pendingQueue.push(resolve));
+      // After waiting, retry this request with the new token
+      return this.request<T>(endpoint, options, requireAuth, true);
+    }
+
+    // Resolve caching: allow callers to pass a TTL (number of seconds) or a standard cache mode.
+    // Default remains 'no-store' for backward-compatibility / safety.
+    const { cacheStrategy, ...restOptions } = options;
+    const cacheInit: Partial<RequestInit> & { next?: { revalidate: number } } = {};
+    if (typeof cacheStrategy === 'number') {
+      // Time-based revalidation (e.g. 300 = 5 minutes)
+      cacheInit.next = { revalidate: cacheStrategy };
+    } else {
+      cacheInit.cache = cacheStrategy || 'no-store';
+    }
+
     try {
-      const headers = await this.getAuthHeaders(options, skipAuth);
+      const headers = await this.getAuthHeaders(restOptions, skipAuth);
       const url = `${this.baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
 
       const cleanHeaders: Record<string, string> = {};
@@ -176,17 +202,30 @@ class ApiClient {
       );
 
       const response = await serverFetch(url, {
-        cache: 'no-store',
-        ...options,
+        ...cacheInit,
+        ...restOptions,
         signal: controller.signal,
         headers: cleanHeaders,
-      });
+      } as RequestInit);
       clearTimeout(timeoutId);
 
       const data = await this.parseResponseBody<T>(response);
       if (!response.ok) {
         if (response.status === 401) {
           if (!skipAuth) {
+            if (!isRetry) {
+              this.isRefreshing = true;
+              const refreshed = await this.handleTokenRefresh();
+              
+              // Release the queue
+              this.isRefreshing = false;
+              this.pendingQueue.forEach((resolve) => resolve());
+              this.pendingQueue = [];
+
+              if (refreshed) {
+                return this.request<T>(endpoint, options, requireAuth, true);
+              }
+            }
             const hadAuth = !!headers['Authorization'] || !!headers['authorization'];
             await handleHttpUnauthorized(401, hadAuth);
           }
@@ -228,7 +267,7 @@ class ApiClient {
     }
   }
 
-  async get<T>(url: string, opt?: RequestInit, auth = true) {
+  async get<T>(url: string, opt?: RequestInit & { cacheStrategy?: RequestCache | number }, auth = true) {
     return this.request<T>(url, { ...opt, method: 'GET' }, auth);
   }
   async post<T>(url: string, body?: unknown, opt?: RequestInit, auth = true) {
@@ -242,6 +281,34 @@ class ApiClient {
   }
   async delete<T>(url: string, opt?: RequestInit, auth = true) {
     return this.request<T>(url, { ...opt, method: 'DELETE' }, auth);
+  }
+
+  private async handleTokenRefresh(): Promise<boolean> {
+    if (refreshPromise) return refreshPromise;
+
+    refreshPromise = (async () => {
+      try {
+        const store = await cookies();
+        const refreshToken = store.get(AUTH_COOKIES.REFRESH_TOKEN)?.value;
+        if (!refreshToken) return false;
+
+        const refreshRes = await authService.refreshToken(refreshToken);
+        if (refreshRes.success && refreshRes.data?.token) {
+          store.set(AUTH_COOKIES.AUTH_TOKEN, refreshRes.data.token, SECURE_COOKIE_OPTIONS);
+          if (refreshRes.data.refreshToken) {
+            store.set(AUTH_COOKIES.REFRESH_TOKEN, refreshRes.data.refreshToken, SECURE_COOKIE_OPTIONS);
+          }
+          return true;
+        }
+        return false;
+      } catch {
+        return false;
+      } finally {
+        refreshPromise = null;
+      }
+    })();
+
+    return refreshPromise;
   }
 }
 

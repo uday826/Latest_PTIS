@@ -180,7 +180,7 @@ export async function uploadBulkDocuments(formData: FormData) {
       // Just dump the entire response object!
       detailedErr += ` | RAW: ${JSON.stringify(data)}`;
     }
-    return { success: false, error: detailedErr, statusCode: response.status, data: data };
+    return { success: false, error: detailedErr, statusCode: response.status, data: data.items || data.data || data };
   }
 
   return { success: true, data: data.items || data.data || data };

@@ -77,14 +77,10 @@ export const buildingBasicInfoSchema: ValidationSchema<BuildingBasicInfoFormData
     patternMessage: "Pin Code must be a valid 6-digit Indian PIN code not starting with 0.",
   },
   inChargeName: {
-    required: true,
-    requiredMessage: "In-Charge Name is required.",
     pattern: NAME_RE,
     patternMessage: "In-Charge Name should only contain letters, spaces, and periods.",
   },
   inChargeMobile: {
-    required: true,
-    requiredMessage: "Contact Number is required.",
     pattern: MOBILE_RE,
     patternMessage: "Contact Number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9.",
   },
@@ -125,8 +121,6 @@ export const landBasicInfoSchema: ValidationSchema<any> = {
   },
   // In-Charge / Contact
   inChargeName: {
-    required: true,
-    requiredMessage: "In-Charge Name is required.",
     pattern: NAME_RE,
     patternMessage: "In-Charge Name should only contain letters, spaces, and periods.",
   },
@@ -135,8 +129,6 @@ export const landBasicInfoSchema: ValidationSchema<any> = {
     requiredMessage: "Designation is required.",
   },
   inChargeMobile: {
-    required: true,
-    requiredMessage: "Contact Number is required.",
     pattern: MOBILE_RE,
     patternMessage: "Contact Number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9.",
   },

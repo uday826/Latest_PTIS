@@ -22,7 +22,6 @@ const iconActionClassName = '!h-7 !w-7 !px-0 !py-0 !gap-0';
 const columns: Column<LeaseRentRecord>[] = [
   { key: 'assetId', label: 'Asset No', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'shopNo', label: 'Shop No', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
-  { key: 'floor', label: 'Floor', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'shopName', label: 'Shop Name', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'tenantName', label: 'Tenant Name', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   {
@@ -103,7 +102,7 @@ export function LeaseRentTable({
       data={records}
       loading={false}
       emptyText="No renter records matching selected filters."
-      getRowKey={(row) => row.id}
+      getRowKey={(row, idx) => `${row.id}-${idx}`}
       headerTitle="Registration Records"
       headerSubtitle="Current lease and rent entries"
       tableClassName="min-w-full table-auto text-[11px]"

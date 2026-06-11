@@ -72,7 +72,7 @@ export default function LegalCompliancePage() {
         const fileUrl = URL.createObjectURL(blob);
         window.open(fileUrl, "_blank");
       } catch (err: any) {
-        console.error("Error viewing document:", err);
+
         toast.error(err.message || "Failed to download document for viewing.");
       } finally {
         setViewingDocId(null);
@@ -86,12 +86,12 @@ export default function LegalCompliancePage() {
       setLoading(true);
       setError(null);
       try {
-        console.log("LegalComplianceStep: Fetching definitions for categoryId:", formData.categoryId, "typeId:", formData.typeId);
+
         const response = await fetchDocumentDefinitionsAction(
           formData.categoryId,
           formData.typeId
         );
-        console.log("LegalComplianceStep: API Response:", response);
+
         if (response.success && response.data) {
           const defs = Array.isArray(response.data) ? response.data : [];
           setDefinitions(defs);
@@ -113,7 +113,7 @@ export default function LegalCompliancePage() {
           setError(response.error || response.message || "Failed to load document definitions");
         }
       } catch (err) {
-        console.error("Error fetching document definitions:", err);
+
         setError("Failed to load document definitions. Please try again.");
       } finally {
         setLoading(false);
@@ -154,7 +154,7 @@ export default function LegalCompliancePage() {
           });
         }
       } catch (err) {
-        console.error("Error fetching uploaded documents:", err);
+
       }
     }
 
@@ -269,7 +269,7 @@ export default function LegalCompliancePage() {
         for (const docId of deletedDocIds) {
           const res = await deleteUploadedDocAction(docId);
           if (!res.success) {
-            console.error(`Failed to delete document ${docId}:`, res.error || res.message);
+
           }
         }
         setDeletedDocIds([]);
@@ -292,7 +292,7 @@ export default function LegalCompliancePage() {
 
       return true; // Validated, proceed to next step
     } catch (err) {
-      console.error("Step submit error:", err);
+
       toast.error("An unexpected error occurred during document validation.");
       return false;
     }

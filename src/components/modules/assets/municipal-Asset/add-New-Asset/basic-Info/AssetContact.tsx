@@ -30,7 +30,6 @@ export function AssetContact({ formData, onChange }: AssetWizardStepProps) {
           value={formData.inChargeName}
           onChange={onChange}
           placeholder="e.g. Mr. Rajesh Sharma"
-          required
           error={showError("inChargeName") ? errors?.inChargeName : undefined}
         />
         <Input
@@ -48,7 +47,6 @@ export function AssetContact({ formData, onChange }: AssetWizardStepProps) {
           value={formData.inChargeMobile}
           onChange={onChange}
           placeholder="10-digit mobile number"
-          required
           type="tel"
           maxLength={10}
           error={showError("inChargeMobile") ? errors?.inChargeMobile : undefined}

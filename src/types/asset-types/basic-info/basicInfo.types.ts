@@ -2,6 +2,7 @@ import type { Ward } from "@/lib/api/asset/ward.service";
 import type { Zone } from "@/lib/api/asset/zone.service";
 import type { Department } from "@/lib/api/asset/department.service";
 import type { Mouja } from "@/lib/api/asset/mouja.service";
+import type { OwnershipType } from "@/lib/api/asset/ownership-type.service";
 import type { ProcessedField } from "@/components/modules/assets/municipal-Asset/add-New-Asset/FieldRenderer";
 
 export interface BasicInfoPageProps {
@@ -9,9 +10,11 @@ export interface BasicInfoPageProps {
   zones?: Zone[];
   departments?: Department[];
   moujas?: Mouja[];
+  ownershipTypes?: OwnershipType[];
   prefetchedFields?: any[];
   subzones?: any[];
 }
+
 
 export interface DynamicAttributesFormData {
   categoryId?: number;

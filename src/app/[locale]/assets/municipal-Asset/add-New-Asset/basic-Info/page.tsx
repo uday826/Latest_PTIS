@@ -10,11 +10,9 @@
  */
 
 import BasicInfoPage from "@/components/modules/assets/municipal-Asset/add-New-Asset/basic-Info/BasicInfoStep";
-import { departmentService } from "@/lib/api/asset/department.service";
-import { moujaService } from "@/lib/api/asset/mouja.service";
-import { wardService } from "@/lib/api/asset/ward.service";
-import { zoneService } from "@/lib/api/asset/zone.service";
+import { getCachedWards, getCachedZones, getCachedDepartments, getCachedMoujas, getCachedOwnershipTypes } from "@/lib/api/asset/cached-master-data";
 import { fetchBuildingFieldDefinitions } from "./actions";
+import { zoneService } from "@/lib/api/asset/zone.service";
 
 interface BuildingBasicInfoPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -32,19 +30,21 @@ export default async function BuildingBasicInfoPage({
   let zones: any[] = [];
   let departments: any[] = [];
   let moujas: any[] = [];
+  let ownershipTypes: any[] = [];
   let prefetchedFields: any[] = [];
   let subzones: any[] = [];
 
   try {
-    const [wardsRes, zonesRes, departmentsRes, moujasRes, fieldsRes, subzonesRes] = await Promise.all([
-      wardService.getWards(),
-      zoneService.getZones(),
-      departmentService.getDepartments(),
-      moujaService.getMoujas(),
+    const [wardsRes, zonesRes, departmentsRes, moujasRes, fieldsRes, subzonesRes, ownershipRes] = await Promise.all([
+      getCachedWards(),
+      getCachedZones(),
+      getCachedDepartments(),
+      getCachedMoujas(),
       categoryId > 0 && typeId > 0
         ? fetchBuildingFieldDefinitions(categoryId, typeId)
         : Promise.resolve({ success: false as const, error: "Missing ids" }),
       zoneService.getSubZones(),
+      getCachedOwnershipTypes(),
     ]);
 
     if (wardsRes.success && Array.isArray(wardsRes.data)) {
@@ -65,8 +65,13 @@ export default async function BuildingBasicInfoPage({
     if (subzonesRes.success && Array.isArray(subzonesRes.data)) {
       subzones = subzonesRes.data;
     }
+    if (ownershipRes.success && Array.isArray(ownershipRes.data)) {
+      ownershipTypes = ownershipRes.data;
+    }
   } catch (error) {
-    console.error("⚠️ Failed to fetch master metadata from API on server:", error);
+
+
+
   }
 
   return (
@@ -75,8 +80,10 @@ export default async function BuildingBasicInfoPage({
       zones={zones} 
       departments={departments}
       moujas={moujas}
+      ownershipTypes={ownershipTypes}
       prefetchedFields={prefetchedFields} 
       subzones={subzones}
     />
   );
 }
+

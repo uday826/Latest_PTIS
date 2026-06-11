@@ -56,6 +56,8 @@ interface BuildingValuationSummaryProps {
   itEquipmentItems: InventoryItem[];
   electronicFixtures: InventoryItem[];
   vehicles: InventoryItem[];
+  // Full building CV summary from POST /api/AssetCapitalValue/building/calculate-cv
+  buildingCV?: any;
 }
 
 export function BuildingValuationSummary({
@@ -64,18 +66,39 @@ export function BuildingValuationSummary({
   itEquipmentItems,
   electronicFixtures,
   vehicles,
+  buildingCV,
 }: BuildingValuationSummaryProps) {
-  const buildingCapitalValue = floors.reduce((sum, floor) => {
+  // Primary source: totalBuildingCapitalValue from the /building/calculate-cv API response
+  // This includes: building's own floor CVs + all child asset (flat/shop) CVs
+  const cvFromAPI = Number(
+    buildingCV?.totalBuildingCapitalValue ??
+    buildingCV?.TotalBuildingCapitalValue ??
+    0
+  );
+
+  // Fallback: sum from floors array (used when API CV is not available)
+  const cvFromFloors = floors.reduce((sum, floor) => {
     const value = parseFloat(String(floor.finalCapitalValue || "0").replace(/,/g, ""));
     return sum + value;
   }, 0);
+
+  // Use API value when available and > 0; otherwise fall back to floor-sum
+  const buildingCapitalValue = cvFromAPI > 0 ? cvFromAPI : cvFromFloors;
+
+  // Built-up area: from API or from floors
+  const builtUpFromAPI = Number(
+    buildingCV?.totalBuildingCarpetAreaSqMeter ??
+    buildingCV?.TotalBuildingCarpetAreaSqMeter ??
+    0
+  ) * 10.764; // convert sq.m to sq.ft
 
   const furnitureValue = furnitureItems.reduce((sum, i) => sum + (i.totalValue || 0), 0);
   const itEquipmentValue = itEquipmentItems.reduce((sum, i) => sum + (i.totalValue || 0), 0);
   const electronicFixturesValue = electronicFixtures.reduce((sum, i) => sum + (i.totalValue || 0), 0);
   const vehiclesValue = vehicles.reduce((sum, i) => sum + (i.totalValue || 0), 0);
   const grandTotalValue = buildingCapitalValue + furnitureValue + itEquipmentValue + electronicFixturesValue + vehiclesValue;
-  const totalBuiltUpArea = floors.reduce((sum, floor) => sum + (parseFloat(String(floor.builtUpAreaSqFt || "0")) || 0), 0);
+  const totalBuiltUpAreaFromFloors = floors.reduce((sum, floor) => sum + (parseFloat(String(floor.builtUpAreaSqFt || "0")) || 0), 0);
+  const totalBuiltUpArea = builtUpFromAPI > 0 ? builtUpFromAPI : totalBuiltUpAreaFromFloors;
 
   const fmt = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2 });
 

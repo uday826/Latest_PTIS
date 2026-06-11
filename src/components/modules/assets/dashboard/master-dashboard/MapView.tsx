@@ -390,6 +390,8 @@ export function MapView({ assets, selectedAsset, onAssetClick, activeFilters, ca
         {filteredAssets.map((asset, index) => {
           const coords = getAssetCoords(asset);
           if (!coords) return null;
+
+          const markerKey = `${asset.id}-${coords.lat}-${coords.lng}-${index}`;
           
           const isSelected = selectedAsset?.id === asset.id;
           const icon = createCategoryIcon(asset.category, categoryNames, isSelected);
@@ -397,7 +399,7 @@ export function MapView({ assets, selectedAsset, onAssetClick, activeFilters, ca
 
           return (
             <Marker
-              key={`${asset.id}-${index}`}
+              key={markerKey}
               position={[coords.lat, coords.lng]}
               icon={icon}
               eventHandlers={{

@@ -95,7 +95,7 @@ export const safeParseOptions = (options: any): string[] => {
  */
 export const processFieldDefinitions = (data: ApiResponse<AssetFieldDefinition[]>): ProcessedField[] => {
   if (!data.success || !data.data) {
-    console.error("Failed to process field definitions", data.error);
+
     return [];
   }
 
@@ -140,7 +140,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({ categoryId, typeId }) => 
         const processedFields = processFieldDefinitions({ success: true, data: filteredFields });
         setFields(processedFields);
       } catch (error) {
-        console.error("Error fetching or filtering field definitions", error);
+
       } finally {
         setLoading(false);
       }

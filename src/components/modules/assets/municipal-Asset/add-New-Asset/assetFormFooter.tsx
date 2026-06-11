@@ -227,7 +227,7 @@ export function AssetFormFooter() {
               const uploadRes = await uploadDocumentAction(formDataPayload);
               if (!uploadRes.success) {
                 uploadFailed = true;
-                console.error(`Failed to upload ${item.definition.documentName}:`, uploadRes.error || uploadRes.message);
+
                 toast.error(`Failed to upload ${item.definition.documentName}`);
               }
             }
@@ -237,6 +237,92 @@ export function AssetFormFooter() {
             } else {
               toast.success("All compliance documents uploaded successfully!");
               if (setStagedFiles) setStagedFiles({});
+            }
+          } finally {
+            if (loadingToast !== undefined) toast.dismiss(loadingToast);
+          }
+        }
+
+        // Upload basic info files if they exist and haven't been uploaded yet (for new assets)
+        if (basicInfoFiles && (basicInfoFiles.frontPhoto || basicInfoFiles.buildingPlan)) {
+          let loadingToast: string | number | undefined;
+          try {
+            loadingToast = toast.loading("Uploading asset photos...");
+            let userId = 1;
+            try {
+              const match = document.cookie.match(/(?:^|; )user_id=([^;]*)/);
+              if (match) {
+                userId = Number(decodeURIComponent(match[1])) || 1;
+              }
+            } catch (e) {
+              // ignore
+            }
+
+            const formDataPayload = new FormData();
+            formDataPayload.append("AssetId", assetId.toString());
+            formDataPayload.append("ModuleId", assetModuleId.toString());
+            formDataPayload.append("UploadedByUserId", userId.toString());
+            formDataPayload.append("IsAdHoc", "true");
+
+            let frontPhotoDefId = 0;
+            let planDefId = 0;
+            try {
+              const defRes = await fetchDocumentDefinitionsAction(formData.categoryId, formData.typeId || 0);
+              if (defRes.success && Array.isArray(defRes.data)) {
+                const frontDef = defRes.data.find(d => d.documentCode?.toLowerCase().includes("front") || d.documentName?.toLowerCase().includes("front"));
+                if (frontDef) frontPhotoDefId = frontDef.id;
+
+                const planDef = defRes.data.find(d => d.documentCode?.toLowerCase().includes("plan") || d.documentName?.toLowerCase().includes("plan"));
+                if (planDef) planDefId = planDef.id;
+              }
+            } catch (e) {
+              console.error("Failed to fetch definitions for basic info upload", e);
+            }
+
+            const metadata = [];
+
+            if (basicInfoFiles.frontPhoto) {
+              const uniqueName = `front_${basicInfoFiles.frontPhoto.name}`;
+              const renamedFile = new File([basicInfoFiles.frontPhoto], uniqueName, { type: basicInfoFiles.frontPhoto.type });
+              formDataPayload.append("Files", renamedFile);
+              const metaItem: any = {
+                fileName: uniqueName,
+                documentType: "front_photo",
+                documentTitle: "Asset Image",
+              };
+              if (frontPhotoDefId > 0) metaItem.documentDefinitionId = frontPhotoDefId;
+              metadata.push(metaItem);
+            }
+
+            if (basicInfoFiles.buildingPlan) {
+              const uniqueName = `plan_${basicInfoFiles.buildingPlan.name}`;
+              const renamedFile = new File([basicInfoFiles.buildingPlan], uniqueName, { type: basicInfoFiles.buildingPlan.type });
+              formDataPayload.append("Files", renamedFile);
+              const metaItem: any = {
+                fileName: uniqueName,
+                documentType: "building_plan",
+                documentTitle: "Asset Photo Plan",
+              };
+              if (planDefId > 0) metaItem.documentDefinitionId = planDefId;
+              metadata.push(metaItem);
+            }
+
+            formDataPayload.append("FileMetadataJson", JSON.stringify(metadata));
+
+            const res = await uploadBulkDocumentsAction(formDataPayload);
+            if (res.success && res.data) {
+              const failures = res.data.failureCount || 0;
+              const successes = res.data.successCount || 0;
+              if (failures > 0) {
+                const detailedError = res.data.failedUploads?.[0]?.errorMessage || "Unknown backend error";
+                toast.error(`Photo upload failed: ${successes} successful, ${failures} failed. Reason: ${detailedError}`);
+              } else {
+                toast.success("Asset photos uploaded successfully!");
+                if (setBasicInfoFiles) setBasicInfoFiles({});
+              }
+            } else {
+              const errorMsg = res.error || "Unknown bulk upload error";
+              toast.error(`Photo upload failed: ${errorMsg}`);
             }
           } finally {
             if (loadingToast !== undefined) toast.dismiss(loadingToast);
@@ -257,7 +343,7 @@ export function AssetFormFooter() {
         toast.error(`Final submission failed: ${result.error}`);
       }
     } catch (error) {
-      console.error("Final submit error:", error);
+
       toast.error("An unexpected error occurred during final submission.");
     } finally {
       setIsSubmitting(false);
@@ -288,7 +374,7 @@ export function AssetFormFooter() {
           return; // Stop and keep user on the same page to fix errors
         }
       } catch (error) {
-        console.error("Step submit hook error:", error);
+
         toast.error("Failed to complete step actions.");
         return;
       } finally {
@@ -310,9 +396,9 @@ export function AssetFormFooter() {
       return;
     }
 
-    // Validate Building or Land Basic Info step before proceeding
-    const isBuilding = formData.category === "Building Assets" || formData.category === "BUILDING";
-    const isLand = formData.category === "Land Assets" || formData.category === "LAND";
+    // Pure DB-flag driven — valuationType from AssetCategoryMaster.ValuationType
+    const isBuilding = formData.valuationType ? formData.valuationType === "BUILDING" : formData.hasFloorDetails === true;
+    const isLand     = formData.valuationType ? formData.valuationType === "LAND"     : (!formData.hasFloorDetails && !formData.isMovableCategory);
 
     if (currentStep?.key === "basic-info" && (isBuilding || isLand)) {
       setSubmittedOnce?.(true);
@@ -377,8 +463,9 @@ export function AssetFormFooter() {
           sp.set("assetCode", String(assetCode));
         }
 
-        // Upload basic info files if they exist and we just saved basic info
-        if (currentStep?.key === "basic-info" && basicInfoFiles && (basicInfoFiles.frontPhoto || basicInfoFiles.buildingPlan)) {
+        // Upload basic info files if they exist and we just saved basic info (defer for new inactive assets)
+        const isNewAsset = !formData.id;
+        if (currentStep?.key === "basic-info" && !isNewAsset && basicInfoFiles && (basicInfoFiles.frontPhoto || basicInfoFiles.buildingPlan)) {
           let userId = 1;
           try {
             const match = document.cookie.match(/(?:^|; )user_id=([^;]*)/);
@@ -390,7 +477,7 @@ export function AssetFormFooter() {
           }
 
           const formDataPayload = new FormData();
-          formDataPayload.append("AssetId", String(assetId || 0));
+          formDataPayload.append("AssetId", String((result as any).assetId || assetId || 0));
           formDataPayload.append("ModuleId", assetModuleId.toString());
           formDataPayload.append("UploadedByUserId", userId.toString());
           formDataPayload.append("IsAdHoc", "true");
@@ -473,7 +560,7 @@ export function AssetFormFooter() {
         return;
       }
     } catch (error) {
-      console.error(`Error saving ${stepLabel.toLowerCase()}:`, error);
+
       toast.error(`An unexpected error occurred while saving ${stepLabel.toLowerCase()}.`);
       return;
     } finally {

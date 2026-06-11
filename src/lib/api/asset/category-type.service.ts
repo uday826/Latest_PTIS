@@ -6,11 +6,13 @@ export interface AssetCategory {
   categoryName: string;
   categoryCode: string;
   isActive: boolean;
-  isMovable?: boolean;
-  hasFloorDetails?: boolean;
-  hasInventory?: boolean;
-  isInventoryMandatory?: boolean;
-  hasLegalCompliance?: boolean;
+  isMovable: boolean;
+  hasFloorDetails: boolean;
+  hasInventory: boolean;
+  isInventoryMandatory: boolean;
+  hasLegalCompliance: boolean;
+  // BUILDING | LAND | INFRASTRUCTURE | MOVABLE | GENERIC — drives valuation form
+  valuationType: string;
 }
 
 export interface AssetType {
@@ -30,7 +32,7 @@ export const categoryTypeService = {
    * Get all active Asset Categories
    */
   getCategories: async (): Promise<ApiResponse<AssetCategory[]>> => {
-    const response = await apiClient.get<any>("/AssetCategory?pageSize=1000");
+    const response = await apiClient.get<any>("/AssetCategory?pageSize=1000", { cacheStrategy: 300 });
     if (response.success && response.data) {
       const items = Array.isArray(response.data) ? response.data : (response.data.items || []);
       return { ...response, data: items };
@@ -42,7 +44,7 @@ export const categoryTypeService = {
    * Get all active Asset Types
    */
   getAllTypes: async (): Promise<ApiResponse<AssetType[]>> => {
-    const response = await apiClient.get<any>("/AssetType?pageSize=1000");
+    const response = await apiClient.get<any>("/AssetType?pageSize=1000", { cacheStrategy: 300 });
     if (response.success && response.data) {
       const items = Array.isArray(response.data) ? response.data : (response.data.items || []);
       return { ...response, data: items };

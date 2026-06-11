@@ -25,14 +25,7 @@ const columns: Column<VerificationRecord>[] = [
     label: 'Asset Category',
     align: 'center',
     cellClassName: '!px-2 !py-2',
-    render: (_value, row) => (
-      <div className="flex flex-col leading-tight">
-        <span>{row.assetCategory}</span>
-        {row.assetSubCategory ? (
-          <span className="mt-0.5 text-[10px] font-normal text-red-500/80">{row.assetSubCategory}</span>
-        ) : null}
-      </div>
-    ),
+    render: (_value, row) => <span>{row.assetCategory}</span>,
   },
   { key: 'tenantName', label: 'Tenant Name', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'applicationType', label: 'Application Type', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
@@ -83,7 +76,7 @@ export function LeaseRentVerificationTable({
       columns={columns}
       data={records}
       loading={false}
-      getRowKey={(row) => row.id}
+      getRowKey={(row, idx) => `${row.id}-${idx}`}
       emptyText="No verification records found."
       headerTitle="Verification Records"
       headerSubtitle="Renter corrections awaiting review"

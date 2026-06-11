@@ -11,7 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { getAssetValuationDataAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/valuation/actions";
 import { Loader2 } from "lucide-react";
 
-// Infrastructure asset types
+// Fallback infrastructure type-name list — only used when categoryCode is absent (legacy URLs)
 const INFRASTRUCTURE_TYPES = ["Road", "Bridge", "Subway", "Bridge/Subway", "Water Tank", "Water Tank/Reservoir"];
 
 export default function ValuationPage() {
@@ -39,6 +39,7 @@ export default function ValuationPage() {
   const [dynamicFloors, setDynamicFloors] = useState<any[]>([]);
 
   const [plotCV, setPlotCV] = useState<any>(null);
+  const [buildingCV, setBuildingCV] = useState<any>(null);
   const [inventoryState, setInventoryState] = useState<{
     furnitureItems: any[];
     itEquipmentItems: any[];
@@ -51,21 +52,15 @@ export default function ValuationPage() {
     vehicles: [],
   });
 
-  const category: string = formData.category || "";
-  const assetType: string = formData.assetType || "";
+  const assetType: string    = formData.assetType || "";
+  const valuationType: string = formData.valuationType || "";
 
-  const isBuilding =
-    category === "Building Assets" ||
-    category === "BUILDING" ||
-    category === "INFRASTRUCTURE";
-
-  const isLand =
-    category === "LAND" ||
-    category === "Land Assets";
-
-  const isInfrastructure =
-    INFRASTRUCTURE_TYPES.some((t) => assetType === t) ||
-    category === "INFRASTRUCTURE";
+  // Pure DB-flag driven — no string matching on category names.
+  // valuationType comes from AssetCategoryMaster.ValuationType in the DB.
+  // Fallback (valuationType not yet loaded): derive from step-control flags.
+  const isBuilding       = valuationType ? valuationType === "BUILDING"       : formData.hasFloorDetails === true;
+  const isLand           = valuationType ? valuationType === "LAND"           : (!formData.hasFloorDetails && !formData.isMovableCategory && !INFRASTRUCTURE_TYPES.some(t => assetType === t));
+  const isInfrastructure = valuationType ? valuationType === "INFRASTRUCTURE" : INFRASTRUCTURE_TYPES.some(t => assetType === t);
 
   // Effect to load full asset details for this AssetId only, dynamically from DB
   useEffect(() => {
@@ -117,7 +112,9 @@ export default function ValuationPage() {
               updateFormData({ floors: mappedFloors });
             }
 
-
+            if (res.buildingCV) {
+              setBuildingCV(res.buildingCV);
+            }
 
             if (res.plotCV) {
               setPlotCV(res.plotCV);
@@ -218,8 +215,8 @@ export default function ValuationPage() {
           }
           setIsLoading(false);
         })
-        .catch((err) => {
-          console.error("Failed to fetch dynamic valuation data:", err);
+        .catch(() => {
+
           setIsLoading(false);
         });
     } else {
@@ -256,6 +253,7 @@ export default function ValuationPage() {
           itEquipmentItems={inventoryState.itEquipmentItems}
           electronicFixtures={inventoryState.electronicFixtures}
           vehicles={inventoryState.vehicles}
+          buildingCV={buildingCV}
         />
       ) : isInfrastructure ? (
         <InfrastructureValuation formData={formData} onChange={handleInputChange} />

@@ -1,8 +1,8 @@
 "use client";
 
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from "react";
 import { fetchAssetMasterById } from "@/app/[locale]/assets/actions";
 import { fetchCategories } from "@/app/[locale]/assets/municipal-Asset/actions";
-import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 import { AssetFormContextType, AssetFormData } from "@/types/asset-types/basic-info/asset-wizard.types";
 
@@ -123,15 +123,27 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
 
   const [lastSavedFormData, setLastSavedFormData] = useState<AssetFormData | null>(null);
 
-  // Draft Recovery: If React Context is wiped (e.g. page refresh) but we have an ID in the URL,
-  // fetch the saved draft from the database to refill the context.
+  // Guard ref: prevents the combined init effect from re-running after it updates formData.
+  // Without this, the old code had formData fields in the dep array that it also SET,
+  // creating an infinite fetch → set → re-fetch loop.
+  const hasInitializedRef = useRef(false);
+
+  // Combined initialization effect: Draft Recovery + Category Sync + Flag Fetch
+  // Runs ONCE per searchParams change (i.e. when URL changes), NOT when formData changes.
   useEffect(() => {
-    const recoverDraft = async () => {
+    // Reset guard when searchParams change (e.g. navigating to a different step/asset)
+    hasInitializedRef.current = false;
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+
+    const initializeFormState = async () => {
+      // ── Part 1: Draft Recovery ──────────────────────────────────────────
       const assetIdStr = searchParams.get("assetId") || searchParams.get("id");
-      if (!assetIdStr) return;
-      
-      const parsedId = Number(assetIdStr);
-      // If the Context lost its memory (assetName is blank) but URL has an ID, we recover!
+      const parsedId = assetIdStr ? Number(assetIdStr) : 0;
+
       if (parsedId > 0 && !formData.assetName && !formData.fullAddress) {
         try {
           const dbAsset = (await fetchAssetMasterById(parsedId)) as any;
@@ -185,22 +197,16 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
             });
           }
         } catch (error) {
-          console.error("Failed to recover draft:", error);
+
         }
       }
-    };
 
-    recoverDraft();
-  }, [searchParams]);
+      // ── Part 2: Sync category/type IDs from URL + fetch category flags ──
+      const categoryIdStr = searchParams.get("categoryId");
+      const typeIdStr = searchParams.get("typeId");
+      const categoryStr = searchParams.get("category");
+      const assetTypeStr = searchParams.get("assetType");
 
-  // Sync category and type IDs from URL and securely fetch category flags from backend
-  useEffect(() => {
-    const categoryIdStr = searchParams.get("categoryId");
-    const typeIdStr = searchParams.get("typeId");
-    const categoryStr = searchParams.get("category");
-    const assetTypeStr = searchParams.get("assetType");
-
-    const syncAndFetchFlags = async () => {
       let changed = false;
       const updates: Partial<AssetFormData> = {};
 
@@ -241,27 +247,30 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
           if (res.success && res.data) {
             const cat = res.data.find((c: any) => c.id === currentCatId);
             if (cat) {
-              updates.isMovableCategory = cat.isMovable ?? false;
-              updates.hasFloorDetails = cat.hasFloorDetails ?? false;
-              updates.hasInventory = cat.hasInventory ?? false;
+              updates.categoryCode         = cat.categoryCode ?? undefined;
+              updates.valuationType        = cat.valuationType ?? "GENERIC";
+              updates.isMovableCategory    = cat.isMovable ?? false;
+              updates.hasFloorDetails      = cat.hasFloorDetails ?? false;
+              updates.hasInventory         = cat.hasInventory ?? false;
               updates.isInventoryMandatory = cat.isInventoryMandatory ?? false;
-              updates.hasLegalCompliance = cat.hasLegalCompliance ?? false;
+              updates.hasLegalCompliance   = cat.hasLegalCompliance ?? false;
               changed = true;
             }
           }
         } catch (error) {
-          console.error("Failed to fetch secure category flags:", error);
+
         }
       }
 
       if (changed) {
-        console.log(`[AssetFormContext] Syncing state & flags securely from backend:`, updates);
+
         setFormData(prev => ({ ...prev, ...updates }) as AssetFormData);
       }
     };
 
-    syncAndFetchFlags();
-  }, [searchParams, formData.categoryId, formData.typeId, formData.category, formData.assetType, formData.isMovableCategory, formData.hasFloorDetails]);
+    initializeFormState();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const updateFormData = (data: Partial<AssetFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));

@@ -75,10 +75,6 @@ const fetchActiveModuleIds = cache(async () => {
   }
 });
 
-/**
- * Fetches menu entries for a specific user (deduped per request).
- * Falls back to global screens if user-specific screens are unavailable.
- */
 const fetchUserMenuItems = cache(async (userId: number, token?: string) => {
   try {
     const [screensRes, activeModuleIds, userProfile] = await Promise.all([

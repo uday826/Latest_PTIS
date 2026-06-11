@@ -6,6 +6,17 @@ import { wardService } from "@/lib/api/asset/ward.service";
 import { zoneService } from "@/lib/api/asset/zone.service";
 import type { AssetRegisterPageResult } from "@/types/municipal-asset/register.types";
 
+const EMPTY_ASSET_REGISTER_PAGE_RESULT: AssetRegisterPageResult = {
+  items: [],
+  totalCount: 0,
+  totalPurchaseValue: 0,
+  totalMarketValue: 0,
+  totalDepreciation: 0,
+  netBookValue: 0,
+  activeAssetsCount: 0,
+  error: null,
+};
+
 export async function fetchAssetRegisterPage(
   categoryId: number,
   page: number = 1,
@@ -15,45 +26,38 @@ export async function fetchAssetRegisterPage(
   zoneId?: number | string | null,
   wardId?: number | string | null
 ): Promise<AssetRegisterPageResult> {
-  const response = await assetMasterService.getAllAssetsPaginated({
-    pageNumber: page,
-    pageSize,
-    assetCategoryId: categoryId,
-    assetTypeId: assetTypeId && assetTypeId !== "all" ? Number(assetTypeId) : null,
-    zoneId: zoneId && zoneId !== "all" ? Number(zoneId) : null,
-    wardId: wardId && wardId !== "all" ? Number(wardId) : null,
-    searchTerm: search || undefined,
-  });
+  try {
+    const response = await assetMasterService.getAllAssetsPaginated({
+      pageNumber: page,
+      pageSize,
+      assetCategoryId: categoryId,
+      assetTypeId: assetTypeId && assetTypeId !== "all" ? Number(assetTypeId) : null,
+      zoneId: zoneId && zoneId !== "all" ? Number(zoneId) : null,
+      wardId: wardId && wardId !== "all" ? Number(wardId) : null,
+      searchTerm: search || undefined,
+    });
 
-  if (!response.success) {
-    throw new Error("Failed to fetch asset register data");
-  }
+    if (!response.success || !response.data) {
+      return { ...EMPTY_ASSET_REGISTER_PAGE_RESULT, error: response.error || 'Failed to fetch asset register data' };
+    }
 
-  if (!response.data) {
+    const data = response.data;
+    const items = Array.isArray(data) ? data : (data.items || []);
+
     return {
-      items: [],
-      totalCount: 0,
-      totalPurchaseValue: 0,
-      totalMarketValue: 0,
-      totalDepreciation: 0,
-      netBookValue: 0,
-      activeAssetsCount: 0,
+      items,
+      totalCount: data.totalCount || items.length,
+      totalPurchaseValue: data.totalPurchaseValue || 0,
+      totalMarketValue: data.totalMarketValue || 0,
+      totalDepreciation: data.totalDepreciation || 0,
+      netBookValue: data.netBookValue || 0,
+      activeAssetsCount: data.activeAssetsCount || 0,
+      error: null,
     };
+  } catch (error) {
+    console.error("Failed to fetch asset register data:", error);
+    return { ...EMPTY_ASSET_REGISTER_PAGE_RESULT, error: error instanceof Error ? error.message : 'Failed to fetch asset register data' };
   }
-
-  const data = response.data;
-  // Sometimes backend returns array instead of paginated response
-  const items = Array.isArray(data) ? data : (data.items || []);
-  
-  return {
-    items,
-    totalCount: data.totalCount || items.length,
-    totalPurchaseValue: data.totalPurchaseValue || 0,
-    totalMarketValue: data.totalMarketValue || 0,
-    totalDepreciation: data.totalDepreciation || 0,
-    netBookValue: data.netBookValue || 0,
-    activeAssetsCount: data.activeAssetsCount || 0,
-  };
 }
 
 export async function fetchAssetTypesByCategory(categoryId: number) {

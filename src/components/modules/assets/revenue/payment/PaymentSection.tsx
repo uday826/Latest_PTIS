@@ -7,8 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/common/Card';
 import { Button, MasterTable, SearchInput, Select, type Column } from '@/components/common';
 import { StatusBadge } from '@/components/common/StatusBadge';
-import type { PaymentFilterOptions, PaymentRecordsPageData } from '@/app/[locale]/assets/revenue/payment/actions';
-import type { LeaseRentPaymentListItem } from '@/types/asset/leaseRentPayment.types';
+import type { PaymentFilterOptions, PaymentRecordRow, PaymentRecordsPageData } from '@/app/[locale]/assets/revenue/payment/actions';
 
 interface PaymentSectionProps {
   pageData?: PaymentRecordsPageData;
@@ -53,7 +52,7 @@ const PAYMENT_STATUS_OPTIONS = [
   { label: 'Unpaid', value: 'unpaid' },
 ];
 
-type PaymentTableRow = LeaseRentPaymentListItem & Record<string, unknown>;
+type PaymentTableRow = PaymentRecordRow & Record<string, unknown>;
 
 export function PaymentSection({
   pageData = DEFAULT_PAGE_DATA,
@@ -138,13 +137,13 @@ export function PaymentSection({
   const columns = useMemo<Column<PaymentTableRow>[]>(
     () => [
       {
-        key: 'leaseRentRegistrationId',
+        key: 'id',
         label: t('table.srNo'),
         align: 'center',
         render: (_value, _row, rowIndex) => String(startIndex + rowIndex + 1),
       },
-      { key: 'zone', label: sortableHeader(t('table.zone'), 'zone'), align: 'center', render: (value) => String(value ?? '-') },
-      { key: 'wardNo', label: sortableHeader(t('table.ward'), 'wardNo'), align: 'center', render: (value) => String(value ?? '-') },
+      // { key: 'zone', label: sortableHeader(t('table.zone'), 'zone'), align: 'center', render: (value) => String(value ?? '-') },
+      // { key: 'wardNo', label: sortableHeader(t('table.ward'), 'wardNo'), align: 'center', render: (value) => String(value ?? '-') },
       { key: 'assetNo', label: sortableHeader(t('table.assetId'), 'assetNo'), align: 'center' },
       { key: 'shopName', label: sortableHeader(t('table.complex'), 'shopName') },
       { key: 'shopNo', label: sortableHeader(t('table.shopPlot'), 'shopNo'), align: 'center' },
@@ -232,7 +231,7 @@ export function PaymentSection({
                 <Button
                   onClick={() => {
                     const next = new URLSearchParams(listQueryString);
-                    next.set('srNo', String(record.leaseRentRegistrationId));
+                    next.set('recordId', String(record.id));
                     next.set('assetId', String(record.assetId));
                     router.push(`/${params.locale}/assets/revenue/payment/details?${next.toString()}`);
                   }}
@@ -245,7 +244,7 @@ export function PaymentSection({
               ) : null
             }
             actionLabel={t('table.action')}
-            getRowKey={(record) => `${record.assetId}-${record.leaseRentRegistrationId}`}
+            getRowKey={(record) => `${record.assetId}-${record.id}`}
             maxBodyHeightClassName="max-h-[calc(100vh-360px)]"
             tableClassName="text-xs text-slate-700 text-center"
             theadClassName="bg-[#1f2937] [&_th]:!text-white [&_th]:font-semibold [&_th]:text-xs [&_th]:px-3 [&_th]:py-2 [&_th:first-child]:!rounded-none [&_th:last-child]:!rounded-none"

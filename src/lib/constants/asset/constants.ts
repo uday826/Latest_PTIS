@@ -276,12 +276,52 @@ export const HARDCODED_ASSET_DATA: Record<string, any> = {
         fields: [
           { name: "buildingName", label: "Building Name", type: "text" },
           { name: "shopCount", label: "Shop Count", type: "number" },
-          { name: "occupancyStatus", label: "Occupancy Status", type: "select", options: ["Occupied", "Vacant"] },
-          { name: "rentalIncome", label: "Rental Income", type: "number" },
-          { name: "leaseType", label: "Lease Type", type: "text" },
-          { name: "builtUpArea", label: "Built Up Area", type: "number" }
+          { name: "totalFloors", label: "Total Floors", type: "number" },
+          { name: "occupancyStatus", label: "Occupancy Status", type: "select", options: ["Occupied", "Vacant", "Partial"] },
+          { name: "rentalIncome", label: "Rental Income (Monthly)", type: "number" },
+          { name: "leaseType", label: "Lease Type", type: "select", options: ["Monthly", "Yearly", "Long-Term"] },
+          { name: "builtUpArea", label: "Built Up Area (SqM)", type: "number" },
+          { name: "parkingAvailable", label: "Parking Available", type: "checkbox" },
+          { name: "maintenanceAgency", label: "Maintenance Agency", type: "text" }
         ],
-        documents: ["Trade License", "Lease Agreement", "Shops Allotment List", "Property Tax Record", "Fire NOC"]
+        documents: ["Trade License", "Lease Agreement", "Shops Allotment List", "Property Tax Record", "Fire NOC", "Building Completion Certificate"]
+      },
+      RESIDENTIAL_SOCIETY: {
+        label: "Residential Society",
+        fields: [
+          { name: "societyName", label: "Society Name", type: "text" },
+          { name: "societyRegistrationNo", label: "Society Registration No", type: "text" },
+          { name: "noOfBuildings", label: "No Of Buildings", type: "number" },
+          { name: "noOfFlats", label: "Total No Of Flats", type: "number" },
+          { name: "noOfFloors", label: "No Of Floors Per Building", type: "number" },
+          { name: "builtUpArea", label: "Total Built Up Area (SqM)", type: "number" },
+          { name: "plotArea", label: "Plot Area (SqM)", type: "number" },
+          { name: "constructionYear", label: "Construction Year", type: "number" },
+          { name: "maintenanceAgency", label: "Maintenance Agency / RWA", type: "text" },
+          { name: "parkingType", label: "Parking Type", type: "select", options: ["Open", "Covered", "Stilt", "Basement", "None"] },
+          { name: "liftAvailable", label: "Lift Available", type: "checkbox" },
+          { name: "waterSupplyType", label: "Water Supply Type", type: "select", options: ["Municipal", "Borewell", "Both"] },
+          { name: "amenities", label: "Amenities", type: "text" }
+        ],
+        documents: ["Society Registration Certificate", "Building Completion Certificate", "Occupancy Certificate", "Property Card", "Layout Plan Approval", "Fire NOC", "Electrical Inspection Certificate"]
+      },
+      SEMI_COMMERCIAL: {
+        label: "Semi-Commercial Building",
+        fields: [
+          { name: "buildingName", label: "Building Name", type: "text" },
+          { name: "noOfFloors", label: "No Of Floors", type: "number" },
+          { name: "residentialFloors", label: "Residential Floors", type: "number" },
+          { name: "commercialFloors", label: "Commercial Floors", type: "number" },
+          { name: "residentialUnits", label: "No Of Residential Units", type: "number" },
+          { name: "commercialUnits", label: "No Of Commercial Units/Shops", type: "number" },
+          { name: "totalBuiltUpArea", label: "Total Built Up Area (SqM)", type: "number" },
+          { name: "residentialArea", label: "Residential Area (SqM)", type: "number" },
+          { name: "commercialArea", label: "Commercial Area (SqM)", type: "number" },
+          { name: "constructionYear", label: "Construction Year", type: "number" },
+          { name: "occupancyStatus", label: "Occupancy Status", type: "select", options: ["Occupied", "Partial", "Vacant"] },
+          { name: "maintenanceAgency", label: "Maintenance Agency", type: "text" }
+        ],
+        documents: ["Building Plan Approval", "Completion Certificate", "Occupancy Certificate", "Property Tax Record", "Fire NOC", "Trade License (for commercial portion)"]
       },
       OTHER: {
         label: "Other",
