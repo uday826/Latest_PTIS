@@ -303,6 +303,7 @@ export interface CreateChildAssetRequest {
   locationAddress?: string | null;
   locationLat?: string | null;
   locationLng?: string | null;
+  rooms?: any[] | null;
 }
 
 export interface CreateChildAssetResponse {

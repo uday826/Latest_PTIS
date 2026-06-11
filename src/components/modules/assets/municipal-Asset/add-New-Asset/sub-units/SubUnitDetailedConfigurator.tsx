@@ -177,6 +177,40 @@ export function SubUnitDetailedConfigurator({
             const mappedRooms = detail.roomWiseDetails.map((r: any) => {
               const areaSqM  = Number(r.areaSqMtr || r.areaSqMtr || 0);
               const areaSqFt = areaSqM * 10.7639;
+              const rOffsets = Array.isArray(r.offsets) ? r.offsets.map((off: any) => ({
+                id: off.id,
+                shape: off.shape || "Rectangle",
+                length: Number(offsetLengthFallback(off)),
+                width: Number(off.width || 0),
+                height: Number(off.height || 0),
+                base1: Number(off.base1 || 0),
+                base2: Number(off.base2 || 0),
+                radius: Number(offsetLengthFallback(off)),
+                areaSqM: Number(off.areaSqM || 0),
+                op: off.op || "Subtract"
+              })) : [];
+
+              // Calculate total offset adjustment
+              let netAdjustmentSqM = 0;
+              rOffsets.forEach((off: any) => {
+                const offArea = Number(off.areaSqM || 0);
+                if (off.op === "Add") {
+                  netAdjustmentSqM += offArea;
+                } else {
+                  netAdjustmentSqM -= offArea;
+                }
+              });
+
+              const netSqM = Math.max(0, areaSqM + netAdjustmentSqM);
+              const netSqFt = netSqM * 10.7639;
+
+              // Helper for circle radius fallback
+              function offsetLengthFallback(off: any) {
+                if (off.length !== undefined) return off.length;
+                if (off.radius !== undefined) return off.radius;
+                return 0;
+              }
+
               return {
                 id:       r.id,
                 roomNo:   r.roomNo,
@@ -192,6 +226,10 @@ export function SubUnitDetailedConfigurator({
                 // Calculated area
                 areaSqM,
                 areaSqFt,
+                offsets: rOffsets,
+                hasOffset: rOffsets.length > 0 ? "Yes" : "No",
+                netAreaSqM: netSqM,
+                netAreaSqFt: netSqFt,
                 count:   Number(r.noOfRooms  || 1),
                 outer:   r.outerYesNo ? "Yes" : "No",
                 minus:   r.minusYesNo ? "Yes" : "No",
@@ -428,11 +466,18 @@ export function SubUnitDetailedConfigurator({
     }
   };
 
-  // Carpet area in SqFt — from new shape-based rooms (areaSqFt), minus deductions
+  // Carpet area in SqFt — from new shape-based rooms (netAreaSqFt), minus deductions
   const area = roomsList.length > 0
     ? roomsList.reduce((acc, r) => {
-        const roomSqFt = Number(r.areaSqFt || r.area || 0) * Number(r.count || 1);
-        return (r.minus === "Yes" || r.offset === "Yes") ? acc - roomSqFt : acc + roomSqFt;
+        const netAreaSqFt = r.netAreaSqFt !== undefined
+          ? Number(r.netAreaSqFt)
+          : (r.netAreaSqM !== undefined
+              ? Number(r.netAreaSqM) * 10.7639
+              : Number(r.areaSqFt || r.area || 0));
+        const roomSqFt = netAreaSqFt * Number(r.count || 1);
+        if (r.minus === "Yes" || r.offset === "Yes") return acc - roomSqFt;
+        if (r.outer === "Yes") return acc + roomSqFt * 0.8;
+        return acc + roomSqFt;
       }, 0)
     : (Number(formData.carpetAreaSqFeet) || 0);
 

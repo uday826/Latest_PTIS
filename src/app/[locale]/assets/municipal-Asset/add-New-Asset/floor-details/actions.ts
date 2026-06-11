@@ -1,7 +1,9 @@
 "use server";
 
+import 'server-only';
 import { floorDetailsService } from "@/lib/api/asset/floor-details.service";
 import { manageSubUnitsService } from "@/lib/api/asset/manage-subunits.service";
+import { assetRoomWiseMinusDataService } from "@/lib/api/asset/asset-room-wise-minus-data.service";
 import { apiClient } from "@/services/api.service";
 import { logger } from "@/lib/utils/logger";
 import {
@@ -430,6 +432,72 @@ export async function createChildAssetAction(
             return { success: false, error: `Failed to register renter: ${regErr.message || regErr}` };
           }
         }
+
+        // Resolve room-wise submission IDs and save offsets
+        if (data.rooms && Array.isArray(data.rooms)) {
+          try {
+            const getRes = await manageSubUnitsService.getById(createdAssetId);
+            if (getRes.success && getRes.data) {
+              const detail = getRes.data as any;
+              const dbRooms = detail.roomWiseDetails || [];
+              
+              for (const inputRoom of data.rooms) {
+                // Find matching room in DB by roomNo
+                const dbRoom = dbRooms.find((r: any) => String(r.roomNo) === String(inputRoom.roomNo));
+                if (dbRoom && dbRoom.id) {
+                  const roomWiseSubmissionId = dbRoom.id;
+
+                  // ── DELETE existing minus-data rows for this room before re-inserting ──
+                  // This prevents duplicate accumulation across multiple "Save & Next" calls.
+                  try {
+                    const existingMinusRes = await assetRoomWiseMinusDataService.getAll(roomWiseSubmissionId);
+                    if (existingMinusRes.success && existingMinusRes.data) {
+                      const existingItems = Array.isArray(existingMinusRes.data)
+                        ? existingMinusRes.data
+                        : ((existingMinusRes.data as any).items || []);
+                      const filtered = existingItems.filter(
+                        (item: any) => Number(item.roomWiseSubmissionId) === Number(roomWiseSubmissionId)
+                      );
+                      for (const existing of filtered) {
+                        if (existing.id) {
+                          await assetRoomWiseMinusDataService.delete(Number(existing.id));
+                          logger.info(`createChildAssetAction: Deleted existing offset ID ${existing.id} for room ${roomWiseSubmissionId}`);
+                        }
+                      }
+                    }
+                  } catch (delErr: any) {
+                    logger.warn(`createChildAssetAction: Could not clean existing offsets for room ${roomWiseSubmissionId}:`, { error: delErr });
+                  }
+
+                  // ── INSERT new offset rows ──
+                  if (inputRoom.offsets && Array.isArray(inputRoom.offsets) && inputRoom.offsets.length > 0) {
+                    logger.info(`createChildAssetAction: Saving ${inputRoom.offsets.length} offsets for roomNo ${inputRoom.roomNo} (submissionId ${roomWiseSubmissionId}).`);
+                    for (const offset of inputRoom.offsets) {
+                      const offsetPayload = {
+                        roomWiseSubmissionId: roomWiseSubmissionId,
+                        lengthMtr: offset.length || (offset.shape === "Circle" || offset.shape === "Semi Circle" || offset.shape === "Quarter" ? offset.radius : 0),
+                        widthMtr: offset.width || 0,
+                        areaSqMtr: offset.areaSqM || 0,
+                        heightMtr: offset.height || 0,
+                        base1Mtr: offset.base1 || 0,
+                        base2Mtr: offset.base2 || 0,
+                        shape: offset.shape || "Rectangle",
+                        isActive: true,
+                      };
+                      logger.info("createChildAssetAction: Saving offset to /AssetRoomWiseMinusData", { offsetPayload });
+                      const offsetRes = await assetRoomWiseMinusDataService.create(offsetPayload);
+                      logger.info("createChildAssetAction: Offset save response:", { response: offsetRes });
+                    }
+                  }
+                } else {
+                  logger.warn(`createChildAssetAction: Could not find dbRoom for roomNo ${inputRoom.roomNo} to save offsets.`);
+                }
+              }
+            }
+          } catch (fetchErr: any) {
+            logger.error("createChildAssetAction: Failed to fetch child asset to save room offsets:", { error: fetchErr });
+          }
+        }
       }
       return {
         success: true,
@@ -458,7 +526,33 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
   try {
     const res = await manageSubUnitsService.getById(assetId);
     if (res.success && res.data) {
-      return { success: true, data: res.data };
+      const detail = res.data as any;
+      if (Array.isArray(detail.roomWiseDetails)) {
+        for (const room of detail.roomWiseDetails) {
+          try {
+            const minusRes = await assetRoomWiseMinusDataService.getAll(room.id);
+            if (minusRes.success && minusRes.data) {
+              const items = getArray(minusRes.data);
+              const filteredItems = items.filter((item: any) => Number(item.roomWiseSubmissionId) === Number(room.id));
+              room.offsets = filteredItems.map((item: any) => ({
+                id: String(item.id),
+                shape: item.shape || "Rectangle",
+                length: Number(item.lengthMtr || 0),
+                width: Number(item.widthMtr || 0),
+                height: Number(item.heightMtr || 0),
+                base1: Number(item.base1Mtr || 0),
+                base2: Number(item.base2Mtr || 0),
+                radius: Number(item.lengthMtr || 0), // Fallback
+                areaSqM: Number(item.areaSqMtr || 0),
+                op: "Subtract", // Default to Subtract since it is "Minus" data
+              }));
+            }
+          } catch (err: any) {
+            logger.error(`Failed to load offsets for room ${room.id}:`, { error: err });
+          }
+        }
+      }
+      return { success: true, data: detail };
     }
     return { success: false, error: res.error || "Failed to fetch child asset details" };
   } catch (err: any) {
