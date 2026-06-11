@@ -692,7 +692,7 @@ export const ASSET_MENU_SECTIONS: SidebarSection[] = [
     colorClass: 'text-indigo-400',
     items: [
       { id: 'configuration-master', label: 'Master Data', icon: Database, route: '/assets/configuration' },
-      { id: 'definitions', label: 'Definitions', icon: LayoutGrid, route: '/assets/configuration/definitions' },
+      { id: 'dynamic-field-config', label: 'Dynamic Field Config', icon: LayoutGrid, route: '/assets/configuration/dynamic-field-config' },
     ],
   },
 ];
@@ -715,7 +715,7 @@ export const routeMap = {
   'inventory-request': '/inventory-request',
   'inventory-approval': '/inventory-approval',
   configuration: '/assets/configuration',
-  'screen-fields': '/assets/configuration/definitions',
+  'screen-fields': '/assets/configuration/dynamic-field-config',
   'auction-management': '/auction-management',
   'live-bidding': '/live-bidding',
   'verify-registrations': '/verify-registrations',

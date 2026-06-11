@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { AssetFieldDefinition } from '@/types/asset-type/definitions.types';
-import { saveFieldDefinitionAction, deleteFieldDefinitionAction } from '@/app/[locale]/assets/configuration/definitions/action';
+import { saveFieldDefinitionAction, deleteFieldDefinitionAction } from '@/app/[locale]/assets/configuration/dynamic-field-config/action';
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/common';
 
@@ -131,8 +131,10 @@ export function useDefinitionsLogic(_onManageData?: (field: AssetFieldDefinition
 
   const handleDeleteField = useCallback(async (id: number) => {
     confirm({
+      variant: 'delete',
       title: 'Confirm Deletion',
       description: 'Are you sure you want to delete this field definition?',
+      confirmText: 'Delete',
       onConfirm: async () => {
         startTransition(async () => {
           const res = await deleteFieldDefinitionAction(id);

@@ -10,6 +10,7 @@ import {
 import { MasterCard } from '../masterData/common/MasterCard';
 import { AddButton, EditButton, DeleteButton } from '@/components/common/ActionButtons';
 import type { AssetDocumentDefinitionDto } from '@/lib/api/asset/asset-document.service';
+import { useConfirm } from '@/components/common';
 
 interface DocDefListProps {
   definitions: AssetDocumentDefinitionDto[];
@@ -56,17 +57,19 @@ export function DocDefList({
   onRefresh,
   tabsComponent,
 }: DocDefListProps) {
-  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const { confirm } = useConfirm();
 
-  const handleDeleteConfirm = async (id: number) => {
-    setDeletingId(id);
-    try {
-      await onDelete(id);
-    } finally {
-      setDeletingId(null);
-      setConfirmDeleteId(null);
-    }
+  const handleDeleteClick = (def: AssetDocumentDefinitionDto) => {
+    confirm({
+      variant: 'delete',
+      title: 'Delete Document Definition',
+      description: `Are you sure you want to delete the document definition "${def.documentName}"?`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      onConfirm: async () => {
+        await onDelete(def.id);
+      },
+    });
   };
 
   const subTitle = hasSelection ? `${selectedCategoryName} > ${selectedTypeName}` : '';
@@ -234,40 +237,18 @@ export function DocDefList({
 
                         {/* Actions */}
                         <td className="px-4 py-3 text-right">
-                          {confirmDeleteId === def.id ? (
-                            <div className="flex items-center justify-end gap-2 bg-red-50 rounded-lg px-2 py-1">
-                              <span className="text-[10px] text-red-600 font-semibold">Delete?</span>
-                              <button
-                                onClick={() => handleDeleteConfirm(def.id)}
-                                disabled={deletingId === def.id}
-                                className="text-[10px] font-bold text-red-600 hover:text-red-800 disabled:opacity-50 flex items-center gap-1"
-                              >
-                                {deletingId === def.id
-                                  ? <Loader2 className="w-3 h-3 animate-spin" />
-                                  : 'Yes'}
-                              </button>
-                              <span className="text-slate-300 text-xs">|</span>
-                              <button
-                                onClick={() => setConfirmDeleteId(null)}
-                                className="text-[10px] font-bold text-slate-500 hover:text-slate-700"
-                              >
-                                No
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-end gap-1">
-                              <EditButton
-                                onClick={() => onEdit(def)}
-                                className="!p-1.5 !w-8 !h-8 !rounded-md"
-                                title="Edit Document Definition"
-                              />
-                              <DeleteButton
-                                onClick={() => setConfirmDeleteId(def.id)}
-                                className="!p-1.5 !w-8 !h-8 !rounded-md"
-                                title="Delete Document Definition"
-                              />
-                            </div>
-                          )}
+                          <div className="flex items-center justify-end gap-1">
+                            <EditButton
+                              onClick={() => onEdit(def)}
+                              className="!p-1.5 !w-8 !h-8 !rounded-md"
+                              title="Edit Document Definition"
+                            />
+                            <DeleteButton
+                              onClick={() => handleDeleteClick(def)}
+                              className="!p-1.5 !w-8 !h-8 !rounded-md"
+                              title="Delete Document Definition"
+                            />
+                          </div>
                         </td>
                       </tr>
                     ))}

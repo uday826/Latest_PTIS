@@ -801,6 +801,27 @@ export function SubUnitDetailedConfigurator({
                       <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
                     </Field>
                   </Row>
+                  <Row z={30}>
+                    <Field label="Aadhaar Card No">
+                      <CustomBoxedInput
+                        value={formData.aadhaar || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                        length={12}
+                        type="numeric"
+                        groupSizes={[4, 4, 4]}
+                      />
+                    </Field>
+                    <Field label="PAN Card No">
+                      <CustomBoxedInput
+                        value={formData.pan || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                        length={10}
+                        type="alphanumeric"
+                      />
+                    </Field>
+                    <div className="flex-1 min-w-0" />
+                    <div className="flex-1 min-w-0" />
+                  </Row>
                 </>)}
 
                 {/* ── OFFICE fields ────────────────────────────────────── */}
@@ -820,9 +841,6 @@ export function SubUnitDetailedConfigurator({
                     </Field>
                   </Row>
                   <Row z={40}>
-                    <Field label="Contact Person">
-                      <Input name="contactPerson" value={formData.contactPerson || ""} onChange={handleChange} className={inp} />
-                    </Field>
                     <Field label="Mobile No">
                       <CustomBoxedInput
                         value={formData.mobileNo || ""}
@@ -835,6 +853,32 @@ export function SubUnitDetailedConfigurator({
                     <Field label="Email ID">
                       <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
                     </Field>
+                    <Field label="GST No">
+                      <Input name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
+                    </Field>
+                    <Field label="Shop Act No">
+                      <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                    </Field>
+                  </Row>
+                  <Row z={30}>
+                    <Field label="Aadhaar Card No">
+                      <CustomBoxedInput
+                        value={formData.aadhaar || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                        length={12}
+                        type="numeric"
+                        groupSizes={[4, 4, 4]}
+                      />
+                    </Field>
+                    <Field label="PAN Card No">
+                      <CustomBoxedInput
+                        value={formData.pan || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                        length={10}
+                        type="alphanumeric"
+                      />
+                    </Field>
+                    <div className="flex-1 min-w-0" />
                     <div className="flex-1 min-w-0" />
                   </Row>
                 </>)}
@@ -865,11 +909,38 @@ export function SubUnitDetailedConfigurator({
                         showPrefix="+91"
                       />
                     </Field>
+                    <Field label="Email ID">
+                      <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
+                    </Field>
                     <Field label="Usage / Purpose">
                       <Input name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} placeholder="e.g. Storage, Meeting" />
                     </Field>
                     <div className="flex-1 min-w-0" />
-                    <div className="flex-1 min-w-0" />
+                  </Row>
+                  <Row z={30}>
+                    <Field label="Aadhaar Card No">
+                      <CustomBoxedInput
+                        value={formData.aadhaar || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                        length={12}
+                        type="numeric"
+                        groupSizes={[4, 4, 4]}
+                      />
+                    </Field>
+                    <Field label="PAN Card No">
+                      <CustomBoxedInput
+                        value={formData.pan || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                        length={10}
+                        type="alphanumeric"
+                      />
+                    </Field>
+                    <Field label="GST No">
+                      <Input name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
+                    </Field>
+                    <Field label="Shop Act No">
+                      <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                    </Field>
                   </Row>
                 </>)}
 
@@ -907,6 +978,31 @@ export function SubUnitDetailedConfigurator({
                     </Field>
                     <Field label="Remarks">
                       <Input name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} placeholder="Optional notes" />
+                    </Field>
+                  </Row>
+                  <Row z={30}>
+                    <Field label="Aadhaar Card No">
+                      <CustomBoxedInput
+                        value={formData.aadhaar || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                        length={12}
+                        type="numeric"
+                        groupSizes={[4, 4, 4]}
+                      />
+                    </Field>
+                    <Field label="PAN Card No">
+                      <CustomBoxedInput
+                        value={formData.pan || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                        length={10}
+                        type="alphanumeric"
+                      />
+                    </Field>
+                    <Field label="GST No">
+                      <Input name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
+                    </Field>
+                    <Field label="Shop Act No">
+                      <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
                     </Field>
                   </Row>
                 </>)}

@@ -203,7 +203,7 @@ export async function saveDocumentDefinitionAction(id: number | null, payload: R
         allowedExtensions: String(payload.allowedExtensions),
         displayOrder: Number(payload.displayOrder),
         isActive: true,
-        updatedBy: userId
+        updatedBy: String(userId)
       };
       logger.info('saveDocDef PUT URL', { url: `/AssetDocument/definitions/${id}` });
       response = await apiClient.put<AssetDocumentDefinitionDto>(`/AssetDocument/definitions/${id}`, updatePayload);
@@ -220,7 +220,7 @@ export async function saveDocumentDefinitionAction(id: number | null, payload: R
         allowedExtensions: String(payload.allowedExtensions),
         displayOrder: Number(payload.displayOrder),
         isActive: true,
-        createdBy: userId
+        createdBy: String(userId)
       };
       logger.info('saveDocDef POST URL', { url: '/AssetDocument/definitions', payload: createPayload });
       response = await apiClient.post<AssetDocumentDefinitionDto>('/AssetDocument/definitions', createPayload);

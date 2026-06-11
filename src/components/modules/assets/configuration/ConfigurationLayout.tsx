@@ -10,7 +10,7 @@ import { Database, LayoutGrid, Settings } from "lucide-react";
 /* ================= CONST ================= */
 const TAB_KEYS = {
   MASTER_DATA: "master-data",
-  DEFINITIONS: "definitions",
+  DEFINITIONS: "dynamic-field-config",
 } as const;
 
 interface ConfigurationLayoutProps {
@@ -26,7 +26,7 @@ export function ConfigurationLayout({ children }: ConfigurationLayoutProps) {
 
   /* ================= ACTIVE TAB ================= */
   const getActiveTab = (): TabValue => {
-    if (pathname.includes("definitions")) {
+    if (pathname.includes("dynamic-field-config")) {
       return TAB_KEYS.DEFINITIONS;
     }
     if (pathname.includes("master-data")) {

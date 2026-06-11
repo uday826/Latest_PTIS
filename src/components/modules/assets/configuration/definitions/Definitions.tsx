@@ -9,7 +9,7 @@ import { FieldFormModal } from './FieldFormModal';
 import { DocDefList } from './DocDefList';
 import { DocDefFormModal, type DocumentDefinitionFormData } from './DocDefFormModal';
 import type { AssetDocumentDefinitionDto } from '@/lib/api/asset/asset-document.service';
-import { getDocumentDefinitionsAction, saveDocumentDefinitionAction, deleteDocumentDefinitionAction } from '@/app/[locale]/assets/configuration/definitions/action';
+import { getDocumentDefinitionsAction, saveDocumentDefinitionAction, deleteDocumentDefinitionAction } from '@/app/[locale]/assets/configuration/dynamic-field-config/action';
 import { LayoutList, FileBadge } from 'lucide-react';
 import { toast } from 'sonner';
 

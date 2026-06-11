@@ -47,7 +47,7 @@ export function AssetFormFooter() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const isEditMode = searchParams.get('mode') === 'edit' || !!(searchParams.get('assetId') || searchParams.get('id'));
+  const isEditMode = searchParams.get('mode') === 'edit';
   const {
     formData,
     updateFormData,
