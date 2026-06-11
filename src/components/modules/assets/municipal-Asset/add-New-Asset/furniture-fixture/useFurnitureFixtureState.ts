@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useConfirm } from "@/components/common";
 import { type InventoryType, type InventoryRow, type InventoryForm, type InvoiceForm, type InventoryInvoice } from "./FurnitureFixtureTypes";
-import { typeOptions, inventoryMeta, emptyForm, emptyInvoiceForm, PAGE_SIZE } from "./FurnitureFixtureConstants";
+import { inventoryMeta, emptyForm, emptyInvoiceForm, PAGE_SIZE } from "./FurnitureFixtureConstants";
 import { enrichRows, buildCategoryGroups, calcRowCV } from "./FurnitureFixtureCV";
 import { toast } from "sonner";
 import type { InventoryItemCategory, InventoryItemCondition, InventoryItemName, InventoryItemModel } from "@/lib/api/asset/inventory.service";

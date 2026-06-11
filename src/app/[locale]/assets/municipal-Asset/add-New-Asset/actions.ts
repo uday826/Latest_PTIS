@@ -17,7 +17,6 @@ import { revalidatePath } from "next/cache";
 import { categoryTypeService } from "@/lib/api/asset/category-type.service";
 import { apiClient } from "@/services/api.service";
 import { AssetFormData, AssetMasterRequest } from "@/types/asset-types/basic-info/asset-wizard.types";
-import { revalidatePath } from "next/cache";
 
 /**
  * Fetches field definitions based on selected category and type

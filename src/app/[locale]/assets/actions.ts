@@ -3,8 +3,6 @@
 
 import { createEmptyMasterData } from "@/config/asset.config";
 import { getDocumentFileRaw, getDocumentsByAsset, uploadDocument } from "@/lib/api/asset/asset-document.server.service";
-import { assetFieldDefinitionService } from "@/lib/api/asset/asset-field-definition.service";
-import { assetFieldValueService } from "@/lib/api/asset/asset-field-value.service";
 import { categoryTypeService } from "@/lib/api/asset/category-type.service";
 import { assetMasterService } from "@/lib/api/asset/asset-master.service";
 import { zoneService } from "@/lib/api/asset/zone.service";
