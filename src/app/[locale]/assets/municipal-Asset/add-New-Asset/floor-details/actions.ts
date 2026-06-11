@@ -188,6 +188,30 @@ export async function fetchSubUseTypesAction(typeOfUseId: number): Promise<Actio
   }
 }
 
+export async function fetchSubFloorAction(floorId: number): Promise<ActionResult<any[]>> {
+  try {
+    const res = await apiClient.get<any>(`/SubFloor?floorId=${floorId}&pageSize=10000`);
+    if (res.success && res.data) {
+      const items = res.data.items || res.data;
+      if (Array.isArray(items)) {
+        const mapped = items.map((s: any) => {
+          const desc = s.subFloorDescription ?? s.description ?? s.subFloorName ?? String(s.id);
+          return {
+            label: desc,
+            value: String(s.id),
+            floorId: String(s.floorId || floorId),
+          };
+        });
+        return { success: true, data: mapped };
+      }
+    }
+    return { success: true, data: [] };
+  } catch (err: any) {
+    logger.error("fetchSubFloorAction Error:", { error: err });
+    return { success: false, error: "Network error fetching sub floors" };
+  }
+}
+
 export interface FloorStepData {
   dropdownOptions: FloorDropdownOptions;
   floors: FloorDetailApiResponse[];

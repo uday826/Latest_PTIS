@@ -35,6 +35,8 @@ export interface AssetFormData {
   hasInventory?: boolean;
   isInventoryMandatory?: boolean;
   hasLegalCompliance?: boolean;
+  allowUnitRegistration?: boolean;
+  allowRoomRegistration?: boolean;
   attributes: Record<string, any>;
   documents: any[];
   [key: string]: any;

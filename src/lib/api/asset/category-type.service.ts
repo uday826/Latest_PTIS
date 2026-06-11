@@ -22,6 +22,8 @@ export interface AssetType {
   categoryId?: number;
   assetCategoryId?: number;
   isActive: boolean;
+  allowUnitRegistration?: boolean;
+  allowRoomRegistration?: boolean;
 }
 
 /**

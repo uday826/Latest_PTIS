@@ -237,11 +237,13 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
         changed = true;
       }
 
-      // If flags are undefined OR category changed, fetch secure config from DB
+      // If flags are undefined OR category/type changed, fetch secure config from DB
       if (
         formData.isMovableCategory === undefined || 
         formData.hasFloorDetails === undefined ||
-        (updates.categoryId && updates.categoryId !== formData.categoryId)
+        formData.allowRoomRegistration === undefined ||
+        (updates.categoryId && updates.categoryId !== formData.categoryId) ||
+        (updates.typeId && updates.typeId !== formData.typeId)
       ) {
         try {
           const res = await fetchCategories();
@@ -256,6 +258,21 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
               updates.isInventoryMandatory = cat.isInventoryMandatory ?? false;
               updates.hasLegalCompliance   = cat.hasLegalCompliance ?? false;
               changed = true;
+            }
+          }
+
+          // Also fetch type flags (for room/unit registration)
+          const currentTypeId = updates.typeId || formData.typeId;
+          if (currentTypeId) {
+            const { fetchAllTypes } = await import("@/app/[locale]/assets/municipal-Asset/actions");
+            const typesRes = await fetchAllTypes();
+            if (typesRes.success && typesRes.data) {
+              const type = typesRes.data.find((t: any) => t.id === currentTypeId);
+              if (type) {
+                updates.allowUnitRegistration = type.allowUnitRegistration ?? true;
+                updates.allowRoomRegistration = type.allowRoomRegistration ?? false;
+                changed = true;
+              }
             }
           }
         } catch (error) {
