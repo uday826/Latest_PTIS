@@ -767,7 +767,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
       {offsetRoom && (
         <div className="fixed inset-0 z-[60] flex justify-start">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={handleDrawerClose} />
-          <div className="relative w-full max-w-xl bg-white h-full flex flex-col shadow-2xl border-r border-slate-200 animate-in slide-in-from-left duration-300">
+          <div className="relative w-full max-w-xl bg-white h-full flex flex-col shadow-2xl border-l border-slate-200 animate-in slide-in-from-left duration-300">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-amber-500 border-b border-amber-600 shrink-0">
               <div className="flex items-center gap-2">

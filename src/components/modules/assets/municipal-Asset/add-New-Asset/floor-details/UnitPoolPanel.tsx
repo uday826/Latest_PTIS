@@ -371,6 +371,7 @@ export function UnitPoolPanel({ dropdownOptions }: UnitPoolPanelProps) {
           rentInformation: rentInfo,
           isRoomWiseValuationActive: roomDetails !== null,
           roomDetails,
+          rooms:          unit.rooms,
           departmentId:    unit.departmentId,
           locationAddress: unit.locationAddress,
           locationLat:     unit.locationLat,

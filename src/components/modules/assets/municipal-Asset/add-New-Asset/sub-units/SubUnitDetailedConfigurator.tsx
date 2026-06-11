@@ -177,6 +177,40 @@ export function SubUnitDetailedConfigurator({
             const mappedRooms = detail.roomWiseDetails.map((r: any) => {
               const areaSqM  = Number(r.areaSqMtr || r.areaSqMtr || 0);
               const areaSqFt = areaSqM * 10.7639;
+              const rOffsets = Array.isArray(r.offsets) ? r.offsets.map((off: any) => ({
+                id: off.id,
+                shape: off.shape || "Rectangle",
+                length: Number(offsetLengthFallback(off)),
+                width: Number(off.width || 0),
+                height: Number(off.height || 0),
+                base1: Number(off.base1 || 0),
+                base2: Number(off.base2 || 0),
+                radius: Number(offsetLengthFallback(off)),
+                areaSqM: Number(off.areaSqM || 0),
+                op: off.op || "Subtract"
+              })) : [];
+
+              // Calculate total offset adjustment
+              let netAdjustmentSqM = 0;
+              rOffsets.forEach((off: any) => {
+                const offArea = Number(off.areaSqM || 0);
+                if (off.op === "Add") {
+                  netAdjustmentSqM += offArea;
+                } else {
+                  netAdjustmentSqM -= offArea;
+                }
+              });
+
+              const netSqM = Math.max(0, areaSqM + netAdjustmentSqM);
+              const netSqFt = netSqM * 10.7639;
+
+              // Helper for circle radius fallback
+              function offsetLengthFallback(off: any) {
+                if (off.length !== undefined) return off.length;
+                if (off.radius !== undefined) return off.radius;
+                return 0;
+              }
+
               return {
                 id:       r.id,
                 roomNo:   r.roomNo,
@@ -192,6 +226,10 @@ export function SubUnitDetailedConfigurator({
                 // Calculated area
                 areaSqM,
                 areaSqFt,
+                offsets: rOffsets,
+                hasOffset: rOffsets.length > 0 ? "Yes" : "No",
+                netAreaSqM: netSqM,
+                netAreaSqFt: netSqFt,
                 count:   Number(r.noOfRooms  || 1),
                 outer:   r.outerYesNo ? "Yes" : "No",
                 minus:   r.minusYesNo ? "Yes" : "No",
