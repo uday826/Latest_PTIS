@@ -258,7 +258,14 @@ export default function ValuationPage() {
       ) : isInfrastructure ? (
         <InfrastructureValuation formData={formData} onChange={handleInputChange} />
       ) : isLand ? (
-        <LandValuation formData={formData} onChange={handleInputChange} plotCV={plotCV} />
+        <LandValuation
+          formData={formData}
+          plotCV={plotCV}
+          furnitureItems={inventoryState.furnitureItems}
+          itEquipmentItems={inventoryState.itEquipmentItems}
+          electronicFixtures={inventoryState.electronicFixtures}
+          vehicles={inventoryState.vehicles}
+        />
       ) : (
         <>
           <AssetValuation formData={formData} onChange={handleInputChange} />

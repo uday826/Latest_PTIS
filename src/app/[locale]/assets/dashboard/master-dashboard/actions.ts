@@ -132,87 +132,78 @@ export async function fetchDashboardDataAction(): Promise<ApiResponse<DashboardD
     const wardsMasterList = wardsRes?.success && wardsRes.data ? wardsRes.data : [];
 
     const allAssets: MunicipalAsset[] = [];
-    if (subcategories.length > 0) {
-      const assetsResults = await Promise.all(
-        subcategories.map(async sub => {
-          try {
-            const res = await assetMasterService.getAllAssetsPaginated({
-              assetTypeId: sub.typeId,
-              pageSize: -1, // Get all records
-            });
-            const data = res.success && res.data ? res.data : null;
-            const items = data ? (Array.isArray(data) ? data : data.items || []) : [];
-            return { sub, assets: items };
-          } catch {
-            return { sub, assets: [] };
-          }
-        })
-      );
+    const assetsRes = await assetMasterService.getAllAssetsPaginated({
+      pageSize: -1, // Get all records
+    });
+    
+    if (assetsRes.success && assetsRes.data) {
+      const rawData = assetsRes.data;
+      const rawAssets = Array.isArray(rawData) ? rawData : ((rawData as any).items || []);
+      
+      rawAssets.forEach((asset: any, index: number) => {
+        const rawVal = Number(asset.marketValue ?? asset.purchaseValue ?? asset.capitalValue ?? 0);
+        const assetIdNum = Number(asset.id) || index;
+        
+        const latitude = Number(asset.latitude ?? 0);
+        const longitude = Number(asset.longitude ?? 0);
 
-      assetsResults.forEach(({ sub, assets }) => {
-        (assets as any[]).forEach((asset, index) => {
-          const rawVal = Number(asset.marketValue ?? asset.purchaseValue ?? asset.capitalValue ?? 0);
-          const assetIdNum = Number(asset.id) || index;
-          
-          const latitude = Number(asset.latitude ?? 0);
-          const longitude = Number(asset.longitude ?? 0);
+        // Lookup zone and ward to get the short "No" (e.g. "A", "A1") instead of descriptions
+        const assetZoneName = String(asset.zoneName || asset.zone || '').trim();
+        const assetWardName = String(asset.wardName || asset.ward || '').trim();
+        
+        let resolvedZoneNo = asset.zoneNo;
+        if (!resolvedZoneNo && assetZoneName) {
+          const foundZone = zonesMasterList.find(z => 
+            z.id === asset.zoneId || 
+            z.description === assetZoneName || 
+            z.zoneName === assetZoneName ||
+            z.ZoneName === assetZoneName
+          );
+          resolvedZoneNo = foundZone?.zoneNo || foundZone?.ZoneNo;
+        }
+        
+        let resolvedWardNo = asset.wardNo;
+        if (!resolvedWardNo && assetWardName) {
+          const foundWard = wardsMasterList.find(w => 
+            w.id === asset.wardId || 
+            w.name === assetWardName || 
+            w.wardName === assetWardName ||
+            w.WardName === assetWardName ||
+            w.description === assetWardName ||
+            w.Description === assetWardName
+          );
+          resolvedWardNo = foundWard?.wardNo || foundWard?.WardNo;
+        }
 
-          // Lookup zone and ward to get the short "No" (e.g. "A", "A1") instead of descriptions
-          const assetZoneName = String(asset.zoneName || asset.zone || '').trim();
-          const assetWardName = String(asset.wardName || asset.ward || '').trim();
-          
-          let resolvedZoneNo = asset.zoneNo;
-          if (!resolvedZoneNo && assetZoneName) {
-            const foundZone = zonesMasterList.find(z => 
-              z.id === asset.zoneId || 
-              z.description === assetZoneName || 
-              z.zoneName === assetZoneName ||
-              z.ZoneName === assetZoneName
-            );
-            resolvedZoneNo = foundZone?.zoneNo || foundZone?.ZoneNo;
-          }
-          
-          let resolvedWardNo = asset.wardNo;
-          if (!resolvedWardNo && assetWardName) {
-            const foundWard = wardsMasterList.find(w => 
-              w.id === asset.wardId || 
-              w.name === assetWardName || 
-              w.wardName === assetWardName ||
-              w.WardName === assetWardName ||
-              w.description === assetWardName ||
-              w.Description === assetWardName
-            );
-            resolvedWardNo = foundWard?.wardNo || foundWard?.WardNo;
-          }
+        const finalZone = String(resolvedZoneNo || assetZoneName || '');
+        const finalWard = String(resolvedWardNo || assetWardName || '');
 
-          const finalZone = String(resolvedZoneNo || assetZoneName || '');
-          const finalWard = String(resolvedWardNo || assetWardName || '');
+        const sub = subcategories.find(s => s.typeId === Number(asset.assetTypeId));
 
-          allAssets.push({
-            id: String(asset.id ?? assetIdNum),
-            name: String(asset.assetName || asset.name || asset.assetNo || ''),
-            category: String(asset.assetCategoryName || asset.categoryName || sub.categoryName) as MunicipalAsset['category'],
-            subCategory: String(asset.assetTypeName || asset.typeName || sub.typeName || ''),
-            zone: finalZone,
-            ward: finalWard,
-            location: String(asset.address || 'Municipal Area'),
-            valueLakhs: rawVal > 1000000 ? rawVal / 100000 : rawVal,
-            status: String(asset.status || 'Active'),
-            latitude,
-            longitude,
-            health: Number(asset.health ?? 0),
-            lastInspection: String(asset.lastInspection || asset.purchaseDate || ''),
-            usage: String(asset.usage || asset.occupancyStatus || ''),
-            encroachment: asset.encroachment || { hasEncroachment: false },
-            // Additional fields from AssetMaster
-            department: String(asset.departmentName || ''),
-            marketValue: Number(asset.marketValue ?? 0),
-            builtUpArea: Number(asset.builtUpAreaSqMeter ?? 0),
-            landArea: Number(asset.landAreaSqMeter ?? 0),
-            ownerID: String(asset.ownershipType || ''),
-            surveyNumber: String(asset.csn || ''),
-            condition: String(asset.assetCondition || ''),
-          });
+        allAssets.push({
+          id: String(asset.id ?? assetIdNum),
+          name: String(asset.assetName || asset.name || asset.assetNo || ''),
+          category: String(asset.assetCategoryName || asset.categoryName || sub?.categoryName || '') as MunicipalAsset['category'],
+          subCategory: String(asset.assetTypeName || asset.typeName || sub?.typeName || ''),
+          zone: finalZone,
+          ward: finalWard,
+          location: String(asset.address || 'Municipal Area'),
+          valueLakhs: rawVal > 1000000 ? rawVal / 100000 : rawVal,
+          status: String(asset.status || 'Active'),
+          latitude,
+          longitude,
+          health: Number(asset.health ?? 0),
+          lastInspection: String(asset.lastInspection || asset.purchaseDate || ''),
+          usage: String(asset.usage || asset.occupancyStatus || ''),
+          encroachment: asset.encroachment || { hasEncroachment: false },
+          // Additional fields from AssetMaster
+          department: String(asset.departmentName || ''),
+          marketValue: Number(asset.marketValue ?? 0),
+          builtUpArea: Number(asset.builtUpAreaSqMeter ?? 0),
+          landArea: Number(asset.landAreaSqMeter ?? 0),
+          ownerID: String(asset.ownershipType || ''),
+          surveyNumber: String(asset.csn || ''),
+          condition: String(asset.assetCondition || ''),
         });
       });
     }

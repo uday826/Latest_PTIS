@@ -1,323 +1,223 @@
 "use client";
 
-import React from "react";
-import { Input } from "@/components/common";
-import { Landmark, TrendingUp, Calculator, FileText, Cpu, Calendar, CheckCircle2, RefreshCw } from "lucide-react";
+import {
+  DollarSign
+} from "lucide-react";
+
+interface DetailRow {
+  label: string;
+  value: string;
+  badge?: string;
+  highlight?: boolean;
+  highlightBg?: string;
+  highlightBorder?: string;
+  highlightText?: string;
+}
+
+interface InventoryItem {
+  id?: string;
+  itemName?: string;
+  equipmentName?: string;
+  typeModel?: string;
+  brandModel?: string;
+  purchaseDate?: string;
+  condition?: string;
+  status?: string;
+  quantity?: number;
+  unitValue?: number;
+  totalValue?: number;
+  specifications?: string;
+}
 
 interface LandValuationProps {
   formData: any;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   plotCV?: any;
+  furnitureItems?: InventoryItem[];
+  itEquipmentItems?: InventoryItem[];
+  electronicFixtures?: InventoryItem[];
+  vehicles?: InventoryItem[];
 }
 
-export function LandValuation({ formData, onChange, plotCV }: LandValuationProps) {
+export function LandValuation({
+  formData,
+  plotCV,
+  furnitureItems = [],
+  itEquipmentItems = [],
+  electronicFixtures = [],
+  vehicles = [],
+}: LandValuationProps) {
   const landArea = parseFloat(formData.landArea) || 0;
   const rate = parseFloat(formData.landRate) || 0;
-  const devCost = parseFloat(formData.developmentCost) || 0;
-  const appreciation = parseFloat(formData.marketAppreciation) || 0;
 
-  // Use calculated plot CV if available from the backend calculation engine
+  // Core land CV from plotCV API or area * rate
   const totalLandValue = plotCV ? plotCV.totalCapitalValue : (landArea * rate);
-  const totalAssetValue = totalLandValue + devCost;
-  const appreciationValue = (totalAssetValue * appreciation) / 100;
-  const currentMarketValue = totalAssetValue + appreciationValue;
 
+  // Inventory totals
+  const furnitureValue = furnitureItems.reduce((sum, i) => sum + (i.totalValue || 0), 0);
+  const itEquipmentValue = itEquipmentItems.reduce((sum, i) => sum + (i.totalValue || 0), 0);
+  const electronicFixturesValue = electronicFixtures.reduce((sum, i) => sum + (i.totalValue || 0), 0);
+  const vehiclesValue = vehicles.reduce((sum, i) => sum + (i.totalValue || 0), 0);
+
+  // Grand Total Asset Value (without additions)
+  const grandTotalValue = totalLandValue + furnitureValue + itEquipmentValue + electronicFixturesValue + vehiclesValue;
+
+  const fmt = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2 });
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(val);
 
+  const summaryCards = [
+    { label: "Land Capital Value (CV)", value: totalLandValue, sub: plotCV ? "From Plot CV Engine" : "From Area & Rates (L)" },
+    { label: "Furniture Items Value", value: furnitureValue, sub: "From Furniture Inventory (A)" },
+    { label: "IT Equipment Value", value: itEquipmentValue, sub: "From IT Equipment Inventory (B)" },
+    { label: "Electronic Fixtures Value", value: electronicFixturesValue, sub: "From Electronic Fixtures Inventory (C)" },
+    { label: "Vehicles Value", value: vehiclesValue, sub: "From Vehicles Inventory (D)" },
+  ];
+
+  const detailCards: Array<{ title: string; color: string; bg: string; textColor: string; rows: DetailRow[]; footer: string; isLandCard?: boolean }> = [
+    {
+      title: "Land Valuation",
+      color: "#93C5FD",
+      bg: "#DBEAFE",
+      textColor: "#1E40AF",
+      isLandCard: true,
+      rows: [],
+      footer: "ℹ️ Calculated from area and rates",
+    },
+    {
+      title: "🪑 A) Furniture Items", color: "#C4B5FD", bg: "#EDE9FE", textColor: "#6B21A8",
+      rows: [
+        { label: "Total Furniture Items Count", value: `${furnitureItems.length} ${furnitureItems.length === 1 ? "Item" : "Items"}` },
+        { label: "Total Quantity (Units)", value: `${furnitureItems.reduce((s, i) => s + (i.quantity || 0), 0)} Units` },
+        { label: "Total Furniture Value", value: `₹ ${fmt(furnitureValue)}`, highlight: true, highlightBg: "#F3E8FF", highlightBorder: "#C4B5FD", highlightText: "#6B21A8" },
+      ],
+      footer: "ℹ️ From Furniture Inventory (Part A)",
+    },
+    {
+      title: "💻 B) IT Equipment", color: "#93C5FD", bg: "#DBEAFE", textColor: "#1E40AF",
+      rows: [
+        { label: "Total IT Equipment Count", value: `${itEquipmentItems.length} ${itEquipmentItems.length === 1 ? "Item" : "Items"}` },
+        { label: "Total Quantity (Units)", value: `${itEquipmentItems.reduce((s, i) => s + (i.quantity || 0), 0)} Units` },
+        { label: "Total IT Equipment Value", value: `₹ ${fmt(itEquipmentValue)}`, highlight: true, highlightBg: "#DBEAFE", highlightBorder: "#93C5FD", highlightText: "#1E40AF" },
+      ],
+      footer: "ℹ️ From IT Equipment Inventory (Part B)",
+    },
+    {
+      title: "💡 C) Electronic Fixtures", color: "#6EE7B7", bg: "#D1FAE5", textColor: "#065F46",
+      rows: [
+        { label: "Total Electronic Fixtures Count", value: `${electronicFixtures.length} ${electronicFixtures.length === 1 ? "Item" : "Items"}` },
+        { label: "Total Quantity (Units)", value: `${electronicFixtures.reduce((s, i) => s + (i.quantity || 0), 0)} Units` },
+        { label: "Total Electronic Fixtures Value", value: `₹ ${fmt(electronicFixturesValue)}`, highlight: true, highlightBg: "#D1FAE5", highlightBorder: "#6EE7B7", highlightText: "#065F46" },
+      ],
+      footer: "ℹ️ From Electronic Fixtures Inventory (Part C)",
+    },
+    {
+      title: "🚗 D) Vehicles", color: "#FCD34D", bg: "#FEF3C7", textColor: "#92400E",
+      rows: [
+        { label: "Total Vehicles Count", value: `${vehicles.length} ${vehicles.length === 1 ? "Vehicle" : "Vehicles"}` },
+        { label: "Total Quantity (Units)", value: `${vehicles.reduce((s, i) => s + (i.quantity || 0), 0)} Units` },
+        { label: "Total Vehicles Value", value: `₹ ${fmt(vehiclesValue)}`, highlight: true, highlightBg: "#FEF3C7", highlightBorder: "#FCD34D", highlightText: "#92400E" },
+      ],
+      footer: "ℹ️ From Vehicles Inventory (Part D)",
+    },
+  ];
+
   return (
-    <div className="space-y-4">
-      
-      {/* 1. Stunning Land CV Calculation Engine Status Panel */}
-      {plotCV && (
-        <div 
-          className="p-5 rounded-2xl border shadow-lg relative overflow-hidden transition-all duration-300 hover:shadow-xl"
-          style={{
-            background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
-            borderColor: "#334155"
-          }}
-        >
-          {/* Decorative glows */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl -z-10 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl -z-10 pointer-events-none" />
-          
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-700/60 pb-4 mb-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="p-1.5 rounded-lg bg-blue-500/15 text-blue-400">
-                  <Landmark className="w-5 h-5" />
-                </span>
-                <h3 className="text-base font-extrabold text-slate-100 uppercase tracking-wide">
-                  {plotCV.assetName || "Open Land/Plot Asset"}
-                </h3>
-              </div>
-              <p className="text-xs font-semibold text-slate-400">
-                Asset Number: <span className="text-blue-400 font-mono">{plotCV.assetNo || formData.assetCode}</span>
-              </p>
-            </div>
+    <div className="space-y-6">
 
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Status Badge */}
-              <div 
-                className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${
-                  plotCV.isFullyCalculated 
-                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                    : "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                }`}
-              >
-                {plotCV.isFullyCalculated ? (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Fully Calculated</span>
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
-                    <span>Pending Calculations</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Calculation Status */}
-            <div className="bg-slate-800/40 border border-slate-700/50 p-3.5 rounded-xl flex items-start gap-2.5">
-              <Cpu className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Plot Engine Status</p>
-                <p className="text-xs font-semibold text-slate-200">
-                  Calculated {plotCV.calculatedPlots} / {plotCV.totalPlots} Plots
+
+
+
+      {/* 3. Summary Cards (Same as Building Category layout) */}
+      <div className="mb-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          {summaryCards.map((card) => (
+            <div
+              key={card.label}
+              className="p-3 rounded-xl border border-blue-100 bg-white shadow-sm"
+              style={{ background: "linear-gradient(135deg,#FFFFFF 0%,#F0F9FF 100%)" }}
+            >
+              <h5 className="text-xs font-bold mb-1" style={{ color: "#1E3A8A" }}>{card.label}</h5>
+              <p className="text-lg font-bold mb-1" style={{ fontFamily: "monospace", color: "#1E3A8A" }}>₹ {fmt(card.value)}</p>
+              <div className="flex items-center justify-between pt-1 border-t border-blue-50">
+                <p className="text-[10px] font-medium text-slate-400">
+                  {card.sub}
                 </p>
               </div>
             </div>
+          ))}
+        </div>
 
-            {/* Last Calculation Time */}
-            <div className="bg-slate-800/40 border border-slate-700/50 p-3.5 rounded-xl flex items-start gap-2.5">
-              <Calendar className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Last Recalculated</p>
-                <p className="text-xs font-bold text-slate-200">
-                  {plotCV.lastCVCalculationDate ? new Date(plotCV.lastCVCalculationDate).toLocaleString("en-IN") : "Just Now"}
-                </p>
-              </div>
-            </div>
-
-            {/* Total Area */}
-            <div className="bg-slate-800/40 border border-slate-700/50 p-3.5 rounded-xl flex items-start gap-2.5">
-              <TrendingUp className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Aggregate Area</p>
-                <p className="text-xs font-black text-slate-200">{plotCV.totalPlotAreaSqMtr || landArea || 0} sq.mtr</p>
-              </div>
-            </div>
+        {/* Grand Total Asset Value Banner */}
+        <div className="mt-2 p-2.5 rounded-lg flex justify-between items-center border-2" style={{ background: "linear-gradient(135deg,#EFF6FF,#DBEAFE,#BFDBFE)", borderColor: "#93C5FD" }}>
+          <span className="font-bold text-sm" style={{ color: "#1E40AF" }}>Grand Total Asset Value</span>
+          <div className="px-3 py-1.5 rounded-md" style={{ background: "linear-gradient(135deg,#1E40AF,#1E3A8A)", border: "1.5px solid #1D4ED8" }}>
+            <span className="text-lg font-bold" style={{ fontFamily: "monospace", color: "#FFFFFF" }}>₹ {fmt(grandTotalValue)}</span>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* 2. Plot-by-Plot Mathematical Breakdowns */}
-      {plotCV && plotCV.plotDetails && plotCV.plotDetails.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-          <div className="w-full flex justify-between items-center p-4 bg-slate-50 border-b border-slate-200">
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-blue-100 text-blue-700">
-                <Calculator className="w-4 h-4" />
-              </span>
-              <div className="text-left">
-                <h4 className="text-sm font-black text-slate-800 font-extrabold uppercase tracking-wide">Plot CV Calculation Details</h4>
-                <p className="text-[10px] text-slate-500 font-semibold">Live calculation engine formulas for individual plots</p>
+      <div className="h-px my-4 bg-gray-300" />
+
+      {/* 4. Detailed Breakdown Cards */}
+      <div className="mb-3">
+        <h4 className="text-base font-bold mb-3" style={{ color: "#1E40AF" }}>Detailed Valuation Breakdown</h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          {detailCards.map((card) => (
+            <div key={card.title} className="p-3 bg-white rounded-lg border shadow-md hover:shadow-lg transition-shadow duration-300" style={{ borderColor: card.color }}>
+              <div className="rounded-lg py-1.5 px-2.5 mb-3 flex items-center gap-2" style={{ backgroundColor: card.bg, borderLeft: `4px solid ${card.color}` }}>
+                <h4 className="text-xs font-bold" style={{ color: card.textColor }}>{card.title}</h4>
               </div>
-            </div>
-          </div>
 
-          <div className="p-4 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {plotCV.plotDetails.map((plot: any, idx: number) => (
-                <div 
-                  key={plot.plotId || idx} 
-                  className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex flex-col justify-between transition-all hover:border-slate-200 hover:shadow-sm"
-                >
-                  <div className="flex justify-between items-start gap-2 mb-3">
-                    <div>
-                      <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-100">
-                        Plot ID: {plot.plotId || idx + 1}
-                      </span>
-                      <h5 className="text-sm font-extrabold text-slate-800 mt-1 uppercase tracking-wide">
-                        {plot.openPlotType || "General Plot"}
-                      </h5>
-                      <p className="text-[10px] font-bold text-slate-400 mt-0.5">
-                        Submission Type: <span className="text-slate-600 font-semibold">{plot.openPlotSubmissionType || "Standard"}</span>
-                      </p>
+              {card.isLandCard ? (
+                /* Land Valuation Card contains read-only values */
+                <div className="space-y-3">
+                  <div className="p-2 rounded-lg bg-gray-50 border border-gray-200">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs text-gray-600">Total Land Area</p>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-100 text-teal-700 font-medium">Auto</span>
                     </div>
-
-                    {plot.isCalculated ? (
-                      <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Calculated
-                      </span>
-                    ) : (
-                      <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
-                        Pending
-                      </span>
-                    )}
+                    <p className="text-sm font-bold" style={{ color: "#374151" }}>
+                      {plotCV?.totalPlotAreaSqMtr ?? landArea ?? 0} sq.mtr
+                    </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-slate-200/50 pt-2 pb-3 text-xs text-slate-600">
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Plot Area</p>
-                      <p className="font-extrabold text-slate-700">{plot.plotAreaSqMtr ? `${plot.plotAreaSqMtr} sq.mtr` : "0.00 sq.mtr"}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Taxable Area</p>
-                      <p className="font-extrabold text-slate-700">{plot.plotTaxableAreaSqMtr ? `${plot.plotTaxableAreaSqMtr} sq.mtr` : "0.00 sq.mtr"}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Base Rate</p>
-                      <p className="font-extrabold text-slate-700">₹ {plot.baseRate ? Number(plot.baseRate).toLocaleString("en-IN") : "0.00"}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Engine Remarks</p>
-                      <p className="font-semibold text-slate-500 truncate" title={plot.calculationMessage}>
-                        {plot.calculationMessage || "Success"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-200/50">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Calculation Formula</p>
-                    {plot.cvCalculationFormula ? (
-                      <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-[10.5px] font-mono text-emerald-400 tracking-tight leading-relaxed overflow-x-auto whitespace-pre">
-                        {plot.cvCalculationFormula}
-                      </div>
-                    ) : (
-                      <div className="p-2.5 rounded-lg bg-slate-100 border border-slate-200 text-[10px] font-mono text-slate-400 tracking-tight">
-                        CV = Base Rate × Area
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-3 flex justify-between items-center bg-slate-100 rounded-lg p-2 border border-slate-200/50">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Plot CV Total:</span>
-                    <span className="text-xs font-black font-mono text-slate-800">
-                      ₹ {plot.capitalValue ? Number(plot.capitalValue).toLocaleString("en-IN", { minimumFractionDigits: 2 }) : "0.00"}
-                    </span>
+                  <div className="p-2 rounded-lg border" style={{ backgroundColor: "#DBEAFE", borderColor: "#93C5FD" }}>
+                    <p className="text-xs mb-1 flex items-center gap-1 font-semibold" style={{ color: "#1E40AF" }}>
+                      <DollarSign className="w-3.5 h-3.5" />Land Capital Value (CV)
+                    </p>
+                    <p className="text-sm font-bold" style={{ fontFamily: "monospace", color: "#1E40AF" }}>
+                      {formatCurrency(totalLandValue)}
+                    </p>
                   </div>
                 </div>
-              ))}
+              ) : (
+                /* Inventory breakdown cards (Read-only) */
+                <div className="space-y-2">
+                  {card.rows.map((row) =>
+                    row.highlight ? (
+                      <div key={row.label} className="p-2 rounded-lg border" style={{ backgroundColor: row.highlightBg, borderColor: row.highlightBorder }}>
+                        <p className="text-xs mb-1 flex items-center gap-1 font-semibold" style={{ color: row.highlightText }}>
+                          <DollarSign className="w-3.5 h-3.5" />{row.label}
+                        </p>
+                        <p className="text-lg font-bold" style={{ fontFamily: "monospace", color: row.highlightText }}>{row.value}</p>
+                      </div>
+                    ) : (
+                      <div key={row.label} className="p-2 rounded-lg bg-gray-50 border border-gray-200">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-xs text-gray-600">{row.label}</p>
+                          {row.badge && <span className="text-xs px-1.5 py-0.5 rounded bg-teal-100 text-teal-700 font-medium">{row.badge}</span>}
+                        </div>
+                        <p className="text-sm font-bold" style={{ color: "#374151" }}>{row.value}</p>
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+
+              <p className="text-xs text-gray-500 mt-3 pt-2 border-t border-gray-200">{card.footer}</p>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* 3. Valuation Form & Breakdown Panels */}
-      <h3 className="text-sm font-bold text-slate-800 px-1 mt-2">Detailed Valuation Breakdown</h3>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {/* Left Panel */}
-        <div className="rounded-2xl border border-blue-100 bg-white p-2 shadow-sm">
-          <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-3 flex items-center gap-2 mb-2">
-            <FileText className="size-4 text-blue-500" />
-            <h4 className="font-semibold text-blue-800 text-sm">A) Land Details & Base Valuation</h4>
-          </div>
-
-          <div className="space-y-2">
-            <div className="rounded-xl bg-slate-50 border border-slate-100 p-2 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Total Land Area</p>
-                <p className="font-semibold text-slate-800">{plotCV?.totalPlotAreaSqMtr ?? formData.landArea ?? "Not Available"}</p>
-              </div>
-              <span className="text-[10px] text-emerald-600 font-medium">From Basic Info</span>
-            </div>
-
-            <div className="rounded-xl bg-slate-50 border border-slate-100 p-2">
-              <p className="text-xs text-slate-500 mb-1">Asset Age</p>
-              <p className="font-semibold text-slate-800">{formData.assetAge || "16 years"}</p>
-            </div>
-
-            <div>
-              <Input
-                label="Land Rate per sq.m (₹/sq.m)"
-                name="landRate"
-                value={formData.landRate || ""}
-                onChange={onChange}
-                placeholder="Enter rate per sq.m"
-                type="number"
-                required
-              />
-              <p className="text-[10px] text-orange-500 mt-1 flex items-center gap-1">
-                <span className="text-xs">💡</span> Current market rate per square meter
-              </p>
-            </div>
-
-            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-2 mt-2">
-              <div className="flex items-center gap-2 text-emerald-800 mb-2">
-                <span className="font-semibold text-sm">₹ Total Land Value</span>
-              </div>
-              <div className="text-xl font-bold text-slate-800 mb-1">{formatCurrency(totalLandValue)}</div>
-              <div className="text-xs text-emerald-600/80 italic">Auto-calculated: Area × Rate per sq.m</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Panel */}
-        <div className="rounded-2xl border border-blue-100 bg-white p-2 shadow-sm">
-          <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-3 flex items-center gap-2 mb-2">
-            <TrendingUp className="size-4 text-blue-500" />
-            <h4 className="font-semibold text-blue-800 text-sm">B) Development & Market Value</h4>
-          </div>
-
-          <div className="space-y-2">
-            <div>
-              <Input
-                label="Development Cost (₹)"
-                name="developmentCost"
-                value={formData.developmentCost || ""}
-                onChange={onChange}
-                placeholder="Enter development cost"
-                type="number"
-              />
-              <p className="text-xs text-slate-500 mt-1">Infrastructure, leveling, boundary wall, etc.</p>
-            </div>
-
-            <div className="rounded-xl bg-slate-50 border border-slate-100 p-2">
-              <p className="text-xs text-slate-500 mb-1">Total Asset Value</p>
-              <p className="font-bold text-slate-800 text-base">{formatCurrency(totalAssetValue)}</p>
-              <p className="text-[10px] text-slate-400 mt-1">Land Value + Development Cost</p>
-            </div>
-
-            <div>
-              <Input
-                label="Market Appreciation (%)"
-                name="marketAppreciation"
-                value={formData.marketAppreciation || ""}
-                onChange={onChange}
-                placeholder="Enter appreciation %"
-                type="number"
-              />
-              <p className="text-[10px] text-orange-500 mt-1 flex items-center gap-1">
-                <span className="text-xs">💡</span> Typical: 5-15% based on location and market
-              </p>
-            </div>
-
-            <div className="rounded-xl bg-slate-50 border border-slate-100 p-2">
-              <p className="text-xs font-semibold text-slate-700 mb-2">Calculation Formula:</p>
-              <div className="space-y-1 text-xs text-slate-600">
-                <p>• Land Value: {formatCurrency(totalLandValue)}</p>
-                <p>• Plus: Development Cost: {formatCurrency(devCost)}</p>
-                <p>• Plus: Appreciation ({appreciation}%): {formatCurrency(appreciationValue)}</p>
-                <p className="font-semibold text-slate-800 mt-2 border-t pt-2">
-                  • Market Value: {formatCurrency(currentMarketValue)}
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-2">
-              <div className="flex items-center gap-2 text-emerald-800 mb-2">
-                <span className="font-semibold text-sm">Current Market Value</span>
-              </div>
-              <div className="text-xl font-bold text-slate-800 mb-1">{formatCurrency(currentMarketValue)}</div>
-              <div className="text-xs text-emerald-600/80 italic">Present market value with appreciation</div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>

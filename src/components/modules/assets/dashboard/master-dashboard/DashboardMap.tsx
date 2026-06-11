@@ -7,7 +7,7 @@ import type { DashboardMapAssetType, DashboardMapComponentProps, DashboardSubcat
 import { Activity, Building2, Factory, IndianRupee, Landmark, Layers, MapPin, Truck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
 
 // Load MapView with SSR disabled to avoid Leaflet/window issues on server
 const MapView = dynamic(() => import('./MapView').then((mod) => mod.MapView), { ssr: false });
@@ -31,26 +31,6 @@ const tCat = (t: (k: string) => string, key: string, fallback: string) => key ? 
 export function DashboardMap({ categories, assets, selectedAsset, onCategoryClick, onAssetClick, selectedDistrict, activeFilters }: DashboardMapComponentProps) {
   const t = useTranslations('assetmasterdashboard');
   const [selectedSubcategory, setSelectedSubcategory] = useState<DashboardSubcategorySelection | null>(null);
-
-  const [introActive, setIntroActive] = useState(true);
-
-  useEffect(() => {
-    const checkIntro = () => {
-      if (typeof window !== 'undefined') {
-        const hasPlayed = sessionStorage.getItem('ntis_asset_management_intro_played') === 'true';
-        setIntroActive(!hasPlayed);
-      }
-    };
-    checkIntro();
-
-    window.addEventListener('ntis_intro_dismissed', checkIntro);
-    const interval = setInterval(checkIntro, 300);
-
-    return () => {
-      window.removeEventListener('ntis_intro_dismissed', checkIntro);
-      clearInterval(interval);
-    };
-  }, []);
 
   const sections = useMemo(() => {
     const assetsByCategory = assets.reduce((acc, asset) => { (acc[normKey(asset.category)] ||= []).push(asset); return acc; }, {} as Record<string, DashboardMapAssetType[]>);
@@ -88,7 +68,7 @@ export function DashboardMap({ categories, assets, selectedAsset, onCategoryClic
   const displayedAsset = selectedAsset ?? null, showBack = activeFilters.length > 0 || displayedAsset || selectedSubcategory;
 
   return (
-    <div className="relative mb-6 min-h-[600px] overflow-hidden rounded-2xl border-2 border-gray-200 bg-white shadow-xl lg:h-[calc(100vh-325px)] lg:min-h-[460px] h-auto">
+    <div className="relative z-0 mb-6 min-h-[600px] overflow-hidden rounded-2xl border-2 border-gray-200 bg-white shadow-xl lg:h-[calc(100vh-325px)] lg:min-h-[460px] h-auto">
       <div className="flex h-full flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
         <div className="relative w-full flex-shrink-0 overflow-y-auto border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white p-4 lg:h-full lg:w-[25%] lg:border-b-0 lg:border-r h-[300px]">
           <Card variant="bordered" padding="sm" className="shadow-lg">
@@ -132,22 +112,13 @@ export function DashboardMap({ categories, assets, selectedAsset, onCategoryClic
               </div>
             }
           >
-            {!introActive ? (
-              <MapView
-                assets={assets}
-                selectedAsset={selectedAsset}
-                onAssetClick={onAssetClick}
-                activeFilters={activeFilters}
-                categories={categories}
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-                  <span className="text-sm text-gray-600">{t('loadingMap')}</span>
-                </div>
-              </div>
-            )}
+            <MapView
+              assets={assets}
+              selectedAsset={selectedAsset}
+              onAssetClick={onAssetClick}
+              activeFilters={activeFilters}
+              categories={categories}
+            />
           </Suspense>
         </div>
 
