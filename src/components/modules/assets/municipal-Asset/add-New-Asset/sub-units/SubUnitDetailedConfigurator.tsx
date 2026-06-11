@@ -428,11 +428,18 @@ export function SubUnitDetailedConfigurator({
     }
   };
 
-  // Carpet area in SqFt — from new shape-based rooms (areaSqFt), minus deductions
+  // Carpet area in SqFt — from new shape-based rooms (netAreaSqFt), minus deductions
   const area = roomsList.length > 0
     ? roomsList.reduce((acc, r) => {
-        const roomSqFt = Number(r.areaSqFt || r.area || 0) * Number(r.count || 1);
-        return (r.minus === "Yes" || r.offset === "Yes") ? acc - roomSqFt : acc + roomSqFt;
+        const netAreaSqFt = r.netAreaSqFt !== undefined
+          ? Number(r.netAreaSqFt)
+          : (r.netAreaSqM !== undefined
+              ? Number(r.netAreaSqM) * 10.7639
+              : Number(r.areaSqFt || r.area || 0));
+        const roomSqFt = netAreaSqFt * Number(r.count || 1);
+        if (r.minus === "Yes" || r.offset === "Yes") return acc - roomSqFt;
+        if (r.outer === "Yes") return acc + roomSqFt * 0.8;
+        return acc + roomSqFt;
       }, 0)
     : (Number(formData.carpetAreaSqFeet) || 0);
 
