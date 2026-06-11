@@ -212,6 +212,10 @@ export interface AssetMasterDetails extends Record<string, unknown> {
   zoneName?: string;
   wardName?: string;
   address?: string;
+  inChargeName?: string | null;
+  inChargeMobile?: string | null;
+  inChargeEmail?: string | null;
+  pinCode?: string | null;
   status?: string;
   createdDate?: string;
   updatedDate?: string | null;
