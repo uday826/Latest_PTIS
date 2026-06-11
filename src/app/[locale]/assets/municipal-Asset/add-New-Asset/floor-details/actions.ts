@@ -4,6 +4,7 @@ import 'server-only';
 import { floorDetailsService } from "@/lib/api/asset/floor-details.service";
 import { manageSubUnitsService } from "@/lib/api/asset/manage-subunits.service";
 import { assetRoomWiseMinusDataService } from "@/lib/api/asset/asset-room-wise-minus-data.service";
+import { assetMasterService } from "@/lib/api/asset/asset-master.service";
 import { apiClient } from "@/services/api.service";
 import { logger } from "@/lib/utils/logger";
 import {
@@ -162,6 +163,31 @@ export async function fetchFloorDropdownOptions(): Promise<ActionResult<FloorDro
   } catch { return { success: false, error: "Network error fetching dropdown options" }; }
 }
 
+export async function fetchSubUseTypesAction(typeOfUseId: number): Promise<ActionResult<any[]>> {
+  try {
+    const res = await apiClient.get<any>(`/SubTypeOfUse?typeOfUseId=${typeOfUseId}&pageSize=10000`);
+    if (res.success && res.data) {
+      const items = res.data.items || res.data;
+      if (Array.isArray(items)) {
+        const mapped = items.map((s: any) => {
+          const code = s.subTypeCode ?? s.code ?? s.id;
+          const desc = s.description ?? s.subTypeName ?? "";
+          return {
+            label: desc ? `${code} - ${desc}` : String(code),
+            value: String(s.id),
+            typeOfUseId: String(s.typeOfUseId || typeOfUseId),
+          };
+        });
+        return { success: true, data: mapped };
+      }
+    }
+    return { success: true, data: [] };
+  } catch (err: any) {
+    logger.error("fetchSubUseTypesAction Error:", { error: err });
+    return { success: false, error: "Network error fetching sub-use types" };
+  }
+}
+
 export interface FloorStepData {
   dropdownOptions: FloorDropdownOptions;
   floors: FloorDetailApiResponse[];
@@ -260,6 +286,12 @@ export async function createChildAssetAction(
       ...data,
       rentInformation: normalizedRentInfo,
       createdBy: userId ?? data.createdBy ?? 1,
+      // Map to correct backend DTO naming/casing
+      FloorId: data.floorDetailsId,
+      FloorDetailsId: data.floorDetailsId,
+      ShopNo: data.unitNo,
+      ShopName: data.shopUnitName,
+      TotalAreaSqFt: data.totalAreaSqFt,
     };
 
     logger.info("createChildAssetAction: Calling manageSubUnitsService.create with payload", { payload });
@@ -267,22 +299,45 @@ export async function createChildAssetAction(
     logger.info("createChildAssetAction: API response", { response: res });
 
     if (res.success && res.data) {
-      const createdAssetId = res.data.assetId || (res.data as any).id;
+      const createdAssetId = res.data.assetId || (res.data as any).id || (res.data as any).AssetId || (res.data as any).assetID;
+      const roomWiseSubmissionDetailId = (res.data as any).roomWiseSubmissionDetailId || 
+                                         (res.data as any).RoomWiseSubmissionDetailId || 
+                                         (res.data as any).roomWiseSubmissionDetailsId || 
+                                         (res.data as any).RoomWiseSubmissionDetailsId || 
+                                         null;
       if (createdAssetId) {
+        // Always fetch parent asset details to get its address, latitude, and longitude
+        let resolvedAddress = data.locationAddress;
+        let resolvedLat = data.locationLat;
+        let resolvedLng = data.locationLng;
+
+        if (data.parentAssetId) {
+          try {
+            const parentRes = await assetMasterService.getAssetById(data.parentAssetId);
+            if (parentRes.success && parentRes.data) {
+              const pData = parentRes.data as any;
+              resolvedAddress = pData.address || resolvedAddress;
+              resolvedLat = pData.latitude ? String(pData.latitude) : resolvedLat;
+              resolvedLng = pData.longitude ? String(pData.longitude) : resolvedLng;
+            }
+          } catch (parentErr) {
+            logger.error("Failed to fetch parent asset for location details sync:", { error: parentErr as Error });
+          }
+        }
+
         // Since the backend's /ManageSubUnits/create DTO ignores departmentId and location details,
         // we update the child asset's AssetMaster record directly to save them.
-        if (data.departmentId || data.locationAddress || data.locationLat || data.locationLng) {
+        if (data.departmentId || data.shopUnitName || resolvedAddress || resolvedLat || resolvedLng) {
           try {
             const updatePayload: any = {};
             if (data.departmentId) updatePayload.departmentId = Number(data.departmentId);
-            if (data.locationAddress) updatePayload.address = data.locationAddress;
-            if (data.locationLat) {
-              const latVal = Number(data.locationLat);
-              if (!isNaN(latVal)) updatePayload.latitude = latVal;
+            if (data.shopUnitName) updatePayload.assetName = data.shopUnitName;
+            if (resolvedAddress) updatePayload.address = resolvedAddress;
+            if (resolvedLat) {
+              updatePayload.latitude = String(resolvedLat);
             }
-            if (data.locationLng) {
-              const lngVal = Number(data.locationLng);
-              if (!isNaN(lngVal)) updatePayload.longitude = lngVal;
+            if (resolvedLng) {
+              updatePayload.longitude = String(resolvedLng);
             }
             logger.info("createChildAssetAction: Updating AssetMaster " + createdAssetId, { updatePayload });
             const masterRes = await apiClient.put(`/AssetMaster/${createdAssetId}`, updatePayload);
@@ -347,6 +402,11 @@ export async function createChildAssetAction(
               id: Number(renterDetailsId),
               parentAssetId: Number(data.parentAssetId),
               assetId: Number(createdAssetId),
+              floorDetailsId: data.floorDetailsId ? Number(data.floorDetailsId) : null,
+              floorId: data.floorId ? Number(data.floorId) : null,
+              roomWiseSubmissionDetailsId: roomWiseSubmissionDetailId ? Number(roomWiseSubmissionDetailId) : null,
+              shopNo: data.unitNo || null,
+              shopName: data.shopUnitName || null,
               tenantName: data.renterName || "N/A",
               renterName: data.renterName || "N/A",
               tenantMobile: data.mobileNo || "9999999999",
@@ -396,6 +456,9 @@ export async function createChildAssetAction(
               applicationTypeId: 1, // APP-NEW
               shopNo: data.unitNo || null,
               shopName: data.shopUnitName || null,
+              floorDetailsId: data.floorDetailsId ? Number(data.floorDetailsId) : null,
+              floorId: data.floorId ? Number(data.floorId) : null,
+              roomWiseSubmissionDetailsId: roomWiseSubmissionDetailId ? Number(roomWiseSubmissionDetailId) : null,
               tenantName: data.renterName || "N/A",
               renterName: data.renterName || "N/A",
               tenantMobile: data.mobileNo || "9999999999",
@@ -506,7 +569,7 @@ export async function createChildAssetAction(
           message: res.message || "Detailed child asset saved successfully",
           assetId: createdAssetId || null,
           assetNo: res.data.unitNo || (res.data as any).assetNo || null,
-          roomWiseSubmissionDetailsId: (res.data as any).roomWiseSubmissionDetailsId || null,
+          roomWiseSubmissionDetailsId: roomWiseSubmissionDetailId,
           errors: [],
         },
       };
@@ -524,9 +587,22 @@ export async function createChildAssetAction(
  */
 export async function getChildAssetByIdAction(assetId: number): Promise<ActionResult<any>> {
   try {
-    const res = await manageSubUnitsService.getById(assetId);
-    if (res.success && res.data) {
-      const detail = res.data as any;
+    const [subUnitRes, assetMasterRes] = await Promise.all([
+      manageSubUnitsService.getById(assetId),
+      assetMasterService.getAssetById(assetId)
+    ]);
+
+    if (subUnitRes.success && subUnitRes.data) {
+      const detail = subUnitRes.data as any;
+
+      // Merge department details from AssetMaster
+      if (assetMasterRes.success && assetMasterRes.data) {
+        const master = assetMasterRes.data as any;
+        detail.departmentId = master.departmentId || null;
+        detail.departmentName = master.departmentName || null;
+      }
+
+      // Load room-wise offset (minus) data from AssetRoomWiseMinusData
       if (Array.isArray(detail.roomWiseDetails)) {
         for (const room of detail.roomWiseDetails) {
           try {
@@ -542,7 +618,7 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
                 height: Number(item.heightMtr || 0),
                 base1: Number(item.base1Mtr || 0),
                 base2: Number(item.base2Mtr || 0),
-                radius: Number(item.lengthMtr || 0), // Fallback
+                radius: Number(item.lengthMtr || 0), // Fallback for circle shapes
                 areaSqM: Number(item.areaSqMtr || 0),
                 op: "Subtract", // Default to Subtract since it is "Minus" data
               }));
@@ -552,9 +628,10 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
           }
         }
       }
+
       return { success: true, data: detail };
     }
-    return { success: false, error: res.error || "Failed to fetch child asset details" };
+    return { success: false, error: subUnitRes.error || "Failed to fetch child asset details" };
   } catch (err: any) {
     logger.error("getChildAssetByIdAction Error:", { error: err });
     return { success: false, error: "Network error fetching child asset details: " + err.message };
@@ -568,7 +645,26 @@ export async function getSubUnitsByAssetAction(parentAssetId: number): Promise<A
   try {
     const res = await manageSubUnitsService.getByAssetId(parentAssetId);
     if (res.success && res.data) {
-      return { success: true, data: res.data };
+      // In parallel, fetch asset master details for each sub-unit to get the departmentId and departmentName
+      const detailedSubUnits = await Promise.all(
+        res.data.map(async (subunit) => {
+          try {
+            const masterRes = await assetMasterService.getAssetById(subunit.assetId);
+            if (masterRes.success && masterRes.data) {
+              const master = masterRes.data as any;
+              return {
+                ...subunit,
+                departmentId: master.departmentId || null,
+                departmentName: master.departmentName || null,
+              };
+            }
+          } catch (err) {
+            logger.error(`Failed to fetch AssetMaster for sub-unit asset ${subunit.assetId}:`, { error: err as Error });
+          }
+          return subunit;
+        })
+      );
+      return { success: true, data: detailedSubUnits };
     }
     return { success: false, error: res.error || "Failed to fetch subunits" };
   } catch (err: any) {
@@ -667,3 +763,71 @@ export async function calculateMovableCVAction(
     return { success: false, error: err.message || "Movable CV calculation failed" };
   }
 }
+
+/**
+ * Uploads a document via multipart FormData
+ */
+export async function uploadDocumentAction(
+  formData: FormData
+): Promise<ActionResult<any>> {
+  try {
+    const { uploadDocument } = await import("@/lib/api/asset/asset-document.server.service");
+    const res = await uploadDocument(formData);
+    return res.success ? { success: true, data: res.data } : { success: false, error: res.error || "Failed to upload document" };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to upload document" };
+  }
+}
+
+/**
+ * Uploads bulk documents via multipart FormData
+ */
+export async function uploadBulkDocumentsAction(
+  formData: FormData
+): Promise<ActionResult<any>> {
+  try {
+    const { uploadBulkDocuments } = await import("@/lib/api/asset/asset-document.server.service");
+    const res = await uploadBulkDocuments(formData);
+    return res.success ? { success: true, data: res.data } : { success: false, error: res.error || "Failed to upload documents" };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to upload documents" };
+  }
+}
+
+/**
+ * Deletes a document by ID
+ */
+export async function deleteUploadedDocAction(
+  docId: number
+): Promise<ActionResult<any>> {
+  try {
+    const { deleteDocument } = await import("@/lib/api/asset/asset-document.server.service");
+    const res = await deleteDocument(docId);
+    return res.success ? { success: true } : { success: false, error: res.error || "Failed to delete document" };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete document" };
+  }
+}
+
+/**
+ * Fetches already uploaded documents for a given asset ID
+ */
+export async function fetchUploadedDocumentsAction(
+  assetId: number,
+  includeAdHoc = false,
+  includeDefinitionBased = false
+): Promise<ActionResult<any>> {
+  try {
+    const { getDocumentsByAsset } = await import("@/lib/api/asset/asset-document.server.service");
+    const res = await getDocumentsByAsset(assetId, includeAdHoc, includeDefinitionBased);
+    if (res.success && res.data) {
+      const raw = res.data as any;
+      const arrayData = Array.isArray(raw) ? raw : (raw.items || raw.data || []);
+      return { success: true, data: arrayData };
+    }
+    return { success: false, error: res.error || "Failed to fetch uploaded documents" };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to fetch uploaded documents" };
+  }
+}
+

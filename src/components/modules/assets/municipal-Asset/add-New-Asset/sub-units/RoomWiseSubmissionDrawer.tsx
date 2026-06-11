@@ -483,7 +483,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
 
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-[100] flex justify-end">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative w-full max-w-6xl bg-slate-50 h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
@@ -765,11 +765,12 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
 
       {/* ── Offset Details Drawer ─────────────────────────────────────────────── */}
       {offsetRoom && (
-        <div className="fixed inset-0 z-[60] flex justify-start">
+        <div className="fixed inset-0 z-[60] flex justify-end">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={handleDrawerClose} />
-          <div className="relative w-full max-w-xl bg-white h-full flex flex-col shadow-2xl border-l border-slate-200 animate-in slide-in-from-left duration-300">
+          <div className="relative w-full max-w-xl bg-white h-full flex flex-col shadow-2xl border-l border-slate-200 animate-in slide-in-from-right duration-300">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-amber-500 border-b border-amber-600 shrink-0">
+
               <div className="flex items-center gap-2">
                 <div className="p-1.5 bg-white/20 rounded-lg"><Scissors className="size-4 text-white" /></div>
                 <div>

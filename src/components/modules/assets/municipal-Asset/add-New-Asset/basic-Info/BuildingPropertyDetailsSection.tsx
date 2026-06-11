@@ -231,17 +231,41 @@ export function BuildingPropertyDetailsSection({
         />
 
         {isLand && (
-          <Input
-            label="Total Land Area (Sq. Ft)"
-            name="landArea"
-            value={formData.landArea || ""}
-            onChange={handleChange}
-            placeholder="0.00"
-            type="number"
-            className="h-8 text-[13px]"
-            required
-            error={showError("landArea" as any) ? (errors as any).landArea : undefined}
-          />
+          <>
+            <Input
+              label="Length (Mtr)"
+              name="length"
+              value={(formData as any).length || ""}
+              onChange={handleChange}
+              placeholder="0.00"
+              type="number"
+              className="h-8 text-[13px]"
+              required
+              error={showError("length" as any) ? (errors as any).length : undefined}
+            />
+            <Input
+              label="Width (Mtr)"
+              name="width"
+              value={(formData as any).width || ""}
+              onChange={handleChange}
+              placeholder="0.00"
+              type="number"
+              className="h-8 text-[13px]"
+              required
+              error={showError("width" as any) ? (errors as any).width : undefined}
+            />
+            <Input
+              label="Total Land Area (Sq. Mtr)"
+              name="landArea"
+              value={formData.landArea || ""}
+              onChange={handleChange}
+              placeholder="0.00"
+              type="number"
+              className="h-8 text-[13px]"
+              required
+              error={showError("landArea" as any) ? (errors as any).landArea : undefined}
+            />
+          </>
         )}
       </CardContent>
     </Card>

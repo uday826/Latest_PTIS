@@ -59,6 +59,8 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
     mouja: (contextData as any).mouja || "",
     propertyNumber: contextData.propertyNumber || "",
     surveyNumber: contextData.surveyNumber || "",
+    length: (contextData as any).length || "",
+    width: (contextData as any).width || "",
     assetName: contextData.assetName || "",
     department: contextData.department || "",
     fullAddress: contextData.fullAddress || "",
@@ -111,14 +113,47 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
       assetType: contextData.assetType || "",
       categoryId: Number(contextData.categoryId) || 0,
       typeId: Number(contextData.typeId) || 0,
+      length: (contextData as any).length || "",
+      width: (contextData as any).width || "",
+      landArea: contextData.landArea || "",
     });
   }, [
     contextData.category, 
     contextData.assetType, 
     contextData.categoryId, 
     contextData.typeId, 
+    (contextData as any).length,
+    (contextData as any).width,
+    contextData.landArea,
     baseUpdateFormData
   ]);
+
+  // Keep the shared context in sync so other wizard steps see updated values
+  const handleUpdateFormData = useCallback(
+    (patch: Partial<BuildingBasicInfoFormData>) => {
+      baseUpdateFormData(patch);
+      syncContext(patch);
+    },
+    [baseUpdateFormData, syncContext]
+  );
+
+  // Auto-calculate land area if length and width change
+  useEffect(() => {
+    const isLand = formData.valuationType
+      ? formData.valuationType === "LAND"
+      : formData.category?.toLowerCase().includes("land");
+
+    if (isLand) {
+      const lenVal = parseFloat((formData as any).length || "0");
+      const widthVal = parseFloat((formData as any).width || "0");
+      if (lenVal > 0 && widthVal > 0) {
+        const calculatedArea = (lenVal * widthVal).toFixed(2);
+        if (formData.landArea !== calculatedArea) {
+          handleUpdateFormData({ landArea: calculatedArea });
+        }
+      }
+    }
+  }, [formData.length, formData.width, formData.valuationType, formData.category, formData.landArea, handleUpdateFormData]);
 
   // Keep the shared context in sync so other wizard steps see updated values
   const handleChange = useCallback(
@@ -137,14 +172,6 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
       });
     },
     [baseHandleAttributeChange, syncContext, formData.attributes]
-  );
-
-  const handleUpdateFormData = useCallback(
-    (patch: Partial<BuildingBasicInfoFormData>) => {
-      baseUpdateFormData(patch);
-      syncContext(patch);
-    },
-    [baseUpdateFormData, syncContext]
   );
 
   /**

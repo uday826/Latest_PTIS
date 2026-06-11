@@ -58,7 +58,7 @@ export function StandaloneSubUnitStep({ dropdownOptions }: { dropdownOptions?: a
           status: "Active",
           // Floor details inherited from parent floor
           floorId: selectedFloor.id,
-          floorName: `${selectedFloor.floor} Floor`,
+          floorName: `${selectedFloor.floor}`,
           conYear: selectedFloor.conYear,
           conType: selectedFloor.conType,
           useType: selectedFloor.useType,
@@ -199,7 +199,7 @@ export function StandaloneSubUnitStep({ dropdownOptions }: { dropdownOptions?: a
                 value={selectedFloorId.toString()}
                 onChange={e => setSelectedFloorId(Number(e.target.value))}
                 options={parentFloors.map((f: any) => ({
-                  label: `${f.floor} Floor (${f.conType})`,
+                  label: `${f.floor} (${f.conType})`,
                   value: f.id.toString()
                 }))}
                 className="h-10 text-sm font-bold"

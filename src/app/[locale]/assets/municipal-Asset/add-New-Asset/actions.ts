@@ -330,6 +330,8 @@ export async function submitAssetForm(formData: AssetFormData) {
         }
         return rawArea;
       })(),
+      totalLength: Number(formData.length || formData.totalLength || formData.attributes?.length || formData.attributes?.totalLength) || null,
+      averageWidth: Number(formData.width || formData.averageWidth || formData.attributes?.width || formData.attributes?.averageWidth) || null,
       hasLift: !!formData.attributes?.hasLift || !!formData.hasLift || false,
       purchaseValue: Number(formData.purchaseValue || calculatedBuildingValue) || null,
       purchaseDate: formData.purchaseDate || formData.attributes?.purchaseDate || null,

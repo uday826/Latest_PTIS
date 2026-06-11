@@ -68,7 +68,27 @@ export function AssetLocationDetails({ formData, onChange }: AssetWizardStepProp
               placeholder="e.g. 45"
             />
             <Input
-              label="Total Land Area (Sq. Ft)"
+              label="Length (Mtr)"
+              name="length"
+              value={formData.length || ""}
+              onChange={onChange}
+              placeholder="0.00"
+              type="number"
+              required
+              error={showError("length") ? errors?.length : undefined}
+            />
+            <Input
+              label="Width (Mtr)"
+              name="width"
+              value={formData.width || ""}
+              onChange={onChange}
+              placeholder="0.00"
+              type="number"
+              required
+              error={showError("width") ? errors?.width : undefined}
+            />
+            <Input
+              label="Total Land Area (Sq. Mtr)"
               name="landArea"
               value={formData.landArea}
               onChange={onChange}
