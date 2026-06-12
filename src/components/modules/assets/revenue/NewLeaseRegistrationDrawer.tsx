@@ -76,6 +76,15 @@ function toDateInputValue(value: unknown): string {
   return date.toISOString().slice(0, 10);
 }
 
+function firstNonEmpty(...values: Array<unknown>): string {
+  for (const value of values) {
+    if (value === null || value === undefined) continue;
+    const text = String(value).trim();
+    if (text) return text;
+  }
+  return '';
+}
+
 function toDateDisplay(value: unknown): string {
   if (typeof value !== 'string' || !value) return '-';
   const date = new Date(value);
@@ -103,6 +112,16 @@ function getInitialApplicationTypeId(
   record?: LeaseRentRecord | null
 ): number {
   if (!applicationTypes || applicationTypes.length === 0) return 1;
+  const recordTypeId = Number((record as Record<string, unknown> | null)?.applicationTypeId);
+  if (Number.isFinite(recordTypeId) && recordTypeId > 0) {
+    const found = applicationTypes.find((t) => t.id === recordTypeId);
+    if (found) return found.id;
+  }
+  const recordTypeName = String((record as Record<string, unknown> | null)?.applicationTypeName ?? '').trim().toLowerCase();
+  if (recordTypeName) {
+    const foundByName = applicationTypes.find((t) => t.applicationTypeName.trim().toLowerCase() === recordTypeName);
+    if (foundByName) return foundByName.id;
+  }
   const leaseType = record?.leaseType?.toLowerCase() ?? '';
   if (leaseType.includes('renew')) {
     const found = applicationTypes.find((t) => t.applicationTypeCode === 'APP-RENEWAL');
@@ -129,43 +148,49 @@ function buildInitialFormState(
   asset: AssetMasterDetails,
   record?: LeaseRentRecord | null
 ): FormState {
+  const recordApplicationType = firstNonEmpty(
+    record?.applicationTypeName,
+    record?.leaseType,
+    applicationTypeLabel
+  );
+  const rentValue = record?.monthlyRent != null ? String(record.monthlyRent).replace(/,/g, '') : '';
   return {
-    applicationType: applicationTypeLabel,
-    tenantName: record?.tenantName ?? '',
-    mobileNumber: asset.inChargeMobile ?? '',
-    emailAddress: asset.inChargeEmail ?? '',
-    tenantType: 'Individual',
-    aadhaarNumber: '',
-    panNumber: '',
-    pinCode: asset.pinCode ?? '',
-    residentialAddress: asset.address ?? '',
-    shopNo: record?.shopNo ?? '',
-    shopName: asset.assetName ?? '',
-    leaseType: 'Rent',
-    leaseStartDate: '',
-    leaseEndDate: '',
-    monthlyRent: record?.monthlyRent != null ? String(record.monthlyRent).replace(/,/g, '') : '',
-    securityDeposit: '0',
-    paymentFrequency: 'Monthly',
-    existingTenantName: record?.tenantName ?? '',
-    oldLeaseStartDate: toDateInputValue(record?.submittedDate ?? asset.createdDate ?? ''),
-    oldLeaseEndDate: toDateInputValue(asset.updatedDate ?? ''),
-    renewalStartDate: '',
-    renewalEndDate: '',
-    previousRent: record?.monthlyRent != null ? String(record.monthlyRent).replace(/,/g, '') : '',
-    revisedRent: '',
-    reasonForRenewal: '',
-    newTenantDetails: '',
-    newTenantMobile: '',
-    relationship: 'Spouse',
+    applicationType: recordApplicationType,
+    tenantName: firstNonEmpty(record?.tenantName),
+    mobileNumber: firstNonEmpty(record?.tenantMobile, asset.inChargeMobile),
+    emailAddress: firstNonEmpty(record?.tenantEmail, asset.inChargeEmail),
+    tenantType: firstNonEmpty((record as Record<string, unknown> | null)?.tenantType, 'Individual'),
+    aadhaarNumber: firstNonEmpty(record?.tenantAadhaarNo),
+    panNumber: firstNonEmpty(record?.tenantPanCardNo),
+    pinCode: firstNonEmpty(record?.pinCode, asset.pinCode),
+    residentialAddress: firstNonEmpty(record?.tenantAddress, asset.address),
+    shopNo: firstNonEmpty(record?.shopNo, asset.assetNo),
+    shopName: firstNonEmpty(record?.shopName, asset.assetName),
+    leaseType: firstNonEmpty(record?.leaseType, 'Rent'),
+    leaseStartDate: toDateInputValue(record?.leaseStartDate ?? record?.submittedDate ?? asset.createdDate ?? ''),
+    leaseEndDate: toDateInputValue(record?.leaseEndDate ?? asset.updatedDate ?? ''),
+    monthlyRent: rentValue,
+    securityDeposit: record?.securityDeposit != null ? String(record.securityDeposit).replace(/,/g, '') : '0',
+    paymentFrequency: firstNonEmpty(record?.paymentFrequency, 'Monthly'),
+    existingTenantName: firstNonEmpty(record?.previousTenantName, record?.tenantName),
+    oldLeaseStartDate: toDateInputValue(record?.oldLeaseStartDate ?? record?.submittedDate ?? asset.createdDate ?? ''),
+    oldLeaseEndDate: toDateInputValue(record?.oldLeaseEndDate ?? asset.updatedDate ?? ''),
+    renewalStartDate: toDateInputValue(record?.leaseStartDate ?? ''),
+    renewalEndDate: toDateInputValue(record?.leaseEndDate ?? ''),
+    previousRent: firstNonEmpty(record?.previousMonthlyRent, rentValue),
+    revisedRent: firstNonEmpty(record?.monthlyRent ?? record?.rentMonthly),
+    reasonForRenewal: firstNonEmpty(record?.reason),
+    newTenantDetails: firstNonEmpty(record?.tenantName),
+    newTenantMobile: firstNonEmpty(record?.tenantMobile),
+    relationship: firstNonEmpty(record?.tenantType, 'Spouse'),
     nocFromExistingTenant: 'Yes',
-    reasonForTransfer: '',
-    vacatingDate: toDateInputValue(asset.updatedDate ?? ''),
-    reasonForTermination: 'Non-payment',
-    pendingDues: '',
+    reasonForTransfer: firstNonEmpty(record?.reason),
+    vacatingDate: toDateInputValue(record?.terminationDate ?? asset.updatedDate ?? ''),
+    reasonForTermination: firstNonEmpty(record?.reason, 'Non-payment'),
+    pendingDues: firstNonEmpty((record as Record<string, unknown> | null)?.pendingDues),
     securityDepositRefund: '0',
     finalInspectionReport: 'Yes',
-    remarksDescription: '',
+    remarksDescription: firstNonEmpty(record?.reason),
   };
 }
 
@@ -657,6 +682,10 @@ export function NewLeaseRegistrationModal({
     [selectedType, asset, record]
   );
   const [formState, setFormState] = useState<FormState>(() => initialFormState);
+
+  useEffect(() => {
+    setFormState(initialFormState);
+  }, [initialFormState]);
 
   const handleFormFieldChange = useCallback(
     (fieldKey: keyof FormState, nextValue: string) => {
