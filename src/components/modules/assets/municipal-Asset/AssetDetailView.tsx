@@ -100,7 +100,7 @@ export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: 
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
+      <div className={`grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4 ${asset.parentAssetName ? '2xl:grid-cols-7' : '2xl:grid-cols-6'}`}>
         <div className="group relative min-h-22  overflow-hidden rounded-lg border border-blue-200 bg-white p-3 shadow-sm">
           <div className="absolute left-0 top-0 h-full w-1 bg-blue-500" />
           <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Info className="h-3 w-3" /> Asset ID</p>
@@ -114,10 +114,12 @@ export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: 
           <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><MapPin className="h-3 w-3" /> Ward</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.wardName)}</p>
         </div>
-        <div className="min-h-22 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><FileText className="h-3 w-3" /> Parent Asset</p>
-          <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.parentAssetName)}</p>
-        </div>
+        {!!asset.parentAssetName && (
+          <div className="min-h-22 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+            <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><FileText className="h-3 w-3" /> Parent Asset</p>
+            <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.parentAssetName)}</p>
+          </div>
+        )}
         <div className="min-h-22  rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
           <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><ClipboardList className="h-3 w-3" /> Category</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.assetCategoryName)}</p>

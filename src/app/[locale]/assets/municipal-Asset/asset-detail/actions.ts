@@ -92,6 +92,7 @@ function normalizeAssetFloorDetail(raw: unknown): AssetFloorDetailItem | null {
     builtUpAreaSqMeter: pickFirstNumber(item, ["builtUpAreaSqMeter", "BuiltUpAreaSqMeter"]),
     builtUpAreaSqFeet: pickFirstNumber(item, ["builtUpAreaSqFeet", "BuiltUpAreaSqFeet"]),
     noOfRooms: pickFirstNumber(item, ["noOfRooms", "NoOfRooms"]),
+    subAssetCount: pickFirstNumber(item, ["subAssetCount", "SubAssetCount"]),
     baseValue: pickFirstNumber(item, ["baseValue", "BaseValue"]),
     capitalValue: pickFirstNumber(item, ["capitalValue", "CapitalValue"]),
     marketValue: pickFirstNumber(item, ["marketValue", "MarketValue"]),
@@ -385,6 +386,7 @@ export async function fetchChildAssetsByParent(assetId: number | string): Promis
             builtUpAreaSqMeter: pickFirstNumber(f, ["builtUpAreaSqMeter", "BuiltUpAreaSqMeter"]),
             builtUpAreaSqFeet: pickFirstNumber(f, ["builtUpAreaSqFeet", "BuiltUpAreaSqFeet"]),
             noOfRooms: pickFirstNumber(f, ["noOfRooms", "NoOfRooms"]),
+            subAssetCount: pickFirstNumber(f, ["subAssetCount", "SubAssetCount"]),
             capitalValue: pickFirstNumber(f, ["capitalValue", "CapitalValue"]),
             marketValue: pickFirstNumber(f, ["marketValue", "MarketValue"]),
           }));

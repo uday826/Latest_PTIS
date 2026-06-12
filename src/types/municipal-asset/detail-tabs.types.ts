@@ -98,6 +98,7 @@ export type AssetFloorDetailItem = {
   builtUpAreaSqMeter?: number | string | null;
   builtUpAreaSqFeet?: number | string | null;
   noOfRooms?: number | string | null;
+  subAssetCount?: number | string | null;
   baseValue?: number | string | null;
   capitalValue?: number | string | null;
   marketValue?: number | string | null;

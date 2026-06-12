@@ -111,9 +111,10 @@ export function getFloorDetailsColumns(): Column<FloorTableRow>[] {
       render: (_value, row) => areaText(row).carpet,
     },
     {
-      key: 'noOfRooms',
-      label: 'Rooms',
-      width: '90px',
+      key: 'subAssetCount',
+      label: 'Sub Asset Count',
+      width: '120px',
+      align: 'center',
       render: (value) => blank(value as string | number | null | undefined),
     },
     {
