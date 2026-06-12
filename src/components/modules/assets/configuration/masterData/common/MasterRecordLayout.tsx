@@ -68,21 +68,22 @@ export function MasterRecordLayout({
           />
         }
       >
-        {/* Stats Subheader */}
-        <div className="px-5 py-3 bg-[#faf7ff] border-b border-purple-200 flex items-center justify-between">
-          <span className="text-sm text-purple-700 font-medium">
+        {/* Stats Subheader & Search */}
+        <div className="px-5 py-3 bg-[#faf7ff] border-b border-purple-200 flex items-center justify-between flex-wrap gap-3">
+          <span className="text-sm text-purple-700 font-medium whitespace-nowrap">
             {t('stats.master')}: {subTitle}
           </span>
-        </div>
-
-        {/* Search Bar */}
-        <div className="px-5 py-3 bg-white border-b border-slate-100">
-          <SearchInput
-            value={localSearch}
-            onChange={setLocalSearch}
-            className="w-full mb-0"
-            placeholder={t('searchPlaceholder')}
-          />
+          <div className="w-full sm:w-1/2 md:w-1/3 min-w-[200px]">
+            <SearchInput
+              value={localSearch}
+              onChange={(val) => {
+                const sanitized = val.replace(/[^a-zA-Z0-9 \-_]/g, '');
+                setLocalSearch(sanitized);
+              }}
+              className="w-full mb-0"
+              placeholder={t('searchPlaceholder')}
+            />
+          </div>
         </div>
 
 

@@ -24,20 +24,64 @@ export function useMasterDataFormState(
     group: editData?.group || ((!selectedGroup || selectedGroup === 'all') ? '' : selectedGroup),
     description: editData?.description ?? '',
     isActive: editData ? editData.status === 'Active' : true,
+    status: editData?.status || 'Active',
+    depreciationRate: editData?.depreciationRate,
+    conditionFactor: editData?.conditionFactor,
+    displayOrder: editData?.displayOrder,
+    isMovable: editData?.isMovable ?? true,
+    hasFloorDetails: editData?.hasFloorDetails ?? false,
+    hasInventory: editData?.hasInventory ?? false,
+    isInventoryMandatory: editData?.isInventoryMandatory ?? false,
+    hasLegalCompliance: editData?.hasLegalCompliance ?? false,
+    valuationType: editData?.valuationType || '',
+    allowUnitRegistration: editData?.allowUnitRegistration ?? false,
+    allowRoomRegistration: editData?.allowRoomRegistration ?? false,
   });
 
   const [errors, setErrors] = useState<MasterDataFormErrors>({});
 
+  React.useEffect(() => {
+    setFormData({
+      code: editData?.id || '',
+      name: editData?.name || '',
+      group: editData?.group || ((!selectedGroup || selectedGroup === 'all') ? '' : selectedGroup),
+      description: editData?.description ?? '',
+      isActive: editData ? editData.status === 'Active' : true,
+      status: editData?.status || 'Active',
+      depreciationRate: editData?.depreciationRate,
+      conditionFactor: editData?.conditionFactor,
+      displayOrder: editData?.displayOrder,
+      isMovable: editData?.isMovable ?? true,
+      hasFloorDetails: editData?.hasFloorDetails ?? false,
+      hasInventory: editData?.hasInventory ?? false,
+      isInventoryMandatory: editData?.isInventoryMandatory ?? false,
+      hasLegalCompliance: editData?.hasLegalCompliance ?? false,
+      valuationType: editData?.valuationType || '',
+      allowUnitRegistration: editData?.allowUnitRegistration ?? false,
+      allowRoomRegistration: editData?.allowRoomRegistration ?? false,
+    });
+    setErrors({});
+  }, [editData, selectedGroup]);
+
   const validate = useCallback(() => {
     const errors: MasterDataFormErrors = {};
 
-    // 1. Code Validation (Unicode Alphanumeric + Hyphen + Underscore ONLY)
+    // 1. Code Validation (Unicode Alphanumeric + Hyphen + Underscore)
     const code = formData.code?.trim() || "";
-    if (!code) errors.code = "errors.codeRequired";
-    else if (code.length > 15) errors.code = "errors.codeTooLong15";
-    else if (!/^[\p{L}\p{N}_-]+$/u.test(code)) errors.code = "errors.codeInvalidChars";
-    else if (existingCodes.some(c => c.toLowerCase() === code.toLowerCase() && c.toLowerCase() !== editData?.id?.toLowerCase())) {
-      errors.code = "errors.codeDuplicate";
+    const skipCodeValidation = [
+      MASTER_IDS.INVENTORY_CONDITION, 
+      MASTER_IDS.INVENTORY_MODEL, 
+      MASTER_IDS.OWNERSHIP_TYPE, 
+      MASTER_IDS.OWNING_DEPARTMENT
+    ].includes(masterId as MasterId);
+
+    if (!skipCodeValidation) {
+      if (!code) errors.code = "errors.codeRequired";
+      else if (code.length > 15) errors.code = "errors.codeTooLong15";
+      else if (!/^[\p{L}\p{N}_-]+$/u.test(code)) errors.code = "errors.codeInvalidChars";
+      else if (existingCodes.some(c => c.toLowerCase() === code.toLowerCase() && c.toLowerCase() !== editData?.id?.toLowerCase())) {
+        errors.code = "errors.codeDuplicate";
+      }
     }
 
     // 2. Name Validation (Unicode Alphanumeric + Spaces + Hyphen + Underscore)
@@ -49,8 +93,14 @@ export function useMasterDataFormState(
       errors.name = "errors.nameDuplicate";
     }
 
-    // 3. Category validation for Asset Type
-    if (masterId === MASTER_IDS.TYPE && (!formData.group || formData.group === 'all')) {
+    // 3. Group/Category validation — required for masters that have a parent
+    const requiresGroup = [
+      MASTER_IDS.TYPE,
+      MASTER_IDS.INVENTORY_NAME,
+      MASTER_IDS.INVENTORY_CONDITION,
+      MASTER_IDS.INVENTORY_MODEL,
+    ].includes(masterId as MasterId);
+    if (requiresGroup && (!formData.group || formData.group === 'all' || formData.group === '0')) {
       errors.group = "errors.categoryRequired";
     }
 
@@ -81,13 +131,32 @@ export function useMasterDataFormState(
       return;
     }
 
+    // Masters that need a parent group (category/name) to be passed in the payload
+    const mastersWithGroup = [
+      MASTER_IDS.TYPE,
+      MASTER_IDS.INVENTORY_NAME,
+      MASTER_IDS.INVENTORY_CONDITION,
+      MASTER_IDS.INVENTORY_MODEL,
+    ] as string[];
+
     onSave({
       id: formData.code,
       backendId: editData?.backendId,
       name: formData.name,
       description: formData.description,
-      group: masterId === MASTER_IDS.TYPE ? formData.group : 'all',
+      group: mastersWithGroup.includes(masterId) ? formData.group : 'all',
       status: formData.isActive ? 'Active' : 'Inactive',
+      isMovable: formData.isMovable,
+      hasFloorDetails: formData.hasFloorDetails,
+      hasInventory: formData.hasInventory,
+      isInventoryMandatory: formData.isInventoryMandatory,
+      hasLegalCompliance: formData.hasLegalCompliance,
+      valuationType: formData.valuationType,
+      displayOrder: formData.displayOrder,
+      depreciationRate: formData.depreciationRate,
+      conditionFactor: formData.conditionFactor,
+      allowUnitRegistration: formData.allowUnitRegistration,
+      allowRoomRegistration: formData.allowRoomRegistration,
     }, onClose);
   };
 

@@ -1,30 +1,45 @@
 import { apiClient } from "@/services/api.service";
-import { AssetCategory, AssetCategoryFormModel, AssetCategoryApiRecord } from "@/types/asset-type/asset-category.types";
+import { AssetCategory, AssetCategoryApiRecord, AssetCategoryFormModel } from "@/types/asset-type/asset-category.types";
 import { PagedResponse } from "@/types/common.types";
 import { ApiError } from "@/lib/utils/api";
 import { isAssetCategoryShape, normalizeAssetCategory } from "./asset-category-types-guard";
-import {
-  validateAssetCategoryId, validateAndPrepareSearchTerm, validateCreateFormData,
-  validateUpdateFormData, createApiError,
-} from "./asset-category-validation";
+import { buildAssetCategoryCreatePayloadFromModel, buildAssetCategoryUpdatePayloadFromModel } from "./asset-payload-builders";
 
-/** Fetches paginated asset categories from the API */
-export async function getAssetCategoriesPaged(
-  pageNumber: number,
-  pageSize: number,
-  searchTerm?: string
-): Promise<PagedResponse<AssetCategory>> {
+import type { AssetCategoryParams } from "@/types/asset-type/asset-category.types";
+
+async function handleMasterDataApiRequest<T>(
+  requestFn: () => Promise<{ success: boolean; data?: T; statusCode?: number; error?: string }>,
+  defaultErrorMessage = 'Operation failed'
+): Promise<T> {
   try {
-    const params = new URLSearchParams({
-      PageNumber: pageNumber.toString(),
-      PageSize: pageSize.toString(),
-      MarkedForDeletion: "false",
-    });
+    const res = await requestFn();
+    if (!res.success || !res.data) {
+      const msg = res.error ?? '';
+      const isDuplicate = msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('duplicate');
+      throw new ApiError(res.statusCode ?? (isDuplicate ? 409 : 500), msg || defaultErrorMessage, msg || defaultErrorMessage);
+    }
+    return res.data as T;
+  } catch (error) {
+    throw error;
+  }
+}
 
-    const safeSearchTerm = validateAndPrepareSearchTerm(searchTerm);
-    if (safeSearchTerm) params.append("SearchTerm", safeSearchTerm);
+export const assetCategoryService = {
+  async getAll(params?: AssetCategoryParams): Promise<PagedResponse<AssetCategory>> {
+    const q = new URLSearchParams();
+    if (params?.PageNumber) q.set('PageNumber', params.PageNumber.toString());
+    if (params?.PageSize) q.set('PageSize', params.PageSize.toString());
+    if (params?.SearchTerm) q.set('SearchTerm', params.SearchTerm);
+    q.set('IsActive', params?.IsActive ?? 'true');
+    if (params?.SortBy) q.set('SortBy', params.SortBy);
+    if (params?.SortOrder) q.set('SortOrder', params.SortOrder);
 
-    const res = await apiClient.get<PagedResponse<AssetCategoryApiRecord>>(`/AssetCategory?${params}`);
+    const queryString = q.toString();
+    const res = await apiClient.get<PagedResponse<AssetCategoryApiRecord>>(
+      queryString ? `/AssetCategory?${queryString}` : '/AssetCategory',
+      { cache: 'no-store' }
+    );
+
     if (!res.success || !res.data) throw new ApiError(res.statusCode ?? 500, res.error || "Failed to fetch paged asset categories", "Get paged categories failed");
 
     const rawData: unknown = res.data;
@@ -33,69 +48,72 @@ export async function getAssetCategoriesPaged(
       : (rawData && typeof rawData === 'object' && 'items' in rawData && Array.isArray((rawData as Record<string, unknown>).items))
         ? (rawData as Record<string, unknown>).items as unknown[]
         : [];
-    const normalized = items
-      .filter(isAssetCategoryShape)
-      .filter((item) => {
-        const marked = item['markedForDeletion'] ?? item['MarkedForDeletion'];
-        return marked !== true && marked !== 1 && marked !== "true" && marked !== "1";
-      })
-      .map(item => normalizeAssetCategory(item));
+    
+    const normalized = items.filter(isAssetCategoryShape).map(normalizeAssetCategory);
 
     return {
       items: normalized,
       totalCount: res.data.totalCount ?? normalized.length,
       totalPages: res.data.totalPages ?? 1,
-      pageNumber: res.data.pageNumber ?? pageNumber,
-      pageSize: res.data.pageSize ?? pageSize,
-      hasPrevious: res.data.hasPrevious ?? (pageNumber > 1),
-      hasNext: res.data.hasNext ?? (pageNumber < (res.data.totalPages ?? 1))
+      pageNumber: res.data.pageNumber ?? (params?.PageNumber || 1),
+      pageSize: res.data.pageSize ?? (params?.PageSize || 10),
+      hasPrevious: res.data.hasPrevious ?? ((params?.PageNumber || 1) > 1),
+      hasNext: res.data.hasNext ?? ((params?.PageNumber || 1) < (res.data.totalPages ?? 1))
     };
-  } catch (err) {
-    console.error("Error in getAssetCategoriesPaged:", err);
-    return { items: [], totalCount: 0, totalPages: 1, pageNumber, pageSize, hasPrevious: false, hasNext: false };
+  },
+
+  async getById(id: number | string): Promise<AssetCategoryApiRecord> {
+    return handleMasterDataApiRequest(
+      () => apiClient.get<AssetCategoryApiRecord>(`/AssetCategory/${id}`),
+      `Failed to fetch asset category ${id}`
+    );
+  },
+
+  async create(payload: Record<string, unknown>): Promise<AssetCategoryApiRecord> {
+    return handleMasterDataApiRequest(
+      () => apiClient.post<AssetCategoryApiRecord>('/AssetCategory', payload),
+      'Create asset category failed'
+    );
+  },
+
+  async update(id: number | string, payload: Record<string, unknown>): Promise<AssetCategoryApiRecord> {
+    return handleMasterDataApiRequest(
+      () => apiClient.put<AssetCategoryApiRecord>(`/AssetCategory/${id}`, payload),
+      'Update asset category failed'
+    );
+  },
+
+  async delete(id: number | string, userId?: number): Promise<void> {
+    return handleMasterDataApiRequest(
+      () => apiClient.delete<void>(`/AssetCategory/${id}${userId ? `?userId=${userId}` : ''}`),
+      'Delete asset category failed'
+    ) as Promise<void>;
   }
+};
+
+/** @deprecated Use assetCategoryService.getAll() */
+export async function getAssetCategoriesPaged(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
+): Promise<PagedResponse<AssetCategory>> {
+  return assetCategoryService.getAll({ PageNumber: pageNumber, PageSize: pageSize, SearchTerm: searchTerm });
 }
 
-/** Creates a new asset category */
-export async function createAssetCategory(data: AssetCategoryFormModel, userId: number): Promise<AssetCategory> {
-  validateCreateFormData(data);
-  const payload = {
-    categoryCode: data.categoryCode.trim(),
-    categoryName: data.categoryName.trim(),
-    description: data.description?.trim() || "",
-    isActive: data.isActive,
-    createdBy: userId,
-    codeFormat: "1"
-  };
-
-  const res = await apiClient.post<{ items: AssetCategoryApiRecord; success: boolean; message: string }>("/AssetCategory", payload);
-  if (!res.success || !res.data?.success) throw createApiError(res.statusCode, res.error || res.data?.message || "Create asset category failed", "Create asset category failed");
-  if (!res.data?.items) throw new ApiError(500, "No data received from server", "Create asset category failed");
-  return normalizeAssetCategory(res.data.items as unknown as Record<string, unknown>);
+/** @deprecated Use assetCategoryService.create() */
+export async function createAssetCategory(data: AssetCategoryFormModel, userId: number): Promise<AssetCategoryApiRecord> {
+  const payload = buildAssetCategoryCreatePayloadFromModel(data, userId);
+  return assetCategoryService.create(payload);
 }
 
-/** Updates an existing asset category */
-export async function updateAssetCategory(data: AssetCategoryFormModel, userId: number): Promise<AssetCategory> {
-  validateUpdateFormData(data);
-  const payload = {
-    categoryId: data.id,
-    categoryCode: data.categoryCode.trim(),
-    categoryName: data.categoryName.trim(),
-    description: data.description?.trim() || "",
-    isActive: data.isActive,
-    updatedBy: userId,
-    codeFormat: "1"
-  };
-
-  const res = await apiClient.put<{ items: AssetCategoryApiRecord; success: boolean; message: string }>(`/AssetCategory/${data.id}`, payload);
-  if (!res.success || !res.data?.success) throw createApiError(res.statusCode, res.error || res.data?.message || "Update asset category failed", "Update asset category failed");
-  if (!res.data?.items) throw new ApiError(500, "No data received from server", "Update asset category failed");
-  return normalizeAssetCategory(res.data.items as unknown as Record<string, unknown>);
+/** @deprecated Use assetCategoryService.update() */
+export async function updateAssetCategory(data: AssetCategoryFormModel, userId: number): Promise<AssetCategoryApiRecord> {
+  const payload = buildAssetCategoryUpdatePayloadFromModel(data, userId);
+  return assetCategoryService.update(data.id ?? 0, payload);
 }
 
-/** Deletes an asset category by ID */
+/** @deprecated Use assetCategoryService.delete() */
 export async function deleteAssetCategory(id: number, userId: number): Promise<void> {
-  if (!validateAssetCategoryId(id)) throw new ApiError(400, "Valid Category ID is required", "Validation failed");
-  const res = await apiClient.delete<void>(`/AssetCategory/${id}?userId=${userId}`);
-  if (!res.success) throw createApiError(res.statusCode, res.error, `Delete asset category ${id} failed`);
+  return assetCategoryService.delete(id, userId);
 }
+

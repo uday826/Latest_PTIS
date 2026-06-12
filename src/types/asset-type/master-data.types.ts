@@ -7,6 +7,12 @@ import { ActionResult } from '../common.types';
 export const MASTER_IDS = {
   TYPE: 'asset-type-master',
   CATEGORY: 'asset-category-master',
+  INVENTORY_CATEGORY: 'inventory-category-master',
+  INVENTORY_MODEL: 'inventory-model-master',
+  INVENTORY_NAME: 'inventory-name-master',
+  INVENTORY_CONDITION: 'inventory-condition-master',
+  OWNERSHIP_TYPE: 'ownership-type-master',
+  OWNING_DEPARTMENT: 'owning-department-master',
 } as const;
 
 export type MasterId = typeof MASTER_IDS[keyof typeof MASTER_IDS];
@@ -25,6 +31,19 @@ export type MasterDataRecord = {
   description?: string;
   group?: string;
   status: MasterDataStatus;
+  displayOrder?: number;
+  depreciationRate?: number;
+  conditionFactor?: number;
+  departmentId?: number;
+  departmentName?: string;
+  isMovable?: boolean;
+  hasFloorDetails?: boolean;
+  hasInventory?: boolean;
+  isInventoryMandatory?: boolean;
+  hasLegalCompliance?: boolean;
+  valuationType?: string;
+  allowUnitRegistration?: boolean;
+  allowRoomRegistration?: boolean;
 };
 
 export type MasterDataGroup = {
@@ -35,6 +54,14 @@ export type MasterDataGroup = {
   status?: MasterDataStatus;
   backendId?: string | number;
   code?: string;
+  isMovable?: boolean;
+  hasFloorDetails?: boolean;
+  hasInventory?: boolean;
+  isInventoryMandatory?: boolean;
+  hasLegalCompliance?: boolean;
+  valuationType?: string;
+  allowUnitRegistration?: boolean;
+  allowRoomRegistration?: boolean;
 };
 
 export type MasterDataType<T = MasterDataRecord> = {
@@ -54,6 +81,12 @@ export interface MasterDataActions {
   createAction: (record: MasterDataRecord, masterId?: string) => Promise<ActionResult<void>>;
   updateAction: (id: string, record: MasterDataRecord, masterId?: string) => Promise<ActionResult<void>>;
   deleteAction: (id: string, masterId?: string) => Promise<ActionResult<void>>;
+  /** Optional separate actions for the group/category panel (e.g. asset category actions on the asset-type page) */
+  groupActions?: {
+    createAction: (record: MasterDataRecord) => Promise<ActionResult<void>>;
+    updateAction: (id: string, record: MasterDataRecord) => Promise<ActionResult<void>>;
+    deleteAction: (id: string) => Promise<ActionResult<void>>;
+  };
 }
 
 export interface MasterDataFormProps {
@@ -74,6 +107,8 @@ export interface MasterDataFormErrors {
   name?: string;
   group?: string;
   description?: string;
+  depreciationRate?: string;
+  conditionFactor?: string;
 }
 
 export interface MasterTypesProps {

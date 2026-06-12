@@ -67,6 +67,12 @@ export default getRequestConfig(async ({ locale }) => {
     assetPaymentMessages,
     screenFieldMasterMessages,
     assetRegisterMessages,
+    inventoryCategoryMessages,
+    inventoryModelMessages,
+    inventoryNameMessages,
+    inventoryConditionMessages,
+    ownershipTypeMessages,
+    owningDepartmentMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -155,6 +161,12 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/AssetPayment.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/screenFieldMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/assetRegister.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/inventoryCategory.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/inventoryModel.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/inventoryName.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/inventoryCondition.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/ownership-type.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/owning-department.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
 
@@ -214,6 +226,12 @@ export default getRequestConfig(async ({ locale }) => {
       assetRegister: assetRegisterMessages,
       policyConfiguration:
         policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
+      inventoryCategory: inventoryCategoryMessages,
+      inventoryModel: inventoryModelMessages,
+      inventoryName: inventoryNameMessages,
+      inventoryCondition: inventoryConditionMessages,
+      ownershipType: ownershipTypeMessages,
+      owningDepartment: owningDepartmentMessages,
     },
   };
 });

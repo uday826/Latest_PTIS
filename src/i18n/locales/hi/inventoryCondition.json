@@ -1,0 +1,101 @@
+{
+  "configuration": {
+    "header": {
+      "title": "Configuration Master",
+      "subtitle": "Centralized Master Data Management System",
+      "totalMasters": "Total Masters"
+    },
+    "tabs": {
+      "masterData": "Master Data",
+      "screenMaster": "Screen Master",
+      "screenFieldsMaster": "Screen Fields Master"
+    },
+    "masterData": {
+      "title": "Master Data",
+      "records": "Master Records",
+      "addNew": "Add New {name}",
+      "searchPlaceholder": "Search master records...",
+      "stats": {
+        "master": "Master Types",
+        "shown": "Shown",
+        "active": "Active"
+      },
+      "groupFilter": {
+        "categoriesTitle": "श्रेणियाँ",
+        "itemNamesTitle": "श्रेणियाँ"
+      },
+      "form": {
+        "addTitle": "Add New {name}",
+        "editTitle": "Edit {name}",
+        "createSubtitle": "Create a new record",
+        "updateSubtitle": "Update existing record",
+        "labels": {
+          "name": "नाम",
+          "category": "श्रेणी",
+          "description": "विवरण",
+          "conditionFactor": "स्थिति कारक",
+          "displayOrder": "प्रदर्शन क्रम",
+          "status": "स्थिति",
+          "active": "सक्रिय",
+          "inactive": "निष्क्रिय"
+        },
+        "placeholders": {
+          "name": "नाम दर्ज करें",
+          "category": "श्रेणी चुनें",
+          "description": "विवरण दर्ज करें",
+          "conditionFactor": "स्थिति कारक दर्ज करें",
+          "displayOrder": "प्रदर्शन क्रम दर्ज करें"
+        },
+        "buttons": {
+          "save": "Save",
+          "update": "Update",
+          "cancel": "Cancel"
+        },
+        "errors": {
+          "fillRequired": "कृपया सभी आवश्यक फ़ील्ड भरें।",
+          "nameRequired": "स्थिति का नाम आवश्यक है।",
+          "categoryRequired": "श्रेणी आवश्यक है।",
+          "englishOnly": "कृपया केवल अंग्रेजी में दर्ज करें।",
+          "noSpecialCharacters": "कृपया केवल अक्षर, संख्याएं और रिक्त स्थान का उपयोग करें।",
+          "maxLength": "कृपया अनुमत अक्षरों की सीमा से अधिक न डालें।",
+          "conditionFactorRequired": "स्थिति कारक आवश्यक है।",
+          "conditionFactorInvalid": "स्थिति कारक एक वैध संख्या होनी चाहिए।",
+          "conditionFactorRange": "स्थिति कारक 0 और 1 के बीच होनी चाहिए।",
+          "displayOrderRequired": "प्रदर्शन क्रम आवश्यक है।",
+          "apiActionsNotConfigured": "API क्रियाएं कॉन्फ़िगर नहीं की गई हैं।",
+          "saveFailed": "रिकॉर्ड सहेजना विफल रहा।",
+          "deleteFailed": "रिकॉर्ड हटाना विफल रहा।",
+          "unexpected": "एक अप्रत्याशित त्रुटि हुई।",
+          "codeRequired": "कोड आवश्यक है",
+          "codeTooLong15": "कोड 15 वर्णों से अधिक नहीं हो सकता",
+          "codeInvalidChars": "कोड में अमान्य वर्ण हैं",
+          "codeDuplicate": "यह कोड पहले से मौजूद है",
+          "nameTooLong50": "नाम 50 वर्णों से अधिक नहीं हो सकता",
+          "nameInvalidChars": "नाम में अमान्य वर्ण हैं",
+          "nameDuplicate": "यह नाम पहले से मौजूद है",
+          "descriptionTooLong": "विवरण 500 वर्णों से अधिक नहीं हो सकता",
+          "descInvalidChars": "विवरण में अमान्य वर्ण हैं"
+        }
+      },
+      "error": {
+        "title": "Data Loading Failed",
+        "description": "An error occurred while loading master data records. Please check your connection or try again.",
+        "categoryTitle": "Category Loading Failed",
+        "categoryDescription": "An error occurred while loading Asset Categories. Please check your connection or try again.",
+        "typeTitle": "Type Loading Failed",
+        "typeDescription": "An error occurred while loading Asset Types. Please try again.",
+        "reload": "Reload Page",
+        "tryAgain": "Try Again",
+        "goHome": "Go Home"
+      }
+    }
+  },
+  "masterNames": {
+    "asset-type-master": "Asset Type",
+    "asset-category-master": "Asset Category",
+    "inventory-category-master": "Inventory Category",
+    "inventory-model-master": "Inventory Model",
+    "inventory-name-master": "Inventory Item Name",
+    "inventory-condition-master": "Inventory Condition"
+  }
+}

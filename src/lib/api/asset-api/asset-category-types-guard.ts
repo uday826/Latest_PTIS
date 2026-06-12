@@ -10,12 +10,12 @@ export function isAssetCategoryShape(value: unknown): value is Record<string, un
 
   // Accept both 'id' and 'categoryId' for flexibility with different API responses
   const id = Number(obj.id ?? obj.Id ?? obj.categoryId ?? obj.CategoryId);
-  return Number.isFinite(id) && id >= 0;
+  return Number.isFinite(id) && id > 0;
 }
 
 /**
  * Normalizes raw API data into a standardized AssetCategory model.
- * Throws ApiError if critical fields are missing or invalid.
+ * Applies safe defaults for missing/invalid optional fields.
  */
 export function normalizeAssetCategory(data: Record<string, unknown>): AssetCategory {
   const id = Number(data.id ?? data.Id ?? data.categoryId ?? data.CategoryId ?? 0);
@@ -28,6 +28,12 @@ export function normalizeAssetCategory(data: Record<string, unknown>): AssetCate
     categoryName,
     description: String(data.description ?? data.Description ?? "").trim(),
     isActive: parseBoolean(data.isActive ?? data.IsActive ?? data.isStatus ?? data.IsStatus),
+    isMovable: parseBoolean(data.isMovable ?? data.IsMovable),
+    hasFloorDetails: parseBoolean(data.hasFloorDetails ?? data.HasFloorDetails),
+    hasInventory: parseBoolean(data.hasInventory ?? data.HasInventory),
+    isInventoryMandatory: parseBoolean(data.isInventoryMandatory ?? data.IsInventoryMandatory),
+    hasLegalCompliance: parseBoolean(data.hasLegalCompliance ?? data.HasLegalCompliance),
+    valuationType: String(data.valuationType ?? data.ValuationType ?? "").trim(),
     createdDate: String(data.createdDate ?? data.CreatedDate ?? "").trim(),
     updatedDate: data.updatedDate || data.UpdatedDate ? String(data.updatedDate ?? data.UpdatedDate) : null,
   };
@@ -44,6 +50,12 @@ export function mapCategoryToMasterRecord(cat: AssetCategory): MasterDataRecord 
     backendId: cat.id,
     name: cat.categoryName,
     description: cat.description,
-    status: cat.isActive ? 'Active' : 'Inactive'
+    status: cat.isActive ? 'Active' : 'Inactive',
+    isMovable: cat.isMovable,
+    hasFloorDetails: cat.hasFloorDetails,
+    hasInventory: cat.hasInventory,
+    isInventoryMandatory: cat.isInventoryMandatory,
+    hasLegalCompliance: cat.hasLegalCompliance,
+    valuationType: cat.valuationType
   };
 }

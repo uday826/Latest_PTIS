@@ -59,7 +59,19 @@ export function applyOptimisticMasterUpdate(state: MasterDataType[], update: Opt
       } else if (update.action === 'update' && update.record) {
         groups = groups.map((g) => 
           String(g.backendId || g.id) === String(update.recordId) 
-            ? { ...g, name: update.record!.name, backendId: update.record!.backendId || g.backendId } 
+            ? { 
+                ...g, 
+                name: update.record!.name, 
+                backendId: update.record!.backendId || g.backendId,
+                description: update.record!.description,
+                status: update.record!.status,
+                isMovable: update.record!.isMovable,
+                hasFloorDetails: update.record!.hasFloorDetails,
+                hasInventory: update.record!.hasInventory,
+                isInventoryMandatory: update.record!.isInventoryMandatory,
+                hasLegalCompliance: update.record!.hasLegalCompliance,
+                valuationType: update.record!.valuationType
+              } 
             : g
         );
       } else if (update.action === 'create' && update.record) {
@@ -67,7 +79,15 @@ export function applyOptimisticMasterUpdate(state: MasterDataType[], update: Opt
           id: String(update.record.backendId || update.recordId),
           name: update.record.name,
           count: 0,
-          backendId: update.record.backendId || update.recordId
+          backendId: update.record.backendId || update.recordId,
+          description: update.record.description,
+          status: update.record.status,
+          isMovable: update.record.isMovable,
+          hasFloorDetails: update.record.hasFloorDetails,
+          hasInventory: update.record.hasInventory,
+          isInventoryMandatory: update.record.isInventoryMandatory,
+          hasLegalCompliance: update.record.hasLegalCompliance,
+          valuationType: update.record.valuationType
         };
         groups = [...groups, newGroup];
       }

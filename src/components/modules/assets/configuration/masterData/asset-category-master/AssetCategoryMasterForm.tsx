@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import { CheckCircle2, X, Box } from 'lucide-react';
 import { Drawer } from '@/components/common/Drawer';
 import { Input } from '@/components/common/Input';
+import { Checkbox } from '@/components/common/checkbox';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch';
 import { SaveButton, CancelButton } from '@/components/common/ActionButtons';
 import { useMasterDataFormState } from '@/hooks/asset-hooks/useMasterDataFormState';
@@ -32,7 +33,10 @@ export function AssetCategoryMasterForm({
   const { formData, setField, errors, handleSubmit } = useMasterDataFormState(
     MASTER_IDS.CATEGORY,
     editData,
-    (payload: MasterDataRecord, onSuccess?: () => void) => onSave(payload, onSuccess),
+    (payload: MasterDataRecord, onSuccess?: () => void) => {
+      onClose();
+      onSave(payload, onSuccess);
+    },
     onClose,
     selectedGroup,
     existingCodes,
@@ -111,6 +115,7 @@ export function AssetCategoryMasterForm({
             fullWidth
             maxLength={15}
             error={errors.code ? t(errors.code as string) : undefined}
+            className="placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700"
           />
         </div>
 
@@ -125,10 +130,11 @@ export function AssetCategoryMasterForm({
             fullWidth
             maxLength={50}
             error={errors.name ? t(errors.name as string) : undefined}
+            className="placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700"
           />
         </div>
 
-        <div>
+        <div className="text-black [&_label]:text-black [&_textarea]:text-black">
           <TextArea
             ref={descRef}
             label={t('labels.description')}
@@ -144,10 +150,62 @@ export function AssetCategoryMasterForm({
             maxLength={500}
             error={!!errors.description}
             errorMessage={errors.description ? t(errors.description as string) : undefined}
+            className="w-full placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700"
           />
+        </div>
+
+        {/* Category Configuration Options */}
+        <div className="space-y-4 pt-4 border-t border-slate-200">
+          <h3 className="font-medium text-slate-800 text-sm">{t('labels.categoryConfiguration')}</h3>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
+              <div className="font-medium text-slate-900 text-sm">{t('labels.isMovable')}</div>
+              <Checkbox checked={!!formData.isMovable} onCheckedChange={(v) => setField('isMovable', !!v)} disabled={isPending} />
+            </div>
+
+            <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
+              <div className="font-medium text-slate-900 text-sm">{t('labels.hasFloorDetails')}</div>
+              <Checkbox checked={!!formData.hasFloorDetails} onCheckedChange={(v) => setField('hasFloorDetails', !!v)} disabled={isPending} />
+            </div>
+
+            <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
+              <div className="font-medium text-slate-900 text-sm">{t('labels.hasInventory')}</div>
+              <Checkbox checked={!!formData.hasInventory} onCheckedChange={(v) => {
+                setField('hasInventory', !!v);
+                if (!v) setField('isInventoryMandatory', false);
+              }} disabled={isPending} />
+            </div>
+
+            <div className={`rounded-xl p-3 border flex items-center justify-between ${formData.hasInventory ? 'border-gray-200 bg-gray-50' : 'border-gray-100 bg-gray-50/50 opacity-60'}`}>
+              <div className="font-medium text-slate-900 text-sm">{t('labels.isInventoryMandatory')}</div>
+              <Checkbox checked={!!formData.isInventoryMandatory} onCheckedChange={(v) => setField('isInventoryMandatory', !!v)} disabled={isPending || !formData.hasInventory} />
+            </div>
+
+            <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
+              <div className="font-medium text-slate-900 text-sm">{t('labels.hasLegalCompliance')}</div>
+              <Checkbox checked={!!formData.hasLegalCompliance} onCheckedChange={(v) => setField('hasLegalCompliance', !!v)} disabled={isPending} />
+            </div>
+          </div>
+
+          <div>
+            <Input
+              label={t('labels.valuationType')}
+              value={formData.valuationType || ''}
+              onChange={(e) => {
+                const val = e.target.value.toUpperCase();
+                const sanitized = val.replace(/[^A-Z0-9 \-_]/g, '');
+                setField('valuationType', sanitized);
+              }}
+              disabled={isPending}
+              placeholder={t('placeholders.valuationType')}
+              fullWidth
+              maxLength={50}
+              className="placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700"
+            />
+          </div>
         </div>
       </div>
     </Drawer>
   );
 }
-

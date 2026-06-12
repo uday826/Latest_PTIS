@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import type { MasterDataRecord, MasterDataType, MasterDataActions } from '@/types/asset-type/master-data.types';
+import { MASTER_IDS } from '@/types/asset-type/master-data.types';
 import { applyOptimisticMasterUpdate, type OptimisticUpdate } from '@/lib/utils/asset-utils/masterDataUtils';
 
 /**
@@ -15,7 +16,7 @@ export function useMasterData(initialMasters: MasterDataType[], externalActions?
   const router = useRouter();
   const t = useTranslations('asset.configuration.masterData.messages');
 
-  const [optimisticMasters, addOptimisticMaster] = useOptimistic(
+  const [optimisticMasters] = useOptimistic(
     initialMasters,
     (state: MasterDataType[], update: OptimisticUpdate) => applyOptimisticMasterUpdate(state, update)
   );
@@ -38,13 +39,16 @@ export function useMasterData(initialMasters: MasterDataType[], externalActions?
     const recordId = editData?.backendId || payload.backendId || (editData ? (Number.isFinite(Number(editData.id)) ? editData.id : Date.now()) : Date.now());
 
     startTransition(async () => {
-      addOptimisticMaster({ action: editData ? 'update' : 'create', masterId, record: payload, recordId });
-
       try {
         if (!externalActions) throw new Error('API actions are not configured.');
+
+        // Use dedicated groupActions for asset categories if provided (e.g. on the asset-type page)
+        const isGroupSave = masterId === MASTER_IDS.CATEGORY && !!externalActions.groupActions;
+        const actions = isGroupSave ? externalActions.groupActions! : externalActions;
+
         const result = editData
-          ? await externalActions.updateAction(String(recordId), payload, masterId)
-          : await externalActions.createAction(payload, masterId);
+          ? await actions.updateAction(String(recordId), payload)
+          : await actions.createAction(payload);
 
         if (result.success) {
           toast.success(t('saveSuccess'));
@@ -65,11 +69,16 @@ export function useMasterData(initialMasters: MasterDataType[], externalActions?
     const recordId = row.backendId || row.id;
 
     startTransition(async () => {
-      addOptimisticMaster({ action: 'delete', masterId, recordId });
-
       try {
-        if (!externalActions) throw new Error(t('unexpectedError'));
-        const result = await externalActions.deleteAction(String(recordId), masterId);
+        if (!externalActions) throw new Error('API actions are not configured.');
+
+        // Use dedicated groupActions for asset categories if provided (e.g. on the asset-type page)
+        const isGroupDelete = masterId === MASTER_IDS.CATEGORY && !!externalActions.groupActions;
+        const deleteAction = isGroupDelete
+          ? externalActions.groupActions!.deleteAction
+          : externalActions.deleteAction;
+
+        const result = await deleteAction(String(recordId));
         if (result.success) {
           toast.success(t('deleteSuccess'));
         } else {

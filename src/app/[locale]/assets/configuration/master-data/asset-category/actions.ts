@@ -1,53 +1,55 @@
 'use server';
 
-import { createAssetCategory, updateAssetCategory, deleteAssetCategory } from '@/lib/api/asset-api/asset-category-crud.service';
-import { AssetCategoryFormModel } from '@/types/asset-type/asset-category.types';
-import { MasterDataRecord } from '@/types/asset-type/master-data.types';
-import { ActionResult } from '@/types/common.types';
-import { executeMasterAction, executeDeleteAction } from '@/lib/utils/asset-utils/asset-master-actions.utils';
+import { cookies } from 'next/headers';
+import { assetCategoryService } from '@/lib/api/asset-api/asset-category-crud.service';
+import { buildAssetCategoryCreatePayload, buildAssetCategoryUpdatePayload } from '@/lib/api/asset-api/asset-payload-builders';
+import type { MasterDataRecord } from '@/types/asset-type/master-data.types';
+import type { ActionResult } from '@/types/common.types';
+import { handleActionError, revalidateAssetMaster } from '@/lib/utils/asset-utils/actions.utils';
+import { getUserIdFromCookies } from '@/lib/utils/cookie';
 
-const REVALIDATE_PATHS = [
-  'assets/configuration/master-data/asset-category',
-  'assets/configuration/master-data/asset-type'
-];
-
-export async function createAssetCategoryAction(record: MasterDataRecord): Promise<ActionResult<void>> {
-  const formModel: AssetCategoryFormModel = {
-    categoryCode: record.id,
-    categoryName: record.name,
-    description: record.description || "",
-    isActive: record.status === 'Active'
-  };
-
-  return executeMasterAction({
-    action: createAssetCategory,
-    payload: formModel,
-    revalidatePaths: REVALIDATE_PATHS,
-    errorMessage: "Failed to create category"
-  });
+export async function createAssetCategoryAction(
+  record: MasterDataRecord
+): Promise<ActionResult<void>> {
+  try {
+    const userId = getUserIdFromCookies(await cookies()) ?? 0;
+    await assetCategoryService.create(buildAssetCategoryCreatePayload(record, userId));
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    revalidateAssetMaster();
+    return { success: true, data: undefined };
+  } catch (error: unknown) {
+    return handleActionError(error, '');
+  }
 }
 
-export async function updateAssetCategoryAction(recordId: string, record: MasterDataRecord): Promise<ActionResult<void>> {
-  const formModel: AssetCategoryFormModel = {
-    id: Number(record.backendId || recordId),
-    categoryCode: record.id,
-    categoryName: record.name,
-    description: record.description || "",
-    isActive: record.status === 'Active'
-  };
-
-  return executeMasterAction({
-    action: updateAssetCategory,
-    payload: formModel,
-    revalidatePaths: REVALIDATE_PATHS,
-    errorMessage: "Failed to update category"
-  });
+export async function updateAssetCategoryAction(
+  recordId: string,
+  record: MasterDataRecord
+): Promise<ActionResult<void>> {
+  try {
+    const userId = getUserIdFromCookies(await cookies()) ?? 0;
+    await assetCategoryService.update(recordId, buildAssetCategoryUpdatePayload(record, Number(recordId), userId));
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    revalidateAssetMaster();
+    return { success: true, data: undefined };
+  } catch (error: unknown) {
+    return handleActionError(error, '');
+  }
 }
 
-export async function deleteAssetCategoryAction(recordId: string): Promise<ActionResult<void>> {
-  return executeDeleteAction(
-    deleteAssetCategory,
-    Number(recordId),
-    REVALIDATE_PATHS
-  );
+export async function deleteAssetCategoryAction(
+  recordId: string
+): Promise<ActionResult<void>> {
+  try {
+    const userId = getUserIdFromCookies(await cookies());
+    if (userId == null) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    await assetCategoryService.delete(recordId, userId);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    revalidateAssetMaster();
+    return { success: true, data: undefined };
+  } catch (error: unknown) {
+    return handleActionError(error, '');
+  }
 }

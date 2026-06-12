@@ -51,10 +51,29 @@ export function AssetTypeMasterTable({ master, selectedGroup, onDelete, onSave, 
 
   return (
     <MasterRecordLayout masterName={master.id} selectedGroupId={selectedGroup} selectedGroupName={selectedGroupName} onAdd={() => { setEditData(null); setFormOpen(true); }} search={pagination.search} onSearchChange={pagination.onSearch}>
-      <div className="flex-1 min-h-0 relative group">
-        {isPending && <div className="absolute top-0 left-0 right-0 z-30 h-[2px] overflow-hidden bg-blue-100/50"><div className="h-full bg-blue-600 animate-pulse w-full" /></div>}
-        <div className={cn("h-full transition-all duration-300", isPending && "opacity-60 pointer-events-none filter grayscale-[20%]")}>
-          <MasterTable columns={columns} data={master.records || []} loading={false} paginationConfig={{ enabled: true, showPageSizeSelector: true }} pageNumber={pagination.page} pageSize={pagination.pageSize} totalCount={pagination.totalCount} totalPages={pagination.totalPages} onPageChange={pagination.onPageChange} onPageSizeChange={pagination.onPageSizeChange} containerClassName="h-full flex flex-col" maxBodyHeightClassName="max-h-[400px] overflow-y-auto" tableClassName="overflow-y-auto" theadClassName="bg-slate-800 [&_th]:!text-white [&_th]:!font-bold [&_th]:!text-[13px] [&_th]:!uppercase" rowClassName={() => 'border-b border-gray-100 hover:bg-gray-50/50 transition-colors'} renderActions={renderActions} />
+      <div className="h-full flex flex-col">
+        <div className="flex-1 min-h-0 relative group" style={{ display: 'flex', flexDirection: 'column' }}>
+          {isPending && <div className="absolute top-0 left-0 right-0 z-30 h-[2px] overflow-hidden bg-blue-100/50"><div className="h-full bg-blue-600 animate-pulse w-full" /></div>}
+          <div className={cn("h-full transition-all duration-300 flex-1 flex flex-col", isPending && "opacity-60 pointer-events-none filter grayscale-[20%]")}>
+            <MasterTable 
+              columns={columns} 
+              data={master.records || []} 
+              loading={false} 
+              paginationConfig={{ enabled: true, showPageSizeSelector: true }} 
+              pageNumber={pagination.page} 
+              pageSize={pagination.pageSize} 
+              totalCount={pagination.totalCount} 
+              totalPages={pagination.totalPages} 
+              onPageChange={pagination.onPageChange} 
+              onPageSizeChange={pagination.onPageSizeChange} 
+              containerClassName="h-full flex flex-col [&>div]:flex [&>div]:flex-col [&>div]:h-full" 
+              maxBodyHeightClassName="flex-1 overflow-auto" 
+              tableClassName="min-w-[600px]" 
+              theadClassName="bg-[#33445c] [&_th]:!text-white [&_th]:!font-bold [&_th]:!text-[12px] sm:[&_th]:!text-[13px]" 
+              rowClassName={() => 'border-b border-gray-100 hover:bg-gray-50/50 transition-colors'} 
+              renderActions={renderActions} 
+            />
+          </div>
         </div>
       </div>
       {master.id === MASTER_IDS.CATEGORY ? (

@@ -1,0 +1,98 @@
+{
+  "configuration": {
+    "header": {
+      "title": "Configuration Master",
+      "subtitle": "Centralized Master Data Management System",
+      "totalMasters": "Total Masters"
+    },
+    "tabs": {
+      "masterData": "Master Data",
+      "screenMaster": "Screen Master",
+      "screenFieldsMaster": "Screen Fields Master"
+    },
+    "masterData": {
+      "title": "Master Data",
+      "records": "Master Records",
+      "addNew": "Add New {name}",
+      "searchPlaceholder": "Search master records...",
+      "stats": {
+        "master": "Master Types",
+        "shown": "Shown",
+        "active": "Active"
+      },
+      "groupFilter": {
+        "categoriesTitle": "श्रेण्या",
+        "itemNamesTitle": "श्रेण्या"
+      },
+      "form": {
+        "addTitle": "Add New {name}",
+        "editTitle": "Edit {name}",
+        "createSubtitle": "Create a new record",
+        "updateSubtitle": "Update existing record",
+        "labels": {
+          "code": "कोड",
+          "name": "नाव",
+          "description": "वर्णन",
+          "displayOrder": "प्रदर्शन क्रम",
+          "status": "स्थिती",
+          "active": "सक्रिय",
+          "inactive": "निष्क्रिय",
+          "category": "श्रेणी"
+        },
+        "placeholders": {
+          "code": "कोड प्रविष्ट करा",
+          "name": "नाव प्रविष्ट करा",
+          "description": "वर्णन प्रविष्ट करा",
+          "displayOrder": "प्रदर्शन क्रम प्रविष्ट करा",
+          "category": "श्रेणी निवडा"
+        },
+        "buttons": {
+          "save": "Save",
+          "update": "Update",
+          "cancel": "Cancel"
+        },
+        "errors": {
+          "fillRequired": "कृपया सर्व आवश्यक फील्ड भरा.",
+          "codeRequired": "कोड आवश्यक आहे.",
+          "nameRequired": "नाव आवश्यक आहे.",
+          "categoryRequired": "श्रेणी आवश्यक आहे.",
+          "englishOnly": "कृपया केवळ इंग्रजीमध्ये प्रविष्ट करा.",
+          "noSpecialCharacters": "कृपया नावात फक्त अक्षरे, संख्या आणि स्पेसेस वापरा.",
+          "maxLength": "कृपया अनुमत अक्षरांच्या मर्यादेपेक्षा जास्त टाकू नका.",
+          "displayOrderRequired": "प्रदर्शन क्रम आवश्यक आहे.",
+          "apiActionsNotConfigured": "API क्रिया संरचीत नाहीत.",
+          "saveFailed": "रेकॉर्ड जतन करता आले नाही.",
+          "deleteFailed": "रेकॉर्ड हटवता आले नाही.",
+          "unexpected": "एक अनपेक्षित त्रुटी आली.",
+          "codeTooLong15": "कोड 15 वर्णांपेक्षा जास्त असू शकत नाही",
+          "codeInvalidChars": "कोडमध्ये अवैध वर्ण आहेत",
+          "codeDuplicate": "हा कोड आधीपासून अस्तित्वात आहे",
+          "nameTooLong50": "नाव 50 वर्णांपेक्षा जास्त असू शकत नाही",
+          "nameInvalidChars": "नावामध्ये अवैध वर्ण आहेत",
+          "nameDuplicate": "हे नाव आधीपासून अस्तित्वात आहे",
+          "descriptionTooLong": "वर्णन 500 वर्णांपेक्षा जास्त असू शकत नाही",
+          "descInvalidChars": "वर्णनात अवैध वर्ण आहेत"
+        }
+      },
+      "error": {
+        "title": "Data Loading Failed",
+        "description": "An error occurred while loading master data records. Please check your connection or try again.",
+        "categoryTitle": "Category Loading Failed",
+        "categoryDescription": "An error occurred while loading Asset Categories. Please check your connection or try again.",
+        "typeTitle": "Type Loading Failed",
+        "typeDescription": "An error occurred while loading Asset Types. Please try again.",
+        "reload": "Reload Page",
+        "tryAgain": "Try Again",
+        "goHome": "Go Home"
+      }
+    }
+  },
+  "masterNames": {
+    "asset-type-master": "Asset Type",
+    "asset-category-master": "Asset Category",
+    "inventory-category-master": "Inventory Category",
+    "inventory-model-master": "Inventory Model",
+    "inventory-name-master": "Inventory Item Name",
+    "inventory-condition-master": "Inventory Condition"
+  }
+}

@@ -7,7 +7,13 @@ import { type MasterTypesProps, type MasterDataType, type MasterId, MASTER_IDS }
 
 const iconMap: Record<string, LucideIcon> = { 
   [MASTER_IDS.TYPE]: Layers, 
-  [MASTER_IDS.CATEGORY]: Box 
+  [MASTER_IDS.CATEGORY]: Box,
+  [MASTER_IDS.INVENTORY_CATEGORY]: Box,
+  [MASTER_IDS.INVENTORY_MODEL]: Box,
+  [MASTER_IDS.INVENTORY_NAME]: Layers,
+  [MASTER_IDS.INVENTORY_CONDITION]: Layers,
+  [MASTER_IDS.OWNERSHIP_TYPE]: Box,
+  [MASTER_IDS.OWNING_DEPARTMENT]: Box
 };
 
 export function MasterTypes({ selected, onSelect, masterTypes }: MasterTypesProps & { masterTypes: MasterDataType[] }) {

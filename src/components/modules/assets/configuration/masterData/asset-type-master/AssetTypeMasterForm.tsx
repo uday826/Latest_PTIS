@@ -6,6 +6,7 @@ import { Drawer } from '@/components/common/Drawer';
 import { Input } from '@/components/common/Input';
 import { Select } from '@/components/common/select';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch';
+import { RadioGroup, RadioGroupItem } from '@/components/common/radio-group';
 import { ValidationMessage } from '@/components/common/ValidationMessage';
 import { SaveButton, CancelButton } from '@/components/common/ActionButtons';
 import type { MasterDataFormProps } from '@/types/asset-type/master-data.types';
@@ -37,7 +38,10 @@ export function AssetTypeMasterForm({
 
   // Centralized form logic hook
   const { formData, setField, errors, handleSubmit } = useMasterDataFormState(
-    masterId, editData, (payload, onSuccess) => onSave(payload, onSuccess), onClose, selectedGroup, existingCodes, existingNames
+    masterId, editData, (payload, onSuccess) => {
+      onClose();
+      onSave(payload, onSuccess);
+    }, onClose, selectedGroup, existingCodes, existingNames
   );
 
   // Prepare options for the category dropdown (if applicable)
@@ -101,19 +105,43 @@ export function AssetTypeMasterForm({
             <label className="block text-sm font-medium text-slate-700">
               {t('labels.category')} <span className="text-red-500">*</span>
             </label>
-            <Select options={groupOptions} value={String(formData.group ?? "")} onChange={(_, v) => setField('group', v)} placeholder={t('placeholders.category')} className="w-full" disabled={isPending} />
+            <Select options={groupOptions} value={String(formData.group ?? "")} onChange={(_, v) => setField('group', v)} placeholder={t('placeholders.category')} className="w-full placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700" disabled={isPending} />
             <ValidationMessage message={errors.group ? t(String(errors.group)) : undefined} />
           </div>
 
           <div>
-            <Input label={t('labels.code')} required value={formData.code} placeholder={t('placeholders.code')} onChange={(e) => setField('code', e.target.value)} disabled={isPending} fullWidth maxLength={15} error={errors.code ? t(String(errors.code)) : undefined} />
+            <Input label={t('labels.code')} required value={formData.code} placeholder={t('placeholders.code')} onChange={(e) => setField('code', e.target.value)} disabled={isPending} fullWidth maxLength={15} error={errors.code ? t(String(errors.code)) : undefined} className="placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700" />
           </div>
 
           <div>
-            <Input label={t('labels.name')} required value={formData.name} placeholder={t('placeholders.name')} onChange={(e) => setField('name', e.target.value)} disabled={isPending} fullWidth maxLength={50} error={errors.name ? t(String(errors.name)) : undefined} />
+            <Input label={t('labels.name')} required value={formData.name} placeholder={t('placeholders.name')} onChange={(e) => setField('name', e.target.value)} disabled={isPending} fullWidth maxLength={50} error={errors.name ? t(String(errors.name)) : undefined} className="placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700" />
           </div>
 
-          <div>
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-slate-700">
+              Registration Type
+            </label>
+            <RadioGroup 
+              className="flex items-center gap-6"
+              value={formData.allowUnitRegistration ? 'unit' : formData.allowRoomRegistration ? 'room' : undefined}
+              onValueChange={(val) => {
+                setField('allowUnitRegistration', val === 'unit');
+                setField('allowRoomRegistration', val === 'room');
+              }}
+              disabled={isPending}
+            >
+              <div className="flex items-center space-x-2 cursor-pointer">
+                <RadioGroupItem value="unit" id="reg-unit" className="border-gray-300 text-blue-600 focus:ring-blue-500" />
+                <label htmlFor="reg-unit" className="text-sm text-slate-700 cursor-pointer select-none">Unit Registration</label>
+              </div>
+              <div className="flex items-center space-x-2 cursor-pointer">
+                <RadioGroupItem value="room" id="reg-room" className="border-gray-300 text-blue-600 focus:ring-blue-500" />
+                <label htmlFor="reg-room" className="text-sm text-slate-700 cursor-pointer select-none">Room Registration</label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="text-black [&_label]:text-black [&_textarea]:text-black">
             <TextArea
               ref={descRef}
               label={t('labels.description')}
@@ -129,6 +157,7 @@ export function AssetTypeMasterForm({
               maxLength={500}
               error={!!errors.description}
               errorMessage={errors.description ? t(String(errors.description)) : undefined}
+              className="w-full placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700"
             />
           </div>
 

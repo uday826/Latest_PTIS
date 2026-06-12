@@ -9,7 +9,12 @@ import type { ComponentType } from 'react';
 
 const ROUTE_MAP: Record<string, string> = {
   [MASTER_IDS.TYPE]: 'asset-type',
-  [MASTER_IDS.CATEGORY]: 'asset-category',
+  [MASTER_IDS.INVENTORY_CATEGORY]: 'inventory-category',
+  [MASTER_IDS.INVENTORY_MODEL]: 'inventory-model',
+  [MASTER_IDS.INVENTORY_NAME]: 'inventory-name',
+  [MASTER_IDS.INVENTORY_CONDITION]: 'inventory-condition',
+  [MASTER_IDS.OWNERSHIP_TYPE]: 'ownership-type',
+  [MASTER_IDS.OWNING_DEPARTMENT]: 'owning-department',
 };
 
 /**
@@ -22,9 +27,10 @@ export default function MasterDataView({
   initialMasters = [],
   actions,
   viewComponent: ViewComponent,
+  viewProps,
   allowedIds,
   children
-}: MasterDataRootProps & { viewComponent?: ComponentType<MasterDataCommonProps>, allowedIds?: string[] }) {
+}: MasterDataRootProps & { viewComponent?: ComponentType<MasterDataCommonProps | any>, viewProps?: Record<string, any>, allowedIds?: string[] }) {
   const t = useTranslations('asset.configuration.masterData');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -63,7 +69,7 @@ export default function MasterDataView({
         // Construct new path by replacing the last segment of the current master-data path
         const basePath = pathname.includes('/master-data/')
           ? pathname.split('/master-data/')[0] + '/master-data/'
-          : pathname;
+          : pathname.endsWith('/master-data') ? pathname + '/' : pathname + '/';
 
         router.push(`${basePath}${route}`);
       } else {
@@ -99,7 +105,7 @@ export default function MasterDataView({
 
   const masterTypes = useMemo(() => {
     const ids = (allowedIds || Object.values(MASTER_IDS));
-    return optimisticMasters.filter(m => ids.includes(m.id));
+    return optimisticMasters.filter(m => ids.includes(m.id) && m.id !== MASTER_IDS.CATEGORY);
   }, [optimisticMasters, allowedIds]);
 
   if (optimisticMasters.length === 0) {
@@ -141,7 +147,7 @@ export default function MasterDataView({
 
   return (
     <div className="flex flex-col h-full bg-slate-50/50 !overflow-hidden">
-      {children || (ViewComponent ? <ViewComponent {...commonProps} /> : null)}
+      {children || (ViewComponent ? <ViewComponent {...commonProps} {...viewProps} /> : null)}
     </div>
   );
 }

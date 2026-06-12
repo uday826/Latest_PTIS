@@ -33,7 +33,13 @@ export function AssetTypeMasterView(props: MasterDataCommonProps) {
         count: 0,
         backendId: r.backendId,
         description: r.description,
-        status: r.status
+        status: r.status,
+        isMovable: r.isMovable,
+        hasFloorDetails: r.hasFloorDetails,
+        hasInventory: r.hasInventory,
+        isInventoryMandatory: r.isInventoryMandatory,
+        hasLegalCompliance: r.hasLegalCompliance,
+        valuationType: r.valuationType
       }));
       return [
         allGroup,
@@ -63,7 +69,13 @@ export function AssetTypeMasterView(props: MasterDataCommonProps) {
       name: group.name,
       description: group.description || '',
       status: group.status || MASTER_STATUS.ACTIVE,
-      group: 'all'
+      group: 'all',
+      isMovable: group.isMovable,
+      hasFloorDetails: group.hasFloorDetails,
+      hasInventory: group.hasInventory,
+      isInventoryMandatory: group.isInventoryMandatory,
+      hasLegalCompliance: group.hasLegalCompliance,
+      valuationType: group.valuationType
     });
     setGroupFormOpen(true);
   };
