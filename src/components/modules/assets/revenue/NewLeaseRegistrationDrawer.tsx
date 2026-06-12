@@ -84,6 +84,15 @@ function getFileTitle(documentItem: AssetDocumentListItem): string {
 
 type LeaseDocumentType = 'aadhar' | 'pan';
 
+const ALLOWED_LEASE_DOC_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'application/pdf',
+]);
+
+const ALLOWED_LEASE_DOC_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'pdf']);
+
 type LeaseDocumentCard = AssetDocumentListItem & {
   localFile?: File;
 };
@@ -755,6 +764,15 @@ function isValidNonNegativeAmount(value: string): boolean {
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
+
+      const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+      const mimeTypeAllowed = ALLOWED_LEASE_DOC_MIME_TYPES.has(file.type);
+      const extensionAllowed = ALLOWED_LEASE_DOC_EXTENSIONS.has(fileExtension);
+
+      if (!mimeTypeAllowed && !extensionAllowed) {
+        toastError('Only JPG, JPEG, PNG, WEBP, and PDF files are allowed for Aadhaar and PAN uploads.');
+        return;
+      }
 
       setStagedDocuments((prev) => ({
         ...prev,
