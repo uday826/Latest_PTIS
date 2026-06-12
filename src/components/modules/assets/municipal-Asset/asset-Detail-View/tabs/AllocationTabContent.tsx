@@ -54,7 +54,7 @@ function AllocationRow({
 }) {
   const occupant = row.allocationType === "Department" ? row.departmentName : row.tenantName;
   const room = row.roomAssetName ?? row.roomDescription ?? "—";
-  const floor = row.floorName ?? `Floor ID: ${row.floorDetailId}`;
+  const floor = row.floorName ?? "—";
   const fromDate = row.allocationFrom ? new Date(row.allocationFrom).toLocaleDateString("en-IN") : "—";
   const toDate = row.allocationTo ? new Date(row.allocationTo).toLocaleDateString("en-IN") : "Present";
 
