@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { Button, Drawer, Label, MasterTable, type Column, useToast } from '@/components/common';
 import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
-import { uploadAssetDocumentAction } from '@/app/[locale]/assets/actions';
+import { uploadAssetLeaseRentDetailsDocumentAction } from '@/app/[locale]/assets/actions';
 import { deleteUploadedDocAction } from '@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions';
 import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
 import {
@@ -81,6 +81,17 @@ function toDateDisplay(value: unknown): string {
 function getFileTitle(documentItem: AssetDocumentListItem): string {
   return documentItem.name || documentItem.fileName || 'Document';
 }
+
+type LeaseDocumentType = 'aadhar' | 'pan';
+
+type LeaseDocumentCard = AssetDocumentListItem & {
+  localFile?: File;
+};
+
+type StagedLeaseDocument = {
+  file: File;
+  replacingDocId?: number | string;
+};
 
 function getInitialApplicationTypeId(
   applicationTypes: ApplicationTypeItem[],
@@ -377,6 +388,37 @@ function buildSubmitData(
   }
 }
 
+function extractLeaseRentDetailsId(result: unknown): number {
+  if (!result || typeof result !== 'object') return 0;
+
+  const body = result as Record<string, unknown>;
+  const candidates = [
+    body.items,
+    body.Items,
+    body.data,
+    body.Data,
+    body.result,
+    body.Result,
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate && typeof candidate === 'object') {
+      const item = candidate as Record<string, unknown>;
+      const rawId = item.id ?? item.Id ?? item.assetLeaseRentDetailsId ?? item.AssetLeaseRentDetailsId;
+      const parsedId = Number(rawId);
+      if (Number.isFinite(parsedId) && parsedId > 0) return parsedId;
+    }
+  }
+
+  const directId = Number(body.id ?? body.Id);
+  return Number.isFinite(directId) && directId > 0 ? directId : 0;
+}
+
+function toPositiveNumber(value: unknown): number | undefined {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
 function DetailChip({ label, value }: { label: string; value: unknown }) {
   return (
     <div className="bg-white border border-slate-200 rounded-lg p-3 relative mt-3 shadow-sm flex flex-col items-center justify-center">
@@ -467,17 +509,18 @@ export function NewLeaseRegistrationModal({
   onClose,
 }: NewLeaseRegistrationModalProps) {
   const [activeTab, setActiveTab] = useState<'new' | 'previous'>('new');
-  const [localDocuments, setLocalDocuments] = useState<AssetDocumentListItem[]>(() => documents);
-  useEffect(() => {
-    setLocalDocuments(documents);
-  }, [documents]);
+  const [localDocuments, setLocalDocuments] = useState<LeaseDocumentCard[]>(() => documents);
+  const [stagedDocuments, setStagedDocuments] = useState<Record<LeaseDocumentType, StagedLeaseDocument | null>>({
+    aadhar: null,
+    pan: null,
+  });
   const [selectedTypeId, setSelectedTypeId] = useState<number>(() =>
     getInitialApplicationTypeId(applicationTypes, record)
   );
   const [isPending, startTransition] = useTransition();
   const { success: toastSuccess, error: toastError } = useToast();
   const [historyItems, setHistoryItems] = useState<PreviousTenantHistoryItem[]>([]);
-  const [selectedDocument, setSelectedDocument] = useState<AssetDocumentListItem | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<LeaseDocumentCard | null>(null);
   const [loadedFile, setLoadedFile] = useState<LoadedDocumentFile | null>(null);
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -519,7 +562,15 @@ export function NewLeaseRegistrationModal({
   );
   const [formState, setFormState] = useState<FormState>(() => initialFormState);
 
-  const readDocumentFile = useCallback(async (documentItem: AssetDocumentListItem) => {
+  const readDocumentFile = useCallback(async (documentItem: LeaseDocumentCard) => {
+    if (documentItem.localFile) {
+      return {
+        objectUrl: URL.createObjectURL(documentItem.localFile),
+        contentType: documentItem.localFile.type || 'application/octet-stream',
+        fileName: documentItem.localFile.name || documentItem.fileName || documentItem.name,
+      } satisfies LoadedDocumentFile;
+    }
+
     const result = await fetchAssetDocumentFile(documentItem.id);
     if (result.error || !result.base64) {
       throw new Error(result.error || 'Unable to load this file.');
@@ -546,7 +597,11 @@ export function NewLeaseRegistrationModal({
     } satisfies LoadedDocumentFile;
   }, []);
 
-  const readDocumentThumbnailSrc = useCallback(async (documentItem: AssetDocumentListItem) => {
+  const readDocumentThumbnailSrc = useCallback(async (documentItem: LeaseDocumentCard) => {
+    if (documentItem.localFile) {
+      return URL.createObjectURL(documentItem.localFile);
+    }
+
     const result = await fetchAssetDocumentFile(documentItem.id);
     if (result.error || !result.base64) {
       throw new Error(result.error || 'Unable to load this file.');
@@ -556,9 +611,9 @@ export function NewLeaseRegistrationModal({
     return `data:${contentType};base64,${result.base64}`;
   }, []);
 
-  const triggerFileUpload = (type: 'aadhar' | 'pan') => {
+  const triggerFileUpload = (type: LeaseDocumentType) => {
     const existingDoc = localDocuments.find(
-      (doc) => (doc.name || '').toLowerCase() === type.toLowerCase()
+      (doc) => (doc.name || '').toLowerCase() === type.toLowerCase() && !String(doc.id).startsWith(`local-${type}`)
     );
 
     const input = document.createElement('input');
@@ -568,63 +623,133 @@ export function NewLeaseRegistrationModal({
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
-      const assetIdVal = asset.id ?? record?.assetMasterId;
-      if (!assetIdVal) {
-        toastError('Asset ID is missing.');
-        return;
-      }
+      setStagedDocuments((prev) => ({
+        ...prev,
+        [type]: {
+          file,
+          replacingDocId: existingDoc?.id,
+        },
+      }));
 
-      const fd = new FormData();
-      fd.append('File', file);
-      fd.append('AssetId', String(assetIdVal));
-      fd.append('ModuleId', '0'); // resolved dynamically on the server
-      fd.append('DocumentType', type);
-      fd.append('DocumentTitle', type);
-
-      startTransition(async () => {
-        try {
-          if (existingDoc) {
-            const delRes = await deleteUploadedDocAction(Number(existingDoc.id));
-            if (!delRes.success) {
-              toastError(delRes.error || `Failed to remove existing ${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document.`);
-              return;
-            }
-          }
-
-          const res = await uploadAssetDocumentAction(fd);
-          if (res.success && res.data) {
-            toastSuccess(`${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document replaced successfully.`);
-            const newDoc: AssetDocumentListItem = {
-              id: res.data.assetDocumentId,
-              assetId: res.data.assetId,
-              name: type, // Matches documentTitle/documentType value 'aadhar' or 'pan'
-              fileName: res.data.fileName || file.name,
-              contentType: file.type,
-              uploadedDate: new Date().toISOString(),
-              fileSize: res.data.fileSizeBytes,
-              status: 'Uploaded',
-            };
-            setLocalDocuments((prev) => {
-              const filtered = prev.filter((d) => String(d.id) !== String(existingDoc?.id));
-              return [...filtered, newDoc];
-            });
-          } else {
-            toastError(res.error || 'Failed to upload document.');
-          }
-        } catch (err: any) {
-          toastError(err?.message || 'Error uploading document.');
-        }
+      setLocalDocuments((prev) => {
+        const filtered = prev.filter(
+          (doc) => (doc.name || '').toLowerCase() !== type.toLowerCase() || String(doc.id).startsWith(`local-${type}`)
+        );
+        const stagedDoc: LeaseDocumentCard = {
+          id: `local-${type}`,
+          assetId: asset.id ?? record?.assetMasterId ?? record?.id ?? 0,
+          name: type,
+          fileName: file.name,
+          contentType: file.type,
+          uploadedDate: new Date().toISOString(),
+          fileSize: file.size,
+          status: 'Staged',
+          localFile: file,
+        };
+        return [...filtered, stagedDoc];
       });
+
+      toastSuccess(`${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document staged. It will upload when you save the registration.`);
     };
     input.click();
   };
 
+  const uploadStagedDocuments = useCallback(
+    async (leaseRentDetailsId: number) => {
+      const stagedEntries: Array<[LeaseDocumentType, StagedLeaseDocument | null]> = [
+        ['aadhar', stagedDocuments.aadhar],
+        ['pan', stagedDocuments.pan],
+      ];
+
+      let uploadFailed = false;
+
+      for (const [type, staged] of stagedEntries) {
+        if (!staged) continue;
+
+        const existingDoc = localDocuments.find(
+          (doc) => (doc.name || '').toLowerCase() === type.toLowerCase() && !String(doc.id).startsWith(`local-${type}`)
+        );
+
+        if (existingDoc?.id && String(existingDoc.id) !== String(staged.replacingDocId ?? '')) {
+          const delRes = await deleteUploadedDocAction(Number(existingDoc.id));
+          if (!delRes.success) {
+            uploadFailed = true;
+            toastError(delRes.error || `Failed to remove existing ${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document.`);
+            continue;
+          }
+        }
+
+        const fd = new FormData();
+        fd.append('File', staged.file);
+        fd.append('AssetLeaseRentDetailsId', String(leaseRentDetailsId));
+        fd.append('ModuleId', '0');
+        const floorSource = record as LeaseRentRecord & {
+          floorDetailsId?: number | string | null;
+          floorDetailId?: number | string | null;
+          floorId?: number | string | null;
+        };
+        const floorDetailId = floorSource?.floorDetailsId ?? floorSource?.floorDetailId ?? floorSource?.floorId;
+        if (floorDetailId != null) {
+          fd.append('FloorDetailId', String(floorDetailId));
+        }
+        fd.append('DocumentType', type);
+        fd.append('DocumentTitle', type);
+        fd.append('UploadedByUserId', '1');
+
+        const res = await uploadAssetLeaseRentDetailsDocumentAction(fd);
+        if (res.success && res.data) {
+          const uploadedDoc: LeaseDocumentCard = {
+            id: res.data.assetDocumentId,
+            assetId:
+              toPositiveNumber(res.data.assetId) ??
+              asset.id ??
+              record?.assetMasterId ??
+              leaseRentDetailsId,
+            name: type,
+            fileName: res.data.fileName || staged.file.name,
+            contentType: staged.file.type,
+            uploadedDate: new Date().toISOString(),
+            fileSize: res.data.fileSizeBytes,
+            status: 'Uploaded',
+          };
+
+          setLocalDocuments((prev) => {
+            const filtered = prev.filter(
+              (doc) => (doc.name || '').toLowerCase() !== type.toLowerCase() || String(doc.id).startsWith(`local-${type}`)
+            );
+            return [...filtered, uploadedDoc];
+          });
+        } else {
+          uploadFailed = true;
+          toastError(res.error || `Failed to upload ${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document.`);
+        }
+      }
+
+      if (!uploadFailed) {
+        setStagedDocuments({ aadhar: null, pan: null });
+      }
+
+      return !uploadFailed;
+    },
+    [asset.id, localDocuments, record, stagedDocuments.aadhar, stagedDocuments.pan, toastError]
+  );
+
   const handleUpdateRegistration = () => {
-    const assetId = record?.assetMasterId ?? asset.id;
+    const assetId = Number(record?.assetMasterId ?? asset.id ?? asset.assetId ?? 0);
     const recordId = Number(record?.id);
 
-    if (!assetId) {
-      toastError('Asset ID is missing.');
+    console.log('Lease registration submit trace', {
+      recordId,
+      recordAssetMasterId: record?.assetMasterId,
+      assetIdProp: asset.id,
+      assetAssetIdProp: asset.assetId,
+      resolvedAssetId: assetId,
+      selectedTypeCode: selectedType?.applicationTypeCode,
+      selectedTypeId,
+    });
+
+    if (!assetId || Number.isNaN(assetId)) {
+      toastError('Asset ID is missing or invalid.');
       return;
     }
 
@@ -708,10 +833,19 @@ export function NewLeaseRegistrationModal({
     startTransition(async () => {
       try {
         let result;
-        if (recordId && Number.isFinite(recordId)) {
+        let leaseRentDetailsId = Number.isFinite(recordId) && recordId > 0 ? recordId : 0;
+        const isNew = typeCode === 'APP-NEW';
+        const canUpdate = Number.isFinite(recordId) && recordId > 0 && !isNew;
+
+        if (canUpdate) {
+          const targetRecordId = recordId;
+          const parentAssetId =
+            toPositiveNumber(asset.id) ??
+            toPositiveNumber(record?.assetMasterId) ??
+            toPositiveNumber(asset.assetId);
           const updatePayload: AssetLeaseRentDetailsUpdatePayload = {
-            id: recordId,
-            parentAssetId: asset.id ?? record?.assetMasterId ?? undefined,
+            id: targetRecordId,
+            parentAssetId,
             assetNo: asset.assetNo ?? record?.assetNo ?? null,
             assetName: asset.assetName ?? record?.shopName ?? null,
             category: record?.assetCategory ?? record?.category ?? asset.assetCategoryName ?? null,
@@ -719,19 +853,27 @@ export function NewLeaseRegistrationModal({
             wardNo: asset.wardName ?? record?.ward ?? null,
             ...payload,
           };
-          result = await updateAssetLeaseRentDetailsAction(recordId, updatePayload);
+          result = await updateAssetLeaseRentDetailsAction(targetRecordId, updatePayload);
         } else {
           result = await createLeaseRentRegistrationAction(payload);
+          leaseRentDetailsId = extractLeaseRentDetailsId(result);
         }
 
         if (result.success) {
+          if (leaseRentDetailsId > 0) {
+            const uploadsOk = await uploadStagedDocuments(leaseRentDetailsId);
+            if (!uploadsOk) {
+              toastError('Registration saved, but one or more documents failed to upload.');
+            }
+          }
           toastSuccess(result.message || 'Registration submitted successfully!');
           setTimeout(() => onClose(), 1500);
         } else {
           toastError(result.message || 'Submission failed.');
         }
-      } catch {
-        toastError('An unexpected error occurred. Please try again.');
+      } catch (error) {
+        console.error('Lease registration submit failed:', error);
+        toastError(error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.');
       }
     });
   };

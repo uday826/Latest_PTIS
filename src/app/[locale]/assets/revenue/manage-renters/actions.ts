@@ -20,9 +20,11 @@ import {
   revertToRegistration,
   revertToVerification,
   getPreviousTenantHistory,
+  createAssetLeaseRentDetails,
   type AssetLeaseRentDetailsListItem,
   type AssetLeaseRentDetailsListParams,
   type AssetLeaseRentDetailsUpdatePayload,
+  type CreateAssetLeaseRentDetailsPayload,
 } from '@/lib/api/asset/asset-lease-rent-details.service';
 import type {
   ApprovalRecord,
@@ -362,11 +364,11 @@ export async function createLeaseRentRegistrationAction(
     return d.toISOString().replace(/\.\d{3}Z$/, '');
   }
 
-  const payload: CreateLeaseRentRegistrationPayload = {
+  const payload: CreateAssetLeaseRentDetailsPayload = {
     isActive: true,
     createdBy: 1,
-    assetId: data.assetId,
-    applicationTypeId: data.applicationTypeId,
+    assetId: Number(data.assetId),
+    applicationTypeId: Number(data.applicationTypeId),
     shopNo: data.shopNo?.trim() || null,
     floorId: toNum(data.floorId),
     shopName: data.shopName?.trim() || null,
@@ -392,10 +394,10 @@ export async function createLeaseRentRegistrationAction(
     reason: data.reason?.trim() || null,
   };
 
-  const res = await createLeaseRentRegistration(payload);
+  const res = await createAssetLeaseRentDetails(payload);
   revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
   revalidatePath('/assets/revenue/manage-renters');
-  return res;
+  return res as unknown as CreateLeaseRentRegistrationResponse;
 }
 
 export async function updateAssetLeaseRentDetailsAction(

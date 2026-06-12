@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 "use server";
 
 import { createEmptyMasterData } from "@/config/asset.config";
 import { getDocumentFileRaw, getDocumentsByAsset, uploadDocument } from "@/lib/api/asset/asset-document.server.service";
+import { uploadLeaseRentDetailsDocument } from "@/lib/api/asset/asset-lease-rent-details-document.server.service";
 import { categoryTypeService } from "@/lib/api/asset/category-type.service";
 import { assetMasterService } from "@/lib/api/asset/asset-master.service";
 import { zoneService } from "@/lib/api/asset/zone.service";
@@ -68,6 +69,15 @@ export async function uploadAssetDocumentAction(formData: FormData) {
     return response;
   } catch (error) {
 
+    throw error;
+  }
+}
+
+export async function uploadAssetLeaseRentDetailsDocumentAction(formData: FormData) {
+  try {
+    const response = await uploadLeaseRentDetailsDocument(formData);
+    return response;
+  } catch (error) {
     throw error;
   }
 }

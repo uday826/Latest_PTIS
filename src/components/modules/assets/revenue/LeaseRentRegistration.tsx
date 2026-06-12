@@ -36,10 +36,10 @@ export function LeaseRentRegistration({
   assetId = null,
   verificationRecords = [],
   approvalRecords = [],
-  drawerAssetId = null,
   selectedRegistration = null,
   selectedAsset = null,
   assetDocuments = [],
+  leaseRentDocuments = [],
   assetPhotosAndPlans = [],
   applicationTypes = [],
   verificationDrawerId = null,
@@ -67,7 +67,7 @@ export function LeaseRentRegistration({
   const [toDate, setToDate] = useState('');
 
   const [selectedRecordForHistory, setSelectedRecordForHistory] = useState<LeaseRentRecord | null>(null);
-  const drawerAsset = (selectedAsset as AssetMasterDetails | null) ?? (drawerAssetId ? ({ assetNo: 'Asset not found' } as AssetMasterDetails) : null);
+  const drawerAsset = (selectedAsset as AssetMasterDetails | null) ?? null;
 
   const verificationDrawerOpen = verificationDrawerId != null;
   const openVerificationDrawer = useCallback(
@@ -438,11 +438,11 @@ export function LeaseRentRegistration({
       {renderStageFilters()}
       {renderStageTable()}
 
-      {drawerAsset ? (
+      {drawerAsset && selectedRegistration ? (
         <NewLeaseRegistrationModal
           asset={drawerAsset}
           record={selectedRegistration}
-          documents={assetDocuments}
+          documents={leaseRentDocuments}
           assetPhotosAndPlans={assetPhotosAndPlans}
           applicationTypes={applicationTypes}
           onClose={closeAssetDrawer}
