@@ -32,8 +32,11 @@ export default function FloorDetailsPage({
 
   return (
     <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* UnitPoolPanel registers handleSaveAll as the SAVE & NEXT submit hook */}
-      <UnitPoolPanel dropdownOptions={dropdownOptions} initialSubUnits={initialSubUnits} initialFloors={initialFloors} />
+      {showRoomRegistration ? (
+        <DirectRoomRegistrationPanel dropdownOptions={dropdownOptions} initialFloors={initialFloors} />
+      ) : (
+        <UnitPoolPanel dropdownOptions={dropdownOptions} initialSubUnits={initialSubUnits} initialFloors={initialFloors} />
+      )}
 
       <MapPicker
         isOpen={isMapOpen}

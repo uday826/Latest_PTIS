@@ -79,6 +79,8 @@ export interface PoolUnit {
   propertyDescription?: string | null;
   capitalValue?: number;
   rentInformation?: RentInformationDto | null;
+  subFloorId?: number | null;
+  floorDetailsId?: number | null;
 }
 
 /* ── Form state for the "add new floor" row ─────────────────────────────────*/
@@ -309,6 +311,7 @@ export interface CreateChildAssetRequest {
   locationLat?: string | null;
   locationLng?: string | null;
   rooms?: any[] | null;
+  subFloorId?: number | null;
 }
 
 export interface CreateChildAssetResponse {

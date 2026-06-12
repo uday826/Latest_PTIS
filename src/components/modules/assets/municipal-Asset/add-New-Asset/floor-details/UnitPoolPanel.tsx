@@ -191,6 +191,7 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
             count: Number(r.noOfRooms || 1),
             outer: r.outerYesNo ? "Yes" : "No",
             minus: r.minusYesNo ? "Yes" : "No",
+            subFloorId: u.subFloorId || u.SubFloorId || null,
           };
         });
       }
@@ -316,6 +317,7 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
             renterDetails: updated,
             selectedFloorId: updated.floorId ? Number(updated.floorId) : null,
             selectedFloorLabel: updated.floorName || "",
+            subFloorId: updated.subFloorId ? Number(updated.subFloorId) : null,
             departmentId: updated.departmentId,
             departmentName: updated.departmentName,
             locationAddress: updated.locationAddress,
@@ -385,6 +387,7 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
             isActive: true,
             assetId: parentAssetId,
             floorId: floorLevelId,
+            subFloorId: sample?.subFloorId ? Number(sample.subFloorId) : undefined,
             constructionYear: sample?.conYear || String(new Date().getFullYear()),
             assessmentYear: null,
             constructionTypeId: Number(sample?.conType) || 1,
@@ -397,8 +400,13 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
             noOfRooms: 0,
             createdBy: 1,
           });
-          if (createRes.success && (createRes.data as any)?.id) {
-            floorDetailsMap.set(floorLevelId, Number((createRes.data as any).id));
+          if (createRes.success && createRes.data) {
+            const returnedId = typeof createRes.data === "object"
+              ? Number((createRes.data as any).id || (createRes.data as any).items?.id)
+              : Number(createRes.data);
+            if (returnedId) {
+              floorDetailsMap.set(floorLevelId, returnedId);
+            }
           }
         }
       }
@@ -467,6 +475,7 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
           assetId: unit.dbId || 0,
           floorDetailsId: resolvedFloorDetailsId,
           floorId: unit.selectedFloorId,
+          subFloorId: unit.subFloorId || null,
           unitNo: unit.unitNumber,
           shopUnitName: rDetails?.unitName || null,
           totalAreaSqFt: unit.carpetAreaSqFt,
@@ -574,6 +583,7 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
             rooms: activeUnit.rooms,
             floorId: activeUnit.selectedFloorId,
             floorDetailsId: activeUnit.floorDetailsId,
+            subFloorId: activeUnit.subFloorId,
             departmentId: activeUnit.departmentId,
             locationAddress: activeUnit.locationAddress,
             locationLat: activeUnit.locationLat,

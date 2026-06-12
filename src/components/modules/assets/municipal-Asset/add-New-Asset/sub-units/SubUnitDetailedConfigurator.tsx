@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { X, Save, Building2, UploadCloud, FileText, IndianRupee, ImagePlus, CheckCircle2, Layers, Loader2 } from "lucide-react";
 import { Input, Select } from "@/components/common";
-import { fetchSubUseTypesAction, fetchUploadedDocumentsAction, fetchFloorsByAsset, fetchFloorDropdownOptions } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
+import { fetchSubUseTypesAction, fetchUploadedDocumentsAction, fetchFloorsByAsset, fetchFloorDropdownOptions, fetchSubFloorAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { fetchDocumentFileAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { useAssetForm } from "../AssetFormContext";
 import { toast } from "sonner";
@@ -308,6 +308,26 @@ export function SubUnitDetailedConfigurator({
     return () => { ignore = true; };
   }, [formData.useType]);
 
+  // Dynamic sub floor state & effect
+  const [subFloorOptions, setSubFloorOptions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const floorId = Number(formData.floorId);
+    if (!floorId) {
+      setSubFloorOptions([]);
+      return;
+    }
+    let ignore = false;
+    async function loadSubFloors() {
+      const res = await fetchSubFloorAction(floorId);
+      if (!ignore && res.success && res.data) {
+        setSubFloorOptions(res.data);
+      }
+    }
+    loadSubFloors();
+    return () => { ignore = true; };
+  }, [formData.floorId]);
+
 
   const getLabel = (opts: { label: string; value: string }[], val: string | number) => {
     if (!opts) return String(val);
@@ -340,6 +360,7 @@ export function SubUnitDetailedConfigurator({
       floorId,
       floorDetailsId: selected?.id || floorId,
       floorName: floorLabel,
+      subFloorId: "",
       // Pre-fill construction values from selected floor but user can override
       conYear: prev.conYear || selected?.constructionYear || selected?.conYear || "",
       conType: prev.conType || selected?.constructionTypeId || selected?.conType || "",
@@ -623,16 +644,16 @@ export function SubUnitDetailedConfigurator({
   // Carpet area in SqFt — from new shape-based rooms (netAreaSqFt), minus deductions
   const area = roomsList.length > 0
     ? roomsList.reduce((acc, r) => {
-        const netAreaSqFt = r.netAreaSqFt !== undefined
-          ? Number(r.netAreaSqFt)
-          : (r.netAreaSqM !== undefined
-              ? Number(r.netAreaSqM) * 10.7639
-              : Number(r.areaSqFt || r.area || 0));
-        const roomSqFt = netAreaSqFt * Number(r.count || 1);
-        if (r.minus === "Yes" || r.offset === "Yes") return acc - roomSqFt;
-        if (r.outer === "Yes") return acc + roomSqFt * 0.8;
-        return acc + roomSqFt;
-      }, 0)
+      const netAreaSqFt = r.netAreaSqFt !== undefined
+        ? Number(r.netAreaSqFt)
+        : (r.netAreaSqM !== undefined
+          ? Number(r.netAreaSqM) * 10.7639
+          : Number(r.areaSqFt || r.area || 0));
+      const roomSqFt = netAreaSqFt * Number(r.count || 1);
+      if (r.minus === "Yes" || r.offset === "Yes") return acc - roomSqFt;
+      if (r.outer === "Yes") return acc + roomSqFt * 0.8;
+      return acc + roomSqFt;
+    }, 0)
     : (Number(formData.carpetAreaSqFeet) || 0);
 
 
@@ -1099,6 +1120,19 @@ export function SubUnitDetailedConfigurator({
                         No floors available in master data.
                       </div>
                     )}
+                  </Field>
+                  <Field label="Sub Floor">
+                    <select
+                      name="subFloorId"
+                      value={formData.subFloorId ? String(formData.subFloorId) : ""}
+                      onChange={(e) => setFormData((p: any) => ({ ...p, subFloorId: e.target.value }))}
+                      className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}
+                    >
+                      <option value="">— Select Sub Floor —</option>
+                      {subFloorOptions.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
                   </Field>
                   <Field label="Construction Year *">
                     <Input

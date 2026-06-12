@@ -35,6 +35,10 @@ export function BuildingPropertyDetailsSection({
     ? formData.valuationType === "LAND"
     : formData.category?.toLowerCase().includes("land");
 
+  const isBuilding = formData.valuationType
+    ? formData.valuationType === "BUILDING"
+    : formData.category?.toLowerCase().includes("building") || (formData as any).hasFloorDetails === true;
+
   return (
     <Card
       variant="bordered"
@@ -217,7 +221,7 @@ export function BuildingPropertyDetailsSection({
           selectSize="sm"
         />
 
-        <Select
+        {/* <Select
           label="Is Revenue Generating?"
           name="isRevenueGenerating"
           value={formData.isRevenueGenerating || "No"}
@@ -228,9 +232,9 @@ export function BuildingPropertyDetailsSection({
           ]}
           className="font-semibold text-sm"
           selectSize="sm"
-        />
+        /> */}
 
-        {isLand && (
+        {(isLand || isBuilding) && (
           <>
             <Input
               label="Length (Mtr)"
@@ -254,18 +258,21 @@ export function BuildingPropertyDetailsSection({
               required
               error={showError("width" as any) ? (errors as any).width : undefined}
             />
-            <Input
-              label="Total Land Area (Sq. Mtr)"
-              name="landArea"
-              value={formData.landArea || ""}
-              onChange={handleChange}
-              placeholder="0.00"
-              type="number"
-              className="h-8 text-[13px]"
-              required
-              error={showError("landArea" as any) ? (errors as any).landArea : undefined}
-            />
           </>
+        )}
+
+        {isLand && (
+          <Input
+            label="Total Land Area (Sq. Mtr)"
+            name="landArea"
+            value={formData.landArea || ""}
+            onChange={handleChange}
+            placeholder="0.00"
+            type="number"
+            className="h-8 text-[13px]"
+            required
+            error={showError("landArea" as any) ? (errors as any).landArea : undefined}
+          />
         )}
       </CardContent>
     </Card>

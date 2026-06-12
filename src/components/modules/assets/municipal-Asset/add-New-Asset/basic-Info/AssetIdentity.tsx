@@ -67,7 +67,7 @@ export function AssetIdentity({ formData, onChange }: AssetWizardStepProps) {
             ]}
           />
 
-          <Select
+          {/* <Select
             label="Is Revenue Generating?"
             name="isRevenueGenerating"
             value={formData.isRevenueGenerating || "No"}
@@ -76,7 +76,7 @@ export function AssetIdentity({ formData, onChange }: AssetWizardStepProps) {
               { label: "Yes", value: "Yes" },
               { label: "No", value: "No" },
             ]}
-          />
+          /> */}
 
           <div className="col-span-full mt-2 p-2 bg-slate-50/80 rounded-2xl border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div className="flex items-center gap-3">

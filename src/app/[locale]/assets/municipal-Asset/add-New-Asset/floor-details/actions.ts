@@ -46,21 +46,57 @@ export async function saveFloorDetail(data: FloorDetailApiRequest): Promise<Acti
     const cookieStore = await cookies();
     const userIdStr = cookieStore.get("user_id")?.value;
     const userId = userIdStr ? Number(userIdStr) : undefined;
+    const token = cookieStore.get("auth_token")?.value;
 
     const payload = {
       ...data,
       createdBy: userId ?? data.createdBy ?? 1,
     };
-    const res = await floorDetailsService.createFloor(payload);
-    if (res.success && res.data) {
-      const body = res.data as any;
-      if (body.success) {
-        return { success: true, data: body.items };
-      } else {
-        return { success: false, error: body.message || "Failed to save floor detail" };
-      }
+
+    const { getAppConfig } = await import("@/config/app.config");
+    const config = getAppConfig();
+    const url = `${config.api.baseUrl.replace(/\/$/, "")}/AssetFloorDetails`;
+
+    let response: Response;
+    const isDev = process.env.NODE_ENV === 'development' && process.env.NTIS_STRICT_LOCAL_TLS !== '1';
+    const init = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Accept": "application/json, text/plain, */*",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    };
+
+    const LOCAL_HTTPS_RE = /^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//;
+    if (isDev && LOCAL_HTTPS_RE.test(url)) {
+      const { Agent, fetch: uFetch } = await import('undici');
+      const relaxedAgent = new Agent({ connect: { rejectUnauthorized: false } });
+      response = await uFetch(url, {
+        ...init,
+        dispatcher: relaxedAgent,
+      } as any) as any;
+    } else {
+      response = await fetch(url, init);
     }
-    return { success: false, error: res.error ?? "Failed to save floor detail" };
+
+    const text = await response.text();
+    if (!response.ok) {
+      return { success: false, error: text || response.statusText || "Failed to save floor detail" };
+    }
+
+    const trimmed = text.trim();
+    let resData: any = trimmed;
+    if (/^\d+$/.test(trimmed)) {
+      resData = Number(trimmed);
+    } else {
+      try {
+        resData = JSON.parse(trimmed);
+      } catch {}
+    }
+
+    return { success: true, data: resData };
   } catch (err: any) {
     logger.error("saveFloorDetail Error:", { error: err });
     return { success: false, error: "Network error saving floor detail" };
@@ -79,11 +115,10 @@ export async function updateFloorDetail(id: number, data: Partial<FloorDetailApi
     });
     if (res.success && res.data) {
       const body = res.data as any;
-      if (body.success) {
-        return { success: true, data: body.items };
-      } else {
+      if (body.success === false) {
         return { success: false, error: body.message || "Failed to update floor detail" };
       }
+      return { success: true, data: body.items || body.data || body };
     }
     return { success: false, error: res.error ?? "Failed to update floor detail" };
   } catch (err: any) {
@@ -326,6 +361,7 @@ export async function createChildAssetAction(
       ShopNo: data.unitNo,
       ShopName: data.shopUnitName,
       TotalAreaSqFt: data.totalAreaSqFt,
+      SubFloorId: data.subFloorId,
     };
 
     logger.info("createChildAssetAction: Calling manageSubUnitsService.create with payload", { payload });
@@ -438,6 +474,7 @@ export async function createChildAssetAction(
               assetId: Number(createdAssetId),
               floorDetailsId: data.floorDetailsId ? Number(data.floorDetailsId) : null,
               floorId: data.floorId ? Number(data.floorId) : null,
+              subFloorId: data.subFloorId ? Number(data.subFloorId) : null,
               roomWiseSubmissionDetailsId: roomWiseSubmissionDetailId ? Number(roomWiseSubmissionDetailId) : null,
               shopNo: data.unitNo || null,
               shopName: data.shopUnitName || null,
@@ -492,6 +529,7 @@ export async function createChildAssetAction(
               shopName: data.shopUnitName || null,
               floorDetailsId: data.floorDetailsId ? Number(data.floorDetailsId) : null,
               floorId: data.floorId ? Number(data.floorId) : null,
+              subFloorId: data.subFloorId ? Number(data.subFloorId) : null,
               roomWiseSubmissionDetailsId: roomWiseSubmissionDetailId ? Number(roomWiseSubmissionDetailId) : null,
               tenantName: data.renterName || "N/A",
               renterName: data.renterName || "N/A",

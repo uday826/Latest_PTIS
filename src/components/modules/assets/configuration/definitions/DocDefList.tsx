@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   FileText, Plus, FileCheck, HardDrive,
-  ArrowUpDown, Loader2,
+  ArrowUpDown,
   Monitor, RefreshCw, Layers,
 } from 'lucide-react';
 import { MasterCard } from '../masterData/common/MasterCard';
