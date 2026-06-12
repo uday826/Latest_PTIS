@@ -262,9 +262,9 @@ function buildTemplate(
       { key: 'aadhaarNumber', label: 'Aadhaar Number', icon: FileText, type: 'text', placeholder: '12-digit Aadhaar' },
       { key: 'panNumber', label: 'PAN Number', icon: FileText, type: 'text', placeholder: 'PAN card number' },
       { key: 'leaseType', label: 'Lease / Rent Type', icon: FileText, type: 'select', options: ['Rent', 'Lease'], required: true },
+      { key: 'monthlyRent', label: 'Monthly Rent (₹)', icon: IndianRupee, type: 'number', placeholder: '0.00', required: true },
       { key: 'leaseStartDate', label: 'Lease Start Date', icon: Calendar, type: 'date', required: true },
       { key: 'leaseEndDate', label: 'Lease End Date', icon: Calendar, type: 'date' },
-      { key: 'monthlyRent', label: 'Monthly Rent (₹)', icon: IndianRupee, type: 'number', placeholder: '0.00', required: true },
       { key: 'securityDeposit', label: 'Security Deposit (₹)', icon: IndianRupee, type: 'number', placeholder: '0.00' },
       { key: 'paymentFrequency', label: 'Payment Frequency', icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'] },
       { key: 'pinCode', label: 'Pin Code', icon: MapPinned, type: 'text', placeholder: '6-digit pin code' },
@@ -444,6 +444,85 @@ function RenderField({
   const wrapperClassName = `space-y-1 ${field.colSpan === 2 ? 'col-span-2' : ''}`;
   const sharedInputClass = `w-full h-8 px-2 text-xs font-semibold text-slate-700 border border-slate-200 rounded outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100 ${isReadOnlyField ? 'bg-slate-50 cursor-not-allowed text-slate-500' : 'bg-white'
     }`;
+  const maxLengthByKey: Partial<Record<keyof FormState, number>> = {
+    tenantName: 500,
+    mobileNumber: 10,
+    emailAddress: 200,
+    tenantType: 50,
+    aadhaarNumber: 16,
+    panNumber: 10,
+    pinCode: 6,
+    residentialAddress: 500,
+    shopNo: 50,
+    shopName: 200,
+    leaseType: 20,
+    paymentFrequency: 20,
+    existingTenantName: 500,
+    previousRent: 20,
+    revisedRent: 20,
+    newTenantDetails: 500,
+    newTenantMobile: 10,
+    relationship: 50,
+    nocFromExistingTenant: 3,
+    reasonForTransfer: 1000,
+    reasonForRenewal: 1000,
+    reasonForTermination: 1000,
+    pendingDues: 20,
+    securityDepositRefund: 20,
+    remarksDescription: 1000,
+    leaseStartDate: 10,
+    leaseEndDate: 10,
+    oldLeaseStartDate: 10,
+    oldLeaseEndDate: 10,
+    renewalStartDate: 10,
+    renewalEndDate: 10,
+    vacatingDate: 10,
+    applicationType: 100,
+    monthlyRent: 20,
+    securityDeposit: 20,
+  };
+  const maxLength = maxLengthByKey[field.key];
+
+  const handleChange = (nextValue: string) => {
+    if (field.type === 'number') {
+      const cleaned = nextValue.replace(/[^0-9.]/g, '');
+      const parts = cleaned.split('.');
+      const normalized = parts.length > 1 ? `${parts[0]}.${parts.slice(1).join('')}` : cleaned;
+      setValue(normalized);
+      return;
+    }
+
+    if (field.key === 'tenantName' || field.key === 'existingTenantName' || field.key === 'newTenantDetails') {
+      setValue(nextValue.replace(/[^a-zA-Z\s]/g, ''));
+      return;
+    }
+
+    if (field.key === 'residentialAddress' || field.key === 'shopNo' || field.key === 'shopName' || field.key === 'remarksDescription' || field.key === 'reasonForRenewal' || field.key === 'reasonForTransfer' || field.key === 'reasonForTermination') {
+      setValue(nextValue.replace(/[<>]/g, ''));
+      return;
+    }
+
+    if (field.key === 'mobileNumber' || field.key === 'newTenantMobile' || field.key === 'pinCode') {
+      const digitsOnly = nextValue.replace(/\D/g, '');
+      const limited = digitsOnly.slice(0, maxLength ?? digitsOnly.length);
+      setValue(limited);
+      return;
+    }
+
+    if (field.key === 'aadhaarNumber') {
+      const cleaned = nextValue.replace(/[^0-9]/g, '').slice(0, maxLength ?? nextValue.length);
+      setValue(cleaned);
+      return;
+    }
+
+    if (field.key === 'panNumber') {
+      const cleaned = nextValue.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, maxLength ?? nextValue.length);
+      setValue(cleaned);
+      return;
+    }
+
+    setValue(nextValue);
+  };
 
   return (
     <div className={wrapperClassName}>
@@ -473,7 +552,8 @@ function RenderField({
           value={value}
           readOnly={isReadOnlyField}
           aria-readonly={isReadOnlyField}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
+          maxLength={field.type !== 'number' ? maxLength : undefined}
           min={field.type === 'number' ? 0 : undefined}
           step={field.type === 'number' ? 'any' : undefined}
         />
@@ -562,6 +642,59 @@ export function NewLeaseRegistrationModal({
   );
   const [formState, setFormState] = useState<FormState>(() => initialFormState);
 
+  const handleFormFieldChange = useCallback(
+    (fieldKey: keyof FormState, nextValue: string) => {
+      const nextState = { ...formState, [fieldKey]: nextValue } as FormState;
+
+      const isAfter = (startValue: string, endValue: string) => {
+        if (!startValue || !endValue) return false;
+        const start = new Date(startValue);
+        const end = new Date(endValue);
+        return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start > end;
+      };
+
+      if (fieldKey === 'leaseStartDate' && nextState.leaseEndDate && isAfter(nextState.leaseStartDate, nextState.leaseEndDate)) {
+        toastError('Lease start date cannot be later than the lease end date.');
+        return;
+      }
+      if (fieldKey === 'leaseEndDate' && nextState.leaseStartDate && isAfter(nextState.leaseStartDate, nextState.leaseEndDate)) {
+        toastError('Lease end date cannot be earlier than the lease start date.');
+        return;
+      }
+      if (fieldKey === 'oldLeaseStartDate' && nextState.oldLeaseEndDate && isAfter(nextState.oldLeaseStartDate, nextState.oldLeaseEndDate)) {
+        toastError('Old lease start date cannot be later than the old lease end date.');
+        return;
+      }
+      if (fieldKey === 'oldLeaseEndDate' && nextState.oldLeaseStartDate && isAfter(nextState.oldLeaseStartDate, nextState.oldLeaseEndDate)) {
+        toastError('Old lease end date cannot be earlier than the old lease start date.');
+        return;
+      }
+      if (fieldKey === 'renewalStartDate' && nextState.renewalEndDate && isAfter(nextState.renewalStartDate, nextState.renewalEndDate)) {
+        toastError('Renewal start date cannot be later than the renewal end date.');
+        return;
+      }
+      if (fieldKey === 'renewalEndDate' && nextState.renewalStartDate && isAfter(nextState.renewalStartDate, nextState.renewalEndDate)) {
+        toastError('Renewal end date cannot be earlier than the renewal start date.');
+        return;
+      }
+      if (fieldKey === 'renewalStartDate' && nextState.oldLeaseEndDate && nextState.renewalStartDate) {
+        const renewalStart = new Date(nextState.renewalStartDate);
+        const oldEnd = new Date(nextState.oldLeaseEndDate);
+        if (!Number.isNaN(renewalStart.getTime()) && !Number.isNaN(oldEnd.getTime()) && renewalStart < oldEnd) {
+          toastError('Renewal start date cannot be earlier than the old lease end date.');
+          return;
+        }
+      }
+
+      setFormState(nextState);
+    },
+    [formState, toastError]
+  );
+
+function isValidNonNegativeAmount(value: string): boolean {
+  if (!value) return true;
+  return /^[0-9]+(\.[0-9]+)?$/.test(value);
+}
   const readDocumentFile = useCallback(async (documentItem: LeaseDocumentCard) => {
     if (documentItem.localFile) {
       return {
@@ -787,6 +920,56 @@ export function NewLeaseRegistrationModal({
       return;
     }
 
+    if (hasField('tenantName') && /[^a-zA-Z\s'.-]/.test(formState.tenantName)) {
+      toastError('Tenant name can only contain letters and spaces.');
+      return;
+    }
+    if (hasField('existingTenantName') && /[^a-zA-Z\s]/.test(formState.existingTenantName)) {
+      toastError('Existing tenant name can only contain letters and spaces.');
+      return;
+    }
+    if (hasField('newTenantDetails') && /[^a-zA-Z\s]/.test(formState.newTenantDetails)) {
+      toastError('New tenant name can only contain letters and spaces.');
+      return;
+    }
+
+    if (hasField('mobileNumber') && /[^0-9]/.test(formState.mobileNumber)) {
+      toastError('Mobile number must contain only digits.');
+      return;
+    }
+    if (hasField('newTenantMobile') && /[^0-9]/.test(formState.newTenantMobile)) {
+      toastError('New tenant mobile number must contain only digits.');
+      return;
+    }
+    if (hasField('pinCode') && /[^0-9]/.test(formState.pinCode)) {
+      toastError('Pin code must contain only digits.');
+      return;
+    }
+    if (hasField('aadhaarNumber') && /[^0-9]/.test(formState.aadhaarNumber)) {
+      toastError('Aadhaar number must contain only digits.');
+      return;
+    }
+    if (hasField('panNumber') && /[^a-zA-Z0-9]/.test(formState.panNumber)) {
+      toastError('PAN number must contain only letters and digits.');
+      return;
+    }
+    if (hasField('remarksDescription') && /[<>]/.test(formState.remarksDescription)) {
+      toastError('Remarks cannot contain special characters like < or >.');
+      return;
+    }
+    if (hasField('reasonForRenewal') && /[<>]/.test(formState.reasonForRenewal)) {
+      toastError('Reason for renewal cannot contain special characters like < or >.');
+      return;
+    }
+    if (hasField('reasonForTransfer') && /[<>]/.test(formState.reasonForTransfer)) {
+      toastError('Reason for transfer cannot contain special characters like < or >.');
+      return;
+    }
+    if (hasField('reasonForTermination') && /[<>]/.test(formState.reasonForTermination)) {
+      toastError('Reason for termination cannot contain special characters like < or >.');
+      return;
+    }
+
     // Validate dates: leaseStartDate <= leaseEndDate
     if (hasField('leaseStartDate') && hasField('leaseEndDate') && formState.leaseStartDate && formState.leaseEndDate) {
       const start = new Date(formState.leaseStartDate);
@@ -825,6 +1008,31 @@ export function NewLeaseRegistrationModal({
         toastError('Renewal start date cannot be earlier than the old lease end date.');
         return;
       }
+    }
+
+    if (hasField('monthlyRent') && formState.monthlyRent && !isValidNonNegativeAmount(formState.monthlyRent)) {
+      toastError('Monthly rent must be a non-negative number.');
+      return;
+    }
+    if (hasField('securityDeposit') && formState.securityDeposit && !isValidNonNegativeAmount(formState.securityDeposit)) {
+      toastError('Security deposit must be a non-negative number.');
+      return;
+    }
+    if (hasField('previousRent') && formState.previousRent && !isValidNonNegativeAmount(formState.previousRent)) {
+      toastError('Previous rent must be a non-negative number.');
+      return;
+    }
+    if (hasField('revisedRent') && formState.revisedRent && !isValidNonNegativeAmount(formState.revisedRent)) {
+      toastError('Revised rent must be a non-negative number.');
+      return;
+    }
+    if (hasField('pendingDues') && formState.pendingDues && !isValidNonNegativeAmount(formState.pendingDues)) {
+      toastError('Pending dues must be a non-negative number.');
+      return;
+    }
+    if (hasField('securityDepositRefund') && formState.securityDepositRefund && !isValidNonNegativeAmount(formState.securityDepositRefund)) {
+      toastError('Security deposit refund must be a non-negative number.');
+      return;
     }
 
     const typeCode = selectedType?.applicationTypeCode || 'APP-NEW';
@@ -866,7 +1074,7 @@ export function NewLeaseRegistrationModal({
               toastError('Registration saved, but one or more documents failed to upload.');
             }
           }
-          toastSuccess(result.message || 'Registration submitted successfully!');
+          toastSuccess('Registration submitted successfully!');
           setTimeout(() => onClose(), 1500);
         } else {
           toastError(result.message || 'Submission failed.');
@@ -1243,10 +1451,7 @@ export function NewLeaseRegistrationModal({
                           }
                           return;
                         }
-                        setFormState((prev) => ({
-                          ...prev,
-                          [field.key]: value,
-                        }) as FormState);
+                        handleFormFieldChange(field.key, value);
                       }}
                     />
                   ))}

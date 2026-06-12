@@ -56,7 +56,7 @@ function parseOptionalNumber(value: string | string[] | undefined): number | nul
 }
 
 function normalizeText(value?: string | null): string {
-  return value?.trim() || '-';
+  return value?.trim() || '';
 }
 
 function pickAssetCategory(item: AssetLeaseRentDetailsListItem): string | undefined {
