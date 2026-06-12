@@ -25,6 +25,20 @@ export function formatFieldValue(value: unknown) {
   if (value == null || value === '') return '-';
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) {
+    return value.length === 0 ? '-' : value.map((entry) => formatFieldValue(entry)).join(', ');
+  }
+  if (typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>);
+    if (entries.length === 0) return '-';
+    const flattened = entries
+      .map(([key, entry]) => {
+        const formatted = formatFieldValue(entry);
+        return formatted === '-' ? null : `${key}: ${formatted}`;
+      })
+      .filter((entry): entry is string => Boolean(entry));
+    return flattened.length > 0 ? flattened.join(', ') : '-';
+  }
   try {
     return JSON.stringify(value);
   } catch {
@@ -74,9 +88,11 @@ export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName
     netBookValue:
       record.currentBookValue != null
         ? String(record.currentBookValue)
-        : record.marketValue == null
-          ? '-'
-          : String(record.marketValue),
+        : record.capitalValue != null
+          ? String(record.capitalValue)
+          : record.marketValue == null
+            ? '-'
+            : String(record.marketValue),
     builtUpAreaSqMeter: record.builtUpAreaSqMeter == null ? '-' : String(record.builtUpAreaSqMeter),
     carpetAreaSqMeter: record.carpetAreaSqMeter == null ? '-' : String(record.carpetAreaSqMeter),
     landAreaSqMeter: record.landAreaSqMeter == null ? '-' : String(record.landAreaSqMeter),

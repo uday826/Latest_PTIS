@@ -591,6 +591,13 @@ export function SubUnitDetailedConfigurator({
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const allowedExtensions = ['.bmp', '.doc', '.docx', '.gif', '.jpeg', '.jpg', '.pdf', '.png', '.ppt', '.pptx', '.tif', '.tiff', '.txt', '.webp', '.xls', '.xlsx'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedExtensions.includes(fileExt)) {
+        toast.error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`);
+        e.target.value = "";
+        return;
+      }
       setPhotoPreview(URL.createObjectURL(file));
       setPhotoFile(file);
     }
@@ -599,6 +606,13 @@ export function SubUnitDetailedConfigurator({
   const handlePlanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const allowedExtensions = ['.bmp', '.doc', '.docx', '.gif', '.jpeg', '.jpg', '.pdf', '.png', '.ppt', '.pptx', '.tif', '.tiff', '.txt', '.webp', '.xls', '.xlsx'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedExtensions.includes(fileExt)) {
+        toast.error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`);
+        e.target.value = "";
+        return;
+      }
       setPlanPreview(URL.createObjectURL(file));
       setPlanFile(file);
     }
@@ -804,6 +818,27 @@ export function SubUnitDetailedConfigurator({
                       <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
                     </Field>
                   </Row>
+                  <Row z={30}>
+                    <Field label="Aadhaar Card No">
+                      <CustomBoxedInput
+                        value={formData.aadhaar || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                        length={12}
+                        type="numeric"
+                        groupSizes={[4, 4, 4]}
+                      />
+                    </Field>
+                    <Field label="PAN Card No">
+                      <CustomBoxedInput
+                        value={formData.pan || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                        length={10}
+                        type="alphanumeric"
+                      />
+                    </Field>
+                    <div className="flex-1 min-w-0" />
+                    <div className="flex-1 min-w-0" />
+                  </Row>
                 </>)}
 
                 {/* ── OFFICE fields ────────────────────────────────────── */}
@@ -823,9 +858,6 @@ export function SubUnitDetailedConfigurator({
                     </Field>
                   </Row>
                   <Row z={40}>
-                    <Field label="Contact Person">
-                      <Input name="contactPerson" value={formData.contactPerson || ""} onChange={handleChange} className={inp} />
-                    </Field>
                     <Field label="Mobile No">
                       <CustomBoxedInput
                         value={formData.mobileNo || ""}
@@ -838,6 +870,32 @@ export function SubUnitDetailedConfigurator({
                     <Field label="Email ID">
                       <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
                     </Field>
+                    <Field label="GST No">
+                      <Input name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
+                    </Field>
+                    <Field label="Shop Act No">
+                      <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                    </Field>
+                  </Row>
+                  <Row z={30}>
+                    <Field label="Aadhaar Card No">
+                      <CustomBoxedInput
+                        value={formData.aadhaar || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                        length={12}
+                        type="numeric"
+                        groupSizes={[4, 4, 4]}
+                      />
+                    </Field>
+                    <Field label="PAN Card No">
+                      <CustomBoxedInput
+                        value={formData.pan || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                        length={10}
+                        type="alphanumeric"
+                      />
+                    </Field>
+                    <div className="flex-1 min-w-0" />
                     <div className="flex-1 min-w-0" />
                   </Row>
                 </>)}
@@ -868,11 +926,38 @@ export function SubUnitDetailedConfigurator({
                         showPrefix="+91"
                       />
                     </Field>
+                    <Field label="Email ID">
+                      <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
+                    </Field>
                     <Field label="Usage / Purpose">
                       <Input name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} placeholder="e.g. Storage, Meeting" />
                     </Field>
                     <div className="flex-1 min-w-0" />
-                    <div className="flex-1 min-w-0" />
+                  </Row>
+                  <Row z={30}>
+                    <Field label="Aadhaar Card No">
+                      <CustomBoxedInput
+                        value={formData.aadhaar || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                        length={12}
+                        type="numeric"
+                        groupSizes={[4, 4, 4]}
+                      />
+                    </Field>
+                    <Field label="PAN Card No">
+                      <CustomBoxedInput
+                        value={formData.pan || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                        length={10}
+                        type="alphanumeric"
+                      />
+                    </Field>
+                    <Field label="GST No">
+                      <Input name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
+                    </Field>
+                    <Field label="Shop Act No">
+                      <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                    </Field>
                   </Row>
                 </>)}
 
@@ -910,6 +995,31 @@ export function SubUnitDetailedConfigurator({
                     </Field>
                     <Field label="Remarks">
                       <Input name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} placeholder="Optional notes" />
+                    </Field>
+                  </Row>
+                  <Row z={30}>
+                    <Field label="Aadhaar Card No">
+                      <CustomBoxedInput
+                        value={formData.aadhaar || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                        length={12}
+                        type="numeric"
+                        groupSizes={[4, 4, 4]}
+                      />
+                    </Field>
+                    <Field label="PAN Card No">
+                      <CustomBoxedInput
+                        value={formData.pan || ""}
+                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                        length={10}
+                        type="alphanumeric"
+                      />
+                    </Field>
+                    <Field label="GST No">
+                      <Input name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
+                    </Field>
+                    <Field label="Shop Act No">
+                      <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
                     </Field>
                   </Row>
                 </>)}
@@ -1131,7 +1241,7 @@ export function SubUnitDetailedConfigurator({
                     </div>
                   )}
                 </div>
-                <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+                <input ref={photoRef} type="file" accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" className="hidden" onChange={handlePhotoChange} />
                 <button
                   type="button"
                   onClick={() => photoRef.current?.click()}
@@ -1165,7 +1275,7 @@ export function SubUnitDetailedConfigurator({
                     </div>
                   )}
                 </div>
-                <input ref={planRef} type="file" accept="image/*,.pdf" className="hidden" onChange={handlePlanChange} />
+                <input ref={planRef} type="file" accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" className="hidden" onChange={handlePlanChange} />
                 <button
                   type="button"
                   onClick={() => planRef.current?.click()}

@@ -38,7 +38,7 @@ export function getRegisterColumns(
   t: (key: string) => string
 ): Column<AssetRegisterRow>[] {
   return [
-    { key: 'assetCode', label: t('Asset_ID') || 'Asset ID', width: '150px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap font-semibold text-slate-900', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
+    { key: 'assetCode', label: t('Asset_ID') || 'Asset No', width: '150px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap font-semibold text-slate-900', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
     {
       key: 'assetName',
       label: t('Asset_Name_Desc') || 'Asset Name & Description',
@@ -117,7 +117,7 @@ export function getRegisterColumns(
     },
     {
       key: 'ownershipType',
-      label: t('Remarks') || 'Remarks',
+      label: t('Ownership_Type') || 'Ownership Type',
       width: '150px',
       headerClassName: 'whitespace-nowrap text-center',
       cellClassName: 'align-middle text-center',

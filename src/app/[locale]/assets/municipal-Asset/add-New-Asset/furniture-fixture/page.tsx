@@ -39,10 +39,16 @@ export default async function FurnitureFixturesInventoryPage({ searchParams }: P
 
         const [[catRes, condRes, namesRes, modelsRes], batchesRes] = await Promise.all([masterDataPromise, batchesPromise]);
 
-        categories = catRes.success && Array.isArray(catRes.data) ? catRes.data : [];
-        conditions = condRes.success && Array.isArray(condRes.data) ? condRes.data : [];
-        itemNames = namesRes.success && Array.isArray(namesRes.data) ? namesRes.data : [];
-        itemModels = modelsRes.success && Array.isArray(modelsRes.data) ? modelsRes.data : [];
+        const filterActive = (data: any) => Array.isArray(data) ? data.filter((item: any) => 
+            item.isActive !== false && item.isActive !== 0 && 
+            item.IsActive !== false && item.IsActive !== 0 && 
+            item.status?.toLowerCase() !== 'inactive'
+        ) : [];
+
+        categories = catRes.success ? filterActive(catRes.data) : [];
+        conditions = condRes.success ? filterActive(condRes.data) : [];
+        itemNames = namesRes.success ? filterActive(namesRes.data) : [];
+        itemModels = modelsRes.success ? filterActive(modelsRes.data) : [];
 
         if (batchesRes?.success && batchesRes.data) {
             initialBatches = batchesRes.data;

@@ -31,7 +31,7 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
   const searchParams = useSearchParams();
   const { formData } = useAssetForm();
 
-  const isEditMode = searchParams.get('mode') === 'edit' || !!(searchParams.get('assetId') || searchParams.get('id'));
+  const isEditMode = searchParams.get('mode') === 'edit';
   const assetCode = searchParams.get('assetCode') || formData.assetCode || '';
 
   const categoryFlags: CategoryFlags | undefined =

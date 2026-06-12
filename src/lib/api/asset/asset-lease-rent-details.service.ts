@@ -296,3 +296,54 @@ export async function getPreviousTenantHistory(
   );
   return response.success && response.data?.items ? response.data.items : [];
 }
+
+export interface CreateAssetLeaseRentDetailsPayload {
+  isActive: boolean;
+  createdBy: number;
+  assetId: number;
+  shopNo?: string | null;
+  floorId?: number | null;
+  shopName?: string | null;
+  tenantName: string;
+  tenantMobile?: string | null;
+  tenantEmail?: string | null;
+  tenantType?: string | null;
+  tenantAadhaarNo?: string | null;
+  tenantPanCardNo?: string | null;
+  tenantAddress?: string | null;
+  previousTenantName?: string | null;
+  previousTenantMobile?: string | null;
+  applicationTypeId: number;
+  leaseType?: string | null;
+  oldLeaseStartDate?: string | null;
+  oldLeaseEndDate?: string | null;
+  leaseStartDate?: string | null;
+  leaseEndDate?: string | null;
+  terminationDate?: string | null;
+  previousMonthlyRent?: number | null;
+  monthlyRent?: number | null;
+  securityDeposit?: number | null;
+  paymentFrequency?: string | null;
+  reason?: string | null;
+}
+
+export async function createAssetLeaseRentDetails(
+  payload: CreateAssetLeaseRentDetailsPayload
+): Promise<AssetLeaseRentDetailsMutationResponse> {
+  const response = await apiClient.post<AssetLeaseRentDetailsMutationResponse>(
+    '/AssetLeaseRentDetails',
+    payload
+  );
+
+  if (!response.success || !response.data) {
+    return {
+      success: false,
+      message: response.error || 'Failed to create asset lease rent details',
+      items: null,
+      errors: response.error ? [response.error] : null,
+      correlationId: null,
+    };
+  }
+
+  return response.data;
+}

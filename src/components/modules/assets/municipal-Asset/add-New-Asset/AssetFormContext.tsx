@@ -19,6 +19,7 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
   const [stagedFiles, setStagedFiles] = useState<Record<number, { file: File; definition: any }>>({});
   const [basicInfoFiles, setBasicInfoFiles] = useState<{ frontPhoto?: File; buildingPlan?: File }>({});
   const [subunitFiles, setSubunitFiles] = useState<Record<number, { photoFile?: File | null; planFile?: File | null }>>({});
+  const [isDataLoading, setIsDataLoading] = useState(false);
 
   const registerSubmitHook = (hook: (() => Promise<boolean>) | null) => {
     setOnSubmitHook(() => hook);
@@ -237,11 +238,13 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
         changed = true;
       }
 
-      // If flags are undefined OR category changed, fetch secure config from DB
+      // If flags are undefined OR category/type changed, fetch secure config from DB
       if (
         formData.isMovableCategory === undefined || 
         formData.hasFloorDetails === undefined ||
-        (updates.categoryId && updates.categoryId !== formData.categoryId)
+        formData.allowRoomRegistration === undefined ||
+        (updates.categoryId && updates.categoryId !== formData.categoryId) ||
+        (updates.typeId && updates.typeId !== formData.typeId)
       ) {
         try {
           const res = await fetchCategories();
@@ -258,6 +261,21 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
               changed = true;
             }
           }
+
+          // Also fetch type flags (for room/unit registration)
+          const currentTypeId = updates.typeId || formData.typeId;
+          if (currentTypeId) {
+            const { fetchAllTypes } = await import("@/app/[locale]/assets/municipal-Asset/actions");
+            const typesRes = await fetchAllTypes();
+            if (typesRes.success && typesRes.data) {
+              const type = typesRes.data.find((t: any) => t.id === currentTypeId);
+              if (type) {
+                updates.allowUnitRegistration = type.allowUnitRegistration ?? true;
+                updates.allowRoomRegistration = type.allowRoomRegistration ?? false;
+                changed = true;
+              }
+            }
+          }
         } catch (error) {
 
         }
@@ -267,9 +285,13 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
 
         setFormData(prev => ({ ...prev, ...updates }) as AssetFormData);
       }
+      setIsDataLoading(false);
     };
 
-    initializeFormState();
+    setIsDataLoading(true);
+    initializeFormState().catch(() => {
+      setIsDataLoading(false);
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
@@ -400,7 +422,9 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
       basicInfoFiles,
       setBasicInfoFiles,
       subunitFiles,
-      setSubunitFiles
+      setSubunitFiles,
+      isDataLoading,
+      setIsDataLoading
     }}>
       {children}
     </AssetFormContext.Provider>

@@ -1,6 +1,6 @@
 {
   "screenFieldsMaster": {
-    "title": "Definitions",
+    "title": "Dynamic Field Config",
     "description": "Manage and configure screen fields, document definitions, and validation rules for municipal assets.",
     "configurationMaster": "Configuration Master",
     "centralizedSystem": "Centralized Master Data Management System",

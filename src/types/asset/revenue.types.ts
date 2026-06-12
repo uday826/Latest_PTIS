@@ -326,6 +326,7 @@ export interface LeaseRentRegistrationProps {
   drawerAssetId?: number | null;
   selectedAsset?: unknown | null;
   assetDocuments?: import('@/types/municipal-asset/detail-tabs.types').AssetDocumentListItem[];
+  leaseRentDocuments?: import('@/types/municipal-asset/detail-tabs.types').AssetDocumentListItem[];
   assetPhotosAndPlans?: import('@/types/municipal-asset/detail-tabs.types').AssetDocumentListItem[];
   applicationTypes?: ApplicationTypeItem[];
   selectedRegistration?: LeaseRentRecord | null;

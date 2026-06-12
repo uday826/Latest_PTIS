@@ -6,7 +6,7 @@
   "Insured": "Insured",
   "Last": "Last",
   "Next": "Next",
-  "Asset_ID": "Asset ID",
+  "Asset_ID": "Asset No",
   "Asset_Name_Desc": "Asset Name & Description",
   "Sub_Category": "Sub-Category",
   "Location_Ward": "Location & Ward",
@@ -34,5 +34,7 @@
   "Purchase_Value": "Purchase Value",
   "Active_Assets": "Active Assets",
   "Search_assets": "Search assets ...",
-  "No_asset_records": "No asset records found for this category"
+  "No_asset_records": "No asset records found for this category",
+  "Ownership": "Ownership",
+  "Ownership_Type": "Ownership Type"
 }

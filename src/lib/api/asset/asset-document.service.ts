@@ -157,11 +157,11 @@ export interface CreateDocumentDefinitionPayload {
   allowedExtensions: string;
   displayOrder: number;
   isActive?: boolean;
-  createdBy?: number;
+  createdBy?: number | string;
 }
 
 export interface UpdateDocumentDefinitionPayload extends CreateDocumentDefinitionPayload {
-  updatedBy?: number;
+  updatedBy?: number | string;
 }
 
 export const assetDocumentService = {

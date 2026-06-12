@@ -353,17 +353,42 @@ export function useFurnitureFixtureState(
 
   const handleAddPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setForm(prev => ({ ...prev, photoName: file.name, photoUrl: URL.createObjectURL(file), photoFile: file }));
+    if (file) {
+      const allowedExtensions = ['.bmp', '.doc', '.docx', '.gif', '.jpeg', '.jpg', '.pdf', '.png', '.ppt', '.pptx', '.tif', '.tiff', '.txt', '.webp', '.xls', '.xlsx'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedExtensions.includes(fileExt)) {
+        toast.error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`);
+        e.target.value = "";
+        return;
+      }
+      setForm(prev => ({ ...prev, photoName: file.name, photoUrl: URL.createObjectURL(file), photoFile: file }));
+    }
   };
 
   const handleEditPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setEditForm(prev => ({ ...prev, photoName: file.name, photoUrl: URL.createObjectURL(file), photoFile: file }));
+    if (file) {
+      const allowedExtensions = ['.bmp', '.doc', '.docx', '.gif', '.jpeg', '.jpg', '.pdf', '.png', '.ppt', '.pptx', '.tif', '.tiff', '.txt', '.webp', '.xls', '.xlsx'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedExtensions.includes(fileExt)) {
+        toast.error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`);
+        e.target.value = "";
+        return;
+      }
+      setEditForm(prev => ({ ...prev, photoName: file.name, photoUrl: URL.createObjectURL(file), photoFile: file }));
+    }
   };
 
   const handleInvoiceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const allowedExtensions = ['.bmp', '.doc', '.docx', '.gif', '.jpeg', '.jpg', '.pdf', '.png', '.ppt', '.pptx', '.tif', '.tiff', '.txt', '.webp', '.xls', '.xlsx'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedExtensions.includes(fileExt)) {
+        toast.error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`);
+        e.target.value = "";
+        return;
+      }
       setInvoiceForm(prev => ({ ...prev, invoiceFileName: file.name, invoiceFile: file }));
     }
   };

@@ -173,15 +173,21 @@ export async function fetchSubUseTypesAction(typeOfUseId: number): Promise<Actio
     if (res.success && res.data) {
       const items = res.data.items || res.data;
       if (Array.isArray(items)) {
-        const mapped = items.map((s: any) => {
-          const code = s.subTypeCode ?? s.code ?? s.id;
-          const desc = s.description ?? s.subTypeName ?? "";
-          return {
-            label: desc ? `${code} - ${desc}` : String(code),
-            value: String(s.id),
-            typeOfUseId: String(s.typeOfUseId || typeOfUseId),
-          };
-        });
+        const mapped = items
+          .filter((s: any) => 
+            s.isActive !== false && s.isActive !== 0 && 
+            s.IsActive !== false && s.IsActive !== 0 && 
+            s.status?.toLowerCase() !== 'inactive'
+          )
+          .map((s: any) => {
+            const code = s.subTypeCode ?? s.code ?? s.id;
+            const desc = s.description ?? s.subTypeName ?? "";
+            return {
+              label: desc ? `${code} - ${desc}` : String(code),
+              value: String(s.id),
+              typeOfUseId: String(s.typeOfUseId || typeOfUseId),
+            };
+          });
         return { success: true, data: mapped };
       }
     }
@@ -189,6 +195,30 @@ export async function fetchSubUseTypesAction(typeOfUseId: number): Promise<Actio
   } catch (err: any) {
     logger.error("fetchSubUseTypesAction Error:", { error: err });
     return { success: false, error: "Network error fetching sub-use types" };
+  }
+}
+
+export async function fetchSubFloorAction(floorId: number): Promise<ActionResult<any[]>> {
+  try {
+    const res = await apiClient.get<any>(`/SubFloor?floorId=${floorId}&pageSize=10000`);
+    if (res.success && res.data) {
+      const items = res.data.items || res.data;
+      if (Array.isArray(items)) {
+        const mapped = items.map((s: any) => {
+          const desc = s.subFloorDescription ?? s.description ?? s.subFloorName ?? String(s.id);
+          return {
+            label: desc,
+            value: String(s.id),
+            floorId: String(s.floorId || floorId),
+          };
+        });
+        return { success: true, data: mapped };
+      }
+    }
+    return { success: true, data: [] };
+  } catch (err: any) {
+    logger.error("fetchSubFloorAction Error:", { error: err });
+    return { success: false, error: "Network error fetching sub floors" };
   }
 }
 
@@ -687,7 +717,11 @@ export async function fetchDepartmentsAction(): Promise<ActionResult<{ label: st
     if (res.success && res.data) {
       const items = Array.isArray(res.data) ? res.data : [];
       const options = items
-        .filter((d: any) => d.isActive !== false)
+        .filter((d: any) => 
+          d.isActive !== false && d.isActive !== 0 && 
+          d.IsActive !== false && d.IsActive !== 0 && 
+          d.status?.toLowerCase() !== 'inactive'
+        )
         .map((d: any) => ({
           label: d.departmentName || d.owningDepartmentName || `Dept ${d.id}`,
           value: String(d.id),

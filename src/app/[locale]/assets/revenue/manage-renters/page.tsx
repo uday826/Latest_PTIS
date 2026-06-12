@@ -6,6 +6,7 @@ import {
   getApplicationTypesAction,
 } from './registration-actions';
 import { fetchAssetDocumentsByAsset, fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
+import { getLeaseRentDetailsDocuments } from '@/lib/api/asset/asset-lease-rent-details-document.server.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,15 +32,27 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
   const data = await getManageRentersPageDataAction(query);
   const drawerAssetId = normalizeDrawerId(query.drawerAssetId);
   const selectedRegistration = drawerAssetId
-    ? data.records.find((record) => record.assetMasterId === drawerAssetId) ?? null
+    ? data.records.find((record) => Number(record.assetMasterId) === drawerAssetId) ?? null
     : null;
-  const selectedAsset = drawerAssetId ? await getManageRentersAssetDetailsAction(drawerAssetId) : null;
-  const [assetDocuments, assetPhotosAndPlans] = drawerAssetId
+  const fetchedAsset = drawerAssetId ? await getManageRentersAssetDetailsAction(drawerAssetId) : null;
+  const selectedAsset = fetchedAsset ?? (selectedRegistration ? {
+    id: selectedRegistration.assetMasterId ?? drawerAssetId ?? 0,
+    assetId: selectedRegistration.assetMasterId ?? drawerAssetId ?? 0,
+    assetNo: selectedRegistration.assetNo ?? selectedRegistration.assetId ?? '',
+    assetName: selectedRegistration.shopName ?? selectedRegistration.tenantName ?? selectedRegistration.assetName ?? '',
+    assetCategoryName: selectedRegistration.category ?? '',
+    zoneName: selectedRegistration.zone ?? '',
+    wardName: selectedRegistration.ward ?? '',
+  } : null);
+  const [assetDocuments, assetPhotosAndPlans, leaseRentDocuments] = drawerAssetId
     ? await Promise.all([
       fetchAssetDocumentsByAsset(drawerAssetId).then((result) => result.documents).catch(() => []),
       fetchAssetPhotosAndPlansByAsset(drawerAssetId).then((result) => result.documents).catch(() => []),
+      selectedRegistration?.id
+        ? getLeaseRentDetailsDocuments(Number(selectedRegistration.id)).then((result) => result.documents)
+        : Promise.resolve([]),
     ])
-    : [[], []];
+    : [[], [], []];
   const applicationTypes = await getApplicationTypesAction();
 
   return (
@@ -69,6 +82,7 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
         selectedRegistration={selectedRegistration}
         selectedAsset={selectedAsset}
         assetDocuments={assetDocuments}
+        leaseRentDocuments={leaseRentDocuments}
         assetPhotosAndPlans={assetPhotosAndPlans}
         applicationTypes={applicationTypes}
         initialRecords={data.records}

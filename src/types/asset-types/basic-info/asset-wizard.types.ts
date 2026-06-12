@@ -35,6 +35,8 @@ export interface AssetFormData {
   hasInventory?: boolean;
   isInventoryMandatory?: boolean;
   hasLegalCompliance?: boolean;
+  allowUnitRegistration?: boolean;
+  allowRoomRegistration?: boolean;
   attributes: Record<string, any>;
   documents: any[];
   [key: string]: any;
@@ -62,6 +64,8 @@ export interface AssetFormContextType {
   setSubunitFiles?: React.Dispatch<React.SetStateAction<Record<number, { photoFile?: File | null; planFile?: File | null }>>>;
   registerStepSave?: (stepKey: string, saveFn: () => Promise<{ success: boolean; error?: string }>) => void;
   unregisterStepSave?: (stepKey: string) => void;
+  isDataLoading?: boolean;
+  setIsDataLoading?: (loading: boolean) => void;
 }
 
 export interface AssetWizardStepProps {

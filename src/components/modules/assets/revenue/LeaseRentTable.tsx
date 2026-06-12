@@ -119,17 +119,30 @@ export function LeaseRentTable({
       paginationConfig={{ enabled: true, showPageSizeSelector: true }}
       renderActions={(row) => {
         const isReverted = row.workflowStatus?.toLowerCase() === 'reverted';
+        const isRegistered = row.workflowStatus?.toLowerCase() === 'registered';
         return (
-          <>
-            <Button
-              type="button"
-              onClick={() => onActionClick?.(row)}
-              variant="primary"
-              size="xs"
-              icon={isReverted ? Pencil : Plus}
-              aria-label={isReverted ? "Edit registration" : "Add registration"}
-              className={iconActionClassName}
-            />
+          <div className="flex w-full items-center justify-end gap-2">
+            {isRegistered ? (
+              <Button
+                type="button"
+                onClick={() => onActionClick?.(row)}
+                variant="primary"
+                size="xs"
+                icon={Plus}
+                aria-label="Add registration"
+                className={iconActionClassName}
+              />
+            ) : isReverted ? (
+              <Button
+                type="button"
+                onClick={() => onActionClick?.(row)}
+                variant="primary"
+                size="xs"
+                icon={Pencil}
+                aria-label="Edit registration"
+                className={iconActionClassName}
+              />
+            ) : null}
             <Button
               type="button"
               onClick={() => onHistoryClick?.(row)}
@@ -139,7 +152,7 @@ export function LeaseRentTable({
               aria-label="View history"
               className={iconActionClassName}
             />
-          </>
+          </div>
         );
       }}
     />

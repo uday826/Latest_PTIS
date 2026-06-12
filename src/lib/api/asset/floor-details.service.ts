@@ -131,9 +131,16 @@ export const floorDetailsService = {
 
     const extractItems = (res: ApiResponse<any>): any[] => {
       if (!res.success || !res.data) return [];
-      if (Array.isArray(res.data.items)) return res.data.items;
-      if (Array.isArray(res.data)) return res.data;
-      return [];
+      let items = [];
+      if (Array.isArray(res.data.items)) items = res.data.items;
+      else if (Array.isArray(res.data)) items = res.data;
+      else return [];
+
+      return items.filter((item: any) => 
+        item.isActive !== false && item.isActive !== 0 && 
+        item.IsActive !== false && item.IsActive !== 0 && 
+        item.status?.toLowerCase() !== 'inactive'
+      );
     };
 
     const floorList = extractItems(floorRes);

@@ -29,7 +29,7 @@ interface DocumentUploadState {
 }
 
 export default function LegalCompliancePage() {
-  const { formData, registerSubmitHook, stagedFiles, setStagedFiles } = useAssetForm();
+  const { formData, registerSubmitHook, stagedFiles, setStagedFiles, setIsDataLoading } = useAssetForm();
   const [definitions, setDefinitions] = useState<AssetDocumentDefinitionDto[]>([]);
   const [uploadStates, setUploadStates] = useState<Record<number, DocumentUploadState>>({});
   const [deletedDocIds, setDeletedDocIds] = useState<number[]>([]);
@@ -84,6 +84,7 @@ export default function LegalCompliancePage() {
   useEffect(() => {
     async function fetchDefinitions() {
       setLoading(true);
+      if (setIsDataLoading) setIsDataLoading(true);
       setError(null);
       try {
 
@@ -117,6 +118,7 @@ export default function LegalCompliancePage() {
         setError("Failed to load document definitions. Please try again.");
       } finally {
         setLoading(false);
+        if (setIsDataLoading) setIsDataLoading(false);
       }
     }
 
@@ -124,6 +126,7 @@ export default function LegalCompliancePage() {
       fetchDefinitions();
     } else {
       setLoading(false);
+      if (setIsDataLoading) setIsDataLoading(false);
     }
   }, [formData.categoryId, formData.typeId]);
 

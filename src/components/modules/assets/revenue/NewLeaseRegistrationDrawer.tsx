@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { Button, Drawer, Label, MasterTable, type Column, useToast } from '@/components/common';
 import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
-import { uploadAssetDocumentAction } from '@/app/[locale]/assets/actions';
+import { uploadAssetLeaseRentDetailsDocumentAction } from '@/app/[locale]/assets/actions';
 import { deleteUploadedDocAction } from '@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions';
 import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
 import {
@@ -81,6 +81,17 @@ function toDateDisplay(value: unknown): string {
 function getFileTitle(documentItem: AssetDocumentListItem): string {
   return documentItem.name || documentItem.fileName || 'Document';
 }
+
+type LeaseDocumentType = 'aadhar' | 'pan';
+
+type LeaseDocumentCard = AssetDocumentListItem & {
+  localFile?: File;
+};
+
+type StagedLeaseDocument = {
+  file: File;
+  replacingDocId?: number | string;
+};
 
 function getInitialApplicationTypeId(
   applicationTypes: ApplicationTypeItem[],
@@ -251,9 +262,9 @@ function buildTemplate(
       { key: 'aadhaarNumber', label: 'Aadhaar Number', icon: FileText, type: 'text', placeholder: '12-digit Aadhaar' },
       { key: 'panNumber', label: 'PAN Number', icon: FileText, type: 'text', placeholder: 'PAN card number' },
       { key: 'leaseType', label: 'Lease / Rent Type', icon: FileText, type: 'select', options: ['Rent', 'Lease'], required: true },
+      { key: 'monthlyRent', label: 'Monthly Rent (₹)', icon: IndianRupee, type: 'number', placeholder: '0.00', required: true },
       { key: 'leaseStartDate', label: 'Lease Start Date', icon: Calendar, type: 'date', required: true },
       { key: 'leaseEndDate', label: 'Lease End Date', icon: Calendar, type: 'date' },
-      { key: 'monthlyRent', label: 'Monthly Rent (₹)', icon: IndianRupee, type: 'number', placeholder: '0.00', required: true },
       { key: 'securityDeposit', label: 'Security Deposit (₹)', icon: IndianRupee, type: 'number', placeholder: '0.00' },
       { key: 'paymentFrequency', label: 'Payment Frequency', icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'] },
       { key: 'pinCode', label: 'Pin Code', icon: MapPinned, type: 'text', placeholder: '6-digit pin code' },
@@ -377,6 +388,37 @@ function buildSubmitData(
   }
 }
 
+function extractLeaseRentDetailsId(result: unknown): number {
+  if (!result || typeof result !== 'object') return 0;
+
+  const body = result as Record<string, unknown>;
+  const candidates = [
+    body.items,
+    body.Items,
+    body.data,
+    body.Data,
+    body.result,
+    body.Result,
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate && typeof candidate === 'object') {
+      const item = candidate as Record<string, unknown>;
+      const rawId = item.id ?? item.Id ?? item.assetLeaseRentDetailsId ?? item.AssetLeaseRentDetailsId;
+      const parsedId = Number(rawId);
+      if (Number.isFinite(parsedId) && parsedId > 0) return parsedId;
+    }
+  }
+
+  const directId = Number(body.id ?? body.Id);
+  return Number.isFinite(directId) && directId > 0 ? directId : 0;
+}
+
+function toPositiveNumber(value: unknown): number | undefined {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
 function DetailChip({ label, value }: { label: string; value: unknown }) {
   return (
     <div className="bg-white border border-slate-200 rounded-lg p-3 relative mt-3 shadow-sm flex flex-col items-center justify-center">
@@ -402,6 +444,85 @@ function RenderField({
   const wrapperClassName = `space-y-1 ${field.colSpan === 2 ? 'col-span-2' : ''}`;
   const sharedInputClass = `w-full h-8 px-2 text-xs font-semibold text-slate-700 border border-slate-200 rounded outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100 ${isReadOnlyField ? 'bg-slate-50 cursor-not-allowed text-slate-500' : 'bg-white'
     }`;
+  const maxLengthByKey: Partial<Record<keyof FormState, number>> = {
+    tenantName: 500,
+    mobileNumber: 10,
+    emailAddress: 200,
+    tenantType: 50,
+    aadhaarNumber: 12,
+    panNumber: 10,
+    pinCode: 6,
+    residentialAddress: 500,
+    shopNo: 50,
+    shopName: 200,
+    leaseType: 20,
+    paymentFrequency: 20,
+    existingTenantName: 500,
+    previousRent: 20,
+    revisedRent: 20,
+    newTenantDetails: 500,
+    newTenantMobile: 10,
+    relationship: 50,
+    nocFromExistingTenant: 3,
+    reasonForTransfer: 1000,
+    reasonForRenewal: 1000,
+    reasonForTermination: 1000,
+    pendingDues: 20,
+    securityDepositRefund: 20,
+    remarksDescription: 1000,
+    leaseStartDate: 10,
+    leaseEndDate: 10,
+    oldLeaseStartDate: 10,
+    oldLeaseEndDate: 10,
+    renewalStartDate: 10,
+    renewalEndDate: 10,
+    vacatingDate: 10,
+    applicationType: 100,
+    monthlyRent: 20,
+    securityDeposit: 20,
+  };
+  const maxLength = maxLengthByKey[field.key];
+
+  const handleChange = (nextValue: string) => {
+    if (field.type === 'number') {
+      const cleaned = nextValue.replace(/[^0-9.]/g, '');
+      const parts = cleaned.split('.');
+      const normalized = parts.length > 1 ? `${parts[0]}.${parts.slice(1).join('')}` : cleaned;
+      setValue(normalized);
+      return;
+    }
+
+    if (field.key === 'tenantName' || field.key === 'existingTenantName' || field.key === 'newTenantDetails') {
+      setValue(nextValue.replace(/[^a-zA-Z\s]/g, ''));
+      return;
+    }
+
+    if (field.key === 'residentialAddress' || field.key === 'shopNo' || field.key === 'shopName' || field.key === 'remarksDescription' || field.key === 'reasonForRenewal' || field.key === 'reasonForTransfer' || field.key === 'reasonForTermination') {
+      setValue(nextValue.replace(/[<>]/g, ''));
+      return;
+    }
+
+    if (field.key === 'mobileNumber' || field.key === 'newTenantMobile' || field.key === 'pinCode') {
+      const digitsOnly = nextValue.replace(/\D/g, '');
+      const limited = digitsOnly.slice(0, maxLength ?? digitsOnly.length);
+      setValue(limited);
+      return;
+    }
+
+    if (field.key === 'aadhaarNumber') {
+      const cleaned = nextValue.replace(/[^0-9]/g, '').slice(0, maxLength ?? nextValue.length);
+      setValue(cleaned);
+      return;
+    }
+
+    if (field.key === 'panNumber') {
+      const cleaned = nextValue.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, maxLength ?? nextValue.length);
+      setValue(cleaned);
+      return;
+    }
+
+    setValue(nextValue);
+  };
 
   return (
     <div className={wrapperClassName}>
@@ -431,7 +552,8 @@ function RenderField({
           value={value}
           readOnly={isReadOnlyField}
           aria-readonly={isReadOnlyField}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
+          maxLength={field.type !== 'number' ? maxLength : undefined}
           min={field.type === 'number' ? 0 : undefined}
           step={field.type === 'number' ? 'any' : undefined}
         />
@@ -467,17 +589,18 @@ export function NewLeaseRegistrationModal({
   onClose,
 }: NewLeaseRegistrationModalProps) {
   const [activeTab, setActiveTab] = useState<'new' | 'previous'>('new');
-  const [localDocuments, setLocalDocuments] = useState<AssetDocumentListItem[]>(() => documents);
-  useEffect(() => {
-    setLocalDocuments(documents);
-  }, [documents]);
+  const [localDocuments, setLocalDocuments] = useState<LeaseDocumentCard[]>(() => documents);
+  const [stagedDocuments, setStagedDocuments] = useState<Record<LeaseDocumentType, StagedLeaseDocument | null>>({
+    aadhar: null,
+    pan: null,
+  });
   const [selectedTypeId, setSelectedTypeId] = useState<number>(() =>
     getInitialApplicationTypeId(applicationTypes, record)
   );
   const [isPending, startTransition] = useTransition();
   const { success: toastSuccess, error: toastError } = useToast();
   const [historyItems, setHistoryItems] = useState<PreviousTenantHistoryItem[]>([]);
-  const [selectedDocument, setSelectedDocument] = useState<AssetDocumentListItem | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<LeaseDocumentCard | null>(null);
   const [loadedFile, setLoadedFile] = useState<LoadedDocumentFile | null>(null);
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -519,7 +642,68 @@ export function NewLeaseRegistrationModal({
   );
   const [formState, setFormState] = useState<FormState>(() => initialFormState);
 
-  const readDocumentFile = useCallback(async (documentItem: AssetDocumentListItem) => {
+  const handleFormFieldChange = useCallback(
+    (fieldKey: keyof FormState, nextValue: string) => {
+      const nextState = { ...formState, [fieldKey]: nextValue } as FormState;
+
+      const isAfter = (startValue: string, endValue: string) => {
+        if (!startValue || !endValue) return false;
+        const start = new Date(startValue);
+        const end = new Date(endValue);
+        return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start > end;
+      };
+
+      if (fieldKey === 'leaseStartDate' && nextState.leaseEndDate && isAfter(nextState.leaseStartDate, nextState.leaseEndDate)) {
+        toastError('Lease start date cannot be later than the lease end date.');
+        return;
+      }
+      if (fieldKey === 'leaseEndDate' && nextState.leaseStartDate && isAfter(nextState.leaseStartDate, nextState.leaseEndDate)) {
+        toastError('Lease end date cannot be earlier than the lease start date.');
+        return;
+      }
+      if (fieldKey === 'oldLeaseStartDate' && nextState.oldLeaseEndDate && isAfter(nextState.oldLeaseStartDate, nextState.oldLeaseEndDate)) {
+        toastError('Old lease start date cannot be later than the old lease end date.');
+        return;
+      }
+      if (fieldKey === 'oldLeaseEndDate' && nextState.oldLeaseStartDate && isAfter(nextState.oldLeaseStartDate, nextState.oldLeaseEndDate)) {
+        toastError('Old lease end date cannot be earlier than the old lease start date.');
+        return;
+      }
+      if (fieldKey === 'renewalStartDate' && nextState.renewalEndDate && isAfter(nextState.renewalStartDate, nextState.renewalEndDate)) {
+        toastError('Renewal start date cannot be later than the renewal end date.');
+        return;
+      }
+      if (fieldKey === 'renewalEndDate' && nextState.renewalStartDate && isAfter(nextState.renewalStartDate, nextState.renewalEndDate)) {
+        toastError('Renewal end date cannot be earlier than the renewal start date.');
+        return;
+      }
+      if (fieldKey === 'renewalStartDate' && nextState.oldLeaseEndDate && nextState.renewalStartDate) {
+        const renewalStart = new Date(nextState.renewalStartDate);
+        const oldEnd = new Date(nextState.oldLeaseEndDate);
+        if (!Number.isNaN(renewalStart.getTime()) && !Number.isNaN(oldEnd.getTime()) && renewalStart < oldEnd) {
+          toastError('Renewal start date cannot be earlier than the old lease end date.');
+          return;
+        }
+      }
+
+      setFormState(nextState);
+    },
+    [formState, toastError]
+  );
+
+function isValidNonNegativeAmount(value: string): boolean {
+  if (!value) return true;
+  return /^[0-9]+(\.[0-9]+)?$/.test(value);
+}
+  const readDocumentFile = useCallback(async (documentItem: LeaseDocumentCard) => {
+    if (documentItem.localFile) {
+      return {
+        objectUrl: URL.createObjectURL(documentItem.localFile),
+        contentType: documentItem.localFile.type || 'application/octet-stream',
+        fileName: documentItem.localFile.name || documentItem.fileName || documentItem.name,
+      } satisfies LoadedDocumentFile;
+    }
+
     const result = await fetchAssetDocumentFile(documentItem.id);
     if (result.error || !result.base64) {
       throw new Error(result.error || 'Unable to load this file.');
@@ -546,7 +730,11 @@ export function NewLeaseRegistrationModal({
     } satisfies LoadedDocumentFile;
   }, []);
 
-  const readDocumentThumbnailSrc = useCallback(async (documentItem: AssetDocumentListItem) => {
+  const readDocumentThumbnailSrc = useCallback(async (documentItem: LeaseDocumentCard) => {
+    if (documentItem.localFile) {
+      return URL.createObjectURL(documentItem.localFile);
+    }
+
     const result = await fetchAssetDocumentFile(documentItem.id);
     if (result.error || !result.base64) {
       throw new Error(result.error || 'Unable to load this file.');
@@ -556,75 +744,102 @@ export function NewLeaseRegistrationModal({
     return `data:${contentType};base64,${result.base64}`;
   }, []);
 
-  const triggerFileUpload = (type: 'aadhar' | 'pan') => {
-    const existingDoc = localDocuments.find(
-      (doc) => (doc.name || '').toLowerCase() === type.toLowerCase()
-    );
+  const uploadStagedDocuments = useCallback(
+    async (leaseRentDetailsId: number) => {
+      const stagedEntries: Array<[LeaseDocumentType, StagedLeaseDocument | null]> = [
+        ['aadhar', stagedDocuments.aadhar],
+        ['pan', stagedDocuments.pan],
+      ];
 
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*,application/pdf';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
+      let uploadFailed = false;
 
-      const assetIdVal = asset.id ?? record?.assetMasterId;
-      if (!assetIdVal) {
-        toastError('Asset ID is missing.');
-        return;
+      for (const [type, staged] of stagedEntries) {
+        if (!staged) continue;
+
+        const existingDoc = localDocuments.find(
+          (doc) => (doc.name || '').toLowerCase() === type.toLowerCase() && !String(doc.id).startsWith(`local-${type}`)
+        );
+
+        if (existingDoc?.id && String(existingDoc.id) !== String(staged.replacingDocId ?? '')) {
+          const delRes = await deleteUploadedDocAction(Number(existingDoc.id));
+          if (!delRes.success) {
+            uploadFailed = true;
+            toastError(delRes.error || `Failed to remove existing ${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document.`);
+            continue;
+          }
+        }
+
+        const fd = new FormData();
+        fd.append('File', staged.file);
+        fd.append('AssetLeaseRentDetailsId', String(leaseRentDetailsId));
+        fd.append('ModuleId', '0');
+        const floorSource = record as LeaseRentRecord & {
+          floorDetailsId?: number | string | null;
+          floorDetailId?: number | string | null;
+          floorId?: number | string | null;
+        };
+        const floorDetailId = floorSource?.floorDetailsId ?? floorSource?.floorDetailId ?? floorSource?.floorId;
+        if (floorDetailId != null) {
+          fd.append('FloorDetailId', String(floorDetailId));
+        }
+        fd.append('DocumentType', type);
+        fd.append('DocumentTitle', type);
+        fd.append('UploadedByUserId', '1');
+
+        const res = await uploadAssetLeaseRentDetailsDocumentAction(fd);
+        if (res.success && res.data) {
+          const uploadedDoc: LeaseDocumentCard = {
+            id: res.data.assetDocumentId,
+            assetId:
+              toPositiveNumber(res.data.assetId) ??
+              asset.id ??
+              record?.assetMasterId ??
+              leaseRentDetailsId,
+            name: type,
+            fileName: res.data.fileName || staged.file.name,
+            contentType: staged.file.type,
+            uploadedDate: new Date().toISOString(),
+            fileSize: res.data.fileSizeBytes,
+            status: 'Uploaded',
+          };
+
+          setLocalDocuments((prev) => {
+            const filtered = prev.filter(
+              (doc) => (doc.name || '').toLowerCase() !== type.toLowerCase() || String(doc.id).startsWith(`local-${type}`)
+            );
+            return [...filtered, uploadedDoc];
+          });
+        } else {
+          uploadFailed = true;
+          toastError(res.error || `Failed to upload ${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document.`);
+        }
       }
 
-      const fd = new FormData();
-      fd.append('File', file);
-      fd.append('AssetId', String(assetIdVal));
-      fd.append('ModuleId', '0'); // resolved dynamically on the server
-      fd.append('DocumentType', type);
-      fd.append('DocumentTitle', type);
+      if (!uploadFailed) {
+        setStagedDocuments({ aadhar: null, pan: null });
+      }
 
-      startTransition(async () => {
-        try {
-          if (existingDoc) {
-            const delRes = await deleteUploadedDocAction(Number(existingDoc.id));
-            if (!delRes.success) {
-              toastError(delRes.error || `Failed to remove existing ${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document.`);
-              return;
-            }
-          }
-
-          const res = await uploadAssetDocumentAction(fd);
-          if (res.success && res.data) {
-            toastSuccess(`${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document replaced successfully.`);
-            const newDoc: AssetDocumentListItem = {
-              id: res.data.assetDocumentId,
-              assetId: res.data.assetId,
-              name: type, // Matches documentTitle/documentType value 'aadhar' or 'pan'
-              fileName: res.data.fileName || file.name,
-              contentType: file.type,
-              uploadedDate: new Date().toISOString(),
-              fileSize: res.data.fileSizeBytes,
-              status: 'Uploaded',
-            };
-            setLocalDocuments((prev) => {
-              const filtered = prev.filter((d) => String(d.id) !== String(existingDoc?.id));
-              return [...filtered, newDoc];
-            });
-          } else {
-            toastError(res.error || 'Failed to upload document.');
-          }
-        } catch (err: any) {
-          toastError(err?.message || 'Error uploading document.');
-        }
-      });
-    };
-    input.click();
-  };
+      return !uploadFailed;
+    },
+    [asset.id, localDocuments, record, stagedDocuments.aadhar, stagedDocuments.pan, toastError]
+  );
 
   const handleUpdateRegistration = () => {
-    const assetId = record?.assetMasterId ?? asset.id;
+    const assetId = Number(record?.assetMasterId ?? asset.id ?? asset.assetId ?? 0);
     const recordId = Number(record?.id);
 
-    if (!assetId) {
-      toastError('Asset ID is missing.');
+    console.log('Lease registration submit trace', {
+      recordId,
+      recordAssetMasterId: record?.assetMasterId,
+      assetIdProp: asset.id,
+      assetAssetIdProp: asset.assetId,
+      resolvedAssetId: assetId,
+      selectedTypeCode: selectedType?.applicationTypeCode,
+      selectedTypeId,
+    });
+
+    if (!assetId || Number.isNaN(assetId)) {
+      toastError('Asset ID is missing or invalid.');
       return;
     }
 
@@ -659,6 +874,56 @@ export function NewLeaseRegistrationModal({
     const aadhaarReg = /^[0-9]{12}$/;
     if (hasField('aadhaarNumber') && formState.aadhaarNumber && !aadhaarReg.test(formState.aadhaarNumber)) {
       toastError('Aadhaar number must be a valid 12-digit number.');
+      return;
+    }
+
+    if (hasField('tenantName') && /[^a-zA-Z\s'.-]/.test(formState.tenantName)) {
+      toastError('Tenant name can only contain letters and spaces.');
+      return;
+    }
+    if (hasField('existingTenantName') && /[^a-zA-Z\s]/.test(formState.existingTenantName)) {
+      toastError('Existing tenant name can only contain letters and spaces.');
+      return;
+    }
+    if (hasField('newTenantDetails') && /[^a-zA-Z\s]/.test(formState.newTenantDetails)) {
+      toastError('New tenant name can only contain letters and spaces.');
+      return;
+    }
+
+    if (hasField('mobileNumber') && /[^0-9]/.test(formState.mobileNumber)) {
+      toastError('Mobile number must contain only digits.');
+      return;
+    }
+    if (hasField('newTenantMobile') && /[^0-9]/.test(formState.newTenantMobile)) {
+      toastError('New tenant mobile number must contain only digits.');
+      return;
+    }
+    if (hasField('pinCode') && /[^0-9]/.test(formState.pinCode)) {
+      toastError('Pin code must contain only digits.');
+      return;
+    }
+    if (hasField('aadhaarNumber') && /[^0-9]/.test(formState.aadhaarNumber)) {
+      toastError('Aadhaar number must contain only digits.');
+      return;
+    }
+    if (hasField('panNumber') && /[^a-zA-Z0-9]/.test(formState.panNumber)) {
+      toastError('PAN number must contain only letters and digits.');
+      return;
+    }
+    if (hasField('remarksDescription') && /[<>]/.test(formState.remarksDescription)) {
+      toastError('Remarks cannot contain special characters like < or >.');
+      return;
+    }
+    if (hasField('reasonForRenewal') && /[<>]/.test(formState.reasonForRenewal)) {
+      toastError('Reason for renewal cannot contain special characters like < or >.');
+      return;
+    }
+    if (hasField('reasonForTransfer') && /[<>]/.test(formState.reasonForTransfer)) {
+      toastError('Reason for transfer cannot contain special characters like < or >.');
+      return;
+    }
+    if (hasField('reasonForTermination') && /[<>]/.test(formState.reasonForTermination)) {
+      toastError('Reason for termination cannot contain special characters like < or >.');
       return;
     }
 
@@ -702,16 +967,50 @@ export function NewLeaseRegistrationModal({
       }
     }
 
+    if (hasField('monthlyRent') && formState.monthlyRent && !isValidNonNegativeAmount(formState.monthlyRent)) {
+      toastError('Monthly rent must be a non-negative number.');
+      return;
+    }
+    if (hasField('securityDeposit') && formState.securityDeposit && !isValidNonNegativeAmount(formState.securityDeposit)) {
+      toastError('Security deposit must be a non-negative number.');
+      return;
+    }
+    if (hasField('previousRent') && formState.previousRent && !isValidNonNegativeAmount(formState.previousRent)) {
+      toastError('Previous rent must be a non-negative number.');
+      return;
+    }
+    if (hasField('revisedRent') && formState.revisedRent && !isValidNonNegativeAmount(formState.revisedRent)) {
+      toastError('Revised rent must be a non-negative number.');
+      return;
+    }
+    if (hasField('pendingDues') && formState.pendingDues && !isValidNonNegativeAmount(formState.pendingDues)) {
+      toastError('Pending dues must be a non-negative number.');
+      return;
+    }
+    if (hasField('securityDepositRefund') && formState.securityDepositRefund && !isValidNonNegativeAmount(formState.securityDepositRefund)) {
+      toastError('Security deposit refund must be a non-negative number.');
+      return;
+    }
+
     const typeCode = selectedType?.applicationTypeCode || 'APP-NEW';
     const payload = buildSubmitData(formState, assetId, selectedTypeId, typeCode);
 
     startTransition(async () => {
       try {
         let result;
-        if (recordId && Number.isFinite(recordId)) {
+        let leaseRentDetailsId = Number.isFinite(recordId) && recordId > 0 ? recordId : 0;
+        const isNew = typeCode === 'APP-NEW';
+        const canUpdate = Number.isFinite(recordId) && recordId > 0 && !isNew;
+
+        if (canUpdate) {
+          const targetRecordId = recordId;
+          const parentAssetId =
+            toPositiveNumber(asset.id) ??
+            toPositiveNumber(record?.assetMasterId) ??
+            toPositiveNumber(asset.assetId);
           const updatePayload: AssetLeaseRentDetailsUpdatePayload = {
-            id: recordId,
-            parentAssetId: asset.id ?? record?.assetMasterId ?? undefined,
+            id: targetRecordId,
+            parentAssetId,
             assetNo: asset.assetNo ?? record?.assetNo ?? null,
             assetName: asset.assetName ?? record?.shopName ?? null,
             category: record?.assetCategory ?? record?.category ?? asset.assetCategoryName ?? null,
@@ -719,19 +1018,27 @@ export function NewLeaseRegistrationModal({
             wardNo: asset.wardName ?? record?.ward ?? null,
             ...payload,
           };
-          result = await updateAssetLeaseRentDetailsAction(recordId, updatePayload);
+          result = await updateAssetLeaseRentDetailsAction(targetRecordId, updatePayload);
         } else {
           result = await createLeaseRentRegistrationAction(payload);
+          leaseRentDetailsId = extractLeaseRentDetailsId(result);
         }
 
         if (result.success) {
-          toastSuccess(result.message || 'Registration submitted successfully!');
+          if (leaseRentDetailsId > 0) {
+            const uploadsOk = await uploadStagedDocuments(leaseRentDetailsId);
+            if (!uploadsOk) {
+              toastError('Registration saved, but one or more documents failed to upload.');
+            }
+          }
+          toastSuccess('Registration submitted successfully!');
           setTimeout(() => onClose(), 1500);
         } else {
           toastError(result.message || 'Submission failed.');
         }
-      } catch {
-        toastError('An unexpected error occurred. Please try again.');
+      } catch (error) {
+        console.error('Lease registration submit failed:', error);
+        toastError(error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.');
       }
     });
   };
@@ -1101,37 +1408,12 @@ export function NewLeaseRegistrationModal({
                           }
                           return;
                         }
-                        setFormState((prev) => ({
-                          ...prev,
-                          [field.key]: value,
-                        }) as FormState);
+                        handleFormFieldChange(field.key, value);
                       }}
                     />
                   ))}
 
-                  {template.secondaryButtons?.length ? (
-                    <div className="col-span-2 flex flex-wrap gap-2">
-                      {template.secondaryButtons.map((button) => (
-                        <Button
-                          key={button.label}
-                          variant={button.variant}
-                          size="sm"
-                          icon={button.icon}
-                          className="flex-1 min-w-[160px]"
-                          disabled={isPending}
-                          onClick={() => {
-                            if (button.label.toLowerCase().includes('aadhaar')) {
-                              triggerFileUpload('aadhar');
-                            } else if (button.label.toLowerCase().includes('pan')) {
-                              triggerFileUpload('pan');
-                            }
-                          }}
-                        >
-                          {button.label}
-                        </Button>
-                      ))}
-                    </div>
-                  ) : null}
+                  {null}
                 </>
               ) : (
                 <div className="col-span-2 space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar p-1">

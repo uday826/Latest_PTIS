@@ -46,11 +46,11 @@ export default function MunicipalAssetDashboard({
   const pathname = usePathname();
 
   const [categories] = useState<AssetCategory[]>(() => {
+    let raw: any[] = [];
     if (initialCategories && initialCategories.length > 0) {
-      return initialCategories;
-    }
-    if (initialStats?.categoryStats?.length) {
-      return initialStats.categoryStats.map((category) => ({
+      raw = initialCategories;
+    } else if (initialStats?.categoryStats?.length) {
+      raw = initialStats.categoryStats.map((category) => ({
         id: category.categoryId,
         categoryName: category.categoryName,
         categoryCode: `CAT-${category.categoryId}`,
@@ -63,14 +63,23 @@ export default function MunicipalAssetDashboard({
         valuationType: "GENERIC",
       }));
     }
-    return [];
+    return raw.filter(c => 
+      c.isActive !== false && c.isActive !== 0 && 
+      c.IsActive !== false && c.IsActive !== 0 && 
+      c.status?.toLowerCase() !== 'inactive'
+    );
   });
 
   const [typesByCategory] = useState<Record<number, AssetType[]>>(() => {
     const typesMap: Record<number, AssetType[]> = {};
 
+    const filterActive = (t: any) => 
+      t.isActive !== false && t.isActive !== 0 && 
+      t.IsActive !== false && t.IsActive !== 0 && 
+      t.status?.toLowerCase() !== 'inactive';
+
     if (initialTypes) {
-      initialTypes.forEach((type) => {
+      initialTypes.filter(filterActive).forEach((type) => {
         const catId = type.categoryId || type.assetCategoryId;
         if (catId) {
           if (!typesMap[catId]) {
@@ -90,7 +99,7 @@ export default function MunicipalAssetDashboard({
           typesMap[catId] = [];
         }
         if (category.assetTypeStats) {
-          category.assetTypeStats.forEach((statType) => {
+          category.assetTypeStats.filter(filterActive).forEach((statType) => {
             if (!typesMap[catId].some((t) => t.id === statType.assetTypeId)) {
               typesMap[catId].push({
                 id: statType.assetTypeId,
