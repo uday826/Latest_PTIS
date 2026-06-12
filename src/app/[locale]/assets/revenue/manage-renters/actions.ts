@@ -13,6 +13,7 @@ import {
   getAssetLeaseRentDetailsList,
   getAssetLeaseRentDetailsById,
   updateAssetLeaseRentDetails,
+  sendForVerification,
   sendToVerification,
   verifyLeaseRent,
   approveLeaseRent,
@@ -412,6 +413,16 @@ export async function updateAssetLeaseRentDetailsAction(
 
 export async function sendToVerificationAction(id: number, remarks?: string) {
   const res = await sendToVerification(id, remarks);
+  revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
+  revalidatePath('/assets/revenue/manage-renters');
+  return res;
+}
+
+export async function sendForVerificationAction(
+  id: number,
+  payload: AssetLeaseRentDetailsUpdatePayload
+) {
+  const res = await sendForVerification(id, payload);
   revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
   revalidatePath('/assets/revenue/manage-renters');
   return res;

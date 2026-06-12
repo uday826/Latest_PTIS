@@ -2,7 +2,7 @@
 /* eslint-disable i18next/no-literal-string */
 /* eslint-disable @next/next/no-img-element */
 
-import { useCallback, useEffect, useTransition, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useTransition, useMemo, useState } from 'react';
 import {
   Building2,
   Calendar,
@@ -44,7 +44,12 @@ import type {
   NewLeaseRegistrationModalProps,
   TemplateDef,
 } from '../../../../types/asset/revenue.types';
-import { updateAssetLeaseRentDetailsAction, createLeaseRentRegistrationAction, getPreviousTenantHistoryAction } from '@/app/[locale]/assets/revenue/manage-renters/registration-actions';
+import {
+  updateAssetLeaseRentDetailsAction,
+  createLeaseRentRegistrationAction,
+  getPreviousTenantHistoryAction,
+  sendForVerificationAction,
+} from '@/app/[locale]/assets/revenue/manage-renters/registration-actions';
 import type { AssetLeaseRentDetailsUpdatePayload } from '@/lib/api/asset/asset-lease-rent-details.service';
 
 function isBlank(value: unknown): boolean {
@@ -434,10 +439,12 @@ function RenderField({
   field,
   value,
   setValue,
+  disabled = false,
 }: {
   field: FieldDef;
   value: string;
   setValue: (value: string) => void;
+  disabled?: boolean;
 }) {
   const Icon = field.icon;
   const isReadOnlyField = field.key === 'shopNo' || field.key === 'shopName';
@@ -530,7 +537,13 @@ function RenderField({
         <Icon className="w-3 h-3 text-slate-400" /> {field.label}
       </Label>
       {field.type === 'select' ? (
-        <select className={sharedInputClass} value={value} onChange={(e) => setValue(e.target.value)}>
+        <select
+          className={sharedInputClass}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          disabled={disabled}
+          aria-disabled={disabled}
+        >
           {(field.options ?? []).map((option) => (
             <option key={option} value={option}>
               {option}
@@ -605,6 +618,8 @@ export function NewLeaseRegistrationModal({
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
+  const aadharInputRef = useRef<HTMLInputElement | null>(null);
+  const panInputRef = useRef<HTMLInputElement | null>(null);
 
   const revokeLoadedFile = useCallback(() => {
     setLoadedFile((current) => {
@@ -634,6 +649,7 @@ export function NewLeaseRegistrationModal({
   const selectedType = useMemo(() => {
     return applicationTypes.find((t) => t.id === selectedTypeId) || applicationTypes[0];
   }, [selectedTypeId, applicationTypes]);
+  const isRevertedRecord = (record?.workflowStatus ?? '').toLowerCase() === 'reverted';
 
   const template = useMemo(() => buildTemplate(selectedTypeId, applicationTypes), [selectedTypeId, applicationTypes]);
   const initialFormState = useMemo(
@@ -999,6 +1015,37 @@ function isValidNonNegativeAmount(value: string): boolean {
       try {
         let result;
         let leaseRentDetailsId = Number.isFinite(recordId) && recordId > 0 ? recordId : 0;
+        if (isRevertedRecord) {
+          if (!Number.isFinite(recordId) || recordId <= 0) {
+            toastError('Reverted record ID is missing or invalid.');
+            return;
+          }
+
+          const parentAssetId =
+            toPositiveNumber(asset.id) ??
+            toPositiveNumber(record?.assetMasterId) ??
+            toPositiveNumber(asset.assetId);
+          const sendPayload: AssetLeaseRentDetailsUpdatePayload = {
+            id: recordId,
+            parentAssetId,
+            assetNo: asset.assetNo ?? record?.assetNo ?? null,
+            assetName: asset.assetName ?? record?.shopName ?? null,
+            category: record?.assetCategory ?? record?.category ?? asset.assetCategoryName ?? null,
+            zone: asset.zoneName ?? record?.zone ?? null,
+            wardNo: asset.wardName ?? record?.ward ?? null,
+            ...payload,
+          };
+
+          result = await sendForVerificationAction(recordId, sendPayload);
+          if (result.success) {
+            toastSuccess('Sent to verification successfully!');
+            setTimeout(() => onClose(), 1500);
+          } else {
+            toastError(result.message || 'Failed to send to verification.');
+          }
+          return;
+        }
+
         const isNew = typeCode === 'APP-NEW';
         const canUpdate = Number.isFinite(recordId) && recordId > 0 && !isNew;
 
@@ -1092,6 +1139,54 @@ function isValidNonNegativeAmount(value: string): boolean {
     document.body.removeChild(link);
   }, [loadDocumentFile, loadedFile, selectedDocument]);
 
+  const handleDocumentSelect = useCallback(
+    (type: LeaseDocumentType, file: File | null) => {
+      if (!file) return;
+      setStagedDocuments((prev) => ({
+        ...prev,
+        [type]: {
+          file,
+          replacingDocId: localDocuments.find((doc) => (doc.name || '').toLowerCase() === type.toLowerCase())?.id,
+        },
+      }));
+    },
+    [localDocuments]
+  );
+
+  const triggerDocumentPicker = useCallback((type: LeaseDocumentType) => {
+    if (type === 'aadhar') {
+      aadharInputRef.current?.click();
+      return;
+    }
+    panInputRef.current?.click();
+  }, []);
+
+  const stagedLabel = (type: LeaseDocumentType) =>
+    stagedDocuments[type]?.file?.name ||
+    localDocuments.find((doc) => (doc.name || '').toLowerCase() === type.toLowerCase())?.fileName ||
+    'No file selected';
+
+  const renderUploadCard = (type: LeaseDocumentType, label: string) => (
+    <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</div>
+          <div className="mt-1 text-[10px] text-slate-400">{stagedLabel(type)}</div>
+        </div>
+        <Button type="button" variant="secondary" size="sm" icon={UploadCloud} onClick={() => triggerDocumentPicker(type)}>
+          Choose File
+        </Button>
+      </div>
+      <input
+        ref={type === 'aadhar' ? aadharInputRef : panInputRef}
+        type="file"
+        accept=".pdf,.png,.jpg,.jpeg"
+        className="hidden"
+        onChange={(e) => handleDocumentSelect(type, e.target.files?.[0] ?? null)}
+      />
+    </div>
+  );
+
   const drawerTitle = (
     <div className="flex items-center gap-2">
       <FileText className="w-5 h-5 text-blue-600" />
@@ -1115,7 +1210,7 @@ function isValidNonNegativeAmount(value: string): boolean {
           disabled={isPending}
           className={isPending ? 'opacity-70 cursor-not-allowed' : ''}
         >
-          {isPending ? 'Submitting...' : record ? 'New Registration' : 'Submit Registration'}
+          {isPending ? 'Submitting...' : isRevertedRecord ? 'Send to Verification' : record ? 'New Registration' : 'Submit Registration'}
         </Button>
       </div>
     </div>
@@ -1400,8 +1495,10 @@ function isValidNonNegativeAmount(value: string): boolean {
                       key={field.key as string}
                       field={field}
                       value={field.key === 'applicationType' ? (selectedType?.applicationTypeName || '') : formState[field.key]}
+                      disabled={field.key === 'applicationType' && isRevertedRecord}
                       setValue={(value) => {
                         if (field.key === 'applicationType') {
+                          if (isRevertedRecord) return;
                           const found = applicationTypes.find((t) => t.applicationTypeName === value);
                           if (found) {
                             setSelectedTypeId(found.id);
@@ -1455,6 +1552,15 @@ function isValidNonNegativeAmount(value: string): boolean {
                 </div>
               )}
             </div>
+
+            {activeTab === 'new' ? (
+              <div className="border-t border-slate-200 bg-slate-50 p-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {renderUploadCard('aadhar', 'Upload Aadhaar')}
+                  {renderUploadCard('pan', 'Upload PAN')}
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="space-y-3">

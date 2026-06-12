@@ -189,6 +189,28 @@ export async function sendToVerification(
     : { success: false, message: response.error || 'Failed to send to verification', items: null, errors: null, correlationId: null };
 }
 
+export async function sendForVerification(
+  id: number,
+  payload: AssetLeaseRentDetailsUpdatePayload
+): Promise<AssetLeaseRentDetailsMutationResponse> {
+  const response = await apiClient.put<AssetLeaseRentDetailsMutationResponse>(
+    `/AssetLeaseRentDetails/${id}/send-for-verification`,
+    payload
+  );
+
+  if (!response.success || !response.data) {
+    return {
+      success: false,
+      message: response.error || 'Failed to send for verification',
+      items: null,
+      errors: response.error ? [response.error] : null,
+      correlationId: null,
+    };
+  }
+
+  return response.data;
+}
+
 export async function verifyLeaseRent(
   id: number,
   remarks?: string

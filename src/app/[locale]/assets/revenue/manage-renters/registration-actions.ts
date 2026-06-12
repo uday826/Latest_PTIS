@@ -6,4 +6,5 @@ export {
   createLeaseRentRegistrationAction,
   updateAssetLeaseRentDetailsAction,
   getPreviousTenantHistoryAction,
+  sendForVerificationAction,
 } from './actions';
