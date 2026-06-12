@@ -84,15 +84,6 @@ function getFileTitle(documentItem: AssetDocumentListItem): string {
 
 type LeaseDocumentType = 'aadhar' | 'pan';
 
-const ALLOWED_LEASE_DOC_MIME_TYPES = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'application/pdf',
-]);
-
-const ALLOWED_LEASE_DOC_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'pdf']);
-
 type LeaseDocumentCard = AssetDocumentListItem & {
   localFile?: File;
 };
@@ -458,7 +449,7 @@ function RenderField({
     mobileNumber: 10,
     emailAddress: 200,
     tenantType: 50,
-    aadhaarNumber: 16,
+    aadhaarNumber: 12,
     panNumber: 10,
     pinCode: 6,
     residentialAddress: 500,
@@ -752,58 +743,6 @@ function isValidNonNegativeAmount(value: string): boolean {
     const contentType = result.contentType || documentItem.contentType || 'application/octet-stream';
     return `data:${contentType};base64,${result.base64}`;
   }, []);
-
-  const triggerFileUpload = (type: LeaseDocumentType) => {
-    const existingDoc = localDocuments.find(
-      (doc) => (doc.name || '').toLowerCase() === type.toLowerCase() && !String(doc.id).startsWith(`local-${type}`)
-    );
-
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*,application/pdf';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
-      const mimeTypeAllowed = ALLOWED_LEASE_DOC_MIME_TYPES.has(file.type);
-      const extensionAllowed = ALLOWED_LEASE_DOC_EXTENSIONS.has(fileExtension);
-
-      if (!mimeTypeAllowed && !extensionAllowed) {
-        toastError('Only JPG, JPEG, PNG, WEBP, and PDF files are allowed for Aadhaar and PAN uploads.');
-        return;
-      }
-
-      setStagedDocuments((prev) => ({
-        ...prev,
-        [type]: {
-          file,
-          replacingDocId: existingDoc?.id,
-        },
-      }));
-
-      setLocalDocuments((prev) => {
-        const filtered = prev.filter(
-          (doc) => (doc.name || '').toLowerCase() !== type.toLowerCase() || String(doc.id).startsWith(`local-${type}`)
-        );
-        const stagedDoc: LeaseDocumentCard = {
-          id: `local-${type}`,
-          assetId: asset.id ?? record?.assetMasterId ?? record?.id ?? 0,
-          name: type,
-          fileName: file.name,
-          contentType: file.type,
-          uploadedDate: new Date().toISOString(),
-          fileSize: file.size,
-          status: 'Staged',
-          localFile: file,
-        };
-        return [...filtered, stagedDoc];
-      });
-
-      toastSuccess(`${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document staged. It will upload when you save the registration.`);
-    };
-    input.click();
-  };
 
   const uploadStagedDocuments = useCallback(
     async (leaseRentDetailsId: number) => {
@@ -1474,29 +1413,7 @@ function isValidNonNegativeAmount(value: string): boolean {
                     />
                   ))}
 
-                  {template.secondaryButtons?.length ? (
-                    <div className="col-span-2 flex flex-wrap gap-2">
-                      {template.secondaryButtons.map((button) => (
-                        <Button
-                          key={button.label}
-                          variant={button.variant}
-                          size="sm"
-                          icon={button.icon}
-                          className="flex-1 min-w-[160px]"
-                          disabled={isPending}
-                          onClick={() => {
-                            if (button.label.toLowerCase().includes('aadhaar')) {
-                              triggerFileUpload('aadhar');
-                            } else if (button.label.toLowerCase().includes('pan')) {
-                              triggerFileUpload('pan');
-                            }
-                          }}
-                        >
-                          {button.label}
-                        </Button>
-                      ))}
-                    </div>
-                  ) : null}
+                  {null}
                 </>
               ) : (
                 <div className="col-span-2 space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar p-1">
