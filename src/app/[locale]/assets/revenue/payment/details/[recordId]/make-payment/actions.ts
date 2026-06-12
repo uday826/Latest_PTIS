@@ -8,6 +8,20 @@ import type {
 } from '@/types/asset/leaseRentPayment.types';
 import { mapAssetLeaseRentDetailsToPaymentDetail } from '../../record.mapper';
 
+function normalizeProcessPaymentErrorMessage(message: string | undefined): string {
+  const normalized = message?.trim() ?? '';
+  if (!normalized) return 'Failed to process payment.';
+
+  if (
+    normalized.includes('Payment_PaymentType_Invalid') ||
+    normalized.includes('PaymentType')
+  ) {
+    return 'Invalid payment type.';
+  }
+
+  return normalized;
+}
+
 export async function getMakePaymentRecordAction(recordId: string): Promise<LeaseRentPaymentDetail | null> {
   const parsedRecordId = Number(recordId);
   if (!Number.isFinite(parsedRecordId)) return null;
@@ -36,7 +50,7 @@ export async function processMakePaymentAction(
   if (!response.success) {
     return {
       success: false,
-      message: response.error || 'Failed to process payment.',
+      message: normalizeProcessPaymentErrorMessage(response.error),
     };
   }
 
