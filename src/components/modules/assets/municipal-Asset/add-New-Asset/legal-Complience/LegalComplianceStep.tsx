@@ -134,7 +134,7 @@ export default function LegalCompliancePage() {
       if (!assetId || assetId === 0) return;
 
       try {
-        const response = await fetchUploadedDocumentsAction(assetId);
+        const response = await fetchUploadedDocumentsAction(assetId, true, true);
         if (response.success && response.data) {
           const docs = Array.isArray(response.data) ? response.data : [];
 

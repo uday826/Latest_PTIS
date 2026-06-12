@@ -3,7 +3,9 @@
 import React, { useRef, useState, useEffect } from "react";
 import { X, Save, Building2, UploadCloud, FileText, IndianRupee, ImagePlus, CheckCircle2, Layers, Loader2 } from "lucide-react";
 import { Input, Select } from "@/components/common";
-import { getChildAssetByIdAction, fetchSubUseTypesAction, fetchUploadedDocumentsAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
+import { fetchSubUseTypesAction, fetchUploadedDocumentsAction, fetchFloorsByAsset, fetchFloorDropdownOptions } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
+import { fetchDocumentFileAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
+import { useAssetForm } from "../AssetFormContext";
 import { toast } from "sonner";
 import { RoomWiseSubmissionDrawer } from "./RoomWiseSubmissionDrawer";
 
@@ -183,11 +185,19 @@ export function SubUnitDetailedConfigurator({
   dropdownOptions: propDropdownOptions = null,
 }: SubUnitDetailedConfiguratorProps) {
 
+  const { formData: globalFormData, subunitFiles } = useAssetForm();
+  const assetId = unit.id || unit.dbId;
+  const staged = subunitFiles?.[assetId];
+
   const [formData, setFormData] = useState<any>({ ...unit });
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [planPreview, setPlanPreview] = useState<string | null>(null);
-  const [photoFile, setPhotoFile] = useState<File | null>(unit.photoFile || null);
-  const [planFile, setPlanFile] = useState<File | null>(unit.planFile || null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(
+    staged?.photoFile ? URL.createObjectURL(staged.photoFile) : null
+  );
+  const [planPreview, setPlanPreview] = useState<string | null>(
+    staged?.planFile ? URL.createObjectURL(staged.planFile) : null
+  );
+  const [photoFile, setPhotoFile] = useState<File | null>(staged?.photoFile || unit.photoFile || null);
+  const [planFile, setPlanFile] = useState<File | null>(staged?.planFile || unit.planFile || null);
   const photoRef = useRef<HTMLInputElement>(null);
   const planRef = useRef<HTMLInputElement>(null);
 
@@ -196,10 +206,87 @@ export function SubUnitDetailedConfigurator({
   const [isRoomsDrawerOpen, setIsRoomsDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Floors and dropdown options are passed from the parent (UnitPoolPanel / RoomWiseSubmissionStep).
-  const dropdownOptions = propDropdownOptions;
-  const parentFloors = propFloors;
-  const departments = propDropdownOptions?.departments || []; // Extracted from dropdownOptions if passed there. Wait, the prop was added explicitly.
+  // Floors and dropdown options states
+  const [parentFloors, setParentFloors] = useState<any[]>(() => {
+    if (propFloors && propFloors.length > 0) return propFloors;
+    if (globalFormData?.floors && globalFormData.floors.length > 0) return globalFormData.floors;
+    return [];
+  });
+  const [dropdownOptions, setDropdownOptions] = useState<any>(propDropdownOptions || null);
+
+  useEffect(() => {
+    if (propFloors && propFloors.length > 0) {
+      setParentFloors(propFloors);
+    } else if (globalFormData?.floors && globalFormData.floors.length > 0) {
+      setParentFloors(globalFormData.floors);
+    }
+  }, [propFloors, globalFormData?.floors]);
+
+  useEffect(() => {
+    if (propDropdownOptions) {
+      setDropdownOptions(propDropdownOptions);
+    }
+  }, [propDropdownOptions]);
+
+  useEffect(() => {
+    let ignore = false;
+    async function loadMasterData() {
+      const parentAssetIdVal = unit.parentAssetId || globalFormData.parentBuildingId || globalFormData.id || globalFormData.assetId;
+      const parsedParentId = Number(parentAssetIdVal);
+
+      const needsFloors = parentFloors.length === 0 && parsedParentId && parsedParentId > 0;
+      const needsDropdowns = !dropdownOptions;
+
+      if (!needsFloors && !needsDropdowns) return;
+
+      setLoading(true);
+      try {
+        let floorsData = parentFloors;
+        let dropdownsData = dropdownOptions;
+
+        const promises: Promise<any>[] = [];
+
+        if (needsFloors) {
+          promises.push(
+            fetchFloorsByAsset(parsedParentId).then((res) => {
+              if (res.success && Array.isArray(res.data)) {
+                floorsData = res.data;
+              }
+            })
+          );
+        }
+
+        if (needsDropdowns) {
+          promises.push(
+            fetchFloorDropdownOptions().then((res) => {
+              if (res.success && res.data) {
+                const data = res.data as any;
+                dropdownsData = data.dropdownOptions || data;
+              }
+            })
+          );
+        }
+
+        await Promise.all(promises);
+
+        if (!ignore) {
+          if (needsFloors) setParentFloors(floorsData);
+          if (needsDropdowns) setDropdownOptions(dropdownsData);
+        }
+      } catch (err) {
+        console.error("Failed to load master data for sub-unit configurator:", err);
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadMasterData();
+    return () => { ignore = true; };
+  }, [unit.parentAssetId, globalFormData.parentBuildingId, globalFormData.id, globalFormData.assetId, parentFloors.length, dropdownOptions]);
+
+  const departments = dropdownOptions?.departments || [];
 
   // Dynamic sub-use types state & effect
   const [dynamicSubUseTypes, setDynamicSubUseTypes] = useState<any[]>([]);
@@ -231,24 +318,36 @@ export function SubUnitDetailedConfigurator({
   // But we allow manual entry anyway.
   const handleFloorSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const floorId = Number(e.target.value);
-    const selected = parentFloors.find((f: any) => f.id === floorId);
+    const selected = parentFloors.find((f: any) => {
+      const fLevelId = f.floorId || f.floor;
+      if (!fLevelId) return false;
+      // Numeric check
+      if (Number(fLevelId) === floorId || Number(f.id) === floorId) return true;
+      // String label matching (e.g. "Ground" matches "Ground Floor" which has value = 1)
+      const match = (dropdownOptions?.floorLevels || []).find((l: any) => String(l.value) === String(floorId));
+      if (match && typeof fLevelId === "string") {
+        return match.label.toLowerCase().includes(fLevelId.toLowerCase()) || fLevelId.toLowerCase().includes(match.label.toLowerCase());
+      }
+      return false;
+    });
+
     const floorLabel = selected
-      ? `${getLabel(dropdownOptions?.floorLevels || [], selected.floor)}`
+      ? `${getLabel(dropdownOptions?.floorLevels || [], selected.floorId || selected.floor)}`
       : getLabel(dropdownOptions?.floorLevels || [], floorId);
 
     setFormData((prev: any) => ({
       ...prev,
       floorId,
-      floorDetailsId: floorId,
+      floorDetailsId: selected?.id || floorId,
       floorName: floorLabel,
       // Pre-fill construction values from selected floor but user can override
-      conYear: prev.conYear || selected?.conYear || "",
-      conType: prev.conType || selected?.conType || "",
-      useType: prev.useType || selected?.useType || "",
-      subUseType: prev.subUseType || selected?.subUseType || "",
+      conYear: prev.conYear || selected?.constructionYear || selected?.conYear || "",
+      conType: prev.conType || selected?.constructionTypeId || selected?.conType || "",
+      useType: prev.useType || selected?.typeOfUseId || selected?.useType || "",
+      subUseType: prev.subUseType || selected?.subTypeOfUseId || selected?.subUseType || "",
       sdrr: selected?.baseValue || prev.sdrr || 100000,
-      floorFactor: selected?.floorFactor || prev.floorFactor || 1.0,
-      ageFactor: selected?.ageFactor || prev.ageFactor || 1.0,
+      floorFactor: selected?.cvFloorFactor || selected?.floorFactor || prev.floorFactor || 1.0,
+      ageFactor: selected?.cvAgeFactor || selected?.ageFactor || prev.ageFactor || 1.0,
     }));
   };
 
@@ -275,144 +374,48 @@ export function SubUnitDetailedConfigurator({
   }, [formData.leaseStart, formData.leaseEnd, formData.duration]);
 
   useEffect(() => {
-    async function loadDetails() {
+    setFormData({ ...unit });
+    setRoomsList(unit.rooms || []);
+  }, [unit]);
+
+  useEffect(() => {
+    async function loadSubUnitDocuments() {
       const assetId = unit.id || unit.dbId;
       if (!assetId || assetId === 0 || String(assetId).startsWith("temp_")) return;
       setLoading(true);
       try {
-        const res = await getChildAssetByIdAction(assetId);
-        if (res.success && res.data) {
-          const detail = res.data;
-
-          // Map rooms list — use new dimension-based Room shape
-          if (Array.isArray(detail.roomWiseDetails)) {
-            const mappedRooms = detail.roomWiseDetails.map((r: any) => {
-              const areaSqM = Number(r.areaSqMtr || r.areaSqMtr || 0);
-              const areaSqFt = areaSqM * 10.7639;
-              const rOffsets = Array.isArray(r.offsets) ? r.offsets.map((off: any) => ({
-                id: off.id,
-                shape: off.shape || "Rectangle",
-                length: Number(offsetLengthFallback(off)),
-                width: Number(off.width || 0),
-                height: Number(off.height || 0),
-                base1: Number(off.base1 || 0),
-                base2: Number(off.base2 || 0),
-                radius: Number(offsetLengthFallback(off)),
-                areaSqM: Number(off.areaSqM || 0),
-                op: off.op || "Subtract"
-              })) : [];
-
-              // Calculate total offset adjustment
-              let netAdjustmentSqM = 0;
-              rOffsets.forEach((off: any) => {
-                const offArea = Number(off.areaSqM || 0);
-                if (off.op === "Add") {
-                  netAdjustmentSqM += offArea;
-                } else {
-                  netAdjustmentSqM -= offArea;
-                }
-              });
-
-              const netSqM = Math.max(0, areaSqM + netAdjustmentSqM);
-              const netSqFt = netSqM * 10.7639;
-
-              // Helper for circle radius fallback
-              function offsetLengthFallback(off: any) {
-                if (off.length !== undefined) return off.length;
-                if (off.radius !== undefined) return off.radius;
-                return 0;
-              }
-
-              return {
-                id: r.id,
-                roomNo: r.roomNo,
-                roomType: r.roomType,
-                shape: r.shape || "Rectangle",
-                // Dimensions in meters (stored in DB)
-                length: Number(r.lengthMtr || 0),
-                width: Number(r.widthMtr || 0),
-                height: Number(r.heightMtr || 0),
-                base1: Number(r.base1Mtr || 0),
-                base2: Number(r.base2Mtr || 0),
-                radius: Number(r.radiusMtr || r.widthMtr || 0),
-                // Calculated area
-                areaSqM,
-                areaSqFt,
-                offsets: rOffsets,
-                hasOffset: rOffsets.length > 0 ? "Yes" : "No",
-                netAreaSqM: netSqM,
-                netAreaSqFt: netSqFt,
-                count: Number(r.noOfRooms || 1),
-                outer: r.outerYesNo ? "Yes" : "No",
-                minus: r.minusYesNo ? "Yes" : "No",
-              };
-            });
-            setRoomsList(mappedRooms);
+        const docsRes = await fetchUploadedDocumentsAction(assetId, true, true);
+        if (docsRes.success && Array.isArray(docsRes.data)) {
+          const photoDoc = docsRes.data.find((d: any) =>
+            (d.documentType || d.documentCode || "").toLowerCase().includes("front_photo") ||
+            (d.fileName || "").toLowerCase().includes("front_")
+          );
+          if (photoDoc && !staged?.photoFile) {
+            const fileRes = await fetchDocumentFileAction(photoDoc.id);
+            if (fileRes.success && fileRes.data) {
+              setPhotoPreview(`data:${fileRes.mimeType};base64,${fileRes.data}`);
+            }
           }
 
-          // Map renter and basic details to formData
-          const r = Array.isArray(detail.renterDetails)
-            ? detail.renterDetails[0]
-            : (detail.renterDetailsList && detail.renterDetailsList[0]) || detail.renterDetails;
-          setFormData((prev: any) => ({
-            ...prev,
-            departmentId: detail.departmentId || prev.departmentId || "",
-            departmentName: detail.departmentName || prev.departmentName || "",
-            locationAddress: detail.address || detail.locationAddress || prev.locationAddress || "",
-            locationLat: detail.latitude || detail.locationLat || prev.locationLat || "",
-            locationLng: detail.longitude || detail.locationLng || prev.locationLng || "",
-            unitName: detail.shopUnitName || detail.unitName || detail.assetName || prev.unitName || "",
-            renterName: r?.renterName || r?.tenantName || prev.renterName || "",
-            gstNo: r?.gstNo || prev.gstNo || "",
-            aadhaar: r?.aadhaarCardNo || r?.tenantAadhaarNo || prev.aadhaar || "",
-            pan: r?.panCardNo || r?.tenantPanCardNo || prev.pan || "",
-            mobileNo: r?.mobileNo || r?.tenantMobile || prev.mobileNo || "",
-            emailId: r?.emailId || r?.tenantEmail || prev.emailId || "",
-            rentType: r?.leaseRentType || prev.rentType || "",
-            leaseStart: r?.fromDate ? r.fromDate.split("T")[0] : (r?.leaseStartDate ? r.leaseStartDate.split("T")[0] : prev.leaseStart || ""),
-            leaseEnd: r?.toDate ? r.toDate.split("T")[0] : (r?.leaseEndDate ? r.leaseEndDate.split("T")[0] : prev.leaseEnd || ""),
-            duration: r?.duration || prev.duration || "",
-            rentFreq: r?.rentFrequency || r?.paymentFrequency || prev.rentFreq || "Monthly",
-            rentAmount: r?.rentAmount || r?.monthlyRent || prev.rentAmount || "",
-            securityDeposit: r?.securityDeposit || prev.securityDeposit || "",
-            depositType: r?.depositType || prev.depositType || "Refundable",
-          }));
-
-          // Fetch existing uploaded documents for subunit
-          try {
-            const docsRes = await fetchUploadedDocumentsAction(assetId, true, true);
-            if (docsRes.success && Array.isArray(docsRes.data)) {
-              const baseApiUrl = (window as any).__RUNTIME_CONFIG__?.apiBaseUrl || "https://localhost:7293/api";
-              const cleanBaseUrl = baseApiUrl.replace(/\/+$/, "");
-              
-              const photoDoc = docsRes.data.find((d: any) =>
-                (d.documentType || d.documentCode || "").toLowerCase().includes("front_photo") ||
-                (d.fileName || "").toLowerCase().includes("front_")
-              );
-              if (photoDoc) {
-                setPhotoPreview(`${cleanBaseUrl}/AssetDocument/by-asset-document/${photoDoc.id}/file`);
-              }
-
-              const planDoc = docsRes.data.find((d: any) =>
-                (d.documentType || d.documentCode || "").toLowerCase().includes("building_plan") ||
-                (d.fileName || "").toLowerCase().includes("plan_")
-              );
-              if (planDoc) {
-                setPlanPreview(`${cleanBaseUrl}/AssetDocument/by-asset-document/${planDoc.id}/file`);
-              }
+          const planDoc = docsRes.data.find((d: any) =>
+            (d.documentType || d.documentCode || "").toLowerCase().includes("building_plan") ||
+            (d.fileName || "").toLowerCase().includes("plan_")
+          );
+          if (planDoc && !staged?.planFile) {
+            const fileRes = await fetchDocumentFileAction(planDoc.id);
+            if (fileRes.success && fileRes.data) {
+              setPlanPreview(`data:${fileRes.mimeType};base64,${fileRes.data}`);
             }
-          } catch (docErr) {
-            console.error("Failed to load subunit documents", docErr);
           }
         }
-      } catch (err) {
-
+      } catch (docErr) {
+        console.error("Failed to load subunit documents", docErr);
       } finally {
         setLoading(false);
       }
     }
-    loadDetails();
-  }, [unit.id, unit.dbId]);
+    loadSubUnitDocuments();
+  }, [unit.id, unit.dbId, staged]);
 
   // Select all text when user focuses a number field — lets them immediately type a replacement value
   const selectOnFocus = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();

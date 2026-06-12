@@ -72,8 +72,8 @@ export const fetchDocumentDefinitionsAction = async (
  */
 export const fetchUploadedDocumentsAction = async (
   assetId: number,
-  includeAdHoc = false,
-  includeDefinitionBased = false
+  includeAdHoc = true,
+  includeDefinitionBased = true
 ): Promise<ApiResponse<any>> => {
   try {
     const res = await getDocumentsByAsset(assetId, includeAdHoc, includeDefinitionBased);

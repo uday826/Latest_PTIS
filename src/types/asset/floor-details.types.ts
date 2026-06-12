@@ -49,6 +49,7 @@ export interface PoolUnit {
   unitType: string;                 // Flat | Shop | Office | Room | Department
   selectedFloorId: number | null;   // floor master ID (null = not yet assigned)
   selectedFloorLabel: string;       // display name for the assigned floor
+  floorDetailsId?: number | null;
   carpetAreaSqFt: number;           // 0 until rooms are configured
   rooms: any[];                     // room-wise details
   renterDetails: any | null;        // rent / owner KYC info

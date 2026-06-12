@@ -1,13 +1,27 @@
-"use client";
-
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAssetForm } from "../AssetFormContext";
-import { Plus, Building2, CheckCircle2, LayoutGrid, Edit2 } from "lucide-react";
+import { Plus, Building2, CheckCircle2, LayoutGrid, Edit2, Loader2 } from "lucide-react";
 import { Input, Select, Card, CardContent } from "@/components/common";
 import { SubUnitDetailedConfigurator } from "./SubUnitDetailedConfigurator";
+import {
+  bulkGenerateSubUnitsAction,
+  createChildAssetAction,
+  saveFloorDetail,
+  fetchFloorsByAsset,
+} from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
+import { toast } from "sonner";
 
-export function StandaloneSubUnitStep({ dropdownOptions }: { dropdownOptions?: any }) {
-  const { formData, updateFormData } = useAssetForm();
+export function StandaloneSubUnitStep({
+  dropdownOptions,
+  initialSubUnits = []
+}: {
+  dropdownOptions?: any;
+  initialSubUnits?: any[];
+}) {
+  const { formData, updateFormData, setSubunitFiles, registerSubmitHook } = useAssetForm();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const initializedRef = useRef(false);
 
   const parentBuildingId = formData.parentBuildingId;
   const parentBuildingData = formData.parentBuildingData;
@@ -28,60 +42,412 @@ export function StandaloneSubUnitStep({ dropdownOptions }: { dropdownOptions?: a
 
   const [activeUnit, setActiveUnit] = useState<any | null>(null);
 
-  const handleGenerate = () => {
-    const newUnits = [];
-    const baseId = units.length > 0 ? Math.max(...units.map((u: any) => u.id || 0)) + 1 : 1;
-    const typeLabel = formData.assetType?.split(" ")[0] || "Unit"; // "Flats", "Shops"
+  // Load and map initial sub-units from props
+  useEffect(() => {
+    if (initializedRef.current) return;
 
-
-    const selectedFloor = parentFloors.find((f: any) => f.id === selectedFloorId) || parentFloors[0] || {
-      floor: "Ground",
-      conYear: "2020",
-      conType: "RCC",
-      useType: "Commercial",
-      sdrr: 100000,
-      floorFactor: 1.0,
-      ageFactor: 1.0,
-      baseValue: 5000
-    };
-
-    for (let i = fromNo; i <= toNo; i++) {
-      if (!units.find((u: any) => u.unitNumber === i.toString())) {
-        newUnits.push({
-          id: baseId + i,
-          subAssetId: `MC/WD15/2024/${parentBuildingId}-${i.toString().padStart(3, '0')}`,
-          unitNumber: i.toString(),
-          unitName: `${typeLabel} ${i}`,
-          unitType: typeLabel,
-          carpetAreaSqFeet: 500,
-          baseValue: selectedFloor.baseValue || 5000,
-          status: "Active",
-          // Floor details inherited from parent floor
-          floorId: selectedFloor.id,
-          floorName: `${selectedFloor.floor}`,
-          conYear: selectedFloor.conYear,
-          conType: selectedFloor.conType,
-          useType: selectedFloor.useType,
-          sdrr: selectedFloor.sdrr,
-          floorFactor: selectedFloor.floorFactor,
-          ageFactor: selectedFloor.ageFactor,
-          // Defaults for detailed form
-          rentAmount: 0,
-          securityDeposit: 0,
-          rooms: []
-        });
+    if (!initialSubUnits || initialSubUnits.length === 0) {
+      // Only clear if there are no existing units in formData either (prevent clearing on back-nav)
+      const existingUnits = formData.unitDetails || [];
+      if (existingUnits.length === 0) {
+        updateFormData({ unitDetails: [] });
       }
+      initializedRef.current = true;
+      return;
     }
 
-    const updatedUnits = [...units, ...newUnits];
-    setUnits(updatedUnits);
+    const mapped = initialSubUnits.map((u: any) => {
+      // Map rooms list — use new dimension-based Room shape
+      let mappedRooms: any[] = [];
+      if (Array.isArray(u.roomWiseDetails)) {
+        mappedRooms = u.roomWiseDetails.map((r: any) => {
+          const areaSqM = Number(r.areaSqMtr || r.areaSqM || 0);
+          const areaSqFt = areaSqM * 10.7639;
+          const rOffsets = Array.isArray(r.offsets) ? r.offsets.map((off: any) => ({
+            id: off.id,
+            shape: off.shape || "Rectangle",
+            length: Number(off.length !== undefined ? off.length : (off.radius || 0)),
+            width: Number(off.width || 0),
+            height: Number(off.height || 0),
+            base1: Number(off.base1 || 0),
+            base2: Number(off.base2 || 0),
+            radius: Number(off.length !== undefined ? off.length : (off.radius || 0)),
+            areaSqM: Number(off.areaSqM || 0),
+            op: off.op || "Subtract"
+          })) : [];
+
+          let netAdjustmentSqM = 0;
+          rOffsets.forEach((off: any) => {
+            const offArea = Number(off.areaSqM || 0);
+            if (off.op === "Add") {
+              netAdjustmentSqM += offArea;
+            } else {
+              netAdjustmentSqM -= offArea;
+            }
+          });
+
+          const netSqM = Math.max(0, areaSqM + netAdjustmentSqM);
+          const netSqFt = netSqM * 10.7639;
+
+          return {
+            id: r.id,
+            roomNo: r.roomNo,
+            roomType: r.roomType,
+            shape: r.shape || "Rectangle",
+            // Dimensions in meters (stored in DB)
+            length: Number(r.lengthMtr || 0),
+            width: Number(r.widthMtr || 0),
+            height: Number(r.heightMtr || 0),
+            base1: Number(r.base1Mtr || 0),
+            base2: Number(r.base2Mtr || 0),
+            radius: Number(r.radiusMtr || r.widthMtr || 0),
+            // Calculated area
+            areaSqM,
+            areaSqFt,
+            offsets: rOffsets,
+            hasOffset: rOffsets.length > 0 ? "Yes" : "No",
+            netAreaSqM: netSqM,
+            netAreaSqFt: netSqFt,
+            count: Number(r.noOfRooms || 1),
+            outer: r.outerYesNo ? "Yes" : "No",
+            minus: r.minusYesNo ? "Yes" : "No",
+          };
+        });
+      }
+
+      // Map renter details
+      const rent = Array.isArray(u.renterDetails)
+        ? u.renterDetails[0]
+        : (u.renterDetailsList && u.renterDetailsList[0]) || u.renterDetails;
+
+      const renterData = rent ? {
+        renterName: rent.renterName || rent.tenantName || "",
+        gstNo: rent.gstNo || "",
+        aadhaar: rent.aadhaarCardNo || rent.tenantAadhaarNo || "",
+        pan: rent.panCardNo || rent.tenantPanCardNo || "",
+        mobileNo: rent.mobileNo || rent.tenantMobile || "",
+        emailId: rent.emailId || rent.tenantEmail || "",
+        rentType: rent.leaseRentType || "",
+        leaseStart: rent.fromDate ? rent.fromDate.split("T")[0] : (rent.leaseStartDate ? rent.leaseStartDate.split("T")[0] : ""),
+        leaseEnd: rent.toDate ? rent.toDate.split("T")[0] : (rent.leaseEndDate ? rent.leaseEndDate.split("T")[0] : ""),
+        duration: rent.duration || "",
+        rentFreq: rent.rentFrequency || rent.paymentFrequency || "Monthly",
+        rentAmount: rent.rentAmount || rent.monthlyRent || "",
+        securityDeposit: rent.securityDeposit || "",
+        depositType: rent.depositType || "Refundable",
+      } : null;
+
+      const floorDetailsId = u.floorDetailsId ? Number(u.floorDetailsId) : null;
+      let resolvedFloorLevelId: number | null = null;
+      let conYear = "";
+      let conType = "";
+      let useType = "";
+      let subUseType = "";
+
+      if (floorDetailsId) {
+        const floorDetail = parentFloors.find((f: any) => Number(f.id) === floorDetailsId);
+        const floorLevelId = floorDetail?.floorId ? Number(floorDetail.floorId) : null;
+        resolvedFloorLevelId = floorLevelId;
+
+        if (floorDetail) {
+          conYear = floorDetail.constructionYear || floorDetail.conYear || "";
+          conType = floorDetail.constructionTypeId ? String(floorDetail.constructionTypeId) : (floorDetail.conType ? String(floorDetail.conType) : "");
+          useType = floorDetail.typeOfUseId ? String(floorDetail.typeOfUseId) : (floorDetail.useType ? String(floorDetail.useType) : "");
+          subUseType = floorDetail.subTypeOfUseId ? String(floorDetail.subTypeOfUseId) : (floorDetail.subUseType ? String(floorDetail.subUseType) : "");
+        }
+      }
+
+      return {
+        id: u.assetId || u.id,
+        subAssetId: u.unitNo || u.shopUnitName || `Unit-${u.id}`,
+        unitNumber: u.unitNo || "",
+        unitName: u.shopUnitName || `${u.unitType || "Unit"} ${u.unitNo || ""}`,
+        unitType: u.unitType || "Flat",
+        carpetAreaSqFeet: u.totalAreaSqFt || 0,
+        baseValue: u.calculatedCapitalValue || 0,
+        status: "Active",
+        floorId: resolvedFloorLevelId || floorDetailsId,
+        floorDetailsId: floorDetailsId,
+        rooms: mappedRooms,
+        // Lease/rent fields for display
+        rentAmount: renterData?.rentAmount || 0,
+        rentType: renterData?.rentType || "None",
+        securityDeposit: renterData?.securityDeposit || 0,
+        conYear: u.conYear || conYear,
+        conType: u.conType || conType,
+        useType: u.useType || useType,
+        subUseType: u.subUseType || subUseType,
+        // Mark as persisted in DB so handleSaveAll won't re-send them on next navigation
+        isSaved: true,
+        isModified: false,
+        // Add all remaining properties to avoid data loss
+        ...renterData,
+      };
+    });
+
+    updateFormData({ unitDetails: mapped });
+    initializedRef.current = true;
+  }, [initialSubUnits, parentFloors]);
+
+  const handleGenerate = async () => {
+    const pId = Number(parentBuildingId || formData.id || formData.assetId || 0);
+    if (!pId) {
+      toast.error("Parent building not saved yet. Save Basic Info first.");
+      return;
+    }
+
+    const count = toNo - fromNo + 1;
+    if (count < 1) {
+      toast.error("Count must be at least 1.");
+      return;
+    }
+
+    const typeLabel = formData.assetType?.split(" ")[0] || "Unit";
+
+    setIsGenerating(true);
+    const loadingToast = toast.loading(`Generating ${count} ${typeLabel} unit(s) in database…`);
+
+    try {
+      const res = await bulkGenerateSubUnitsAction({
+        parentAssetId: pId,
+        type: typeLabel,
+        count: count,
+      });
+
+      if (res.success && res.data?.generatedAssets?.length) {
+        const newUnits = res.data.generatedAssets.map((ga) => ({
+          id: ga.assetId,
+          subAssetId: ga.assetNo,
+          unitNumber: ga.assetNo,
+          unitName: ga.assetName || `${typeLabel} ${ga.assetNo}`,
+          unitType: typeLabel,
+          carpetAreaSqFeet: 0,
+          baseValue: 0,
+          status: "Active",
+          floorId: null,
+          floorDetailsId: null,
+          rooms: [],
+          rentAmount: 0,
+          securityDeposit: 0,
+          isSaved: true,
+          isModified: false,
+        }));
+
+        setUnits([...units, ...newUnits]);
+        toast.success(
+          `${res.data.generatedAssets.length} unit(s) created in database. Click Detail to configure.`,
+          { id: loadingToast }
+        );
+      } else {
+        toast.error(res.error || "Generation failed.", { id: loadingToast });
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Generation failed.", { id: loadingToast });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSaveUnitDetail = (updatedUnit: any) => {
-    const updatedUnits = units.map((u: any) => u.id === updatedUnit.id ? updatedUnit : u);
+    const updatedUnits = units.map((u: any) =>
+      u.id === updatedUnit.id
+        ? {
+          ...u,
+          ...updatedUnit,
+          isModified: true, // mark it modified so it gets saved to the database!
+        }
+        : u
+    );
     setUnits(updatedUnits);
+
+    if (setSubunitFiles && updatedUnit.id) {
+      setSubunitFiles((prev) => ({
+        ...prev,
+        [updatedUnit.id]: {
+          photoFile: updatedUnit.photoFile,
+          planFile: updatedUnit.planFile,
+        },
+      }));
+    }
+
     setActiveUnit(null);
   };
+
+  const handleSaveAll = useCallback(async (): Promise<boolean> => {
+    if (units.length === 0) return true;
+
+    setIsSaving(true);
+    const loadingToast = toast.loading("Saving all units to database...");
+
+    const pId = Number(parentBuildingId || formData.id || formData.assetId || 0);
+    if (!pId) {
+      toast.error("Parent building ID not resolved.", { id: loadingToast });
+      setIsSaving(false);
+      return false;
+    }
+
+    try {
+      const saved: any[] = [];
+      const errors: string[] = [];
+      // Only save units that are truly new (not yet persisted) OR have been modified since last save.
+      // This prevents re-creating already-saved units when navigating Previous → Next.
+      const unsaved = units.filter((u: any) => !u.isSaved || u.isModified);
+
+      // Resolve floor details map
+      const floorDetailsMap = new Map<number, number>();
+      try {
+        const existRes = await fetchFloorsByAsset(pId);
+        if (existRes.success && Array.isArray(existRes.data)) {
+          existRes.data.forEach((f: any) => {
+            if (f.floorId && f.id) floorDetailsMap.set(Number(f.floorId), Number(f.id));
+          });
+        }
+      } catch { }
+
+      // Create missing floor details
+      const uniqueFloorLevels = new Set(
+        unsaved.map((u: any) => u.floorId).filter((id): id is number => !!id)
+      );
+      for (const floorLevelId of uniqueFloorLevels) {
+        if (!floorDetailsMap.has(floorLevelId)) {
+          const sample = unsaved.find((u: any) => u.floorId === floorLevelId);
+          const createRes = await saveFloorDetail({
+            isActive: true,
+            assetId: pId,
+            floorId: floorLevelId,
+            constructionYear: sample?.conYear || String(new Date().getFullYear()),
+            assessmentYear: null,
+            constructionTypeId: Number(sample?.conType) || 1,
+            typeOfUseId: Number(sample?.useType) || 1,
+            subTypeOfUseId: Number(sample?.subUseType) || 0,
+            carpetAreaSqMeter: 0,
+            carpetAreaSqFeet: 0,
+            builtUpAreaSqMeter: 0,
+            builtUpAreaSqFeet: 0,
+            noOfRooms: 0,
+            createdBy: 1,
+          });
+          if (createRes.success && (createRes.data as any)?.id) {
+            floorDetailsMap.set(floorLevelId, Number((createRes.data as any).id));
+          }
+        }
+      }
+
+      for (const unit of unsaved) {
+        const roomDetails = unit.rooms && unit.rooms.length > 0
+          ? unit.rooms.map((r: any) => {
+            const areaSqM = r.areaSqM != null
+              ? Number(r.areaSqM)
+              : Number(r.area || 0) * 0.092903;
+            return {
+              roomNo: r.roomNo,
+              roomType: r.roomType,
+              shape: r.shape || "Rectangle",
+              lengthMtr: r.length ? Number(r.length) : null,
+              widthMtr: r.width ? Number(r.width) : null,
+              heightMtr: r.height ? Number(r.height) : null,
+              base1Mtr: r.base1 ? Number(r.base1) : null,
+              base2Mtr: r.base2 ? Number(r.base2) : null,
+              areaSqMtr: areaSqM,
+              noOfRooms: Number(r.count || 1),
+              totalAreaSqMtr: areaSqM * Number(r.count || 1),
+              outerYesNo: r.outer === "Yes",
+              minusYesNo: r.minus === "Yes" || r.offset === "Yes",
+            };
+          })
+          : null;
+
+        const calcDurationMonths = (s: string, e: string): number => {
+          if (!s || !e) return 0;
+          const start = new Date(s); const end = new Date(e);
+          if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) return 0;
+          let m = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+          if (end.getDate() < start.getDate()) m -= 1;
+          return Math.max(0, m);
+        };
+
+        const rentInfo = unit.rentType && unit.rentType !== "None" ? {
+          leaseRentType: unit.rentType,
+          leaseStart: unit.leaseStart ? new Date(unit.leaseStart).toISOString() : null,
+          leaseEnd: unit.leaseEnd ? new Date(unit.leaseEnd).toISOString() : null,
+          duration: calcDurationMonths(unit.leaseStart || "", unit.leaseEnd || ""),
+          rentFrequency: unit.rentFreq || "Monthly",
+          rentAmount: Number(unit.rentAmount || 0),
+          securityDeposit: Number(unit.securityDeposit || 0),
+          depositType: unit.depositType || "Refundable",
+        } : null;
+
+        const resolvedFloorDetailsId = unit.floorId
+          ? (floorDetailsMap.get(unit.floorId) ?? unit.floorId)
+          : undefined;
+
+        const res = await createChildAssetAction({
+          parentAssetId: pId,
+          assetId: unit.id || 0,
+          floorDetailsId: resolvedFloorDetailsId,
+          floorId: unit.floorId,
+          unitNo: unit.unitNumber,
+          shopUnitName: unit.unitName || null,
+          totalAreaSqFt: unit.carpetAreaSqFeet,
+          departmentId: unit.departmentId ? Number(unit.departmentId) : null,
+          renterName: unit.renterName || null,
+          mobileNo: unit.mobileNo || null,
+          emailId: unit.emailId || null,
+          gstNo: unit.gstNo || null,
+          aadhaarCardNo: unit.aadhaar || null,
+          panCardNo: unit.pan || null,
+          propertyDescription: unit.propertyDescription || null,
+          rentInformation: rentInfo,
+          isRoomWiseValuationActive: roomDetails !== null,
+          roomDetails,
+          rooms: unit.rooms,
+          locationAddress: unit.locationAddress || formData.fullAddress || formData.address || null,
+          locationLat: unit.locationLat || (formData.latitude ? String(formData.latitude) : null),
+          locationLng: unit.locationLng || (formData.longitude ? String(formData.longitude) : null),
+          floorConfiguration: {
+            unitAreaSqFt: unit.carpetAreaSqFeet,
+            calculatedCapitalValue: unit.baseValue || 0,
+          }
+        });
+
+        if (res.success && res.data) {
+          saved.push({
+            ...unit,
+            id: res.data.assetId || unit.id,
+            unitNumber: res.data.assetNo || unit.unitNumber,
+            isSaved: true,   // mark as persisted so future Save & Next skips it
+            isModified: false,
+          });
+        } else {
+          errors.push(`${unit.unitNumber}: ${res.error || "failed"}`);
+        }
+      }
+
+      // Merge saved back into units
+      const updatedUnits = units.map((u: any) => {
+        const s = saved.find((sv: any) => sv.id === u.id);
+        return s ?? u;
+      });
+      setUnits(updatedUnits);
+
+      if (errors.length > 0) {
+        toast.warning(`Saved ${saved.length} units. ${errors.length} failed: ${errors.join(", ")}`, { id: loadingToast });
+        return false;
+      }
+      toast.success(`All ${saved.length} unit(s) saved. Proceeding…`, { id: loadingToast });
+      return true;
+    } catch (err: any) {
+      toast.error(err.message || "Save failed.", { id: loadingToast });
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [units, parentBuildingId, formData.id]);
+
+  useEffect(() => {
+    if (registerSubmitHook) registerSubmitHook(handleSaveAll);
+    return () => { if (registerSubmitHook) registerSubmitHook(null); };
+  }, [registerSubmitHook, handleSaveAll]);
 
   if (activeUnit) {
     return (
@@ -209,9 +575,15 @@ export function StandaloneSubUnitStep({ dropdownOptions }: { dropdownOptions?: a
 
           <button
             onClick={handleGenerate}
-            className="h-10 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-black uppercase tracking-wider text-xs flex items-center gap-2 shadow-md transition-all cursor-pointer"
+            disabled={isGenerating}
+            className="h-10 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-black uppercase tracking-wider text-xs flex items-center gap-2 shadow-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Plus className="size-4" /> Add / Generate
+            {isGenerating ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Plus className="size-4" />
+            )}
+            Add / Generate
           </button>
 
           {units.length > 0 && (

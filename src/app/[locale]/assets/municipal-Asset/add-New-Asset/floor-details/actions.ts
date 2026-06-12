@@ -33,8 +33,12 @@ const getArray = (d: unknown): any[] => {
 export async function fetchFloorsByAsset(assetId: number): Promise<ActionResult<FloorDetailApiResponse[]>> {
   try {
     const res = await floorDetailsService.getFloorsByAsset(assetId);
+    console.log("[DEBUG] fetchFloorsByAsset res:", JSON.stringify(res));
     return { success: true, data: res.success ? getArray(res.data) : [] };
-  } catch { return { success: true, data: [] }; }
+  } catch (err) {
+    console.error("[DEBUG] fetchFloorsByAsset error:", err);
+    return { success: true, data: [] };
+  }
 }
 
 export async function saveFloorDetail(data: FloorDetailApiRequest): Promise<ActionResult<FloorDetailApiResponse>> {
@@ -645,21 +649,21 @@ export async function getSubUnitsByAssetAction(parentAssetId: number): Promise<A
   try {
     const res = await manageSubUnitsService.getByAssetId(parentAssetId);
     if (res.success && res.data) {
-      // In parallel, fetch asset master details for each sub-unit to get the departmentId and departmentName
+      // In parallel, fetch full child asset details for each sub-unit to get rooms, renter, and department
       const detailedSubUnits = await Promise.all(
         res.data.map(async (subunit) => {
+          const subId = subunit.assetId || subunit.id;
+          if (!subId) return subunit;
           try {
-            const masterRes = await assetMasterService.getAssetById(subunit.assetId);
-            if (masterRes.success && masterRes.data) {
-              const master = masterRes.data as any;
+            const childRes = await getChildAssetByIdAction(subId);
+            if (childRes.success && childRes.data) {
               return {
                 ...subunit,
-                departmentId: master.departmentId || null,
-                departmentName: master.departmentName || null,
+                ...childRes.data,
               };
             }
           } catch (err) {
-            logger.error(`Failed to fetch AssetMaster for sub-unit asset ${subunit.assetId}:`, { error: err as Error });
+            logger.error(`Failed to fetch full child asset details for sub-unit asset ${subId}:`, { error: err as Error });
           }
           return subunit;
         })
@@ -814,8 +818,8 @@ export async function deleteUploadedDocAction(
  */
 export async function fetchUploadedDocumentsAction(
   assetId: number,
-  includeAdHoc = false,
-  includeDefinitionBased = false
+  includeAdHoc = true,
+  includeDefinitionBased = true
 ): Promise<ActionResult<any>> {
   try {
     const { getDocumentsByAsset } = await import("@/lib/api/asset/asset-document.server.service");

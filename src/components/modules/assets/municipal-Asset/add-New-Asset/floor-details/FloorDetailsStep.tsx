@@ -5,7 +5,15 @@ import { UnitPoolPanel } from "./UnitPoolPanel";
 import { MapPicker } from "../basic-Info/MapPicker";
 import { useFloorAssetFlow } from "@/hooks/asset-hooks/floor-details/useFloorAssetFlow";
 
-export default function FloorDetailsPage({ dropdownOptions: initialDropdownOptions }: { dropdownOptions?: any }) {
+export default function FloorDetailsPage({ 
+  dropdownOptions: initialDropdownOptions,
+  initialSubUnits = [],
+  initialFloors = []
+}: { 
+  dropdownOptions?: any;
+  initialSubUnits?: any[];
+  initialFloors?: any[];
+}) {
   const {
     dropdownOptions,
     isMapOpen, setIsMapOpen,
@@ -20,7 +28,7 @@ export default function FloorDetailsPage({ dropdownOptions: initialDropdownOptio
   return (
     <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* UnitPoolPanel registers handleSaveAll as the SAVE & NEXT submit hook */}
-      <UnitPoolPanel dropdownOptions={dropdownOptions} />
+      <UnitPoolPanel dropdownOptions={dropdownOptions} initialSubUnits={initialSubUnits} initialFloors={initialFloors} />
 
       <MapPicker
         isOpen={isMapOpen}

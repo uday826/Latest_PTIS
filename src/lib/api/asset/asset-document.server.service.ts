@@ -50,7 +50,7 @@ async function getBinaryFetchHeaders(): Promise<Record<string, string>> {
   return headers;
 }
 
-export async function getDocumentsByAsset(assetId: number | string, includeAdHoc = false, includeDefinitionBased = false) {
+export async function getDocumentsByAsset(assetId: number | string, includeAdHoc = true, includeDefinitionBased = true) {
   let url = `/AssetDocument/by-asset/${encodeURIComponent(String(assetId))}`;
   const params = new URLSearchParams();
   if (includeAdHoc) params.append("includeAdHoc", "true");
