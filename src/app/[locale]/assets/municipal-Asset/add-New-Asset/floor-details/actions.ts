@@ -587,9 +587,18 @@ export async function createChildAssetAction(
                   try {
                     const existingMinusRes = await assetRoomWiseMinusDataService.getAll(roomWiseSubmissionId);
                     if (existingMinusRes.success && existingMinusRes.data) {
-                      const existingItems = Array.isArray(existingMinusRes.data)
-                        ? existingMinusRes.data
-                        : ((existingMinusRes.data as any).items || []);
+                      // Handle both flat-array and PagedResult shapes
+                      let existingItems: any[];
+                      if (Array.isArray(existingMinusRes.data)) {
+                        existingItems = existingMinusRes.data;
+                      } else {
+                        const paged = existingMinusRes.data as any;
+                        existingItems = Array.isArray(paged.items)
+                          ? paged.items
+                          : Array.isArray(paged.data)
+                            ? paged.data
+                            : [];
+                      }
                       const filtered = existingItems.filter(
                         (item: any) => Number(item.roomWiseSubmissionId) === Number(roomWiseSubmissionId)
                       );
@@ -664,8 +673,12 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
       assetMasterService.getAssetById(assetId)
     ]);
 
-    if (subUnitRes.success && subUnitRes.data) {
+      if (subUnitRes.success && subUnitRes.data) {
       const detail = subUnitRes.data as any;
+
+      // DEBUG: log the top-level keys of the response to diagnose field naming
+      logger.info(`[DEBUG] getChildAssetByIdAction assetId=${assetId} detail keys: ${Object.keys(detail || {}).join(', ')}`);
+      logger.info(`[DEBUG] getChildAssetByIdAction roomDetails count: ${Array.isArray(detail?.roomDetails) ? detail.roomDetails.length : 'N/A'}, roomWiseDetails count: ${Array.isArray(detail?.roomWiseDetails) ? detail.roomWiseDetails.length : 'N/A'}`);
 
       // Merge department details from AssetMaster
       if (assetMasterRes.success && assetMasterRes.data) {
@@ -675,28 +688,87 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
       }
 
       // Load room-wise offset (minus) data from AssetRoomWiseMinusData
-      if (Array.isArray(detail.roomWiseDetails)) {
-        for (const room of detail.roomWiseDetails) {
+      // Endpoint: GET /AssetRoomWiseMinusData?RoomWiseSubmissionId={room.id}
+      // room.id is the roomWiseDetails row id which IS the RoomWiseSubmissionId
+      // NOTE: The API may return rooms as 'roomWiseDetails', 'roomDetails', or 'roomWiseSubmissions'
+      const roomWiseDetails = Array.isArray(detail.roomWiseDetails)
+        ? detail.roomWiseDetails
+        : Array.isArray(detail.roomDetails)
+          ? detail.roomDetails
+          : Array.isArray(detail.roomWiseSubmissions)
+            ? detail.roomWiseSubmissions
+            : [];
+
+      if (roomWiseDetails.length > 0) {
+        // Normalise: always expose as both roomWiseDetails AND roomDetails for UnitPoolPanel
+        detail.roomWiseDetails = roomWiseDetails;
+        detail.roomDetails = roomWiseDetails;
+
+        for (const room of roomWiseDetails) {
+          const roomWiseSubmissionId = room.id;
+          if (!roomWiseSubmissionId) continue;
+
+          // If offsets are already embedded in the room data (from ManageSubUnits response),
+          // normalise them and skip the separate API call.
+          if (Array.isArray(room.offsets) && room.offsets.length > 0) {
+            room.offsets = room.offsets.map((off: any) => ({
+              id: String(off.id || ""),
+              shape: off.shape || "Rectangle",
+              // API returns direct field names (length, width, etc.) not lengthMtr/widthMtr
+              length: Number(off.length ?? off.lengthMtr ?? 0),
+              width: Number(off.width ?? off.widthMtr ?? 0),
+              height: Number(off.height ?? off.heightMtr ?? 0),
+              base1: Number(off.base1 ?? off.base1Mtr ?? 0),
+              base2: Number(off.base2 ?? off.base2Mtr ?? 0),
+              radius: Number(off.radius ?? off.length ?? off.lengthMtr ?? 0),
+              areaSqM: Number(off.areaSqM ?? off.areaSqMtr ?? 0),
+              op: (off.op || "Subtract") as "Add" | "Subtract",
+            }));
+            continue; // offsets already present — no need to call AssetRoomWiseMinusData
+          }
+
+          // Fallback: fetch offsets from AssetRoomWiseMinusData API
           try {
-            const minusRes = await assetRoomWiseMinusDataService.getAll(room.id);
+            const minusRes = await assetRoomWiseMinusDataService.getAll(roomWiseSubmissionId);
             if (minusRes.success && minusRes.data) {
-              const items = getArray(minusRes.data);
-              const filteredItems = items.filter((item: any) => Number(item.roomWiseSubmissionId) === Number(room.id));
+              // The service's unwrapResponse already extracts body?.items
+              // so minusRes.data may be:
+              //   a) AssetRoomWiseMinusDataDto[]  — already the flat array
+              //   b) PagedResult object { items: [], totalCount, ... }
+              let rawItems: any[];
+              if (Array.isArray(minusRes.data)) {
+                rawItems = minusRes.data;
+              } else {
+                const paged = minusRes.data as any;
+                rawItems = Array.isArray(paged.items)
+                  ? paged.items
+                  : Array.isArray(paged.data)
+                    ? paged.data
+                    : [];
+              }
+              // Filter to only entries that belong to this specific room
+              const filteredItems = rawItems.filter(
+                (item: any) => Number(item.roomWiseSubmissionId) === Number(roomWiseSubmissionId)
+              );
               room.offsets = filteredItems.map((item: any) => ({
                 id: String(item.id),
                 shape: item.shape || "Rectangle",
-                length: Number(item.lengthMtr || 0),
-                width: Number(item.widthMtr || 0),
-                height: Number(item.heightMtr || 0),
-                base1: Number(item.base1Mtr || 0),
-                base2: Number(item.base2Mtr || 0),
-                radius: Number(item.lengthMtr || 0), // Fallback for circle shapes
-                areaSqM: Number(item.areaSqMtr || 0),
-                op: "Subtract", // Default to Subtract since it is "Minus" data
+                // AssetRoomWiseMinusData uses direct field names matching the embed format
+                length: Number(item.length ?? item.lengthMtr ?? 0),
+                width: Number(item.width ?? item.widthMtr ?? 0),
+                height: Number(item.height ?? item.heightMtr ?? 0),
+                base1: Number(item.base1 ?? item.base1Mtr ?? 0),
+                base2: Number(item.base2 ?? item.base2Mtr ?? 0),
+                radius: Number(item.radius ?? item.length ?? item.lengthMtr ?? 0),
+                areaSqM: Number(item.areaSqM ?? item.areaSqMtr ?? 0),
+                op: (item.op || "Subtract") as "Add" | "Subtract",
               }));
+            } else {
+              room.offsets = [];
             }
           } catch (err: any) {
-            logger.error(`Failed to load offsets for room ${room.id}:`, { error: err });
+            logger.error(`Failed to load offsets for room ${roomWiseSubmissionId}:`, { error: err });
+            room.offsets = [];
           }
         }
       }

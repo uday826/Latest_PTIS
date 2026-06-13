@@ -163,14 +163,35 @@ export const manageSubUnitsService = {
     return unwrapResponse<SubUnitResponseDto[]>(res);
   },
 
-  /**
-   * Get sub-unit by ID
-   */
   getById: async (
     id: number
-  ): Promise<ApiResponse<SubUnitResponseDto>> => {
+  ): Promise<ApiResponse<any>> => {
     const res = await apiClient.get(`/ManageSubUnits/${id}`);
-    return unwrapResponse<SubUnitResponseDto>(res);
+    if (!res.success) {
+      return {
+        success: false,
+        statusCode: res.statusCode,
+        error: res.error || res.message,
+        message: res.message || res.error,
+      };
+    }
+    // The backend wraps the response as:
+    //   { success: true, message: '...', data: { id, roomDetails: [...], renterDetails: {...}, ... } }
+    // We need to unwrap just the outer envelope to get the inner detail object.
+    // Check for the API envelope wrapper by looking for a 'data' key that contains
+    // any known sub-unit detail field (roomDetails, id, unitNo, assetId, etc.)
+    const body = res.data as any;
+    const targetPayload = body?.items ?? body?.data;
+    const isEnvelope =
+      body &&
+      typeof body === 'object' &&
+      !Array.isArray(body) &&
+      targetPayload &&
+      typeof targetPayload === 'object' &&
+      !Array.isArray(targetPayload);
+
+    const detail = isEnvelope ? targetPayload : body;
+    return { success: true, statusCode: res.statusCode, data: detail };
   },
 
   /**
