@@ -87,6 +87,7 @@ export interface VerificationRecord extends Record<string, unknown> {
   applicationType: string;
   submittedDate: string;
   status: string;
+  remarks?: string;
 }
 
 export interface ApprovalRecord extends Record<string, unknown> {
@@ -99,6 +100,7 @@ export interface ApprovalRecord extends Record<string, unknown> {
   rentAmount: number;
   submittedDate: string;
   status: string;
+  remarks?: string;
 }
 
 export interface ManageRentersTabCounts {
@@ -141,6 +143,8 @@ export interface ManageRentersPageData {
   zoneId: number | null;
   wardId: number | null;
   assetId: number | null;
+  fromDate: string;
+  toDate: string;
   categoryOptions: FilterOption[];
   zoneOptions: FilterOption[];
   wardOptions: FilterOption[];
@@ -154,6 +158,8 @@ interface ManageRentersWorkflowBaseData {
   totalPages: number;
   searchTerm: string;
   assetCategoryId: number | null;
+  fromDate: string;
+  toDate: string;
   categoryOptions: FilterOption[];
 }
 
@@ -337,6 +343,8 @@ export interface LeaseRentRegistrationProps {
   totalCount?: number;
   totalPages?: number;
   searchTerm?: string;
+  fromDate?: string;
+  toDate?: string;
   assetCategoryId?: number | null;
   zoneId?: number | null;
   wardId?: number | null;

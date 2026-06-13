@@ -57,9 +57,11 @@ export async function getZones(): Promise<ZoneOption[]> {
     .filter((zone) => zone && typeof zone.id === 'number');
 }
 
-export async function getWards(_zoneId?: number | null): Promise<WardOption[]> {
+export async function getWards(zoneId?: number | null): Promise<WardOption[]> {
   const response = await wardService.getWards();
   if (!response.success || !response.data) return [];
+
+  const normalizedZoneId = typeof zoneId === 'number' && Number.isFinite(zoneId) && zoneId > 0 ? zoneId : null;
 
   return response.data
     .map((ward) => ({
@@ -68,6 +70,7 @@ export async function getWards(_zoneId?: number | null): Promise<WardOption[]> {
       zoneId: typeof ward.zoneId === 'string' ? Number(ward.zoneId) : ward.zoneId ?? 0,
       description: ward.description ?? ward.wardName ?? ward.WardName ?? null,
     }))
+    .filter((ward) => normalizedZoneId == null || ward.zoneId === normalizedZoneId)
     .filter((ward) => ward && typeof ward.id === 'number');
 }
 

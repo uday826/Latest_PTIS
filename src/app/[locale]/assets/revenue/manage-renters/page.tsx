@@ -61,12 +61,14 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
       <LeaseRentRegistration
         key={[
           data.pageNumber,
-          data.pageSize,
-          data.searchTerm,
-          data.assetCategoryId ?? '',
-          data.zoneId ?? '',
-          data.wardId ?? '',
-          data.assetId ?? '',
+        data.pageSize,
+        data.searchTerm,
+        data.fromDate,
+        data.toDate,
+        data.assetCategoryId ?? '',
+        data.zoneId ?? '',
+        data.wardId ?? '',
+        data.assetId ?? '',
           drawerAssetId ?? '',
         ].join('|')}
         pageNumber={data.pageNumber}
@@ -74,6 +76,8 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
         totalCount={data.totalCount}
         totalPages={data.totalPages}
         searchTerm={data.searchTerm}
+        fromDate={data.fromDate}
+        toDate={data.toDate}
         assetCategoryId={data.assetCategoryId}
         zoneId={data.zoneId}
         wardId={data.wardId}

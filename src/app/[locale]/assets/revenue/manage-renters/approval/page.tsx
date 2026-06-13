@@ -5,6 +5,7 @@ import {
   getManageRentersAssetDetailsAction,
 } from './actions';
 import { fetchAssetDocumentsByAsset, fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
+import { getLeaseRentDetailsDocuments } from '@/lib/api/asset/asset-lease-rent-details-document.server.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,12 +45,15 @@ export default async function ManageRentersApprovalPage({
 
   const assetId = selectedApproval?.assetId || selectedRejection?.assetId || selectedRevert?.assetId;
   const selectedAsset = assetId ? await getManageRentersAssetDetailsAction(assetId) : null;
-  const [assetDocuments, assetPhotosAndPlans] = assetId
+  const [assetDocuments, assetPhotosAndPlans, leaseRentDocuments] = assetId
     ? await Promise.all([
         fetchAssetDocumentsByAsset(assetId).then((res) => res.documents).catch(() => []),
         fetchAssetPhotosAndPlansByAsset(assetId).then((res) => res.documents).catch(() => []),
+        selectedApproval?.id
+          ? getLeaseRentDetailsDocuments(Number(selectedApproval.id)).then((res) => res.documents).catch(() => [])
+          : Promise.resolve([]),
       ])
-    : [[], []];
+    : [[], [], []];
 
   return (
     <LeaseRentRegistration
@@ -57,6 +61,8 @@ export default async function ManageRentersApprovalPage({
         data.pageNumber,
         data.pageSize,
         data.searchTerm,
+        data.fromDate,
+        data.toDate,
         data.assetCategoryId ?? '',
         drawerApprovalId ?? '',
         drawerRejectId ?? '',
@@ -68,12 +74,14 @@ export default async function ManageRentersApprovalPage({
       totalCount={data.totalCount}
       totalPages={data.totalPages}
       searchTerm={data.searchTerm}
+      fromDate={data.fromDate}
+      toDate={data.toDate}
       assetCategoryId={data.assetCategoryId}
       approvalRecords={data.records}
       approvalDrawerId={drawerApprovalId}
       selectedApproval={selectedApproval}
       selectedAsset={selectedAsset}
-      assetDocuments={assetDocuments}
+      assetDocuments={[...assetDocuments, ...leaseRentDocuments]}
       assetPhotosAndPlans={assetPhotosAndPlans}
       rejectDrawerId={drawerRejectId}
       selectedRejection={selectedRejection}

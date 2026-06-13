@@ -24,6 +24,7 @@ import {
   type LoadedDocumentFile,
   parseFileNameFromDisposition,
 } from '@/components/modules/assets/municipal-Asset/detail-tabs/documentHelpers';
+import { RemarkActionDrawer } from './RemarkActionDrawer';
 
 function isBlank(value: unknown): boolean {
   return value === null || value === undefined || value === '';
@@ -65,11 +66,10 @@ function InfoCard({ label, value }: { label: string; value: unknown }) {
 }
 
 interface OverviewTableRow extends Record<string, unknown> {
-  zoneWardNo: string;
-  propertyNo: string;
+  zoneNo: string;
+  wardNo: string;
   unitName: string;
   shopNumber: string;
-  gatNumber: string;
   shopActNumber: string;
 }
 
@@ -102,6 +102,7 @@ export function ApprovalLeaseModal({
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
+  const [remarkDrawerOpen, setRemarkDrawerOpen] = useState(false);
 
   const revokeLoadedFile = useCallback(() => {
     setLoadedFile((current) => {
@@ -225,20 +226,28 @@ export function ApprovalLeaseModal({
   }, [documents]);
 
   const mediaCards = useMemo(() => {
-    return assetPhotosAndPlans.slice(0, 3).map((doc) => ({
+    return assetPhotosAndPlans.map((doc) => ({
       ...doc,
       label: getFileTitle(doc),
       isImage: isImage(doc.contentType || '', doc.fileName || doc.name || ''),
     }));
   }, [assetPhotosAndPlans]);
 
+  const getMediaSearchText = (doc: AssetDocumentListItem) =>
+    `${doc.name || ''} ${doc.fileName || ''}`.toLowerCase();
+
   const leftMediaPanels = [
     {
       title: 'Asset Photo',
       doc:
         mediaCards.find((doc) => {
-          const name = (doc.name || '').toLowerCase();
-          return name.includes('asset image') || (name.includes('asset photo') && !name.includes('plan'));
+          const name = getMediaSearchText(doc);
+          return (
+            name.includes('asset image') ||
+            name.includes('asset photo') ||
+            name.includes('on spot') ||
+            name.includes('photo')
+          );
         }) ?? null,
       fallbackIcon: Building2,
       fallbackText: 'Asset Photo',
@@ -246,8 +255,8 @@ export function ApprovalLeaseModal({
     {
       title: 'OP Plan',
       doc: mediaCards.find((doc) => {
-        const name = (doc.name || '').toLowerCase();
-        return !name.includes('asset image') && !name.includes('asset photo') && !name.includes('asset photo plan');
+        const name = getMediaSearchText(doc);
+        return name.includes('op plan') || (name.includes('plan') && !name.includes('dp plan') && !name.includes('asset photo plan'));
       }) ?? null,
       fallbackIcon: Grid,
       fallbackText: 'OP Plan',
@@ -255,8 +264,8 @@ export function ApprovalLeaseModal({
     {
       title: 'DP Plan',
       doc: mediaCards.find((doc) => {
-        const name = (doc.name || '').toLowerCase();
-        return name.includes('asset photo plan');
+        const name = getMediaSearchText(doc);
+        return name.includes('dp plan') || name.includes('asset photo plan') || name.includes('digital plan');
       }) ?? null,
       fallbackIcon: MapPinned,
       fallbackText: 'DP Plan',
@@ -309,12 +318,17 @@ export function ApprovalLeaseModal({
     router.refresh();
   };
 
-  const handleApproveClick = () => {
+  const handleOpenRemarkDrawer = () => {
+    setRemarkDrawerOpen(true);
+  };
+
+  const handleRemarkConfirm = (remarks: string) => {
     startTransition(async () => {
       try {
-        const result = await approveAction(record.id, 'Approved from Approval Drawer');
+        const result = await approveAction(record.id, remarks);
         if (result.success) {
           toastSuccess(result.message || 'Request approved successfully.');
+          setRemarkDrawerOpen(false);
           onClose();
         } else {
           toastError(result.message || 'Approval failed.');
@@ -341,24 +355,20 @@ export function ApprovalLeaseModal({
   const buildingAssetName = asset?.assetName ?? '-';
   const assetCategory = asset?.assetCategoryName ?? '-';
   const shopNameVal = record.shopName ?? '-';
-  const zoneWard = `${toDisplay(asset?.zoneName)} - ${toDisplay(asset?.wardName)}`;
-
   const overviewColumns: Column<OverviewTableRow>[] = [
-    { key: 'zoneWardNo', label: 'Zone - Ward No', align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'propertyNo', label: 'Asset No', align: 'center', width: '140px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'zoneNo', label: 'Zone No', align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'wardNo', label: 'Ward No', align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'unitName', label: 'Unit Name', align: 'center', width: '170px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'shopNumber', label: 'Unit Number', align: 'center', width: '110px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'gatNumber', label: 'Asset Category', align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'shopActNumber', label: 'Unit Act Number', align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
   ];
 
   const overviewData: OverviewTableRow[] = [
     {
-      zoneWardNo: zoneWard,
-      propertyNo: asset?.assetNo ?? '-',
+      zoneNo: toDisplay(asset?.zoneName),
+      wardNo: toDisplay(asset?.wardName),
       unitName: record.shopName ?? '-',
       shopNumber: record.shopNo ?? '-',
-      gatNumber: assetCategory,
       shopActNumber: asset?.assetTypeId != null ? String(asset.assetTypeId) : '-',
     },
   ];
@@ -397,8 +407,8 @@ export function ApprovalLeaseModal({
 
   const drawerTitle = (
     <div className="flex items-center gap-2">
-      <FileText className="w-5 h-5 text-blue-600" />
-      <h2 className="font-bold text-sm tracking-wide text-slate-800">Approval</h2>
+      <FileText className="w-5 h-5 text-black" />
+      <h2 className="font-bold text-sm tracking-wide text-black">Approval</h2>
     </div>
   );
 
@@ -410,7 +420,7 @@ export function ApprovalLeaseModal({
       <Button variant="danger" size="sm" icon={ShieldX} onClick={handleRevertClick} disabled={isPending}>
         Revert to Verification
       </Button>
-      <Button variant="success" size="sm" icon={FileCheck2} onClick={handleApproveClick} disabled={isPending}>
+      <Button variant="success" size="sm" icon={FileCheck2} onClick={handleOpenRemarkDrawer} disabled={isPending}>
         {isPending ? 'Approving...' : 'Approve'}
       </Button>
     </>
@@ -560,7 +570,7 @@ export function ApprovalLeaseModal({
                       <td className="px-3 py-1.5 bg-slate-50/50">Lease/Rent End:</td>
                       <td className="px-3 py-1.5 border-r border-slate-100">{toDateDisplay(record.leaseEndDate)}</td>
                       <td className="px-3 py-1.5 bg-slate-50/50">Reason:</td>
-                      <td className="px-3 py-1.5">{record.reason ?? '-'}</td>
+                      <td className="px-3 py-1.5">{record.remarks ?? record.reason ?? record.rejectionReason ?? '-'}</td>
                     </tr>
                     {Boolean(record.oldLeaseStartDate || record.oldLeaseEndDate || record.terminationDate) && (
                       <>
@@ -726,6 +736,17 @@ export function ApprovalLeaseModal({
         fileError={fileError}
         onClose={closePreview}
         onDownload={downloadDocument}
+      />
+      <RemarkActionDrawer
+        open={remarkDrawerOpen}
+        title="Approve Request"
+        description="Add a remark before approving this request."
+        label="Remarks"
+        placeholder="Enter remarks..."
+        confirmLabel="Confirm Approve"
+        isPending={isPending}
+        onClose={() => setRemarkDrawerOpen(false)}
+        onConfirm={handleRemarkConfirm}
       />
     </Drawer>
   );

@@ -57,6 +57,14 @@ function parseOptionalNumber(value: string | string[] | undefined): number | nul
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
+function normalizeDateQuery(value: string | string[] | undefined): string | undefined {
+  const raw = firstQueryValue(value).trim();
+  if (!raw) return undefined;
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toISOString().slice(0, 10);
+}
+
 function sanitizeSearchTerm(value: string | string[] | undefined): string | undefined {
   const sanitized = firstQueryValue(value)
     .trim()
@@ -151,6 +159,7 @@ function toVerificationRecord(item: AssetLeaseRentDetailsListItem): Verification
     applicationType: normalizeText(item.applicationTypeName ?? item.leaseRentType ?? item.leaseType),
     submittedDate: item.updatedDate ? item.updatedDate.slice(0, 10) : item.createdDate ? item.createdDate.slice(0, 10) : '-',
     status: displayStatus,
+    remarks: normalizeText(item.remarks ?? item.reason ?? item.rejectionReason),
   };
 }
 
@@ -168,6 +177,7 @@ function toApprovalRecord(item: AssetLeaseRentDetailsListItem): ApprovalRecord {
     rentAmount: item.rentAmount ?? item.rentMonthly ?? item.monthlyRent ?? 0,
     submittedDate: item.updatedDate ? item.updatedDate.slice(0, 10) : item.createdDate ? item.createdDate.slice(0, 10) : '-',
     status: displayStatus,
+    remarks: normalizeText(item.remarks ?? item.reason ?? item.rejectionReason),
   };
 }
 
@@ -184,6 +194,8 @@ function baseLeaseRentQuery(
     zoneId: parseOptionalNumber(query.zoneId) ?? undefined,
     wardId: parseOptionalNumber(query.wardId) ?? undefined,
     assetId: parseOptionalNumber(query.assetId) ?? undefined,
+    fromDate: normalizeDateQuery(query.fromDate),
+    toDate: normalizeDateQuery(query.toDate),
   };
 }
 
@@ -237,6 +249,8 @@ export async function getManageRentersPageDataAction(
     zoneId: selectedZoneId,
     wardId: parseOptionalNumber(query.wardId),
     assetId: parseOptionalNumber(query.assetId),
+    fromDate: normalizeDateQuery(query.fromDate) ?? '',
+    toDate: normalizeDateQuery(query.toDate) ?? '',
     categoryOptions: categories.map((category) => ({
       label: category.categoryName,
       value: String(category.id),
@@ -273,6 +287,8 @@ export async function getManageRentersVerificationPageDataAction(
     totalPages: list.totalPages,
     searchTerm: sanitizeSearchTerm(query.searchTerm) ?? '',
     assetCategoryId: parseOptionalNumber(query.assetCategoryId),
+    fromDate: normalizeDateQuery(query.fromDate) ?? '',
+    toDate: normalizeDateQuery(query.toDate) ?? '',
     categoryOptions: categories.map((category) => ({
       label: category.categoryName,
       value: String(category.id),
@@ -297,6 +313,8 @@ export async function getManageRentersApprovalPageDataAction(
     totalPages: list.totalPages,
     searchTerm: sanitizeSearchTerm(query.searchTerm) ?? '',
     assetCategoryId: parseOptionalNumber(query.assetCategoryId),
+    fromDate: normalizeDateQuery(query.fromDate) ?? '',
+    toDate: normalizeDateQuery(query.toDate) ?? '',
     categoryOptions: categories.map((category) => ({
       label: category.categoryName,
       value: String(category.id),
@@ -337,6 +355,8 @@ export async function getManageRentersRevertedPageDataAction(
     zoneId: selectedZoneId,
     wardId: parseOptionalNumber(query.wardId),
     assetId: parseOptionalNumber(query.assetId),
+    fromDate: normalizeDateQuery(query.fromDate) ?? '',
+    toDate: normalizeDateQuery(query.toDate) ?? '',
     categoryOptions: categories.map((category) => ({
       label: category.categoryName,
       value: String(category.id),

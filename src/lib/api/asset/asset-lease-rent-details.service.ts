@@ -72,6 +72,7 @@ export interface AssetLeaseRentDetailsListItem {
   paymentStatus?: string | null;
   leaseDurationDisplay?: string | null;
   rentAmountDisplay?: string | null;
+  remarks?: string | null;
   id: number;
   isActive?: boolean;
   createdDate?: string | null;
@@ -88,6 +89,8 @@ export interface AssetLeaseRentDetailsListParams {
   zoneId?: number;
   wardId?: number;
   assetId?: number;
+  fromDate?: string;
+  toDate?: string;
 }
 
 function buildAssetLeaseRentDetailsQuery(params: AssetLeaseRentDetailsListParams = {}): string {
@@ -103,6 +106,8 @@ function buildAssetLeaseRentDetailsQuery(params: AssetLeaseRentDetailsListParams
   if (params.zoneId != null) query.set('ZoneId', String(params.zoneId));
   if (params.wardId != null) query.set('WardId', String(params.wardId));
   if (params.assetId != null) query.set('AssetId', String(params.assetId));
+  if (params.fromDate?.trim()) query.set('FromDate', params.fromDate.trim());
+  if (params.toDate?.trim()) query.set('ToDate', params.toDate.trim());
 
   return query.toString();
 }
