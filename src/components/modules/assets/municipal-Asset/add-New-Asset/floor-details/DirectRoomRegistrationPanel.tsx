@@ -160,8 +160,19 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
 
         const enrichedData = {
           ...res.data,
-          subFloorName: subFloorLabel,
-          subTypeOfUseName: subUseTypeLabel,
+          floorId: res.data.floorId || payload.floorId,
+          constructionTypeId: res.data.constructionTypeId || payload.constructionTypeId,
+          typeOfUseId: res.data.typeOfUseId || payload.typeOfUseId,
+          subFloorId: res.data.subFloorId || payload.subFloorId,
+          subTypeOfUseId: res.data.subTypeOfUseId || payload.subTypeOfUseId,
+          constructionYear: res.data.constructionYear || payload.constructionYear,
+          noOfRooms: res.data.noOfRooms || payload.noOfRooms,
+          carpetAreaSqFeet: res.data.carpetAreaSqFeet || payload.carpetAreaSqFeet,
+          builtUpAreaSqFeet: res.data.builtUpAreaSqFeet || payload.builtUpAreaSqFeet,
+          isRented: res.data.isRented !== undefined ? res.data.isRented : payload.isRented,
+          subFloorName: subFloorLabel || res.data.subFloorName,
+          subTypeOfUseName: subUseTypeLabel || res.data.subTypeOfUseName,
+          roomDetails: res.data.roomDetails || roomDetails || [],
         };
 
         // We added it successfully
@@ -441,32 +452,65 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
                               ? f.roomDetails.map((r: any) => {
                                   const rOffsets = Array.isArray(r.offsets)
                                     ? r.offsets.map((off: any) => ({
-                                        id: String(off.id),
+                                        id: String(off.id || ""),
                                         shape: off.shape || "Rectangle",
-                                        length: Number(off.length || 0),
-                                        width: Number(off.width || 0),
-                                        height: Number(off.height || 0),
-                                        base1: Number(off.base1 || 0),
-                                        base2: Number(off.base2 || 0),
-                                        radius: Number(off.radius || 0),
+                                        length: (() => {
+                                          const val = Number(off.length ?? off.lengthMtr ?? 0);
+                                          if (val === 0 && off.shape === "Square" && Number(off.areaSqM || 0) > 0) {
+                                            return Math.round(Math.sqrt(Number(off.areaSqM)) * 100) / 100;
+                                          }
+                                          return val;
+                                        })(),
+                                        width: Number(off.width ?? off.widthMtr ?? 0),
+                                        height: Number(off.height ?? off.heightMtr ?? 0),
+                                        base1: Number(off.base1 ?? off.base1Mtr ?? 0),
+                                        base2: Number(off.base2 ?? off.base2Mtr ?? 0),
+                                        radius: (() => {
+                                          const val = Number(off.radius ?? off.length ?? off.lengthMtr ?? off.widthMtr ?? 0);
+                                          const areaSqM = Number(off.areaSqM || 0);
+                                          if (val === 0 && areaSqM > 0) {
+                                            if (off.shape === "Circle") return Math.round(Math.sqrt(areaSqM / Math.PI) * 100) / 100;
+                                            if (off.shape === "Semi Circle") return Math.round(Math.sqrt((areaSqM * 2) / Math.PI) * 100) / 100;
+                                            if (off.shape === "Quarter") return Math.round(Math.sqrt((areaSqM * 4) / Math.PI) * 100) / 100;
+                                          }
+                                          return val;
+                                        })(),
                                         areaSqM: Number(off.areaSqM || 0),
                                         op: off.op || "Subtract",
                                       }))
                                     : [];
+
+                                  const areaSqM = Number(r.areaSqMtr || r.areaSqM || 0);
+                                  const resolvedLength = (() => {
+                                    const val = Number(r.lengthMtr || 0);
+                                    if (val === 0 && r.shape === "Square" && areaSqM > 0) {
+                                      return Math.round(Math.sqrt(areaSqM) * 100) / 100;
+                                    }
+                                    return val;
+                                  })();
+                                  const resolvedRadius = (() => {
+                                    const val = Number(r.radiusMtr || r.lengthMtr || r.widthMtr || 0);
+                                    if (val === 0 && areaSqM > 0) {
+                                      if (r.shape === "Circle") return Math.round(Math.sqrt(areaSqM / Math.PI) * 100) / 100;
+                                      if (r.shape === "Semi Circle") return Math.round(Math.sqrt((areaSqM * 2) / Math.PI) * 100) / 100;
+                                      if (r.shape === "Quarter") return Math.round(Math.sqrt((areaSqM * 4) / Math.PI) * 100) / 100;
+                                    }
+                                    return val;
+                                  })();
 
                                   return {
                                     id: String(r.id || Math.random()),
                                     roomNo: String(r.roomNo || "1"),
                                     roomType: String(r.roomType || "Bed Room"),
                                     shape: String(r.shape || "Rectangle"),
-                                    length: Number(r.lengthMtr || 0),
+                                    length: resolvedLength,
                                     width: Number(r.widthMtr || 0),
                                     height: Number(r.heightMtr || 0),
-                                    areaSqM: Number(r.areaSqMtr || 0),
-                                    areaSqFt: Number(r.areaSqMtr || 0) * 10.7639,
+                                    areaSqM: areaSqM,
+                                    areaSqFt: areaSqM * 10.7639,
                                     base1: Number(r.base1Mtr || 0),
                                     base2: Number(r.base2Mtr || 0),
-                                    radius: 0,
+                                    radius: resolvedRadius,
                                     hasOffset: rOffsets.length > 0 ? "Yes" : "No",
                                     offsets: rOffsets,
                                     offsetShape: rOffsets.length > 0 ? rOffsets[0].shape : "Rectangle",
@@ -475,7 +519,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
                                     offsetHeight: rOffsets.length > 0 ? rOffsets[0].height : 0,
                                     offsetBase1: rOffsets.length > 0 ? rOffsets[0].base1 : 0,
                                     offsetBase2: rOffsets.length > 0 ? rOffsets[0].base2 : 0,
-                                    offsetRadius: 0,
+                                    offsetRadius: rOffsets.length > 0 ? rOffsets[0].radius : 0,
                                     offsetAreaSqM: rOffsets.length > 0 ? rOffsets[0].areaSqM : 0,
                                     offsetOp: rOffsets.length > 0 ? rOffsets[0].op : "Subtract",
                                     netAreaSqM: Number(r.totalAreaSqMtr || r.areaSqMtr || 0) / Number(r.noOfRooms || 1),
