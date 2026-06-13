@@ -114,6 +114,8 @@ function toLeaseRentRecord(item: AssetLeaseRentDetailsListItem): LeaseRentRecord
     rentAmountDisplay: item.rentAmountDisplay?.trim() || undefined,
     leaseDurationDisplay: item.leaseDurationDisplay?.trim() || undefined,
     workflowStatus: item.workflowStatus?.trim() || undefined,
+    reason: item.reason?.trim() || undefined,
+    rejectionReason: item.rejectionReason?.trim() || undefined,
     category: pickAssetCategory(item),
     zone: item.zone ?? undefined,
     ward: item.wardNo ?? undefined,

@@ -368,7 +368,7 @@ export function ApprovalLeaseModal({
     { key: 'shopArea', label: 'Unit Area (sq.mt)', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'renterName', label: 'Renter Name', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'monthlyRent', label: 'Monthly Rent (₹)', align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
-    { key: 'bharaniKaalavadi', label: 'Payment Period', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'bharaniKaalavadi', label: 'Duration', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'status', label: 'Status', align: 'center', cellClassName: 'whitespace-nowrap' },
   ];
 
@@ -398,9 +398,7 @@ export function ApprovalLeaseModal({
   const drawerTitle = (
     <div className="flex items-center gap-2">
       <FileText className="w-5 h-5 text-blue-600" />
-      <h2 className="font-bold text-sm tracking-wide text-slate-800">
-        Approval — {record.applicationTypeName ?? '-'}
-      </h2>
+      <h2 className="font-bold text-sm tracking-wide text-slate-800">Approval</h2>
     </div>
   );
 
@@ -467,7 +465,7 @@ export function ApprovalLeaseModal({
         {/* Construction details */}
         <div className="mb-4 overflow-hidden rounded-lg">
           <div className="bg-teal-600 text-white text-[10px] font-bold py-1.5 text-center">
-            Construction Details
+            Unit Details
           </div>
           <MasterTable
             columns={constructionColumns}

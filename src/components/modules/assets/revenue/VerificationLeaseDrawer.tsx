@@ -371,7 +371,7 @@ export function VerificationLeaseModal({
     { key: 'shopArea', label: 'Unit Area (sq.mt)', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'renterName', label: 'Renter Name', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'monthlyRent', label: 'Monthly Rent (₹)', align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
-    { key: 'bharaniKaalavadi', label: 'Payment Period', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'bharaniKaalavadi', label: 'Duration', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'status', label: 'Status', align: 'center', cellClassName: 'whitespace-nowrap' },
   ];
 
@@ -405,9 +405,7 @@ export function VerificationLeaseModal({
       title={
         <div className="flex items-center gap-2">
           <FileText className="w-5 h-5 text-blue-600" />
-      <h2 className="font-bold text-sm tracking-wide text-slate-800">
-        Verification — {record.applicationTypeName ?? '-'}
-      </h2>
+          <h2 className="font-bold text-sm tracking-wide text-slate-800">Verification</h2>
         </div>
       }
       width="xl"
@@ -478,7 +476,7 @@ export function VerificationLeaseModal({
         {/* Construction details */}
         <div className="mb-4 overflow-hidden rounded-lg">
           <div className="bg-teal-600 text-white text-[10px] font-bold py-1.5 text-center">
-            Construction Details
+            Unit Details
           </div>
           <MasterTable
             columns={constructionColumns}

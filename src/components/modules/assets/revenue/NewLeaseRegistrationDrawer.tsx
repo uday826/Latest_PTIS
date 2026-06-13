@@ -529,6 +529,11 @@ function RenderField({
       return;
     }
 
+    if (field.key === 'emailAddress') {
+      setValue(nextValue.replace(/[^a-zA-Z0-9@]/g, ''));
+      return;
+    }
+
     if (field.key === 'residentialAddress' || field.key === 'shopNo' || field.key === 'shopName' || field.key === 'remarksDescription' || field.key === 'reasonForRenewal' || field.key === 'reasonForTransfer' || field.key === 'reasonForTermination') {
       setValue(nextValue.replace(/[<>]/g, ''));
       return;
@@ -1219,9 +1224,7 @@ function isValidNonNegativeAmount(value: string): boolean {
   const drawerTitle = (
     <div className="flex items-center gap-2">
       <FileText className="w-5 h-5 text-blue-600" />
-      <h2 className="font-bold text-sm tracking-wide text-slate-800">
-        Asset Details — New Registration
-      </h2>
+      <h2 className="font-bold text-sm tracking-wide text-slate-800">Registration</h2>
     </div>
   );
 
@@ -1272,7 +1275,7 @@ function isValidNonNegativeAmount(value: string): boolean {
     { key: 'shopArea', label: 'Unit Area (sq.mt)', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'renterName', label: 'Renter Name', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'monthlyRent', label: 'Monthly Rent (₹)', align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
-    { key: 'bharaniKaalavadi', label: 'Payment Period', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'bharaniKaalavadi', label: 'Duration', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'status', label: 'Status', align: 'center', cellClassName: 'whitespace-nowrap' },
   ];
   const constructionData: ConstructionTableRow[] = [
@@ -1437,7 +1440,7 @@ function isValidNonNegativeAmount(value: string): boolean {
 
         <div className="mb-4 overflow-hidden rounded-lg">
           <div className="bg-teal-600 text-white text-[10px] font-bold py-1.5 text-center">
-            Construction Details
+            Unit Details
           </div>
           <MasterTable
             columns={constructionColumns}
@@ -1614,6 +1617,17 @@ function isValidNonNegativeAmount(value: string): boolean {
                 </tbody>
               </table>
             </div>
+
+            {isRevertedRecord ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 shadow-sm">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                  Reason for Revert
+                </div>
+                <div className="mt-1 text-[11px] font-semibold text-slate-700">
+                  {record?.reason ?? record?.rejectionReason ?? '-'}
+                </div>
+              </div>
+            ) : null}
 
           </div>
         </div>

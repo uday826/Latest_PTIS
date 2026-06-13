@@ -395,6 +395,7 @@ export function LeaseRentRegistration({
           pageSize={pageSize}
           totalCount={totalCount}
           totalPages={totalPages}
+          stage={stage}
           onPageChange={(nextPage) => updateQuery({ pageNumber: nextPage })}
           onPageSizeChange={(nextSize) => updateQuery({ pageNumber: 1, pageSize: nextSize })}
           onActionClick={handleRegistrationAction}

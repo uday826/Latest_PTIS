@@ -10,6 +10,7 @@ interface TableProps {
   pageSize: number;
   totalCount: number;
   totalPages: number;
+  stage?: 'registration' | 'reverted';
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   onActionClick?: (record: LeaseRentRecord) => void;
@@ -19,9 +20,8 @@ interface TableProps {
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 const iconActionClassName = '!h-7 !w-7 !px-0 !py-0 !gap-0';
 
-const columns: Column<LeaseRentRecord>[] = [
+const baseColumns: Column<LeaseRentRecord>[] = [
   { key: 'assetId', label: 'Asset No', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
-  { key: 'shopNo', label: 'Shop No', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'shopName', label: 'Shop Name', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'tenantName', label: 'Tenant Name', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   {
@@ -85,17 +85,36 @@ const columns: Column<LeaseRentRecord>[] = [
   },
 ];
 
+const revertedColumns: Column<LeaseRentRecord>[] = [
+  ...baseColumns.slice(0, 3),
+  {
+    key: 'reason',
+    label: 'Reason',
+    align: 'center',
+    cellClassName: '!px-2 !py-2',
+    render: (_value, row) => (
+      <span className="text-xs font-medium text-slate-600">
+        {row.reason ?? row.rejectionReason ?? '-'}
+      </span>
+    ),
+  },
+  ...baseColumns.slice(3),
+];
+
 export function LeaseRentTable({
   records,
   pageNumber,
   pageSize,
   totalCount,
   totalPages,
+  stage = 'registration',
   onPageChange,
   onPageSizeChange,
   onActionClick,
   onHistoryClick,
 }: TableProps) {
+  const columns = stage === 'reverted' ? revertedColumns : baseColumns;
+
   return (
     <MasterTable<LeaseRentRecord>
       columns={columns}
@@ -103,7 +122,7 @@ export function LeaseRentTable({
       loading={false}
       emptyText="No renter records matching selected filters."
       getRowKey={(row, idx) => `${row.id}-${idx}`}
-      headerTitle="Registration Records"
+      headerTitle={stage === 'reverted' ? 'Reverted Records' : 'Registration Records'}
       headerSubtitle="Current lease and rent entries"
       tableClassName="min-w-full table-auto text-[11px]"
       maxBodyHeightClassName="max-h-[calc(100vh-440px)]"

@@ -71,6 +71,7 @@ export interface LeaseRentRecord extends Record<string, unknown> {
   rentAmountDisplay?: string;
   leaseDurationDisplay?: string;
   workflowStatus?: string;
+  rejectionReason?: string;
   category?: string;
   zone?: string;
   ward?: string;
