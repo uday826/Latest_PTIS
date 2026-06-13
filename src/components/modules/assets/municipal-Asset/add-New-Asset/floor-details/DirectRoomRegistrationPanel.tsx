@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, Trash2, Edit2, Building, Map, Layers, X } from "lucide-react";
 import { useAssetForm } from "../AssetFormContext";
 import { Input, Select, Button } from "@/components/common";
-import { saveFloorDetail, deleteFloorDetail, fetchSubFloorAction, fetchSubUseTypesAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
+import { saveFloorDetail, updateFloorDetail, deleteFloorDetail, fetchSubFloorAction, fetchSubUseTypesAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { RoomWiseSubmissionDrawer } from "../sub-units/RoomWiseSubmissionDrawer";
 import { toast } from "sonner";
 
@@ -48,6 +48,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   // RoomWiseSubmissionDrawer state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -152,56 +153,227 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
         roomDetails,
       };
 
-      const res = await saveFloorDetail(payload);
-      if (res.success && res.data) {
-        // Find labels
-        const subFloorLabel = subFloorOptions.find(o => o.value === String(payload.subFloorId))?.label;
-        const subUseTypeLabel = subUseTypeOptions.find(o => o.value === String(payload.subTypeOfUseId))?.label;
+      if (editingId) {
+        const res = await updateFloorDetail(editingId, payload);
+        if (res.success && res.data) {
+          const subFloorLabel = subFloorOptions.find(o => o.value === String(payload.subFloorId))?.label;
+          const subUseTypeLabel = subUseTypeOptions.find(o => o.value === String(payload.subTypeOfUseId))?.label;
 
-        const enrichedData = {
-          ...res.data,
-          floorId: res.data.floorId || payload.floorId,
-          constructionTypeId: res.data.constructionTypeId || payload.constructionTypeId,
-          typeOfUseId: res.data.typeOfUseId || payload.typeOfUseId,
-          subFloorId: res.data.subFloorId || payload.subFloorId,
-          subTypeOfUseId: res.data.subTypeOfUseId || payload.subTypeOfUseId,
-          constructionYear: res.data.constructionYear || payload.constructionYear,
-          noOfRooms: res.data.noOfRooms || payload.noOfRooms,
-          carpetAreaSqFeet: res.data.carpetAreaSqFeet || payload.carpetAreaSqFeet,
-          builtUpAreaSqFeet: res.data.builtUpAreaSqFeet || payload.builtUpAreaSqFeet,
-          isRented: res.data.isRented !== undefined ? res.data.isRented : payload.isRented,
-          subFloorName: subFloorLabel || res.data.subFloorName,
-          subTypeOfUseName: subUseTypeLabel || res.data.subTypeOfUseName,
-          roomDetails: res.data.roomDetails || roomDetails || [],
-        };
+          const enrichedData = {
+            ...res.data,
+            floorId: res.data.floorId || payload.floorId,
+            constructionTypeId: res.data.constructionTypeId || payload.constructionTypeId,
+            typeOfUseId: res.data.typeOfUseId || payload.typeOfUseId,
+            subFloorId: res.data.subFloorId || payload.subFloorId,
+            subTypeOfUseId: res.data.subTypeOfUseId || payload.subTypeOfUseId,
+            constructionYear: res.data.constructionYear || payload.constructionYear,
+            noOfRooms: res.data.noOfRooms || payload.noOfRooms,
+            carpetAreaSqFeet: res.data.carpetAreaSqFeet || payload.carpetAreaSqFeet,
+            builtUpAreaSqFeet: res.data.builtUpAreaSqFeet || payload.builtUpAreaSqFeet,
+            isRented: res.data.isRented !== undefined ? res.data.isRented : payload.isRented,
+            subFloorName: subFloorLabel || res.data.subFloorName,
+            subTypeOfUseName: subUseTypeLabel || res.data.subTypeOfUseName,
+            roomDetails: res.data.roomDetails || roomDetails || [],
+          };
 
-        // We added it successfully
-        setSavedFloors(prev => [...prev, enrichedData]);
-        toast.success("Floor details saved successfully.");
+          setSavedFloors(prev => prev.map(f => f.id === editingId ? enrichedData : f));
+          toast.success("Floor details updated successfully.");
 
-        // Reset form
-        setFormState({
-          isTaxable: true,
-          floor: "",
-          subFloor: "",
-          conYear: new Date().getFullYear().toString(),
-          conType: "",
-          useType: "",
-          subUseType: "",
-          isRenter: false,
-          rooms: 0,
-          carpetAreaSqFt: 0,
-          builtUpAreaSqFt: 0,
-        });
-        setRoomData([]);
+          // Reset form and editing state
+          setEditingId(null);
+          setFormState({
+            isTaxable: true,
+            floor: "",
+            subFloor: "",
+            conYear: new Date().getFullYear().toString(),
+            conType: "",
+            useType: "",
+            subUseType: "",
+            isRenter: false,
+            rooms: 0,
+            carpetAreaSqFt: 0,
+            builtUpAreaSqFt: 0,
+          });
+          setRoomData([]);
+        } else {
+          toast.error(res.error || "Failed to update floor details.");
+        }
       } else {
-        toast.error(res.error || "Failed to save floor details.");
+        const res = await saveFloorDetail(payload);
+        if (res.success && res.data) {
+          // Find labels
+          const subFloorLabel = subFloorOptions.find(o => o.value === String(payload.subFloorId))?.label;
+          const subUseTypeLabel = subUseTypeOptions.find(o => o.value === String(payload.subTypeOfUseId))?.label;
+
+          const enrichedData = {
+            ...res.data,
+            floorId: res.data.floorId || payload.floorId,
+            constructionTypeId: res.data.constructionTypeId || payload.constructionTypeId,
+            typeOfUseId: res.data.typeOfUseId || payload.typeOfUseId,
+            subFloorId: res.data.subFloorId || payload.subFloorId,
+            subTypeOfUseId: res.data.subTypeOfUseId || payload.subTypeOfUseId,
+            constructionYear: res.data.constructionYear || payload.constructionYear,
+            noOfRooms: res.data.noOfRooms || payload.noOfRooms,
+            carpetAreaSqFeet: res.data.carpetAreaSqFeet || payload.carpetAreaSqFeet,
+            builtUpAreaSqFeet: res.data.builtUpAreaSqFeet || payload.builtUpAreaSqFeet,
+            isRented: res.data.isRented !== undefined ? res.data.isRented : payload.isRented,
+            subFloorName: subFloorLabel || res.data.subFloorName,
+            subTypeOfUseName: subUseTypeLabel || res.data.subTypeOfUseName,
+            roomDetails: res.data.roomDetails || roomDetails || [],
+          };
+
+          // We added it successfully
+          setSavedFloors(prev => [...prev, enrichedData]);
+          toast.success("Floor details saved successfully.");
+
+          // Reset form
+          setFormState({
+            isTaxable: true,
+            floor: "",
+            subFloor: "",
+            conYear: new Date().getFullYear().toString(),
+            conType: "",
+            useType: "",
+            subUseType: "",
+            isRenter: false,
+            rooms: 0,
+            carpetAreaSqFt: 0,
+            builtUpAreaSqFt: 0,
+          });
+          setRoomData([]);
+        } else {
+          toast.error(res.error || "Failed to save floor details.");
+        }
       }
     } catch (err: any) {
       toast.error("An error occurred: " + err.message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleEdit = (f: any) => {
+    const formElement = document.querySelector(".DirectRoomRegistrationPanel-form");
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: "smooth" });
+    }
+
+    const mappedRooms = Array.isArray(f.roomDetails)
+      ? f.roomDetails.map((r: any) => {
+          const rOffsets = Array.isArray(r.offsets)
+            ? r.offsets.map((off: any) => ({
+                id: String(off.id || ""),
+                shape: off.shape || "Rectangle",
+                length: (() => {
+                  const val = Number(off.length ?? off.lengthMtr ?? 0);
+                  if (val === 0 && off.shape === "Square" && Number(off.areaSqM || 0) > 0) {
+                    return Math.round(Math.sqrt(Number(off.areaSqM)) * 100) / 100;
+                  }
+                  return val;
+                })(),
+                width: Number(off.width ?? off.widthMtr ?? 0),
+                height: Number(off.height ?? off.heightMtr ?? 0),
+                base1: Number(off.base1 ?? off.base1Mtr ?? 0),
+                base2: Number(off.base2 ?? off.base2Mtr ?? 0),
+                radius: (() => {
+                  const val = Number(off.radius ?? off.length ?? off.lengthMtr ?? off.widthMtr ?? 0);
+                  const areaSqM = Number(off.areaSqM || 0);
+                  if (val === 0 && areaSqM > 0) {
+                    if (off.shape === "Circle") return Math.round(Math.sqrt(areaSqM / Math.PI) * 100) / 100;
+                    if (off.shape === "Semi Circle") return Math.round(Math.sqrt((areaSqM * 2) / Math.PI) * 100) / 100;
+                    if (off.shape === "Quarter") return Math.round(Math.sqrt((areaSqM * 4) / Math.PI) * 100) / 100;
+                  }
+                  return val;
+                })(),
+                areaSqM: Number(off.areaSqM || 0),
+                op: off.op || "Subtract",
+              }))
+            : [];
+
+          const areaSqM = Number(r.areaSqMtr || r.areaSqM || 0);
+          const resolvedLength = (() => {
+            const val = Number(r.lengthMtr || 0);
+            if (val === 0 && r.shape === "Square" && areaSqM > 0) {
+              return Math.round(Math.sqrt(areaSqM) * 100) / 100;
+            }
+            return val;
+          })();
+          const resolvedRadius = (() => {
+            const val = Number(r.radiusMtr || r.lengthMtr || r.widthMtr || 0);
+            if (val === 0 && areaSqM > 0) {
+              if (r.shape === "Circle") return Math.round(Math.sqrt(areaSqM / Math.PI) * 100) / 100;
+              if (r.shape === "Semi Circle") return Math.round(Math.sqrt((areaSqM * 2) / Math.PI) * 100) / 100;
+              if (r.shape === "Quarter") return Math.round(Math.sqrt((areaSqM * 4) / Math.PI) * 100) / 100;
+            }
+            return val;
+          })();
+
+          return {
+            id: r.id ? String(r.id) : String(Math.random()),
+            roomNo: String(r.roomNo || "1"),
+            roomType: String(r.roomType || "Bed Room"),
+            shape: String(r.shape || "Rectangle"),
+            length: resolvedLength,
+            width: Number(r.widthMtr || 0),
+            height: Number(r.heightMtr || 0),
+            areaSqM: areaSqM,
+            areaSqFt: areaSqM * 10.7639,
+            base1: Number(r.base1Mtr || 0),
+            base2: Number(r.base2Mtr || 0),
+            radius: resolvedRadius,
+            hasOffset: rOffsets.length > 0 ? "Yes" : "No",
+            offsets: rOffsets,
+            offsetShape: rOffsets.length > 0 ? rOffsets[0].shape : "Rectangle",
+            offsetLength: rOffsets.length > 0 ? rOffsets[0].length : 0,
+            offsetWidth: rOffsets.length > 0 ? rOffsets[0].width : 0,
+            offsetHeight: rOffsets.length > 0 ? rOffsets[0].height : 0,
+            offsetBase1: rOffsets.length > 0 ? rOffsets[0].base1 : 0,
+            offsetBase2: rOffsets.length > 0 ? rOffsets[0].base2 : 0,
+            offsetRadius: rOffsets.length > 0 ? rOffsets[0].radius : 0,
+            offsetAreaSqM: rOffsets.length > 0 ? rOffsets[0].areaSqM : 0,
+            offsetOp: rOffsets.length > 0 ? rOffsets[0].op : "Subtract",
+            netAreaSqM: Number(r.totalAreaSqMtr || r.areaSqMtr || 0) / Number(r.noOfRooms || 1),
+            netAreaSqFt: (Number(r.totalAreaSqMtr || r.areaSqMtr || 0) / Number(r.noOfRooms || 1)) * 10.7639,
+            count: Number(r.noOfRooms || 1),
+            outer: r.outerYesNo ? "Yes" : "No",
+            minus: r.minusYesNo ? "Yes" : "No",
+          };
+        })
+      : [];
+
+    setRoomData(mappedRooms);
+    setEditingId(f.id);
+    setFormState({
+      isTaxable: true,
+      floor: String(f.floorId || ""),
+      subFloor: String(f.subFloorId || ""),
+      conYear: String(f.constructionYear || ""),
+      conType: String(f.constructionTypeId || ""),
+      useType: String(f.typeOfUseId || ""),
+      subUseType: String(f.subTypeOfUseId || ""),
+      isRenter: !!f.isRented,
+      rooms: Number(f.noOfRooms || 0),
+      carpetAreaSqFt: Number(f.carpetAreaSqFeet || 0),
+      builtUpAreaSqFt: Number(f.builtUpAreaSqFeet || 0),
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setFormState({
+      isTaxable: true,
+      floor: "",
+      subFloor: "",
+      conYear: new Date().getFullYear().toString(),
+      conType: "",
+      useType: "",
+      subUseType: "",
+      isRenter: false,
+      rooms: 0,
+      carpetAreaSqFt: 0,
+      builtUpAreaSqFt: 0,
+    });
+    setRoomData([]);
   };
 
   const handleDelete = async (id: number) => {
@@ -250,7 +422,22 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
 
       <div className="p-5 space-y-6">
         {/* Add Floor Details Form */}
-        <div className="border border-slate-200 bg-slate-50/40 rounded-xl p-5 relative">
+        <div className="border border-slate-200 bg-slate-50/40 rounded-xl p-5 relative DirectRoomRegistrationPanel-form">
+          {editingId && (
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between text-amber-800 text-xs font-semibold">
+              <span className="flex items-center gap-2">
+                <Edit2 className="size-4 text-amber-600 animate-pulse" />
+                Editing Floor Details (ID: {editingId}). Modify the fields and click "Update Floor".
+              </span>
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="text-amber-500 hover:text-amber-700 transition-all font-bold uppercase tracking-wider text-[10px]"
+              >
+                Cancel Edit
+              </button>
+            </div>
+          )}
 
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mt-3">
@@ -326,16 +513,30 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
               selectSize="sm"
             />
 
-            <Input
-              label="Rooms"
-              required
-              type="number"
-              name="rooms"
-              min={0}
-              value={formState.rooms}
-              onChange={handleInputChange}
-              className="h-8 text-[13px]"
-            />
+            <div className="flex flex-col">
+              <label className="mb-1.5 text-sm font-medium text-gray-700">
+                Rooms<span className="text-red-500"> *</span>
+              </label>
+              <div className="relative">
+                <Input
+                  naked
+                  type="number"
+                  name="rooms"
+                  min={0}
+                  value={formState.rooms}
+                  onChange={handleInputChange}
+                  className="px-3 py-1 pr-14 h-8 w-full border border-gray-300 rounded-lg text-sm text-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsDrawerOpen(true)}
+                  className="absolute right-1 top-1 h-6 px-2 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-md text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1 shadow-sm transition-all"
+                  title="Add Room Details"
+                >
+                  <Plus className="size-3" strokeWidth={3} /> Add
+                </button>
+              </div>
+            </div>
 
             <Input
               label="Area (Sq Ft)"
@@ -358,33 +559,42 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
               className="h-8 text-[13px] font-mono font-bold text-emerald-700"
             />
 
-            <div className="flex flex-col justify-end h-full">
-              <span className="mb-1.5 text-[13px] font-medium opacity-0 select-none">&nbsp;</span>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            {editingId ? (
+              <>
+                <Button
+                  onClick={handleCancelEdit}
+                  variant="outline"
+                  size="sm"
+                  className="px-6 py-2 text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleAddFloor}
+                  isLoading={isLoading}
+                  variant="primary"
+                  size="sm"
+                  icon={Edit2}
+                  className="px-6 py-2 text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-all shadow-md"
+                >
+                  Update Floor
+                </Button>
+              </>
+            ) : (
               <Button
-                type="button"
-                onClick={() => setIsDrawerOpen(true)}
+                onClick={handleAddFloor}
+                isLoading={isLoading}
                 variant="primary"
                 size="sm"
                 icon={Plus}
-                className="bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 text-[10px] font-black uppercase tracking-wider w-fit px-4"
+                className="px-6 py-2 text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-all shadow-md"
               >
-                Add Room Details
+                Add Floor
               </Button>
-            </div>
-
-          </div>
-
-          <div className="flex justify-end pt-2">
-            <Button
-              onClick={handleAddFloor}
-              isLoading={isLoading}
-              variant="primary"
-              size="sm"
-              icon={Plus}
-              className="px-6 py-2 text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-all shadow-md"
-            >
-              Add Floor
-            </Button>
+            )}
           </div>
         </div>
 
@@ -536,11 +746,23 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
                             });
                             setIsViewDrawerOpen(true);
                           }}
-                          className="p-1.5 hover:bg-blue-50 rounded-lg text-slate-400 hover:text-blue-500 transition-all"
+                          className="p-1.5 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-all border border-blue-100/50"
                         >
                           <EyeIcon className="size-4" />
                         </button>
-                        <button onClick={() => handleDelete(f.id)} disabled={isLoading} className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-500 transition-all disabled:opacity-50">
+                        <button
+                          type="button"
+                          title="Edit Floor Details"
+                          onClick={() => handleEdit(f)}
+                          className="p-1.5 bg-amber-50 hover:bg-amber-100 rounded-lg text-amber-600 transition-all border border-amber-100/50"
+                        >
+                          <Edit2 className="size-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(f.id)}
+                          disabled={isLoading}
+                          className="p-1.5 bg-rose-50 hover:bg-rose-100 rounded-lg text-rose-600 transition-all disabled:opacity-50 border border-rose-100/50"
+                        >
                           <Trash2 className="size-4" />
                         </button>
                       </td>
