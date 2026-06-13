@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 
 import { useTranslations } from 'next-intl';
+import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
 import {
   SearchInput,
   SearchSelect,
@@ -40,7 +41,12 @@ export function AssetRegisterFilters({
   }, [search]);
 
   const handleSearchChange = (val: string) => {
-    setSearchValue(val);
+    const sanitizedValue = val
+      .split('')
+      .filter((char) => SEARCH_KEY_REGEX.test(char))
+      .join('');
+
+    setSearchValue(sanitizedValue);
   };
 
   const handleAssetTypeChange = (newType: string) => {
