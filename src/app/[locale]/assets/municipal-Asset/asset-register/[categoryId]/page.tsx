@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { parsePaginationParams } from '@/lib/utils/pagination';
+import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
 import { AssetRegisterView } from '@/components/modules/assets/municipal-Asset/building-assets/AssetRegisterView';
 import {
   fetchAssetRegisterPage,
@@ -37,6 +38,15 @@ function isValidFilterValue(value: string): boolean {
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const;
 
+function sanitizeSearch(value: string | undefined): string {
+  return (value || '')
+    .trim()
+    .split('')
+    .filter((char) => SEARCH_KEY_REGEX.test(char))
+    .join('')
+    .slice(0, 200);
+}
+
 export default async function Page({ params, searchParams }: PageProps) {
   const { locale, categoryId } = await params;
   const query = await searchParams;
@@ -51,7 +61,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     query.pageSize
   );
   const safePageSize = PAGE_SIZE_OPTIONS.includes(rawPageSize as (typeof PAGE_SIZE_OPTIONS)[number]) ? rawPageSize : 10;
-  const safeSearch = (query.search || '').trim().slice(0, 200);
+  const safeSearch = sanitizeSearch(query.search);
   const rawAssetTypeId = readParam(query, 'assetTypeId', 'AssetTypeId');
   const rawZoneId = readParam(query, 'zoneId', 'ZoneId');
   const rawWardId = readParam(query, 'wardId', 'WardId');

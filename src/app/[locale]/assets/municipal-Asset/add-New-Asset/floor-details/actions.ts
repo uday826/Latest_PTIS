@@ -33,10 +33,88 @@ const getArray = (d: unknown): any[] => {
 export async function fetchFloorsByAsset(assetId: number): Promise<ActionResult<FloorDetailApiResponse[]>> {
   try {
     const res = await floorDetailsService.getFloorsByAsset(assetId);
-    console.log("[DEBUG] fetchFloorsByAsset res:", JSON.stringify(res));
-    return { success: true, data: res.success ? getArray(res.data) : [] };
+    if (res.success && res.data) {
+      const floors = getArray(res.data);
+      for (const floor of floors) {
+        // Resolve rooms list
+        const roomWiseDetails = Array.isArray(floor.roomDetails)
+          ? floor.roomDetails
+          : Array.isArray(floor.roomWiseDetails)
+            ? floor.roomWiseDetails
+            : Array.isArray(floor.roomWiseSubmissions)
+              ? floor.roomWiseSubmissions
+              : [];
+
+        if (roomWiseDetails.length > 0) {
+          // Expose rooms list under all standard keys for component compatibility
+          floor.roomDetails = roomWiseDetails;
+          floor.roomWiseDetails = roomWiseDetails;
+
+          for (const room of roomWiseDetails) {
+            const roomWiseSubmissionId = room.id;
+            if (!roomWiseSubmissionId) continue;
+
+            // If offsets are already embedded, normalise them
+            if (Array.isArray(room.offsets) && room.offsets.length > 0) {
+              room.offsets = room.offsets.map((off: any) => ({
+                id: String(off.id || ""),
+                shape: off.shape || "Rectangle",
+                length: Number(off.length ?? off.lengthMtr ?? 0),
+                width: Number(off.width ?? off.widthMtr ?? 0),
+                height: Number(off.height ?? off.heightMtr ?? 0),
+                base1: Number(off.base1 ?? off.base1Mtr ?? 0),
+                base2: Number(off.base2 ?? off.base2Mtr ?? 0),
+                radius: Number(off.radius ?? off.length ?? off.lengthMtr ?? 0),
+                areaSqM: Number(off.areaSqM ?? off.areaSqMtr ?? 0),
+                op: (off.op || "Subtract") as "Add" | "Subtract",
+              }));
+              continue;
+            }
+
+            // Fallback: fetch room offsets from AssetRoomWiseMinusData
+            try {
+              const minusRes = await assetRoomWiseMinusDataService.getAll(roomWiseSubmissionId);
+              if (minusRes.success && minusRes.data) {
+                let rawItems: any[];
+                if (Array.isArray(minusRes.data)) {
+                  rawItems = minusRes.data;
+                } else {
+                  const paged = minusRes.data as any;
+                  rawItems = Array.isArray(paged.items)
+                    ? paged.items
+                    : Array.isArray(paged.data)
+                      ? paged.data
+                      : [];
+                }
+                const filteredItems = rawItems.filter(
+                  (item: any) => Number(item.roomWiseSubmissionId) === Number(roomWiseSubmissionId)
+                );
+                room.offsets = filteredItems.map((item: any) => ({
+                  id: String(item.id),
+                  shape: item.shape || "Rectangle",
+                  length: Number(item.length ?? item.lengthMtr ?? 0),
+                  width: Number(item.width ?? item.widthMtr ?? 0),
+                  height: Number(item.height ?? item.heightMtr ?? 0),
+                  base1: Number(item.base1 ?? item.base1Mtr ?? 0),
+                  base2: Number(item.base2 ?? item.base2Mtr ?? 0),
+                  radius: Number(item.radius ?? item.length ?? item.lengthMtr ?? 0),
+                  areaSqM: Number(item.areaSqM ?? item.areaSqMtr ?? 0),
+                  op: (item.op || "Subtract") as "Add" | "Subtract",
+                }));
+              } else {
+                room.offsets = [];
+              }
+            } catch (err) {
+              room.offsets = [];
+            }
+          }
+        }
+      }
+      return { success: true, data: floors };
+    }
+    return { success: true, data: [] };
   } catch (err) {
-    console.error("[DEBUG] fetchFloorsByAsset error:", err);
+    logger.error("fetchFloorsByAsset Error:", { error: err });
     return { success: true, data: [] };
   }
 }
@@ -93,9 +171,16 @@ export async function saveFloorDetail(data: FloorDetailApiRequest): Promise<Acti
     } else {
       try {
         resData = JSON.parse(trimmed);
-      } catch {}
+      } catch { }
     }
 
+    if (resData && typeof resData === "object") {
+      if (resData.success === false) {
+        return { success: false, error: resData.message || "Failed to save floor detail" };
+      }
+      const unwrapped = resData.items ?? resData.data ?? resData;
+      return { success: true, data: unwrapped };
+    }
     return { success: true, data: resData };
   } catch (err: any) {
     logger.error("saveFloorDetail Error:", { error: err });
@@ -209,9 +294,9 @@ export async function fetchSubUseTypesAction(typeOfUseId: number): Promise<Actio
       const items = res.data.items || res.data;
       if (Array.isArray(items)) {
         const mapped = items
-          .filter((s: any) => 
-            s.isActive !== false && s.isActive !== 0 && 
-            s.IsActive !== false && s.IsActive !== 0 && 
+          .filter((s: any) =>
+            s.isActive !== false && s.isActive !== 0 &&
+            s.IsActive !== false && s.IsActive !== 0 &&
             s.status?.toLowerCase() !== 'inactive'
           )
           .map((s: any) => {
@@ -341,7 +426,7 @@ export async function createChildAssetAction(
         if (!isNaN(d.getTime())) {
           return d.toISOString().replace(/\.\d{3}Z$/, '');
         }
-      } catch {}
+      } catch { }
       return null;
     };
 
@@ -370,11 +455,11 @@ export async function createChildAssetAction(
 
     if (res.success && res.data) {
       const createdAssetId = res.data.assetId || (res.data as any).id || (res.data as any).AssetId || (res.data as any).assetID;
-      const roomWiseSubmissionDetailId = (res.data as any).roomWiseSubmissionDetailId || 
-                                         (res.data as any).RoomWiseSubmissionDetailId || 
-                                         (res.data as any).roomWiseSubmissionDetailsId || 
-                                         (res.data as any).RoomWiseSubmissionDetailsId || 
-                                         null;
+      const roomWiseSubmissionDetailId = (res.data as any).roomWiseSubmissionDetailId ||
+        (res.data as any).RoomWiseSubmissionDetailId ||
+        (res.data as any).roomWiseSubmissionDetailsId ||
+        (res.data as any).RoomWiseSubmissionDetailsId ||
+        null;
       if (createdAssetId) {
         // Always fetch parent asset details to get its address, latitude, and longitude
         let resolvedAddress = data.locationAddress;
@@ -434,10 +519,10 @@ export async function createChildAssetAction(
             });
             if (getRes.success && getRes.data) {
               const detail = getRes.data as any;
-              renterDetailsId = detail.renterDetailsId || 
-                                detail.renterDetails?.id || 
-                                (Array.isArray(detail.renterDetails) && detail.renterDetails[0]?.id) ||
-                                (detail.renterDetailsList && detail.renterDetailsList[0]?.id);
+              renterDetailsId = detail.renterDetailsId ||
+                detail.renterDetails?.id ||
+                (Array.isArray(detail.renterDetails) && detail.renterDetails[0]?.id) ||
+                (detail.renterDetailsList && detail.renterDetailsList[0]?.id);
               logger.info("createChildAssetAction: Resolved renterDetailsId from fetched details:", { renterDetailsId });
             }
           } catch (getErr: any) {
@@ -504,7 +589,7 @@ export async function createChildAssetAction(
               depositType: rentInfo?.depositType || null,
               isActive: true,
             };
-            
+
             logger.info("createChildAssetAction: Sending PUT to /AssetLeaseRentDetails/" + renterDetailsId, { renterPayload });
             const putRes = await apiClient.put(`/AssetLeaseRentDetails/${renterDetailsId}`, renterPayload);
             logger.info("createChildAssetAction: PUT response", { response: putRes });
@@ -575,7 +660,7 @@ export async function createChildAssetAction(
             if (getRes.success && getRes.data) {
               const detail = getRes.data as any;
               const dbRooms = detail.roomWiseDetails || [];
-              
+
               for (const inputRoom of data.rooms) {
                 // Find matching room in DB by roomNo
                 const dbRoom = dbRooms.find((r: any) => String(r.roomNo) === String(inputRoom.roomNo));
@@ -587,9 +672,18 @@ export async function createChildAssetAction(
                   try {
                     const existingMinusRes = await assetRoomWiseMinusDataService.getAll(roomWiseSubmissionId);
                     if (existingMinusRes.success && existingMinusRes.data) {
-                      const existingItems = Array.isArray(existingMinusRes.data)
-                        ? existingMinusRes.data
-                        : ((existingMinusRes.data as any).items || []);
+                      // Handle both flat-array and PagedResult shapes
+                      let existingItems: any[];
+                      if (Array.isArray(existingMinusRes.data)) {
+                        existingItems = existingMinusRes.data;
+                      } else {
+                        const paged = existingMinusRes.data as any;
+                        existingItems = Array.isArray(paged.items)
+                          ? paged.items
+                          : Array.isArray(paged.data)
+                            ? paged.data
+                            : [];
+                      }
                       const filtered = existingItems.filter(
                         (item: any) => Number(item.roomWiseSubmissionId) === Number(roomWiseSubmissionId)
                       );
@@ -667,6 +761,10 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
     if (subUnitRes.success && subUnitRes.data) {
       const detail = subUnitRes.data as any;
 
+      // DEBUG: log the top-level keys of the response to diagnose field naming
+      logger.info(`[DEBUG] getChildAssetByIdAction assetId=${assetId} detail keys: ${Object.keys(detail || {}).join(', ')}`);
+      logger.info(`[DEBUG] getChildAssetByIdAction roomDetails count: ${Array.isArray(detail?.roomDetails) ? detail.roomDetails.length : 'N/A'}, roomWiseDetails count: ${Array.isArray(detail?.roomWiseDetails) ? detail.roomWiseDetails.length : 'N/A'}`);
+
       // Merge department details from AssetMaster
       if (assetMasterRes.success && assetMasterRes.data) {
         const master = assetMasterRes.data as any;
@@ -675,28 +773,87 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
       }
 
       // Load room-wise offset (minus) data from AssetRoomWiseMinusData
-      if (Array.isArray(detail.roomWiseDetails)) {
-        for (const room of detail.roomWiseDetails) {
+      // Endpoint: GET /AssetRoomWiseMinusData?RoomWiseSubmissionId={room.id}
+      // room.id is the roomWiseDetails row id which IS the RoomWiseSubmissionId
+      // NOTE: The API may return rooms as 'roomWiseDetails', 'roomDetails', or 'roomWiseSubmissions'
+      const roomWiseDetails = Array.isArray(detail.roomWiseDetails)
+        ? detail.roomWiseDetails
+        : Array.isArray(detail.roomDetails)
+          ? detail.roomDetails
+          : Array.isArray(detail.roomWiseSubmissions)
+            ? detail.roomWiseSubmissions
+            : [];
+
+      if (roomWiseDetails.length > 0) {
+        // Normalise: always expose as both roomWiseDetails AND roomDetails for UnitPoolPanel
+        detail.roomWiseDetails = roomWiseDetails;
+        detail.roomDetails = roomWiseDetails;
+
+        for (const room of roomWiseDetails) {
+          const roomWiseSubmissionId = room.id;
+          if (!roomWiseSubmissionId) continue;
+
+          // If offsets are already embedded in the room data (from ManageSubUnits response),
+          // normalise them and skip the separate API call.
+          if (Array.isArray(room.offsets) && room.offsets.length > 0) {
+            room.offsets = room.offsets.map((off: any) => ({
+              id: String(off.id || ""),
+              shape: off.shape || "Rectangle",
+              // API returns direct field names (length, width, etc.) not lengthMtr/widthMtr
+              length: Number(off.length ?? off.lengthMtr ?? 0),
+              width: Number(off.width ?? off.widthMtr ?? 0),
+              height: Number(off.height ?? off.heightMtr ?? 0),
+              base1: Number(off.base1 ?? off.base1Mtr ?? 0),
+              base2: Number(off.base2 ?? off.base2Mtr ?? 0),
+              radius: Number(off.radius ?? off.length ?? off.lengthMtr ?? 0),
+              areaSqM: Number(off.areaSqM ?? off.areaSqMtr ?? 0),
+              op: (off.op || "Subtract") as "Add" | "Subtract",
+            }));
+            continue; // offsets already present — no need to call AssetRoomWiseMinusData
+          }
+
+          // Fallback: fetch offsets from AssetRoomWiseMinusData API
           try {
-            const minusRes = await assetRoomWiseMinusDataService.getAll(room.id);
+            const minusRes = await assetRoomWiseMinusDataService.getAll(roomWiseSubmissionId);
             if (minusRes.success && minusRes.data) {
-              const items = getArray(minusRes.data);
-              const filteredItems = items.filter((item: any) => Number(item.roomWiseSubmissionId) === Number(room.id));
+              // The service's unwrapResponse already extracts body?.items
+              // so minusRes.data may be:
+              //   a) AssetRoomWiseMinusDataDto[]  — already the flat array
+              //   b) PagedResult object { items: [], totalCount, ... }
+              let rawItems: any[];
+              if (Array.isArray(minusRes.data)) {
+                rawItems = minusRes.data;
+              } else {
+                const paged = minusRes.data as any;
+                rawItems = Array.isArray(paged.items)
+                  ? paged.items
+                  : Array.isArray(paged.data)
+                    ? paged.data
+                    : [];
+              }
+              // Filter to only entries that belong to this specific room
+              const filteredItems = rawItems.filter(
+                (item: any) => Number(item.roomWiseSubmissionId) === Number(roomWiseSubmissionId)
+              );
               room.offsets = filteredItems.map((item: any) => ({
                 id: String(item.id),
                 shape: item.shape || "Rectangle",
-                length: Number(item.lengthMtr || 0),
-                width: Number(item.widthMtr || 0),
-                height: Number(item.heightMtr || 0),
-                base1: Number(item.base1Mtr || 0),
-                base2: Number(item.base2Mtr || 0),
-                radius: Number(item.lengthMtr || 0), // Fallback for circle shapes
-                areaSqM: Number(item.areaSqMtr || 0),
-                op: "Subtract", // Default to Subtract since it is "Minus" data
+                // AssetRoomWiseMinusData uses direct field names matching the embed format
+                length: Number(item.length ?? item.lengthMtr ?? 0),
+                width: Number(item.width ?? item.widthMtr ?? 0),
+                height: Number(item.height ?? item.heightMtr ?? 0),
+                base1: Number(item.base1 ?? item.base1Mtr ?? 0),
+                base2: Number(item.base2 ?? item.base2Mtr ?? 0),
+                radius: Number(item.radius ?? item.length ?? item.lengthMtr ?? 0),
+                areaSqM: Number(item.areaSqM ?? item.areaSqMtr ?? 0),
+                op: (item.op || "Subtract") as "Add" | "Subtract",
               }));
+            } else {
+              room.offsets = [];
             }
           } catch (err: any) {
-            logger.error(`Failed to load offsets for room ${room.id}:`, { error: err });
+            logger.error(`Failed to load offsets for room ${roomWiseSubmissionId}:`, { error: err });
+            room.offsets = [];
           }
         }
       }
@@ -755,9 +912,9 @@ export async function fetchDepartmentsAction(): Promise<ActionResult<{ label: st
     if (res.success && res.data) {
       const items = Array.isArray(res.data) ? res.data : [];
       const options = items
-        .filter((d: any) => 
-          d.isActive !== false && d.isActive !== 0 && 
-          d.IsActive !== false && d.IsActive !== 0 && 
+        .filter((d: any) =>
+          d.isActive !== false && d.isActive !== 0 &&
+          d.IsActive !== false && d.IsActive !== 0 &&
           d.status?.toLowerCase() !== 'inactive'
         )
         .map((d: any) => ({

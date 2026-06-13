@@ -53,7 +53,7 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
   const [genType, setGenType] = useState("Flat");
   const [genCount, setGenCount] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
-  const initializedRef = useRef(false);
+  const initializedRef = useRef<string | null>(null); // tracks last initialSubUnits signature
 
   const departments = dropdownOptions?.departments || [];
 
@@ -71,11 +71,15 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
 
   // ── Load and map initial sub-units from props ─────────────────────────────
   useEffect(() => {
-    if (initializedRef.current) return;
+    // Build a lightweight signature for the incoming dataset.
+    // Re-initialize only when the data identity actually changes (e.g. after Prev/Next
+    // brings fresh server data) — not on every re-render.
+    const signature = `${initialSubUnits?.length ?? 0}|${(initialSubUnits?.[0] as any)?.assetId ?? (initialSubUnits?.[0] as any)?.id ?? ""}`;
+    if (initializedRef.current === signature) return;
+    initializedRef.current = signature;
 
     if (!initialSubUnits || initialSubUnits.length === 0) {
       setPool([]);
-      initializedRef.current = true;
       return;
     }
 
@@ -138,9 +142,30 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
       if (!unitType) unitType = "Flat";
 
       // Map rooms list — use new dimension-based Room shape
+      // Try all known field names, then fall back to scanning all array fields
+      // to find any that looks like room data (has roomNo or roomType).
       let mappedRooms: any[] = [];
-      if (Array.isArray(u.roomWiseDetails)) {
-        mappedRooms = u.roomWiseDetails.map((r: any) => {
+      const ROOM_FIELD_CANDIDATES = ['roomWiseDetails', 'roomDetails', 'roomWiseSubmissions', 'rooms'];
+      let roomSource: any[] = [];
+      for (const field of ROOM_FIELD_CANDIDATES) {
+        if (Array.isArray(u[field]) && u[field].length > 0) {
+          roomSource = u[field];
+          break;
+        }
+      }
+      // Fallback: scan all array fields for one whose first item has roomNo or roomType
+      if (roomSource.length === 0) {
+        for (const key of Object.keys(u)) {
+          const val = u[key];
+          if (Array.isArray(val) && val.length > 0 && val[0] && (val[0].roomNo !== undefined || val[0].roomType !== undefined)) {
+            roomSource = val;
+            break;
+          }
+        }
+      }
+
+      if (roomSource.length > 0) {
+        mappedRooms = roomSource.map((r: any) => {
           const areaSqM = Number(r.areaSqMtr || r.areaSqM || 0);
           const areaSqFt = areaSqM * 10.7639;
           const rOffsets = Array.isArray(r.offsets) ? r.offsets.map((off: any) => ({
@@ -175,12 +200,26 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
             roomType: r.roomType,
             shape: r.shape || "Rectangle",
             // Dimensions in meters (stored in DB)
-            length: Number(r.lengthMtr || 0),
+            length: (() => {
+              const val = Number(r.lengthMtr || 0);
+              if (val === 0 && r.shape === "Square" && areaSqM > 0) {
+                return Math.round(Math.sqrt(areaSqM) * 100) / 100;
+              }
+              return val;
+            })(),
             width: Number(r.widthMtr || 0),
             height: Number(r.heightMtr || 0),
             base1: Number(r.base1Mtr || 0),
             base2: Number(r.base2Mtr || 0),
-            radius: Number(r.radiusMtr || r.widthMtr || 0),
+            radius: (() => {
+              const val = Number(r.radiusMtr || r.lengthMtr || r.widthMtr || 0);
+              if (val === 0 && areaSqM > 0) {
+                if (r.shape === "Circle") return Math.round(Math.sqrt(areaSqM / Math.PI) * 100) / 100;
+                if (r.shape === "Semi Circle") return Math.round(Math.sqrt((areaSqM * 2) / Math.PI) * 100) / 100;
+                if (r.shape === "Quarter") return Math.round(Math.sqrt((areaSqM * 4) / Math.PI) * 100) / 100;
+              }
+              return val;
+            })(),
             // Calculated area
             areaSqM,
             areaSqFt,
@@ -241,7 +280,6 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
     });
 
     setPool(existing);
-    initializedRef.current = true;
   }, [initialSubUnits, parentFloors, dropdownOptions]);
 
   // ── Generate units — immediately saves to DB, returns real asset IDs ─────────
@@ -307,14 +345,17 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
 
   // ── Save unit detail from configurator back to pool ───────────────────────
   const handleSaveUnitDetail = useCallback((updated: any) => {
+    // Strip 'rooms' from renterDetails — it's stored at PoolUnit.rooms level
+    // to prevent it from overwriting the authoritative room list in the unit prop spread.
+    const { rooms: updatedRooms, ...renterDetailsRest } = updated;
     setPool((prev) =>
       prev.map((u) =>
         u.tempId === activeUnit?.tempId
           ? {
             ...u,
             carpetAreaSqFt: Number(updated.carpetAreaSqFeet) || u.carpetAreaSqFt,
-            rooms: updated.rooms || u.rooms,
-            renterDetails: updated,
+            rooms: updatedRooms || u.rooms,        // rooms stored at top-level PoolUnit
+            renterDetails: renterDetailsRest,       // no rooms here — prevents overwrite
             selectedFloorId: updated.floorId ? Number(updated.floorId) : null,
             selectedFloorLabel: updated.floorName || "",
             subFloorId: updated.subFloorId ? Number(updated.subFloorId) : null,
@@ -575,27 +616,33 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
     return (
       <div className="fixed inset-0 z-[60] bg-slate-50 flex flex-col">
         <SubUnitDetailedConfigurator
-          unit={{
-            ...activeUnit,
-            unitNumber: activeUnit.unitNumber,
-            unitType: activeUnit.unitType,
-            carpetAreaSqFeet: activeUnit.carpetAreaSqFt,
-            rooms: activeUnit.rooms,
-            floorId: activeUnit.selectedFloorId,
-            floorDetailsId: activeUnit.floorDetailsId,
-            subFloorId: activeUnit.subFloorId,
-            departmentId: activeUnit.departmentId,
-            locationAddress: activeUnit.locationAddress,
-            locationLat: activeUnit.locationLat,
-            locationLng: activeUnit.locationLng,
-            conYear: activeUnit.conYear,
-            conType: activeUnit.conType,
-            useType: activeUnit.useType,
-            subUseType: activeUnit.subUseType,
-            photoFile: activeUnit.photoFile,
-            planFile: activeUnit.planFile,
-            ...(activeUnit.renterDetails || {}),
-          }}
+          unit={(() => {
+              // Destructure 'rooms' out of renterDetails so it cannot override activeUnit.rooms
+              const { rooms: _rdRooms, ...renterRest } = activeUnit.renterDetails || {};
+              void _rdRooms; // intentionally unused — we always use activeUnit.rooms
+              return {
+                ...activeUnit,
+                ...renterRest,
+                // These always win — set explicitly after the renterDetails spread
+                unitNumber: activeUnit.unitNumber,
+                unitType: activeUnit.unitType,
+                carpetAreaSqFeet: activeUnit.carpetAreaSqFt,
+                rooms: activeUnit.rooms,       // ← authoritative room list from pool
+                floorId: activeUnit.selectedFloorId,
+                floorDetailsId: activeUnit.floorDetailsId,
+                subFloorId: activeUnit.subFloorId,
+                departmentId: activeUnit.departmentId,
+                locationAddress: activeUnit.locationAddress,
+                locationLat: activeUnit.locationLat,
+                locationLng: activeUnit.locationLng,
+                conYear: activeUnit.conYear,
+                conType: activeUnit.conType,
+                useType: activeUnit.useType,
+                subUseType: activeUnit.subUseType,
+                photoFile: activeUnit.photoFile,
+                planFile: activeUnit.planFile,
+              };
+            })()}
           floors={parentFloors}
           parentBuildingName={formData.assetName || "Unit Configuration"}
           onSave={handleSaveUnitDetail}

@@ -58,7 +58,7 @@ export function BuildingOwnershipDetailsSection({
       className="shadow-sm border-slate-200/80 bg-white rounded-2xl"
     >
       <CardHeader className="flex items-center gap-2 border-b border-slate-100 pb-1.5 mb-2">
-        <div className="bg-[#0f172a] p-1 rounded shadow-sm">
+        <div className="bg-gradient-to-br from-violet-600 to-purple-500 p-1.5 rounded-lg text-white shadow-sm flex items-center justify-center">
           <UserCheck className="size-3.5 text-white" />
         </div>
         <CardTitle className="text-xs font-black text-slate-800 uppercase tracking-widest">

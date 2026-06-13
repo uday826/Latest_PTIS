@@ -9,14 +9,14 @@ import {
   Select,
 } from "@/components/common";
 import type { BuildingPropertyDetailsSectionProps } from "@/types/asset-types/basic-info/buildBasicInfo.types";
-import { ClipboardList } from "lucide-react";
+import { Building } from "lucide-react";
 import React from "react";
 
 /**
  * Section A — Property Number Details
  *
  * Displays read-only Asset Category & Type badges, Zone/Ward dropdowns,
- * Property Tax No (required), and Survey No.
+ * Property  No (required), and Survey No.
  * Validation errors are wired via showError / errors props.
  */
 export function BuildingPropertyDetailsSection({
@@ -46,8 +46,8 @@ export function BuildingPropertyDetailsSection({
       className="shadow-sm border-slate-200/80 bg-white rounded-2xl"
     >
       <CardHeader className="flex items-center gap-2 border-b border-slate-100 pb-1.5 mb-2">
-        <div className="bg-[#0f172a] p-1 rounded shadow-sm">
-          <ClipboardList className="size-3.5 text-white" />
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-500 p-1.5 rounded-lg text-white shadow-sm flex items-center justify-center">
+          <Building className="size-3.5 text-white" />
         </div>
         <CardTitle className="text-xs font-black text-slate-800 uppercase tracking-widest">
           Asset Details
@@ -197,7 +197,7 @@ export function BuildingPropertyDetailsSection({
         />
 
         <Input
-          label="Property Tax No"
+          label="Property No"
           name="propertyNumber"
           value={formData.propertyNumber}
           onChange={handleChange}
@@ -237,42 +237,40 @@ export function BuildingPropertyDetailsSection({
         {(isLand || isBuilding) && (
           <>
             <Input
-              label="Length (Mtr)"
+              label="Length (Sq. Mtr)"
               name="length"
               value={(formData as any).length || ""}
               onChange={handleChange}
               placeholder="0.00"
-              type="number"
+              type="text"
               className="h-8 text-[13px]"
               required
               error={showError("length" as any) ? (errors as any).length : undefined}
             />
             <Input
-              label="Width (Mtr)"
+              label="Width (Sq. Mtr)"
               name="width"
               value={(formData as any).width || ""}
               onChange={handleChange}
               placeholder="0.00"
-              type="number"
+              type="text"
               className="h-8 text-[13px]"
               required
               error={showError("width" as any) ? (errors as any).width : undefined}
             />
+            <Input
+              label="Total Area (Sq. Mtr)"
+              name="landArea"
+              value={formData.landArea || ""}
+              onChange={handleChange}
+              placeholder="0.00"
+              type="text"
+              readOnly
+              className="h-8 text-[13px] bg-slate-50 cursor-not-allowed"
+              required
+              error={showError("landArea" as any) ? (errors as any).landArea : undefined}
+            />
           </>
-        )}
-
-        {isLand && (
-          <Input
-            label="Total Land Area (Sq. Mtr)"
-            name="landArea"
-            value={formData.landArea || ""}
-            onChange={handleChange}
-            placeholder="0.00"
-            type="number"
-            className="h-8 text-[13px]"
-            required
-            error={showError("landArea" as any) ? (errors as any).landArea : undefined}
-          />
         )}
       </CardContent>
     </Card>

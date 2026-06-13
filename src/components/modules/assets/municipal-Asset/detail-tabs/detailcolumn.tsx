@@ -205,12 +205,11 @@ type SubUnitRow = AssetChildAssetItem & Record<string, unknown>;
 
 export function getSubUnitMainColumns(): Column<SubUnitRow>[] {
   return [
-    { key: 'id', label: 'ID', width: '70px', render: (v) => blank(v as string | number | null) },
+
     { key: 'assetNo', label: 'Asset No', width: '130px', render: (v) => <span className="font-semibold text-blue-700">{blank(v as string | null)}</span> },
     { key: 'assetName', label: 'Asset Name', width: '200px', render: (v) => blank(v as string | null) },
     { key: 'assetCategoryName', label: 'Category', width: '140px', render: (v) => blank(v as string | null) },
     { key: 'assetTypeName', label: 'Type', width: '160px', render: (v) => blank(v as string | null) },
-    { key: 'parentAssetId', label: 'Parent ID', width: '100px', render: (v) => blank(v as string | number | null) },
     { key: 'status', label: 'Status', width: '100px', render: (v) => blank(v as string | null) },
     { key: 'occupancyStatus', label: 'Occupancy', width: '110px', render: (v) => blank(v as string | null) },
     { key: 'typeOfUseName', label: 'Use Type', width: '130px', render: (v) => blank(v as string | null) },
@@ -226,8 +225,7 @@ export function getSubUnitMainColumns(): Column<SubUnitRow>[] {
     { key: 'moujaName', label: 'Mouja', width: '110px', render: (v) => blank(v as string | null) },
     { key: 'purchaseDate', label: 'Purchase Date', width: '130px', render: (v) => formatDate(v as string | null) },
     { key: 'lastCVCalculationDate', label: 'Last CV Date', width: '130px', render: (v) => formatDate(v as string | null) },
-    { key: 'createdDate', label: 'Created Date', width: '130px', render: (v) => formatDate(v as string | null) },
-    { key: 'updatedDate', label: 'Updated Date', width: '130px', render: (v) => formatDate(v as string | null) },
+
   ];
 }
 
@@ -273,12 +271,11 @@ export function getSubUnitFloorColumns(): Column<Record<string, unknown>>[] {
 
 export function getSubUnitDetailColumns(): Column<Record<string, unknown>>[] {
   return [
-    { key: 'id', label: 'ID', width: '70px', render: (v) => blank(v as string | number | null) },
+
     { key: 'assetNo', label: 'Asset No', width: '130px', render: (v) => <span className="font-semibold text-blue-700">{blank(v as string | null)}</span> },
     { key: 'assetName', label: 'Asset Name', width: '200px', render: (v) => blank(v as string | null) },
     { key: 'assetCategoryName', label: 'Category', width: '140px', render: (v) => blank(v as string | null) },
     { key: 'assetTypeName', label: 'Type', width: '160px', render: (v) => blank(v as string | null) },
-    { key: 'parentAssetId', label: 'Parent ID', width: '100px', render: (v) => blank(v as string | number | null) },
     { key: 'status', label: 'Status', width: '100px', render: (v) => blank(v as string | null) },
     { key: 'occupancyStatus', label: 'Occupancy', width: '110px', render: (v) => blank(v as string | null) },
     { key: 'typeOfUseName', label: 'Use Type', width: '130px', render: (v) => blank(v as string | null) },
@@ -293,7 +290,6 @@ export function getSubUnitDetailColumns(): Column<Record<string, unknown>>[] {
     { key: 'wardName', label: 'Ward', width: '90px', render: (v) => blank(v as string | null) },
     { key: 'moujaName', label: 'Mouja', width: '110px', render: (v) => blank(v as string | null) },
     { key: 'purchaseDate', label: 'Purchase Date', width: '130px', render: (v) => formatDate(v as string | null) },
-    { key: 'createdDate', label: 'Created Date', width: '130px', render: (v) => formatDate(v as string | null) },
-    { key: 'updatedDate', label: 'Updated Date', width: '130px', render: (v) => formatDate(v as string | null) },
+
   ];
 }

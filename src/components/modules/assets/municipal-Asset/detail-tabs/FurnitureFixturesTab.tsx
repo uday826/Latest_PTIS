@@ -5,7 +5,8 @@ import { Button, Card, CardContent, Drawer, MasterTable } from '@/components/com
 import type { AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
 import type { InventoryBatchDetail, InventoryUnitResponse } from '@/types/municipal-asset/furniture-fixtures.types';
 import { CircleAlert, Eye, FileText, Hash, Layers3, Package2, SquareStack } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { blank, formatDate, formatMoney, getInventoryBatchColumns, getInventoryUnitColumns } from './detailcolumn';
 
 interface FurnitureFixturesTabProps {
@@ -21,6 +22,8 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBatch, setSelectedBatch] = useState<InventoryBatchDetail | null>(null);
   const [unitPage, setUnitPage] = useState(1);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const pageSize = 5;
   const batches = inventoryData?.batches ?? [];
@@ -131,7 +134,8 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
         />
       </Card>
 
-      <Drawer
+      {mounted && createPortal(
+        <Drawer
         open={!!selectedBatch}
         onClose={() => setSelectedBatch(null)}
         width="xl"
@@ -142,7 +146,6 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
             </div>
             <div>
               <div className="text-lg font-bold text-black">{selectedBatch?.itemName || 'Batch Details'}</div>
-              <div className="text-xs font-medium text-slate-700">Batch #{selectedBatch?.batchId}</div>
             </div>
           </div>
         }
@@ -231,7 +234,9 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
             </Card>
           </div>
         )}
-      </Drawer>
+      </Drawer>,
+      document.body
+    )}
     </div>
   );
 }

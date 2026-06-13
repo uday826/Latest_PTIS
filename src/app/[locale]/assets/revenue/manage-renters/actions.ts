@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { apiClient } from '@/services/api.service';
 import { assetMasterService } from '@/lib/api/asset/asset-master.service';
 import { getAssetCategories, getAssetMasters, getWards, getZones } from '@/lib/api/asset/revenue-masters.service';
+import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
 import {
   createLeaseRentRegistration,
   type CreateLeaseRentRegistrationPayload,
@@ -54,6 +55,17 @@ function parseOptionalNumber(value: string | string[] | undefined): number | nul
   if (!raw) return null;
   const parsed = Number(raw);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function sanitizeSearchTerm(value: string | string[] | undefined): string | undefined {
+  const sanitized = firstQueryValue(value)
+    .trim()
+    .split('')
+    .filter((char) => SEARCH_KEY_REGEX.test(char))
+    .join('')
+    .slice(0, 200);
+
+  return sanitized || undefined;
 }
 
 function normalizeText(value?: string | null): string {
@@ -114,6 +126,8 @@ function toLeaseRentRecord(item: AssetLeaseRentDetailsListItem): LeaseRentRecord
     rentAmountDisplay: item.rentAmountDisplay?.trim() || undefined,
     leaseDurationDisplay: item.leaseDurationDisplay?.trim() || undefined,
     workflowStatus: item.workflowStatus?.trim() || undefined,
+    reason: item.reason?.trim() || undefined,
+    rejectionReason: item.rejectionReason?.trim() || undefined,
     category: pickAssetCategory(item),
     zone: item.zone ?? undefined,
     ward: item.wardNo ?? undefined,
@@ -164,7 +178,7 @@ function baseLeaseRentQuery(
   return {
     pageNumber: parsePositiveNumber(query.pageNumber, 1),
     pageSize: parsePositiveNumber(query.pageSize, 10),
-    searchTerm: firstQueryValue(query.searchTerm).trim() || undefined,
+    searchTerm: sanitizeSearchTerm(query.searchTerm),
     workflowStatus,
     assetCategoryId: parseOptionalNumber(query.assetCategoryId) ?? undefined,
     zoneId: parseOptionalNumber(query.zoneId) ?? undefined,
@@ -218,7 +232,7 @@ export async function getManageRentersPageDataAction(
     pageSize: list.pageSize,
     totalCount: list.totalCount,
     totalPages: list.totalPages,
-    searchTerm: firstQueryValue(query.searchTerm).trim(),
+    searchTerm: sanitizeSearchTerm(query.searchTerm) ?? '',
     assetCategoryId: parseOptionalNumber(query.assetCategoryId),
     zoneId: selectedZoneId,
     wardId: parseOptionalNumber(query.wardId),
@@ -257,7 +271,7 @@ export async function getManageRentersVerificationPageDataAction(
     pageSize: list.pageSize,
     totalCount: list.totalCount,
     totalPages: list.totalPages,
-    searchTerm: firstQueryValue(query.searchTerm).trim(),
+    searchTerm: sanitizeSearchTerm(query.searchTerm) ?? '',
     assetCategoryId: parseOptionalNumber(query.assetCategoryId),
     categoryOptions: categories.map((category) => ({
       label: category.categoryName,
@@ -281,7 +295,7 @@ export async function getManageRentersApprovalPageDataAction(
     pageSize: list.pageSize,
     totalCount: list.totalCount,
     totalPages: list.totalPages,
-    searchTerm: firstQueryValue(query.searchTerm).trim(),
+    searchTerm: sanitizeSearchTerm(query.searchTerm) ?? '',
     assetCategoryId: parseOptionalNumber(query.assetCategoryId),
     categoryOptions: categories.map((category) => ({
       label: category.categoryName,
@@ -318,7 +332,7 @@ export async function getManageRentersRevertedPageDataAction(
     pageSize: list.pageSize,
     totalCount: list.totalCount,
     totalPages: list.totalPages,
-    searchTerm: firstQueryValue(query.searchTerm).trim(),
+    searchTerm: sanitizeSearchTerm(query.searchTerm) ?? '',
     assetCategoryId: parseOptionalNumber(query.assetCategoryId),
     zoneId: selectedZoneId,
     wardId: parseOptionalNumber(query.wardId),

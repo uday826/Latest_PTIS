@@ -394,10 +394,18 @@ export function SubUnitDetailedConfigurator({
     }
   }, [formData.leaseStart, formData.leaseEnd, formData.duration]);
 
+  // Sync local state when the unit IDENTITY changes (i.e. user opens a different unit)
+  // Using unit.dbId || unit.id as the stable identity key to avoid resetting on
+  // every render caused by new object literals being created in UnitPoolPanel.
+  const unitId = unit?.dbId || unit?.id || unit?.unitNumber;
+  const unitIdRef = React.useRef<any>(null);
   useEffect(() => {
+    if (unitIdRef.current === unitId) return; // same unit — keep user's in-progress edits
+    unitIdRef.current = unitId;
     setFormData({ ...unit });
-    setRoomsList(unit.rooms || []);
-  }, [unit]);
+    setRoomsList(Array.isArray(unit?.rooms) ? unit.rooms : []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unitId]);
 
   useEffect(() => {
     async function loadSubUnitDocuments() {

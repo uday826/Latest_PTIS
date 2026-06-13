@@ -220,13 +220,21 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
       ? formData.valuationType === "LAND"
       : formData.category?.toLowerCase().includes("land");
 
-    if (isLand) {
+    const isBuilding = formData.valuationType
+      ? formData.valuationType === "BUILDING"
+      : formData.category?.toLowerCase().includes("building") || (formData as any).hasFloorDetails === true;
+
+    if (isLand || isBuilding) {
       const lenVal = parseFloat((formData as any).length || "0");
       const widthVal = parseFloat((formData as any).width || "0");
       if (lenVal > 0 && widthVal > 0) {
         const calculatedArea = (lenVal * widthVal).toFixed(2);
         if (formData.landArea !== calculatedArea) {
           handleUpdateFormData({ landArea: calculatedArea });
+        }
+      } else {
+        if (formData.landArea !== "" && formData.landArea !== "0.00" && formData.landArea !== "0") {
+          handleUpdateFormData({ landArea: "" });
         }
       }
     }
@@ -235,8 +243,37 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
   // Keep the shared context in sync so other wizard steps see updated values
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      let val = e.target.value;
+      const name = e.target.name;
+
+      if (name === "pinCode") {
+        val = val.replace(/\D/g, ""); // strip non-digits
+        e.target.value = val;
+      } else if (name === "latitude" || name === "longitude") {
+        // Accept only digits, minus, and one decimal point
+        val = val.replace(/[^0-9.-]/g, "");
+        if (val.startsWith("-")) {
+          val = "-" + val.slice(1).replace(/-/g, "");
+        } else {
+          val = val.replace(/-/g, "");
+        }
+        const parts = val.split(".");
+        if (parts.length > 2) {
+          val = parts[0] + "." + parts.slice(1).join("");
+        }
+        e.target.value = val;
+      } else if (name === "length" || name === "width") {
+        // Accept only digits and one decimal point (length/width cannot be negative)
+        val = val.replace(/[^0-9.]/g, "");
+        const parts = val.split(".");
+        if (parts.length > 2) {
+          val = parts[0] + "." + parts.slice(1).join("");
+        }
+        e.target.value = val;
+      }
+
       baseHandleChange(e);
-      syncContext({ [e.target.name]: e.target.value });
+      syncContext({ [name]: e.target.value });
     },
     [baseHandleChange, syncContext]
   );

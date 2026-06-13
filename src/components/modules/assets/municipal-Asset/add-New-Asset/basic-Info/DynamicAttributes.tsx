@@ -4,7 +4,7 @@ import { fetchCategories, fetchTypesByCategory } from "@/app/[locale]/assets/mun
 import { fetchFieldDefinitions } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/common";
 import { groupAndMergeFields, MergedFieldSection, ProcessedField, processFieldDefinitions } from "@/components/modules/assets/municipal-Asset/add-New-Asset/FieldRenderer";
-import { ListPlus } from "lucide-react";
+import { Sliders } from "lucide-react";
 import React from "react";
 import { DynamicFieldInput } from "./DynamicFieldInput";
 
@@ -171,8 +171,8 @@ export function DynamicAttributes({
       {mergedSections.map((section: MergedFieldSection) => (
         <Card key={section.title} variant="bordered" padding="sm" className="shadow-sm border-blue-100 bg-white">
           <CardHeader className="flex items-center gap-2 border-b border-slate-100 pb-1.5 mb-2">
-            <div className="bg-[#0f172a] p-1 rounded shadow-sm">
-              <ListPlus className="size-3.5 text-white" />
+            <div className="bg-gradient-to-br from-emerald-600 to-teal-500 p-1.5 rounded-lg text-white shadow-sm flex items-center justify-center">
+              <Sliders className="size-3.5 text-white" />
             </div>
             <CardTitle className="text-xs font-black text-slate-800 uppercase tracking-widest">
               {section.title}
