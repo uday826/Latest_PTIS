@@ -41,39 +41,45 @@ export function getRegisterColumns(
     { key: 'assetCode', label: t('Asset_ID') || 'Asset No', width: '150px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap font-semibold text-slate-900', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
     {
       key: 'assetName',
-      label: t('Asset_Name_Desc') || 'Asset Name & Description',
+      label: t('Asset_Name') || 'Asset Name',
       width: '310px',
       headerClassName: 'whitespace-nowrap text-center',
       cellClassName: 'align-middle text-center',
       render: (_, row) => (
         <div className="flex flex-col items-center text-center">
           <span className="whitespace-normal wrap-break-word font-semibold text-slate-900" title={row.assetName}>{row.assetName}</span>
-          <span className="whitespace-normal wrap-break-word text-[11px] text-slate-500" title={row.address}>{row.address}</span>
-          <span className="whitespace-normal wrap-break-word text-[11px] text-slate-500" title={row.categoryName}>{row.categoryName}</span>
         </div>
       ),
     },
-    { key: 'assetTypeName', label: t('Sub_Category') || 'Sub-Category', width: '150px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
+    { key: 'assetTypeName', label: t('Asset_Type') || 'Asset Type', width: '150px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
     {
-      key: 'address',
-      label: t('Location_Ward') || 'Location & Ward',
-      width: '240px',
+      key: 'ownershipType',
+      label: t('Ownership_Type') || 'Ownership Type',
+      width: '150px',
       headerClassName: 'whitespace-nowrap text-center',
       cellClassName: 'align-middle text-center',
-      render: (_, row) => (
-        <div className="flex flex-col items-center text-center">
-          <span className="whitespace-normal wrap-break-word font-semibold text-slate-900" title={row.address}>{row.address}</span>
-          <span className="whitespace-normal wrap-break-word text-[11px] text-slate-500">{row.wardName !== '-' ? `Ward: ${row.wardName}` : '-'}</span>
-        </div>
-      ),
+      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
+    },
+    {
+      key: 'address',
+      label: t('Address') || 'Address',
+      width: '200px',
+      headerClassName: 'whitespace-nowrap text-center',
+      cellClassName: 'align-middle text-center',
+      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
+    },
+    {
+      key: 'wardName',
+      label: t('Ward') || 'Ward',
+      width: '120px',
+      headerClassName: 'whitespace-nowrap text-center',
+      cellClassName: 'align-middle text-center',
+      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
     },
     { key: 'purchaseDate', label: t('Acquisition_Date') || 'Acquisition Date', width: '120px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => formatDate(typeof value === 'string' ? value : undefined) },
-    { key: 'purchaseValue', label: t('Acquisition_Value') || 'Acquisition Value', width: '140px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.purchaseValue) },
-    { key: 'marketValue', label: t('Current_Value') || 'Current Value', width: '130px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.marketValue) },
-    { key: 'depreciation', label: t('Depreciation') || 'Depreciation', width: '130px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.depreciation) },
-    { key: 'netBookValue', label: t('Net_Book_Value') || 'Net Book Value', width: '140px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.netBookValue) },
-    { key: 'hasLift', label: t('Lift') || 'Lift', width: '90px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderBadge(typeof value === 'string' ? value : undefined) },
-    { key: 'lifeYears', label: t('Life_Yrs') || 'Life (Yrs)', width: '90px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
+
+    { key: 'capitalValue', label: t('Capital_Value') || 'Capital Value', width: '140px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.capitalValue) },
+
     { key: 'assetCondition', label: t('Condition') || 'Condition', width: '100px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderBadge(typeof value === 'string' ? value : undefined) },
     { key: 'status', label: t('Status') || 'Status', width: '100px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderBadge(typeof value === 'string' ? value : undefined) },
     {
@@ -89,40 +95,8 @@ export function getRegisterColumns(
         </div>
       ),
     },
-    {
-      key: 'fieldValues',
-      label: t('Insurance_Dynamic_Fields') || 'Dynamic Fields',
-      width: '180px',
-      headerClassName: 'whitespace-nowrap text-center',
-      cellClassName: 'align-middle text-center',
-      render: (_, row) => (
-        <div className="flex flex-col items-center text-center">
-          {row.fieldValues !== '-' && <span className="whitespace-normal wrap-break-word font-semibold text-emerald-600">{t('Insurance_Dynamic_Fields') || 'Dynamic Fields'}</span>}
-          <span className="whitespace-normal wrap-break-word text-[11px] text-slate-500" title={row.fieldValues}>{row.fieldValues}</span>
-        </div>
-      ),
-    },
-    {
-      key: 'lastCVCalculationDate',
-      label: t('Valuation_Dates') || 'Valuation Dates',
-      width: '180px',
-      headerClassName: 'whitespace-nowrap text-center',
-      cellClassName: 'align-middle text-center',
-      render: (_, row) => (
-        <div className="flex flex-col items-center text-center">
-          <span className="whitespace-normal wrap-break-word font-semibold text-slate-900">{t('Last')}: {formatDate(row.lastCVCalculationDate)}</span>
-          <span className="whitespace-normal wrap-break-word text-[11px] text-slate-500">{t('Next')}: {formatDate(row.marketValueDate)}</span>
-        </div>
-      ),
-    },
-    {
-      key: 'ownershipType',
-      label: t('Ownership_Type') || 'Ownership Type',
-      width: '150px',
-      headerClassName: 'whitespace-nowrap text-center',
-      cellClassName: 'align-middle text-center',
-      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
-    },
+
+
     {
       key: 'id',
       label: t('Action') || 'Action',

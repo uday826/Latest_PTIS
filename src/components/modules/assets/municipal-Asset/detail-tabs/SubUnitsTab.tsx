@@ -110,7 +110,7 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
           emptyText="No sub-units available for this asset."
           headerTitle=""
           headerSubtitle=""
-          tableClassName="min-w-[3000px] table-fixed"
+          tableClassName="min-w-max"
           maxBodyHeightClassName="max-h-[calc(100vh-360px)]"
           containerClassName="overflow-hidden"
         />
@@ -203,20 +203,7 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
                 />
               </Card>
 
-              {/* ── 4. Sub Unit Details (full-field table) ────────────────────── */}
-              <Card padding="none" className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
-                <CardContent className="p-4 border-b border-slate-100 bg-slate-50/50">
-                  <SectionHeading title="Sub Unit Details" />
-                </CardContent>
-                <MasterTable<Record<string, unknown>>
-                  columns={subUnitDetailColumns}
-                  data={[selectedUnit] as Record<string, unknown>[]}
-                  getRowKey={(row) => String(row.id)}
-                  paginationConfig={{ enabled: false }}
-                  tableClassName="min-w-[2800px] table-fixed"
-                  containerClassName="border-0 shadow-none"
-                />
-              </Card>
+
             </div>
           )}
         </Drawer>,

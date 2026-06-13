@@ -119,7 +119,7 @@ export function DocumentPreviewDrawer({
       onClose={onClose}
       width="lg"
       title={
-        <div className="min-w-0">
+        <div className="min-w-0 pr-6 sm:pr-8">
           <p id="drawer-title" className="truncate text-sm font-bold text-slate-900">
             {selectedDocument?.name || 'Document'}
           </p>

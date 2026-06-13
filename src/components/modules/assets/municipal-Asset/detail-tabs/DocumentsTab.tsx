@@ -215,24 +215,25 @@ export function DocumentsTab({
                     padding="none"
                     className="flex min-h-[68px] w-full max-w-full items-center justify-between gap-3 rounded-md border-slate-200 bg-white px-3 py-3 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/30 sm:min-h-[72px] sm:px-4 sm:py-3.5 lg:px-5"
                   >
-                    <Button
-                      type="button"
-                      variant="ghost"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={() => openDocument(documentItem)}
-                      className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left h-auto p-0 border-0 rounded-none"
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openDocument(documentItem); }}
+                      className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left outline-none"
                     >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center text-blue-600 sm:h-9 sm:w-9">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center text-blue-600 sm:h-9 sm:w-9">
                         <Icon className="h-4 w-4" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block max-w-full truncate text-sm font-bold leading-5 text-slate-800 sm:text-[15px]" title={documentItem.name}>
+                      </div>
+                      <div className="min-w-0 flex-1 pr-2">
+                        <p className="truncate text-sm font-bold leading-5 text-slate-800 sm:text-[15px]" title={documentItem.name}>
                           {documentItem.name}
-                        </span>
-                        <span className="mt-0.5 block max-w-full truncate text-xs font-medium leading-5 text-slate-500 sm:mt-0.5 sm:text-xs lg:text-sm" title={documentItem.fileName}>
+                        </p>
+                        <p className="mt-0.5 truncate text-xs font-medium leading-5 text-slate-500 sm:text-xs lg:text-sm" title={documentItem.fileName}>
                           {documentItem.fileName}
-                        </span>
-                      </span>
-                    </Button>
+                        </p>
+                      </div>
+                    </div>
                     <Button
                       variant="secondary"
                       size="sm"
