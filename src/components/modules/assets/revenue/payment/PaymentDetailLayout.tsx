@@ -129,7 +129,10 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
 
           <div className="p-4 flex-1 overflow-y-auto custom-scrollbar">
             <div className="relative h-32 rounded-xl bg-slate-100 overflow-hidden mb-4 border border-slate-200">
-              <div className="absolute inset-0 opacity-40 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-slate-300"></div>
+              <div
+                className="absolute inset-0 bg-center bg-cover opacity-90"
+                style={{ backgroundImage: "url('/payment-img.png')" }}
+              />
 
               <div className="absolute inset-x-4 bottom-4 bg-blue-600 rounded-lg p-3 text-white shadow-lg">
                 <div className="flex items-center gap-2 mb-1">
@@ -139,26 +142,18 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
                 </div>
                 <p className="text-[10px] font-medium opacity-80">{t('assetInfo.assetName')}</p>
                 <p className="text-xs font-bold leading-tight">{record.assetName}</p>
-                <p className="text-[10px] leading-tight opacity-90 mt-0.5">{shopName}</p>
+                {/* <p className="text-[10px] leading-tight opacity-90 mt-0.5">{shopName}</p> */}
               </div>
 
-              <div className="absolute top-4 right-1/3 bg-blue-500 p-1.5 rounded-full text-white shadow-md border-2 border-white">
-                <MapPin className="w-4 h-4" />
-              </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 mb-3">
+            <div className="grid grid-cols-2 gap-3 mb-3">
               <InfoItem icon={<MapPin className="w-3 h-3" />} label={t('assetInfo.zone')} value={zone} iconClassName="bg-orange-100 text-orange-600" />
               <InfoItem icon={<Navigation className="w-3 h-3" />} label={t('assetInfo.wardNo')} value={wardNo} iconClassName="bg-purple-100 text-purple-600" />
-              <InfoItem icon={<Home className="w-3 h-3" />} label={t('assetInfo.shopPlotNo')} value={record.shopNo} iconClassName="bg-emerald-100 text-emerald-600" />
             </div>
 
-            <div className="grid grid-cols-2 gap-3 my-3">
-              <InfoItem icon={<User className="w-3 h-3" />} label={t('assetInfo.tenantName')} value={record.tenantName} iconClassName="bg-indigo-100 text-indigo-600" />
-              <InfoItem icon={<User className="w-3 h-3" />} label="Email" value={record.tenantEmail} iconClassName="bg-indigo-100 text-indigo-600" />
-            </div>
-
-            <InfoItem icon={<Map className="w-3 h-3" />} label={t('assetInfo.assetId')} value={assetNo} iconClassName="bg-blue-100 text-blue-600" />
+            {/* <InfoItem icon={<Map className="w-3 h-3" />} label={t('assetInfo.assetId')} value={assetNo} iconClassName="bg-blue-100 text-blue-600" /> */}
+            <InfoItem icon={<Home className="w-3 h-3" />} label={t('assetInfo.shopPlotNo')} value={record.shopNo} iconClassName="bg-emerald-100 text-emerald-600" />
 
             <div className="grid grid-cols-2 gap-3 my-3">
               <InfoItem icon={<Building2 className="w-3 h-3" />} label={t('assetInfo.assetCategory')} value={category} iconClassName="bg-teal-100 text-teal-600" />
@@ -166,6 +161,11 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
             </div>
 
             <InfoItem icon={<MapPin className="w-3 h-3" />} label={t('assetInfo.assetName')} value={record.assetName} iconClassName="bg-orange-100 text-orange-600" />
+
+            <div className="grid grid-cols-2 gap-3 my-3">
+              <InfoItem icon={<User className="w-3 h-3" />} label={t('assetInfo.tenantName')} value={record.tenantName} iconClassName="bg-indigo-100 text-indigo-600" />
+              <InfoItem icon={<User className="w-3 h-3" />} label="Email" value={record.tenantEmail} iconClassName="bg-indigo-100 text-indigo-600" />
+            </div>
 
             <div className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50 my-3">
               <div className="flex items-center gap-2">

@@ -38,6 +38,7 @@ export interface LeaseRentPaymentDetail {
   assetId: number;
   assetNo?: string | null;
   assetName: string;
+  paymentFrequency?: string | null;
   zone?: string | null;
   wardNo?: string | null;
   category?: string | null;

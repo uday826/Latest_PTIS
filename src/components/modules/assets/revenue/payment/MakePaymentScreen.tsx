@@ -8,6 +8,12 @@ import { Drawer } from '@/components/common/Drawer';
 import { Input } from '@/components/common/Input';
 import { RadioGroup, RadioGroupItem } from '@/components/common/radio-group';
 import { Select } from '@/components/common/select';
+import { formatDDMMYYYYToISO, formatDateToDDMMYYYY } from '@/lib/utils/format';
+import {
+  EMAIL_REGEX,
+  MOBILE_10_REGEX,
+  POSITIVE_INTEGER_REGEX,
+} from '@/lib/utils/validation-rules';
 import type { LeaseRentPaymentDetail } from '@/types/asset/leaseRentPayment.types';
 import { Calendar, IndianRupee } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -16,6 +22,9 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 type PaymentMode = 'Cash' | 'DD' | 'Cheque' | 'QR / UPI' | 'Online' | '';
+type PaymentOption = 'CURRENT' | 'PENDING' | 'FULL';
+type CurrentSubOption = 'FULL_BUCKET' | 'CUSTOM_AMOUNT';
+type PendingSubOption = 'FULL_BUCKET' | 'CUSTOM_AMOUNT' | 'PERIOD_SELECTION';
 
 const MODE_TO_QUERY: Record<Exclude<PaymentMode, ''>, string> = {
   Cash: 'cash',
@@ -34,13 +43,25 @@ const QUERY_TO_MODE: Record<string, Exclude<PaymentMode, ''>> = {
   online: 'Online',
 };
 
-// Map internal payment type state to backend-expected values
-const PAYMENT_TYPE_MAP: Record<'monthly' | 'pending' | 'partial' | 'total', string> = {
-  monthly: 'Monthly',
-  pending: 'Pending',
-  partial: 'Partial',
-  total: 'Full', // Backend expects 'Full', not 'Total'
-};
+const MONTH_OPTIONS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const AMOUNT_REGEX = /^\d+(\.\d{1,2})?$/;
+const PAYMENT_REFERENCE_REGEX = /^[A-Za-z0-9._/-]{6,50}$/;
+const BANK_INSTRUMENT_REGEX = /^[A-Za-z0-9/-]{4,20}$/;
+const DD_MM_YYYY_REGEX = /^(0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-\d{4}$/;
+
+function getFinancialYearOptions(): string[] {
+  const today = new Date();
+  const currentYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
+  return Array.from({ length: 5 }, (_, index) => {
+    const startYear = currentYear - index;
+    return `FY ${startYear}-${String((startYear + 1) % 100).padStart(2, '0')}`;
+  });
+}
+
+function getDateInputValueFromDDMMYYYY(value: string): string {
+  const isoDate = formatDDMMYYYYToISO(value);
+  return isoDate ? isoDate.split('T')[0] : '';
+}
 
 export function MakePaymentScreen({
   record,
@@ -62,10 +83,12 @@ export function MakePaymentScreen({
   }, [initialMode, searchParams]);
 
   const [selectedMode, setSelectedMode] = useState<PaymentMode>(modeFromQuery);
-  const [paymentType, setPaymentType] = useState<'monthly' | 'pending' | 'partial' | 'total'>('pending');
-  const [isMonthDrawerOpen, setIsMonthDrawerOpen] = useState(false);
-  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
-  const [partialAmount, setPartialAmount] = useState('');
+  const [paymentOption, setPaymentOption] = useState<PaymentOption>('PENDING');
+  const [currentSubOption, setCurrentSubOption] = useState<CurrentSubOption>('FULL_BUCKET');
+  const [pendingSubOption, setPendingSubOption] = useState<PendingSubOption>('FULL_BUCKET');
+  const [isPeriodDrawerOpen, setIsPeriodDrawerOpen] = useState(false);
+  const [selectedPeriods, setSelectedPeriods] = useState<string[]>([]);
+  const [customAmount, setCustomAmount] = useState('');
   const [mobile, setMobile] = useState(record.tenantMobile);
   const [email, setEmail] = useState(record.tenantEmail);
   const [bankName, setBankName] = useState('');
@@ -73,24 +96,183 @@ export function MakePaymentScreen({
   const [instrumentDate, setInstrumentDate] = useState('');
   const [transactionId, setTransactionId] = useState('');
   const [isPending, startTransition] = useTransition();
-  const monthOptions = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   const pendingDemandAmount = record.pendingDue;
   const currentDemandAmount = record.currentDemand;
   const penaltyAmount = record.penalty;
   const gstAmount = record.gst;
   const summaryTotalAmount = record.totalPayable;
-  const partialNumericAmount = Number(partialAmount);
-  const payNowAmount =
-    paymentType === 'partial'
-      ? Number.isFinite(partialNumericAmount) && partialNumericAmount > 0
-        ? partialNumericAmount
-        : 0
-      : record.totalPayable;
+  const customNumericAmount = Number(customAmount);
+  const normalizedPaymentFrequency = record.paymentFrequency?.trim().toLowerCase() ?? '';
+  const isYearlyPayment = normalizedPaymentFrequency === 'yearly';
+  const periodOptions = isYearlyPayment ? getFinancialYearOptions() : MONTH_OPTIONS;
+  const isCurrentCustom = paymentOption === 'CURRENT' && currentSubOption === 'CUSTOM_AMOUNT';
+  const isPendingCustom = paymentOption === 'PENDING' && pendingSubOption === 'CUSTOM_AMOUNT';
+  const isPendingPeriodSelection =
+    paymentOption === 'PENDING' && pendingSubOption === 'PERIOD_SELECTION';
+  const maxCustomAmount =
+    paymentOption === 'CURRENT' ? currentDemandAmount : pendingDemandAmount;
+  const payNowAmount = useMemo(() => {
+    if (paymentOption === 'FULL') {
+      return pendingDemandAmount + currentDemandAmount + penaltyAmount + gstAmount;
+    }
+
+    if (paymentOption === 'CURRENT') {
+      if (currentSubOption === 'CUSTOM_AMOUNT') {
+        return Number.isFinite(customNumericAmount) && customNumericAmount > 0
+          ? customNumericAmount
+          : 0;
+      }
+
+      return currentDemandAmount;
+    }
+
+    if (pendingSubOption === 'CUSTOM_AMOUNT') {
+      return Number.isFinite(customNumericAmount) && customNumericAmount > 0
+        ? customNumericAmount
+        : 0;
+    }
+
+    if (pendingSubOption === 'PERIOD_SELECTION') {
+      // TODO: Replace this fallback with backend-calculated period amounts once
+      // selected pending months/years are supported by the payment API.
+      return pendingDemandAmount;
+    }
+
+    return pendingDemandAmount;
+  }, [
+    currentDemandAmount,
+    currentSubOption,
+    customNumericAmount,
+    gstAmount,
+    paymentOption,
+    pendingDemandAmount,
+    pendingSubOption,
+    penaltyAmount,
+  ]);
+
+  const backendPaymentType = useMemo(() => {
+    if (paymentOption === 'FULL') return 'Full';
+
+    if (paymentOption === 'CURRENT') {
+      return currentSubOption === 'FULL_BUCKET' ? 'Full' : 'Partial';
+    }
+
+    return pendingSubOption === 'FULL_BUCKET' ? 'Full' : 'Partial';
+  }, [currentSubOption, paymentOption, pendingSubOption]);
+
+  const selectedPeriodsLabel = selectedPeriods.join(', ');
+  const periodDrawerButtonLabel = isYearlyPayment ? 'Select Financial Years' : t('selectMonths');
+  const periodDrawerTitle = isYearlyPayment ? 'Select Financial Years' : t('drawer.title');
+  const periodSelectionHelpText = isYearlyPayment
+    ? 'Financial year selection is UI-ready. Exact year-wise payable calculation will be added with backend support.'
+    : 'Month selection is UI-ready. Exact month-wise payable calculation will be added with backend support.';
+  const instrumentDateInputValue = getDateInputValueFromDDMMYYYY(instrumentDate);
 
   useEffect(() => {
     setSelectedMode(modeFromQuery);
   }, [modeFromQuery]);
+
+  const validatePaymentForm = (): string | null => {
+    const trimmedMobile = mobile.trim();
+    const trimmedEmail = email.trim();
+    const trimmedCustomAmount = customAmount.trim();
+    const trimmedTransactionId = transactionId.trim();
+    const trimmedInstrumentNumber = instrumentNumber.trim();
+    const trimmedInstrumentDate = instrumentDate.trim();
+
+    if (!trimmedMobile) {
+      return 'Mobile number is required.';
+    }
+
+    if (!MOBILE_10_REGEX.test(trimmedMobile)) {
+      return 'Please enter a valid 10-digit mobile number.';
+    }
+
+    if (!trimmedEmail) {
+      return 'Email address is required.';
+    }
+
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      return 'Please enter a valid email address.';
+    }
+
+    if (!selectedMode) {
+      return 'Payment mode is required.';
+    }
+
+    if ((isCurrentCustom || isPendingCustom) && !trimmedCustomAmount) {
+      return 'Custom amount is required.';
+    }
+
+    if ((isCurrentCustom || isPendingCustom) && !AMOUNT_REGEX.test(trimmedCustomAmount)) {
+      return 'Please enter a valid amount with up to 2 decimal places.';
+    }
+
+    if ((isCurrentCustom || isPendingCustom) && !Number.isFinite(customNumericAmount)) {
+      return 'Please enter a valid payment amount.';
+    }
+
+    if (payNowAmount <= 0) {
+      return 'Payment amount must be greater than zero.';
+    }
+
+    if ((isCurrentCustom || isPendingCustom) && payNowAmount > maxCustomAmount) {
+      return 'Custom amount cannot exceed the selected payable amount.';
+    }
+
+    if (isPendingPeriodSelection && selectedPeriods.length === 0) {
+      return isYearlyPayment
+        ? 'Please select at least one financial year.'
+        : 'Please select at least one month.';
+    }
+
+    if (selectedMode === 'QR / UPI') {
+      if (!trimmedTransactionId) {
+        return 'UPI reference ID is required.';
+      }
+
+      if (!PAYMENT_REFERENCE_REGEX.test(trimmedTransactionId)) {
+        return 'Please enter a valid UPI reference ID.';
+      }
+    }
+
+    if (selectedMode === 'Cheque' || selectedMode === 'DD') {
+      if (!bankName.trim()) {
+        return 'Bank name is required.';
+      }
+
+      if (!trimmedInstrumentNumber) {
+        return selectedMode === 'Cheque'
+          ? 'Cheque number is required.'
+          : 'DD number is required.';
+      }
+
+      if (!BANK_INSTRUMENT_REGEX.test(trimmedInstrumentNumber)) {
+        return selectedMode === 'Cheque'
+          ? 'Please enter a valid cheque number.'
+          : 'Please enter a valid DD number.';
+      }
+
+      if (!POSITIVE_INTEGER_REGEX.test(trimmedInstrumentNumber.replace(/\//g, '').replace(/-/g, ''))) {
+        return selectedMode === 'Cheque'
+          ? 'Cheque number must contain digits only.'
+          : 'DD number must contain digits only.';
+      }
+
+      if (!trimmedInstrumentDate) {
+        return selectedMode === 'Cheque'
+          ? 'Cheque date is required.'
+          : 'DD date is required.';
+      }
+
+      if (!DD_MM_YYYY_REGEX.test(trimmedInstrumentDate)) {
+        return 'Please enter the date in DD-MM-YYYY format.';
+      }
+    }
+
+    return null;
+  };
 
   const handleModeChange = (_e: React.ChangeEvent<HTMLSelectElement>, modeValue: string) => {
     const nextMode = (modeValue as PaymentMode) || '';
@@ -111,30 +293,9 @@ export function MakePaymentScreen({
   };
 
   const handlePayNow = () => {
-    if (!mobile.trim()) {
-      toast.error('Mobile number is required.');
-      return;
-    }
-
-    if (!email.trim()) {
-      toast.error('Email address is required.');
-      return;
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      toast.error('Please enter a valid email address.');
-      return;
-    }
-
-    if (!selectedMode) {
-      toast.error('Payment mode is required.');
-      return;
-    }
-
-    if (payNowAmount <= 0) {
-      toast.error('Payment amount must be greater than zero.');
+    const validationMessage = validatePaymentForm();
+    if (validationMessage) {
+      toast.error(validationMessage);
       return;
     }
 
@@ -158,7 +319,9 @@ export function MakePaymentScreen({
               mobile: mobile.trim(),
               email: email.trim(),
               paymentMode: selectedMode,
-              paymentType: PAYMENT_TYPE_MAP[paymentType], // Use mapping to get correct backend value
+              // TODO: Send explicit CURRENT/PENDING/PERIOD metadata when the backend
+              // process API supports period-aware payment payload fields.
+              paymentType: backendPaymentType,
               amount: payNowAmount,
               penaltyAmount,
               gstAmount,
@@ -304,9 +467,13 @@ export function MakePaymentScreen({
                   <Input
                     label={selectedMode === 'Cheque' ? t('chequeDate') : t('ddDate')}
                     required
-                    value={instrumentDate}
-                    onChange={(e) => setInstrumentDate(e.target.value)}
-                    placeholder={t('datePlaceholder')}
+                    type="date"
+                    value={instrumentDateInputValue}
+                    onChange={(e) =>
+                      setInstrumentDate(
+                        e.target.value ? formatDateToDDMMYYYY(e.target.value) : ''
+                      )
+                    }
                     className="h-9 text-xs font-medium bg-white border-slate-200 rounded-lg placeholder:text-slate-400"
                   />
                 </div>
@@ -316,62 +483,148 @@ export function MakePaymentScreen({
 
           <div className="space-y-1.5 pt-2">
             <div className="border-t border-slate-200 mb-3" />
-            <label className="text-sm font-semibold text-slate-700">{t('paymentType')}</label>
-            <RadioGroup value={paymentType} onValueChange={(v) => setPaymentType(v as 'monthly' | 'pending' | 'partial' | 'total')} name="payType" className="mt-2 grid grid-cols-4 gap-3">
+            <label className="text-sm font-semibold text-slate-700">Payment Option</label>
+            <RadioGroup
+              value={paymentOption}
+              onValueChange={(value) => setPaymentOption(value as PaymentOption)}
+              name="paymentOption"
+              className="mt-2 grid grid-cols-3 gap-3"
+            >
               <label
-                onClick={() => setPaymentType('monthly')}
+                onClick={() => setPaymentOption('CURRENT')}
                 className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
-                  paymentType === 'monthly' ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:bg-slate-50'
+                  paymentOption === 'CURRENT' ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:bg-slate-50'
                 }`}
               >
-                <RadioGroupItem value="monthly" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                <span className={`text-xs font-semibold ${paymentType === 'monthly' ? 'text-blue-700' : 'text-slate-700'}`}>{t('monthly')}</span>
+                <RadioGroupItem value="CURRENT" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
+                <span className={`text-xs font-semibold ${paymentOption === 'CURRENT' ? 'text-blue-700' : 'text-slate-700'}`}>Current</span>
               </label>
               <label
-                onClick={() => setPaymentType('pending')}
+                onClick={() => setPaymentOption('PENDING')}
                 className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
-                  paymentType === 'pending' ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:bg-slate-50'
+                  paymentOption === 'PENDING' ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:bg-slate-50'
                 }`}
               >
-                <RadioGroupItem value="pending" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                <span className={`text-xs font-semibold ${paymentType === 'pending' ? 'text-blue-700' : 'text-slate-700'}`}>{t('pending')}</span>
+                <RadioGroupItem value="PENDING" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
+                <span className={`text-xs font-semibold ${paymentOption === 'PENDING' ? 'text-blue-700' : 'text-slate-700'}`}>Pending</span>
               </label>
               <label
-                onClick={() => setPaymentType('partial')}
+                onClick={() => setPaymentOption('FULL')}
                 className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
-                  paymentType === 'partial' ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:bg-slate-50'
+                  paymentOption === 'FULL' ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:bg-slate-50'
                 }`}
               >
-                <RadioGroupItem value="partial" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                <span className={`text-xs font-semibold ${paymentType === 'partial' ? 'text-blue-700' : 'text-slate-700'}`}>{t('partial')}</span>
-              </label>
-              <label
-                onClick={() => setPaymentType('total')}
-                className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
-                  paymentType === 'total' ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:bg-slate-50'
-                }`}
-              >
-                <RadioGroupItem value="total" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                <span className={`text-xs font-semibold ${paymentType === 'total' ? 'text-blue-700' : 'text-slate-700'}`}>Full</span>
+                <RadioGroupItem value="FULL" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
+                <span className={`text-xs font-semibold ${paymentOption === 'FULL' ? 'text-blue-700' : 'text-slate-700'}`}>Full</span>
               </label>
             </RadioGroup>
 
-            {paymentType === 'monthly' && (
+            {paymentOption === 'CURRENT' && (
               <div className="pt-3">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  className="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-                  onClick={() => setIsMonthDrawerOpen(true)}
-                  icon={Calendar}
+                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                  Current Payment
+                </label>
+                <RadioGroup
+                  value={currentSubOption}
+                  onValueChange={(value) => setCurrentSubOption(value as CurrentSubOption)}
+                  name="currentSubOption"
+                  className="mt-2 grid grid-cols-2 gap-3"
                 >
-                  {t('selectMonths')}
-                </Button>
-                {selectedMonths.length > 0 && (
-                  <p className="mt-2 text-xs text-slate-600">
-                    {t('selectedMonths', { months: selectedMonths.join(', ') })}
-                  </p>
+                  <label
+                    onClick={() => setCurrentSubOption('FULL_BUCKET')}
+                    className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
+                      currentSubOption === 'FULL_BUCKET'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <RadioGroupItem value="FULL_BUCKET" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
+                    <span className={`text-xs font-semibold ${currentSubOption === 'FULL_BUCKET' ? 'text-blue-700' : 'text-slate-700'}`}>Full Current</span>
+                  </label>
+                  <label
+                    onClick={() => setCurrentSubOption('CUSTOM_AMOUNT')}
+                    className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
+                      currentSubOption === 'CUSTOM_AMOUNT'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <RadioGroupItem value="CUSTOM_AMOUNT" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
+                    <span className={`text-xs font-semibold ${currentSubOption === 'CUSTOM_AMOUNT' ? 'text-blue-700' : 'text-slate-700'}`}>Custom Amount</span>
+                  </label>
+                </RadioGroup>
+              </div>
+            )}
+
+            {paymentOption === 'PENDING' && (
+              <div className="pt-3 space-y-3">
+                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                  Pending Payment
+                </label>
+                <RadioGroup
+                  value={pendingSubOption}
+                  onValueChange={(value) => setPendingSubOption(value as PendingSubOption)}
+                  name="pendingSubOption"
+                  className="grid grid-cols-3 gap-3"
+                >
+                  <label
+                    onClick={() => setPendingSubOption('FULL_BUCKET')}
+                    className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
+                      pendingSubOption === 'FULL_BUCKET'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <RadioGroupItem value="FULL_BUCKET" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
+                    <span className={`text-xs font-semibold ${pendingSubOption === 'FULL_BUCKET' ? 'text-blue-700' : 'text-slate-700'}`}>Full Pending</span>
+                  </label>
+                  <label
+                    onClick={() => setPendingSubOption('CUSTOM_AMOUNT')}
+                    className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
+                      pendingSubOption === 'CUSTOM_AMOUNT'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <RadioGroupItem value="CUSTOM_AMOUNT" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
+                    <span className={`text-xs font-semibold ${pendingSubOption === 'CUSTOM_AMOUNT' ? 'text-blue-700' : 'text-slate-700'}`}>Custom Amount</span>
+                  </label>
+                  <label
+                    onClick={() => setPendingSubOption('PERIOD_SELECTION')}
+                    className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
+                      pendingSubOption === 'PERIOD_SELECTION'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <RadioGroupItem value="PERIOD_SELECTION" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
+                    <span className={`text-xs font-semibold ${pendingSubOption === 'PERIOD_SELECTION' ? 'text-blue-700' : 'text-slate-700'}`}>
+                      {isYearlyPayment ? 'Select Years' : 'Select Months'}
+                    </span>
+                  </label>
+                </RadioGroup>
+
+                {pendingSubOption === 'PERIOD_SELECTION' && (
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                      onClick={() => setIsPeriodDrawerOpen(true)}
+                      icon={Calendar}
+                    >
+                      {periodDrawerButtonLabel}
+                    </Button>
+                    {selectedPeriods.length > 0 && (
+                      <p className="text-xs text-slate-600">
+                        {isYearlyPayment
+                          ? `Selected: ${selectedPeriodsLabel}`
+                          : t('selectedMonths', { months: selectedPeriodsLabel })}
+                      </p>
+                    )}
+                    <p className="text-xs text-amber-700">{periodSelectionHelpText}</p>
+                  </div>
                 )}
               </div>
             )}
@@ -380,11 +633,11 @@ export function MakePaymentScreen({
           <div className="flex items-center gap-4 mt-2">
             <div className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg min-w-[176px]">
               <IndianRupee className="w-4 h-4 text-slate-500" />
-              {paymentType === 'partial' ? (
+              {isCurrentCustom || isPendingCustom ? (
                 <Input
                   naked
-                  value={partialAmount}
-                  onChange={(e) => setPartialAmount(e.target.value)}
+                  value={customAmount}
+                  onChange={(e) => setCustomAmount(e.target.value)}
                   placeholder={t('totalAmount')}
                   className="w-full bg-transparent outline-none font-bold text-[18px] text-emerald-500 placeholder:text-emerald-500"
                 />
@@ -406,27 +659,27 @@ export function MakePaymentScreen({
       </div>
 
       <Drawer
-        open={isMonthDrawerOpen}
-        onClose={() => setIsMonthDrawerOpen(false)}
+        open={isPeriodDrawerOpen}
+        onClose={() => setIsPeriodDrawerOpen(false)}
         width="sm"
         title={
           <div className="flex items-center gap-2">
             <div className="bg-blue-600 p-1.5 rounded-lg">
               <Calendar className="size-4 text-white" />
             </div>
-            <span className="text-sm font-bold text-slate-800 uppercase tracking-wide">{t('drawer.title')}</span>
+            <span className="text-sm font-bold text-slate-800 uppercase tracking-wide">{periodDrawerTitle}</span>
           </div>
         }
         footer={
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setIsMonthDrawerOpen(false)}
+              onClick={() => setIsPeriodDrawerOpen(false)}
               className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors"
             >
               {t('drawer.cancel')}
             </button>
             <button
-              onClick={() => setIsMonthDrawerOpen(false)}
+              onClick={() => setIsPeriodDrawerOpen(false)}
               className="px-5 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
             >
               {t('drawer.apply')}
@@ -436,15 +689,17 @@ export function MakePaymentScreen({
       >
         <div className="p-4 bg-slate-50/50 min-h-full">
           <div className="grid grid-cols-2 gap-2">
-            {monthOptions.map((month) => {
-              const isSelected = selectedMonths.includes(month);
+            {periodOptions.map((period) => {
+              const isSelected = selectedPeriods.includes(period);
               return (
                 <button
-                  key={month}
+                  key={period}
                   type="button"
                   onClick={() =>
-                    setSelectedMonths((prev) =>
-                      prev.includes(month) ? prev.filter((item) => item !== month) : [...prev, month]
+                    setSelectedPeriods((prev) =>
+                      prev.includes(period)
+                        ? prev.filter((item) => item !== period)
+                        : [...prev, period]
                     )
                   }
                   className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-colors text-left ${
@@ -453,7 +708,7 @@ export function MakePaymentScreen({
                       : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
-                  {month}
+                  {period}
                 </button>
               );
             })}
