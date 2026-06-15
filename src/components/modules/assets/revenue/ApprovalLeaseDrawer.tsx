@@ -234,7 +234,7 @@ export function ApprovalLeaseModal({
   }, [assetPhotosAndPlans]);
 
   const getMediaSearchText = (doc: AssetDocumentListItem) =>
-    `${doc.name || ''} ${doc.fileName || ''}`.toLowerCase();
+    `${doc.name || ''} ${doc.fileName || ''} ${(doc as any).documentTitle || ''} ${(doc as any).bindingPurpose || ''}`.toLowerCase();
 
   const leftMediaPanels = [
     {
@@ -243,10 +243,11 @@ export function ApprovalLeaseModal({
         mediaCards.find((doc) => {
           const name = getMediaSearchText(doc);
           return (
-            name.includes('asset image') ||
-            name.includes('asset photo') ||
-            name.includes('on spot') ||
-            name.includes('photo')
+            (name.includes('asset image') ||
+              name.includes('asset photo') ||
+              name.includes('on spot') ||
+              name.includes('photo')) &&
+            !name.includes('plan')
           );
         }) ?? null,
       fallbackIcon: Building2,

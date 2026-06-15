@@ -25,7 +25,7 @@ import { Button, Drawer, Label, MasterTable, type Column, useToast } from '@/com
 import { EMAIL_REGEX } from '@/lib/utils/validation-rules';
 import { kycValidators } from '@/lib/utils/kyc-validation.constants';
 import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
-import { uploadAssetLeaseRentDetailsDocumentAction } from '@/app/[locale]/assets/actions';
+import { uploadAssetLeaseRentDetailsDocumentAction, replaceLeaseRentDetailsDocumentAction } from '@/app/[locale]/assets/actions';
 import { deleteUploadedDocAction } from '@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions';
 import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
 import {
@@ -742,17 +742,17 @@ export function NewLeaseRegistrationModal({
     [formState, toastError]
   );
 
-function isValidPositiveAmount(value: string): boolean {
-  if (!value) return false;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0;
-}
+  function isValidPositiveAmount(value: string): boolean {
+    if (!value) return false;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0;
+  }
 
-function isValidNonNegativeAmount(value: string): boolean {
-  if (!value) return false;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= 0;
-}
+  function isValidNonNegativeAmount(value: string): boolean {
+    if (!value) return false;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed >= 0;
+  }
   const readDocumentFile = useCallback(async (documentItem: LeaseDocumentCard) => {
     if (documentItem.localFile) {
       return {
@@ -818,36 +818,46 @@ function isValidNonNegativeAmount(value: string): boolean {
           (doc) => (doc.name || '').toLowerCase() === type.toLowerCase() && !String(doc.id).startsWith(`local-${type}`)
         );
 
-        if (existingDoc?.id && String(existingDoc.id) !== String(staged.replacingDocId ?? '')) {
-          const delRes = await deleteUploadedDocAction(Number(existingDoc.id));
-          if (!delRes.success) {
-            uploadFailed = true;
-            toastError(delRes.error || `Failed to remove existing ${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document.`);
-            continue;
+        let res;
+        if (existingDoc?.documentId) {
+          const fd = new FormData();
+          fd.append('File', staged.file);
+          fd.append('UpdatedByUserId', '1');
+          res = await replaceLeaseRentDetailsDocumentAction(existingDoc.documentId, fd);
+        } else {
+          if (existingDoc?.id && String(existingDoc.id) !== String(staged.replacingDocId ?? '')) {
+            const delRes = await deleteUploadedDocAction(Number(existingDoc.id));
+            if (!delRes.success) {
+              uploadFailed = true;
+              toastError(delRes.error || `Failed to remove existing ${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document.`);
+              continue;
+            }
           }
+
+          const fd = new FormData();
+          fd.append('File', staged.file);
+          fd.append('AssetLeaseRentDetailsId', String(leaseRentDetailsId));
+          fd.append('ModuleId', '0');
+          const floorSource = record as LeaseRentRecord & {
+            floorDetailsId?: number | string | null;
+            floorDetailId?: number | string | null;
+            floorId?: number | string | null;
+          };
+          const floorDetailId = floorSource?.floorDetailsId ?? floorSource?.floorDetailId ?? floorSource?.floorId;
+          if (floorDetailId != null) {
+            fd.append('FloorDetailId', String(floorDetailId));
+          }
+          fd.append('DocumentType', type);
+          fd.append('DocumentTitle', type);
+          fd.append('UploadedByUserId', '1');
+
+          res = await uploadAssetLeaseRentDetailsDocumentAction(fd);
         }
 
-        const fd = new FormData();
-        fd.append('File', staged.file);
-        fd.append('AssetLeaseRentDetailsId', String(leaseRentDetailsId));
-        fd.append('ModuleId', '0');
-        const floorSource = record as LeaseRentRecord & {
-          floorDetailsId?: number | string | null;
-          floorDetailId?: number | string | null;
-          floorId?: number | string | null;
-        };
-        const floorDetailId = floorSource?.floorDetailsId ?? floorSource?.floorDetailId ?? floorSource?.floorId;
-        if (floorDetailId != null) {
-          fd.append('FloorDetailId', String(floorDetailId));
-        }
-        fd.append('DocumentType', type);
-        fd.append('DocumentTitle', type);
-        fd.append('UploadedByUserId', '1');
-
-        const res = await uploadAssetLeaseRentDetailsDocumentAction(fd);
         if (res.success && res.data) {
           const uploadedDoc: LeaseDocumentCard = {
-            id: res.data.assetDocumentId,
+            id: res.data.assetDocumentId || existingDoc?.id || res.data.id,
+            documentId: res.data.documentId || existingDoc?.documentId || res.data.coreDocumentId,
             assetId:
               toPositiveNumber(res.data.assetId) ??
               asset.id ??
@@ -857,7 +867,7 @@ function isValidNonNegativeAmount(value: string): boolean {
             fileName: res.data.fileName || staged.file.name,
             contentType: staged.file.type,
             uploadedDate: new Date().toISOString(),
-            fileSize: res.data.fileSizeBytes,
+            fileSize: res.data.fileSizeBytes || staged.file.size,
             status: 'Uploaded',
           };
 
@@ -867,7 +877,7 @@ function isValidNonNegativeAmount(value: string): boolean {
           });
         } else {
           uploadFailed = true;
-          toastError(res.error || `Failed to upload ${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document.`);
+          toastError(res.error || `Failed to upload/replace ${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document.`);
         }
       }
 
@@ -1125,6 +1135,12 @@ function isValidNonNegativeAmount(value: string): boolean {
 
           result = await sendForVerificationAction(recordId, sendPayload);
           if (result.success) {
+            if (leaseRentDetailsId > 0) {
+              const uploadsOk = await uploadStagedDocuments(leaseRentDetailsId);
+              if (!uploadsOk) {
+                toastError('Sent to verification, but one or more documents failed to upload.');
+              }
+            }
             toastSuccess('Sent to verification successfully!');
             setTimeout(() => onClose(), 1500);
           } else {
@@ -1373,7 +1389,7 @@ function isValidNonNegativeAmount(value: string): boolean {
   }, [assetPhotosAndPlans]);
 
   const getMediaSearchText = (doc: AssetDocumentListItem) =>
-    `${doc.name || ''} ${doc.fileName || ''}`.toLowerCase();
+    `${doc.name || ''} ${doc.fileName || ''} ${(doc as any).documentTitle || ''} ${(doc as any).bindingPurpose || ''}`.toLowerCase();
 
   const leftMediaPanels = [
     {
@@ -1382,10 +1398,11 @@ function isValidNonNegativeAmount(value: string): boolean {
         mediaCards.find((doc) => {
           const name = getMediaSearchText(doc);
           return (
-            name.includes('asset image') ||
-            name.includes('asset photo') ||
-            name.includes('on spot') ||
-            name.includes('photo')
+            (name.includes('asset image') ||
+              name.includes('asset photo') ||
+              name.includes('on spot') ||
+              name.includes('photo')) &&
+            !name.includes('plan')
           );
         }) ?? null,
       fallbackIcon: Building2,

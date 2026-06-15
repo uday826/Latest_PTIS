@@ -71,13 +71,17 @@ function normalizeLeaseRentDocument(raw: unknown): AssetDocumentListItem | null 
 
   const title = pickFirstString(item, ["documentTitle", "DocumentTitle", "documentType", "DocumentType", "name", "Name"]);
   let normalizedTitle = title?.toLowerCase() || "";
-  if (normalizedTitle === "aadhaar") {
+  if (normalizedTitle.includes("aadhar") || normalizedTitle.includes("aadhaar")) {
     normalizedTitle = "aadhar";
+  } else if (normalizedTitle.includes("pan")) {
+    normalizedTitle = "pan";
   }
   if (normalizedTitle !== "aadhar" && normalizedTitle !== "pan") return null;
 
   const id = item.assetDocumentId ?? item.AssetDocumentId ?? item.documentId ?? item.DocumentId ?? item.id;
   if (typeof id !== "number" && typeof id !== "string") return null;
+
+  const documentId = (item.documentId ?? item.DocumentId) as number | string | null | undefined;
 
   const fileName =
     pickFirstString(item, ["fileName", "FileName", "originalFileName", "OriginalFileName", "documentFileName", "DocumentFileName"]) ||
@@ -85,6 +89,7 @@ function normalizeLeaseRentDocument(raw: unknown): AssetDocumentListItem | null 
 
   return {
     id,
+    documentId,
     assetId: (item.assetLeaseRentDetailsId ?? item.AssetLeaseRentDetailsId ?? item.assetId ?? item.AssetId) as number | string | null | undefined,
     name: normalizedTitle,
     fileName,
@@ -217,4 +222,45 @@ export async function getLeaseRentDetailsDocuments(assetLeaseRentDetailsId: numb
     documents: unwrapList(response.data).map(normalizeLeaseRentDocument).filter(Boolean) as AssetDocumentListItem[],
     error: null,
   };
+}
+
+export async function replaceLeaseRentDetailsDocument(
+  documentId: number | string,
+  formData: FormData
+): Promise<{
+  success: boolean;
+  data?: any;
+  error?: string;
+  statusCode?: number;
+}> {
+  try {
+    const url = `${getBaseUrl()}/AssetDocument/by-asset-lease-rent-details-document/${encodeURIComponent(String(documentId))}/file`;
+    const headers = await getBinaryFetchHeaders();
+
+    const response = await documentServerFetch(url, {
+      method: "PUT",
+      headers,
+      body: formData,
+    });
+
+    const text = await response.text();
+    let data: UploadResponsePayload = {};
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      data = { message: text };
+    }
+
+    if (!response.ok || data.success === false) {
+      return {
+        success: false,
+        error: data.message || data.error || `Replacement failed with status ${response.status}`,
+        statusCode: response.status,
+      };
+    }
+
+    return { success: true, data: (data.items || data.data || data) };
+  } catch (err: unknown) {
+    return { success: false, error: err instanceof Error ? err.message : "Failed to replace document" };
+  }
 }

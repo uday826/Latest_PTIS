@@ -257,6 +257,7 @@ export type AssetChildAssetItem = {
 
 export type AssetDocumentListItem = {
   id: number | string;
+  documentId?: number | string | null;
   assetId?: number | string | null;
   name: string;
   fileName: string;
