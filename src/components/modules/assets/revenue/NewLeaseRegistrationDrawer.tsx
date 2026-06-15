@@ -1250,7 +1250,6 @@ function isValidNonNegativeAmount(value: string): boolean {
 
   const stagedLabel = (type: LeaseDocumentType) =>
     stagedDocuments[type]?.file?.name ||
-    localDocuments.find((doc) => (doc.name || '').toLowerCase() === type.toLowerCase())?.fileName ||
     'No file selected';
 
   const renderUploadCard = (type: LeaseDocumentType, label: string) => (

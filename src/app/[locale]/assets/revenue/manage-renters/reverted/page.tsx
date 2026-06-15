@@ -81,7 +81,7 @@ export default async function ManageRentersRevertedPage({
       drawerAssetId={drawerAssetId}
       selectedRegistration={selectedRegistration}
       selectedAsset={selectedAsset}
-      assetDocuments={leaseRentDocuments}
+      leaseRentDocuments={leaseRentDocuments}
       assetPhotosAndPlans={assetPhotosAndPlans}
       applicationTypes={applicationTypes}
       revertDrawerId={drawerRevertId}
