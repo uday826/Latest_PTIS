@@ -17,11 +17,12 @@ export async function exportToExcel(
       [t ? t('Ownership_Type') : 'Ownership Type']: record.ownershipType || '',
       [t ? t('Address') : 'Address']: record.address || '',
       [t ? t('Ward') : 'Ward']: record.wardName || '',
-      [t ? t('Acquisition_Date') : 'Acquisition Date']: formatDate(record.purchaseDate || undefined),
+
       [t ? t('Capital_Value') : 'Capital Value']: record.capitalValue == null ? '' : String(record.capitalValue),
       [t ? t('Condition') : 'Condition']: record.assetCondition || '',
       [t ? t('Status') : 'Status']: record.status || (record.isActive ? 'Active' : 'Inactive'),
-      [t ? t('Custodian_Dept') : 'Custodian & Department']: [record.departmentName, record.organizationName].filter(Boolean).join(' - ') || '',
+      [t ? t('Owning_Department') : 'Owning Department']: record.departmentName || '',
+      [t ? t('Organization') : 'Organization']: record.organizationName || '',
     };
   });
 

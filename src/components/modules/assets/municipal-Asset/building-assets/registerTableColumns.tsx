@@ -76,7 +76,7 @@ export function getRegisterColumns(
       cellClassName: 'align-middle text-center',
       render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
     },
-    { key: 'purchaseDate', label: t('Acquisition_Date') || 'Acquisition Date', width: '120px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => formatDate(typeof value === 'string' ? value : undefined) },
+
 
     { key: 'capitalValue', label: t('Capital_Value') || 'Capital Value', width: '140px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.capitalValue) },
 
@@ -84,16 +84,19 @@ export function getRegisterColumns(
     { key: 'status', label: t('Status') || 'Status', width: '100px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderBadge(typeof value === 'string' ? value : undefined) },
     {
       key: 'departmentName',
-      label: t('Custodian_Dept') || 'Custodian & Department',
-      width: '200px',
+      label: t('Owning_Department') || 'Owning Department',
+      width: '180px',
       headerClassName: 'whitespace-nowrap text-center',
       cellClassName: 'align-middle text-center',
-      render: (_, row) => (
-        <div className="flex flex-col items-center text-center">
-          <span className="whitespace-normal wrap-break-word font-semibold text-slate-900" title={row.departmentName}>{row.departmentName}</span>
-          <span className="whitespace-normal wrap-break-word text-[11px] text-slate-500" title={row.organizationName}>{row.organizationName}</span>
-        </div>
-      ),
+      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
+    },
+    {
+      key: 'organizationName',
+      label: t('Organization') || 'Organization',
+      width: '180px',
+      headerClassName: 'whitespace-nowrap text-center',
+      cellClassName: 'align-middle text-center',
+      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
     },
 
 

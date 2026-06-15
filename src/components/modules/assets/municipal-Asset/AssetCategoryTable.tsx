@@ -18,7 +18,7 @@ export function AssetCategoryTable({ onSelectAsset, formatCur }: AssetCategoryTa
             <th className="px-4 py-3 font-bold border-r border-slate-700/50 min-w-[200px]">Asset Name & Description ↕</th>
             <th className="px-4 py-3 font-bold border-r border-slate-700/50">Sub Category ↕</th>
             <th className="px-4 py-3 font-bold border-r border-slate-700/50">Location & Ward ↕</th>
-            <th className="px-4 py-3 font-bold border-r border-slate-700/50">Acquisition Date ↕</th>
+
             <th className="px-4 py-3 font-bold border-r border-slate-700/50 text-right">Acquisition Value ↕</th>
             <th className="px-4 py-3 font-bold border-r border-slate-700/50 text-right">Current Value ↕</th>
             <th className="px-4 py-3 font-bold border-r border-slate-700/50 text-right">Depreciation ↕</th>
@@ -26,7 +26,8 @@ export function AssetCategoryTable({ onSelectAsset, formatCur }: AssetCategoryTa
             <th className="px-4 py-3 font-bold border-r border-slate-700/50 text-center">Life (Yrs) ↕</th>
             <th className="px-4 py-3 font-bold border-r border-slate-700/50 text-center">Condition ↕</th>
             <th className="px-4 py-3 font-bold border-r border-slate-700/50 text-center">Status ↕</th>
-            <th className="px-4 py-3 font-bold border-r border-slate-700/50">Custodian & Department ↕</th>
+            <th className="px-4 py-3 font-bold border-r border-slate-700/50">Owning Department ↕</th>
+            <th className="px-4 py-3 font-bold border-r border-slate-700/50">Organization ↕</th>
             <th className="px-4 py-3 font-bold border-r border-slate-700/50">Insurance Details ↕</th>
             <th className="px-4 py-3 font-bold border-r border-slate-700/50">Maintenance Schedule ↕</th>
             <th className="px-4 py-3 font-bold border-r border-slate-700/50">Remarks ↕</th>
@@ -45,7 +46,7 @@ export function AssetCategoryTable({ onSelectAsset, formatCur }: AssetCategoryTa
                   <span className="text-[9px] text-slate-400">{row.loc.split('\n')[1]}</span>
                 </div>
               </td>
-              <td className="px-4 py-3 border-r border-slate-100 text-slate-600">{row.date}</td>
+
               <td className="px-4 py-3 border-r border-slate-100 text-right font-bold text-slate-700">{formatCur(row.acqVal)}</td>
               <td className="px-4 py-3 border-r border-slate-100 text-right font-black text-emerald-600">{formatCur(row.curVal)}</td>
               <td className="px-4 py-3 border-r border-slate-100 text-right font-bold text-red-500">{formatCur(row.dep)}</td>
@@ -68,12 +69,8 @@ export function AssetCategoryTable({ onSelectAsset, formatCur }: AssetCategoryTa
                   {row.status}
                 </span>
               </td>
-              <td className="px-4 py-3 border-r border-slate-100 text-slate-600">
-                <div className="flex flex-col">
-                  <span className="font-bold text-slate-700">{row.cust.split('\n')[0]}</span>
-                  <span className="text-[9px] text-slate-500">{row.cust.split('\n')[1]}</span>
-                </div>
-              </td>
+              <td className="px-4 py-3 border-r border-slate-100 text-slate-700 font-bold">{row.cust.split('\n')[0]}</td>
+              <td className="px-4 py-3 border-r border-slate-100 text-slate-500 text-[9px]">{row.cust.split('\n')[1]}</td>
               <td className="px-4 py-3 border-r border-slate-100 text-slate-600">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-emerald-600 font-bold flex items-center gap-1">
