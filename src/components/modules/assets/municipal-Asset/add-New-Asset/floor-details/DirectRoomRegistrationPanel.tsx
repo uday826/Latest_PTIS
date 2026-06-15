@@ -139,7 +139,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
         floorId: Number(formState.floor),
         subFloorId: formState.subFloor ? Number(formState.subFloor) : null,
         constructionYear: formState.conYear,
-        assessmentYear: null,
+        assessmentYear: "2026",
         constructionTypeId: Number(formState.conType),
         typeOfUseId: Number(formState.useType),
         subTypeOfUseId: formState.subUseType ? Number(formState.subUseType) : 0,
