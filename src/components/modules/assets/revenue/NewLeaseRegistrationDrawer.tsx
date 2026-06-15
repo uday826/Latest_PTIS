@@ -26,7 +26,6 @@ import { EMAIL_REGEX } from '@/lib/utils/validation-rules';
 import { kycValidators } from '@/lib/utils/kyc-validation.constants';
 import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
 import { uploadAssetLeaseRentDetailsDocumentAction, replaceLeaseRentDetailsDocumentAction } from '@/app/[locale]/assets/actions';
-import { deleteUploadedDocAction } from '@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions';
 import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
 import {
   DocumentPreviewDrawer,
@@ -825,15 +824,6 @@ export function NewLeaseRegistrationModal({
           fd.append('UpdatedByUserId', '1');
           res = await replaceLeaseRentDetailsDocumentAction(existingDoc.documentId, fd);
         } else {
-          if (existingDoc?.id && String(existingDoc.id) !== String(staged.replacingDocId ?? '')) {
-            const delRes = await deleteUploadedDocAction(Number(existingDoc.id));
-            if (!delRes.success) {
-              uploadFailed = true;
-              toastError(delRes.error || `Failed to remove existing ${type === 'aadhar' ? 'Aadhaar' : 'PAN'} document.`);
-              continue;
-            }
-          }
-
           const fd = new FormData();
           fd.append('File', staged.file);
           fd.append('AssetLeaseRentDetailsId', String(leaseRentDetailsId));
