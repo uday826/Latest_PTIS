@@ -27,23 +27,23 @@ export default async function FurnitureFixturesInventoryPage({ searchParams }: P
     let initialBatches: InventoryBatchListResponse | null = null;
 
     try {
-        const masterDataPromise = Promise.all([
-            inventoryService.getCategories(),
-            inventoryService.getConditions(),
-            inventoryService.getItemNames(),
-            inventoryService.getItemModels(),
-        ]);
         const batchesPromise = parentAssetId && parentAssetId > 0
             ? getInventoryBatchesAction(parentAssetId)
             : Promise.resolve(null);
 
-        const [[catRes, condRes, namesRes, modelsRes], batchesRes] = await Promise.all([masterDataPromise, batchesPromise]);
+        // Fetch sequentially to prevent overloading the backend with 5 simultaneous requests
+        const catRes = await inventoryService.getCategories();
+        const condRes = await inventoryService.getConditions();
+        const namesRes = await inventoryService.getItemNames();
+        const modelsRes = await inventoryService.getItemModels();
+        const batchesRes = await batchesPromise;
 
         const filterActive = (data: any) => Array.isArray(data) ? data.filter((item: any) => 
             item.isActive !== false && item.isActive !== 0 && 
             item.IsActive !== false && item.IsActive !== 0 && 
             item.status?.toLowerCase() !== 'inactive'
         ) : [];
+        
 
         categories = catRes.success ? filterActive(catRes.data) : [];
         conditions = condRes.success ? filterActive(condRes.data) : [];

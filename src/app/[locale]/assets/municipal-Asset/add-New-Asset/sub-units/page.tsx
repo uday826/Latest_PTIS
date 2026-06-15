@@ -11,10 +11,8 @@ export default async function SubUnitsPage({
   const rawId = resolvedParams.id || resolvedParams.assetId || resolvedParams.parentBuildingId;
   const parentBuildingId = rawId ? Number(rawId) : 0;
 
-  const [dropdownsRes, subUnitsRes] = await Promise.all([
-    fetchSubUnitDropdowns(),
-    parentBuildingId > 0 ? getSubUnitsByAssetAction(parentBuildingId) : Promise.resolve({ success: true, data: [] })
-  ]);
+  const dropdownsRes = await fetchSubUnitDropdowns();
+  const subUnitsRes = parentBuildingId > 0 ? await getSubUnitsByAssetAction(parentBuildingId) : { success: true, data: [] };
 
   const dropdownOptions = dropdownsRes.success ? dropdownsRes.data : {
     floorLevels: [],

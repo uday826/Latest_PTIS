@@ -80,13 +80,13 @@ export function AssetFormFooter() {
     if (!screens || screens.length === 0) return fallbackModuleId;
     if (!pathname) return fallbackModuleId;
     const pathLower = pathname.toLowerCase();
-    
+
     // 1. Sort by longest routePath first (most specific match)
     const sortedScreens = [...screens].sort((a, b) => (b.routePath?.length || 0) - (a.routePath?.length || 0));
-    
+
     // 2. Try to find exact inclusive match
     let currentScreen = sortedScreens.find((s) => s.routePath && pathLower.includes(s.routePath.toLowerCase()));
-    
+
     // 3. Fallback: if no exact match, find any screen related to 'asset' by moduleName
     if (!currentScreen) {
       currentScreen = screens.find((s) => {
@@ -101,20 +101,20 @@ export function AssetFormFooter() {
         return mName && mName.toLowerCase().includes("asset");
       });
     }
-    
+
     // Check multiple possible casing for module ID from C# backend
-    let resolvedModuleId = currentScreen 
-      ? (currentScreen.moduleId || (currentScreen as any).ModuleId || (currentScreen as any).moduleID || fallbackModuleId) 
+    let resolvedModuleId = currentScreen
+      ? (currentScreen.moduleId || (currentScreen as any).ModuleId || (currentScreen as any).moduleID || fallbackModuleId)
       : fallbackModuleId;
-      
+
     // The database has an inactive generic "asset" module (1004). 
     // If we resolved 1004, force the dynamic fallback (which dynamically finds Asset Management)
     if (resolvedModuleId === 1004 && fallbackModuleId > 0 && fallbackModuleId !== 1004) {
       resolvedModuleId = fallbackModuleId;
     }
-      
+
     console.log("Dynamically determined ModuleId:", resolvedModuleId, "Screens available:", screens?.length);
-    
+
     return resolvedModuleId;
   }, [screens, pathname, fallbackModuleId]);
 
@@ -364,7 +364,7 @@ export function AssetFormFooter() {
                 if (match) {
                   userId = Number(decodeURIComponent(match[1])) || 1;
                 }
-              } catch (e) {}
+              } catch (e) { }
 
               const formDataPayload = new FormData();
               formDataPayload.append("AssetId", subUnitId);
@@ -490,7 +490,7 @@ export function AssetFormFooter() {
 
     // Pure DB-flag driven — valuationType from AssetCategoryMaster.ValuationType
     const isBuilding = formData.valuationType ? formData.valuationType === "BUILDING" : formData.hasFloorDetails === true;
-    const isLand     = formData.valuationType ? formData.valuationType === "LAND"     : (!formData.hasFloorDetails && !formData.isMovableCategory);
+    const isLand = formData.valuationType ? formData.valuationType === "LAND" : (!formData.hasFloorDetails && !formData.isMovableCategory);
 
     if (currentStep?.key === "basic-info" && (isBuilding || isLand)) {
       setSubmittedOnce?.(true);
@@ -637,8 +637,8 @@ export function AssetFormFooter() {
             }
           } else {
             const errorMsg = res.error || "Unknown bulk upload error";
-            toast.error(`Photo upload failed: ${errorMsg}`);
-            console.error("Failed to bulk upload photos:", errorMsg);
+
+
           }
         }
 

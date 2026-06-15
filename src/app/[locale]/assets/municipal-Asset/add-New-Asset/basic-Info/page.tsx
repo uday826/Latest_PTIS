@@ -35,17 +35,16 @@ export default async function BuildingBasicInfoPage({
   let subzones: any[] = [];
 
   try {
-    const [wardsRes, zonesRes, departmentsRes, moujasRes, fieldsRes, subzonesRes, ownershipRes] = await Promise.all([
-      getCachedWards(),
-      getCachedZones(),
-      getCachedDepartments(),
-      getCachedMoujas(),
-      categoryId > 0 && typeId > 0
-        ? fetchBuildingFieldDefinitions(categoryId, typeId)
-        : Promise.resolve({ success: false as const, error: "Missing ids" }),
-      zoneService.getSubZones(),
-      getCachedOwnershipTypes(),
-    ]);
+    // Fetch sequentially to prevent overloading the backend with 7 simultaneous requests
+    const wardsRes = await getCachedWards();
+    const zonesRes = await getCachedZones();
+    const departmentsRes = await getCachedDepartments();
+    const moujasRes = await getCachedMoujas();
+    const fieldsRes = categoryId > 0 && typeId > 0
+        ? await fetchBuildingFieldDefinitions(categoryId, typeId)
+        : { success: false as const, error: "Missing ids", data: [] };
+    const subzonesRes = await zoneService.getSubZones();
+    const ownershipRes = await getCachedOwnershipTypes();
 
     if (wardsRes.success && Array.isArray(wardsRes.data)) {
       wards = wardsRes.data;

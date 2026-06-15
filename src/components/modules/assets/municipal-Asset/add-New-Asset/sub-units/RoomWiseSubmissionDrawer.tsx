@@ -649,9 +649,12 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                     <tbody className="divide-y divide-slate-100">
                       {rooms.length === 0 ? (
                         <tr><td colSpan={11} className="px-3 py-6 text-center text-slate-400">No rooms added yet</td></tr>
-                      ) : rooms.map((r) => (
-                        <tr key={r.id} className={`hover:bg-slate-50 ${r.minus === "Yes" ? "bg-red-50/30" : r.outer === "Yes" ? "bg-blue-50/20" : ""}`}>
-                          <td className="px-2 py-1.5 font-bold text-slate-800">{r.roomNo}</td>
+                      ) : rooms.flatMap((r) => Array.from({ length: Math.max(1, r.count) }).map((_, idx) => {
+                        const isGroup = r.count > 1;
+                        const displayNo = isGroup ? `${r.roomNo}.${idx + 1}` : r.roomNo;
+                        return (
+                        <tr key={`${r.id}-${idx}`} className={`hover:bg-slate-50 ${r.minus === "Yes" ? "bg-red-50/30" : r.outer === "Yes" ? "bg-blue-50/20" : ""}`}>
+                          <td className="px-2 py-1.5 font-bold text-slate-800" title={isGroup ? `Room ${idx + 1} of group` : ""}>{displayNo}</td>
                           <td className="px-2 py-1.5 font-black text-slate-900 text-[10px] uppercase">{r.roomType}</td>
                           <td className="px-2 py-1.5">
                             <span className="px-1.5 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded text-[9px] font-bold uppercase">
@@ -660,7 +663,6 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                           </td>
                           <td className="px-2 py-1.5 text-right font-mono font-bold text-slate-700 text-[10px]">{r.areaSqM.toFixed(2)}</td>
                           <td className="px-2 py-1.5 text-center">
-                            {/* Offset toggle — Yes opens popup */}
                             <button
                               type="button"
                               onClick={() => toggleOffset(r.id, r.hasOffset === "Yes" ? "No" : "Yes")}
@@ -676,7 +678,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                           <td className={`px-2 py-1.5 text-right font-mono font-bold text-[10px] ${r.hasOffset === "Yes" ? "text-amber-800" : "text-slate-800"}`}>
                             {r.netAreaSqM.toFixed(2)}
                           </td>
-                          <td className="px-2 py-1.5 text-center font-bold text-slate-800">{r.count}</td>
+                          <td className="px-2 py-1.5 text-center font-bold text-slate-800" title={isGroup ? `Part of a group of ${r.count} rooms` : ""}>1</td>
                           <td className="px-2 py-1.5 text-center">
                             <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${r.outer === "Yes" ? "bg-blue-50 text-blue-700 border border-blue-200" : "bg-slate-50 text-slate-500"}`}>
                               {r.outer === "Yes" ? "−20%" : "No"}
@@ -688,17 +690,22 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                           <td className={`px-2 py-1.5 text-right font-mono font-bold text-[10px] ${r.minus === "Yes" ? "text-red-700" : r.outer === "Yes" ? "text-blue-700" : "text-slate-900"}`}>
                             {r.minus === "Yes" ? "-" : r.outer === "Yes" ? "×0.8=" : ""}
                             {r.minus === "Yes"
-                              ? (r.netAreaSqM * r.count).toFixed(2)
+                              ? (r.netAreaSqM * 1).toFixed(2)
                               : r.outer === "Yes"
-                                ? (r.netAreaSqM * r.count * 0.8).toFixed(2)
-                                : (r.netAreaSqM * r.count).toFixed(2)}
+                                ? (r.netAreaSqM * 1 * 0.8).toFixed(2)
+                                : (r.netAreaSqM * 1).toFixed(2)}
                           </td>
                           <td className="px-2 py-1.5 text-center flex gap-1 justify-center">
-                            <button onClick={() => handleEdit(r)} className="p-1 hover:bg-blue-50 rounded text-blue-600"><Edit2 className="size-3" /></button>
-                            <button onClick={() => handleDelete(r.id)} className="p-1 hover:bg-red-50 rounded text-red-400"><Trash2 className="size-3" /></button>
+                            {idx === 0 && (
+                              <>
+                                <button onClick={() => handleEdit(r)} className="p-1 hover:bg-blue-50 rounded text-blue-600" title={`Edit group of ${r.count}`}><Edit2 className="size-3" /></button>
+                                <button onClick={() => handleDelete(r.id)} className="p-1 hover:bg-red-50 rounded text-red-400" title={`Delete group of ${r.count}`}><Trash2 className="size-3" /></button>
+                              </>
+                            )}
                           </td>
                         </tr>
-                      ))}
+                        );
+                      }))}
                     </tbody>
                   </table>
                 </div>

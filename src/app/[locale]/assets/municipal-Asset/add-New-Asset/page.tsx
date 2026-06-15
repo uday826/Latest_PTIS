@@ -2,11 +2,9 @@ import { AddAssetDrawerClient } from "@/components/modules/assets/municipal-Asse
 import { getCachedCategories, getCachedZones, getCachedWards } from "@/lib/api/asset/cached-master-data";
 
 export default async function AddNewAssetPage() {
-  const [categoriesRes, zonesRes, wardsRes] = await Promise.all([
-    getCachedCategories(),
-    getCachedZones(),
-    getCachedWards(),
-  ]);
+  const categoriesRes = await getCachedCategories();
+  const zonesRes = await getCachedZones();
+  const wardsRes = await getCachedWards();
 
   const initialCategories = categoriesRes.success && Array.isArray(categoriesRes.data) ? categoriesRes.data : [];
   const initialZones = zonesRes.success && Array.isArray(zonesRes.data) ? zonesRes.data : [];
