@@ -1114,6 +1114,7 @@ export function NewLeaseRegistrationModal({
             toPositiveNumber(asset.assetId);
           const sendPayload: AssetLeaseRentDetailsUpdatePayload = {
             id: recordId,
+            isActive: true,
             parentAssetId,
             assetNo: asset.assetNo ?? record?.assetNo ?? null,
             assetName: asset.assetName ?? record?.shopName ?? null,
@@ -1150,6 +1151,7 @@ export function NewLeaseRegistrationModal({
             toPositiveNumber(asset.assetId);
           const updatePayload: AssetLeaseRentDetailsUpdatePayload = {
             id: targetRecordId,
+            isActive: true,
             parentAssetId,
             assetNo: asset.assetNo ?? record?.assetNo ?? null,
             assetName: asset.assetName ?? record?.shopName ?? null,
