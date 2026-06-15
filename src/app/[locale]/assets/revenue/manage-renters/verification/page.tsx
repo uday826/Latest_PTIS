@@ -5,6 +5,7 @@ import {
   getManageRentersAssetDetailsAction,
 } from './actions';
 import { fetchAssetDocumentsByAsset, fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
+import { getLeaseRentDetailsDocuments } from '@/lib/api/asset/asset-lease-rent-details-document.server.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,12 +35,15 @@ export default async function ManageRentersVerificationPage({
 
   const assetId = selectedVerification?.assetId;
   const selectedAsset = assetId ? await getManageRentersAssetDetailsAction(assetId) : null;
-  const [assetDocuments, assetPhotosAndPlans] = assetId
+  const [assetDocuments, assetPhotosAndPlans, leaseRentDocuments] = assetId
     ? await Promise.all([
         fetchAssetDocumentsByAsset(assetId).then((res) => res.documents).catch(() => []),
         fetchAssetPhotosAndPlansByAsset(assetId).then((res) => res.documents).catch(() => []),
+        selectedVerification?.id
+          ? getLeaseRentDetailsDocuments(Number(selectedVerification.id)).then((res) => res.documents).catch(() => [])
+          : Promise.resolve([]),
       ])
-    : [[], []];
+    : [[], [], []];
 
   const drawerRevertId = normalizeDrawerId(query.drawerRevertId);
   const selectedRevert = drawerRevertId
@@ -52,6 +56,8 @@ export default async function ManageRentersVerificationPage({
         data.pageNumber,
         data.pageSize,
         data.searchTerm,
+        data.fromDate,
+        data.toDate,
         data.assetCategoryId ?? '',
         drawerVerificationId ?? '',
         drawerRevertId ?? '',
@@ -62,12 +68,14 @@ export default async function ManageRentersVerificationPage({
       totalCount={data.totalCount}
       totalPages={data.totalPages}
       searchTerm={data.searchTerm}
+      fromDate={data.fromDate}
+      toDate={data.toDate}
       assetCategoryId={data.assetCategoryId}
       verificationRecords={data.records}
       verificationDrawerId={drawerVerificationId}
       selectedVerification={selectedVerification}
       selectedAsset={selectedAsset}
-      assetDocuments={assetDocuments}
+      assetDocuments={[...assetDocuments, ...leaseRentDocuments]}
       assetPhotosAndPlans={assetPhotosAndPlans}
       revertDrawerId={drawerRevertId}
       selectedRevert={selectedRevert}

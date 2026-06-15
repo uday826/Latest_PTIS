@@ -22,6 +22,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import { Button, Drawer, Label, MasterTable, type Column, useToast } from '@/components/common';
+import { EMAIL_REGEX } from '@/lib/utils/validation-rules';
+import { kycValidators } from '@/lib/utils/kyc-validation.constants';
 import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
 import { uploadAssetLeaseRentDetailsDocumentAction } from '@/app/[locale]/assets/actions';
 import { deleteUploadedDocAction } from '@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions';
@@ -170,7 +172,7 @@ function buildInitialFormState(
     leaseStartDate: toDateInputValue(record?.leaseStartDate ?? record?.submittedDate ?? asset.createdDate ?? ''),
     leaseEndDate: toDateInputValue(record?.leaseEndDate ?? asset.updatedDate ?? ''),
     monthlyRent: rentValue,
-    securityDeposit: record?.securityDeposit != null ? String(record.securityDeposit).replace(/,/g, '') : '0',
+    securityDeposit: record?.securityDeposit != null ? String(record.securityDeposit).replace(/,/g, '') : '',
     paymentFrequency: firstNonEmpty(record?.paymentFrequency, 'Monthly'),
     existingTenantName: firstNonEmpty(record?.previousTenantName, record?.tenantName),
     oldLeaseStartDate: toDateInputValue(record?.oldLeaseStartDate ?? record?.submittedDate ?? asset.createdDate ?? ''),
@@ -287,7 +289,7 @@ function buildTemplate(
       { key: 'shopName', label: 'Unit Name', icon: Building2, type: 'text', placeholder: 'Unit name' },
       { key: 'tenantName', label: 'Tenant Name', icon: User, type: 'text', placeholder: 'Full name', required: true },
       { key: 'mobileNumber', label: 'Mobile Number', icon: Phone, type: 'text', placeholder: '10-digit mobile', required: true },
-      { key: 'emailAddress', label: 'Email Address', icon: Mail, type: 'text', placeholder: 'email@example.com' },
+      { key: 'emailAddress', label: 'Email Address', icon: Mail, type: 'text', placeholder: 'email@example.com', required: true },
       { key: 'tenantType', label: 'Tenant Type', icon: BadgeCheck, type: 'select', options: ['Individual', 'Business', 'Government', 'Trust'] },
       { key: 'aadhaarNumber', label: 'Aadhaar Number', icon: FileText, type: 'text', placeholder: '12-digit Aadhaar' },
       { key: 'panNumber', label: 'PAN Number', icon: FileText, type: 'text', placeholder: 'PAN card number' },
@@ -529,6 +531,11 @@ function RenderField({
       return;
     }
 
+    if (field.key === 'emailAddress') {
+      setValue(nextValue.replace(/[^a-zA-Z0-9@._%+-]/g, ''));
+      return;
+    }
+
     if (field.key === 'residentialAddress' || field.key === 'shopNo' || field.key === 'shopName' || field.key === 'remarksDescription' || field.key === 'reasonForRenewal' || field.key === 'reasonForTransfer' || field.key === 'reasonForTermination') {
       setValue(nextValue.replace(/[<>]/g, ''));
       return;
@@ -601,11 +608,10 @@ function RenderField({
 }
 
 interface OverviewTableRow extends Record<string, unknown> {
-  zoneWardNo: string;
-  propertyNo: string;
+  zoneNo: string;
+  wardNo: string;
   unitName: string;
   shopNumber: string;
-  gatNumber: string;
   shopActNumber: string;
 }
 
@@ -736,9 +742,16 @@ export function NewLeaseRegistrationModal({
     [formState, toastError]
   );
 
+function isValidPositiveAmount(value: string): boolean {
+  if (!value) return false;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0;
+}
+
 function isValidNonNegativeAmount(value: string): boolean {
-  if (!value) return true;
-  return /^[0-9]+(\.[0-9]+)?$/.test(value);
+  if (!value) return false;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0;
 }
   const readDocumentFile = useCallback(async (documentItem: LeaseDocumentCard) => {
     if (documentItem.localFile) {
@@ -849,9 +862,7 @@ function isValidNonNegativeAmount(value: string): boolean {
           };
 
           setLocalDocuments((prev) => {
-            const filtered = prev.filter(
-              (doc) => (doc.name || '').toLowerCase() !== type.toLowerCase() || String(doc.id).startsWith(`local-${type}`)
-            );
+            const filtered = prev.filter((doc) => (doc.name || '').toLowerCase() !== type.toLowerCase());
             return [...filtered, uploadedDoc];
           });
         } else {
@@ -889,15 +900,26 @@ function isValidNonNegativeAmount(value: string): boolean {
     }
 
     const hasField = (key: string) => template.fields.some((f) => f.key === key);
+    const getFieldValue = (key: keyof FormState) => (formState[key] ?? '').toString().trim();
 
-    // Validate Mobile Number (10 digits)
-    const mobileReg = /^[0-9]{10}$/;
-    if (hasField('mobileNumber') && formState.mobileNumber && !mobileReg.test(formState.mobileNumber)) {
-      toastError('Mobile number must be a valid 10-digit number.');
+    const requiredField = template.fields.find((field) => {
+      if (!field.required) return false;
+      const value = getFieldValue(field.key);
+      return value.length === 0;
+    });
+
+    if (requiredField) {
+      toastError(`${requiredField.label} is required.`);
       return;
     }
-    if (hasField('newTenantMobile') && formState.newTenantMobile && !mobileReg.test(formState.newTenantMobile)) {
-      toastError('New tenant mobile number must be a valid 10-digit number.');
+
+    // Validate Mobile Number (Indian format: 10 digits starting with 6-9)
+    if (hasField('mobileNumber') && formState.mobileNumber && !kycValidators.isValidMobile(formState.mobileNumber)) {
+      toastError('Mobile number must be a valid Indian 10-digit number starting with 6, 7, 8, or 9.');
+      return;
+    }
+    if (hasField('newTenantMobile') && formState.newTenantMobile && !kycValidators.isValidMobile(formState.newTenantMobile)) {
+      toastError('New tenant mobile number must be a valid Indian 10-digit number starting with 6, 7, 8, or 9.');
       return;
     }
 
@@ -915,10 +937,13 @@ function isValidNonNegativeAmount(value: string): boolean {
       return;
     }
 
-    // Validate Aadhaar Number (12 digits)
-    const aadhaarReg = /^[0-9]{12}$/;
-    if (hasField('aadhaarNumber') && formState.aadhaarNumber && !aadhaarReg.test(formState.aadhaarNumber)) {
-      toastError('Aadhaar number must be a valid 12-digit number.');
+    // Validate Aadhaar Number (Indian format: 12 digits with valid start and no repeated sequences)
+    if (hasField('aadhaarNumber') && formState.aadhaarNumber && !kycValidators.isValidAadhar(formState.aadhaarNumber)) {
+      toastError('Aadhaar number must be a valid 12-digit Aadhaar number.');
+      return;
+    }
+    if (hasField('emailAddress') && formState.emailAddress && !EMAIL_REGEX.test(formState.emailAddress)) {
+      toastError('Email address must be a valid email format.');
       return;
     }
 
@@ -976,6 +1001,10 @@ function isValidNonNegativeAmount(value: string): boolean {
     if (hasField('leaseStartDate') && hasField('leaseEndDate') && formState.leaseStartDate && formState.leaseEndDate) {
       const start = new Date(formState.leaseStartDate);
       const end = new Date(formState.leaseEndDate);
+      if (start.getTime() === end.getTime()) {
+        toastError('Lease start date and lease end date cannot be the same.');
+        return;
+      }
       if (start > end) {
         toastError('Lease start date cannot be later than the lease end date.');
         return;
@@ -986,6 +1015,10 @@ function isValidNonNegativeAmount(value: string): boolean {
     if (hasField('renewalStartDate') && hasField('renewalEndDate') && formState.renewalStartDate && formState.renewalEndDate) {
       const start = new Date(formState.renewalStartDate);
       const end = new Date(formState.renewalEndDate);
+      if (start.getTime() === end.getTime()) {
+        toastError('Renewal start date and renewal end date cannot be the same.');
+        return;
+      }
       if (start > end) {
         toastError('Renewal start date cannot be later than the renewal end date.');
         return;
@@ -996,6 +1029,10 @@ function isValidNonNegativeAmount(value: string): boolean {
     if (hasField('oldLeaseStartDate') && hasField('oldLeaseEndDate') && formState.oldLeaseStartDate && formState.oldLeaseEndDate) {
       const start = new Date(formState.oldLeaseStartDate);
       const end = new Date(formState.oldLeaseEndDate);
+      if (start.getTime() === end.getTime()) {
+        toastError('Old lease start date and old lease end date cannot be the same.');
+        return;
+      }
       if (start > end) {
         toastError('Old lease start date cannot be later than the old lease end date.');
         return;
@@ -1012,12 +1049,12 @@ function isValidNonNegativeAmount(value: string): boolean {
       }
     }
 
-    if (hasField('monthlyRent') && formState.monthlyRent && !isValidNonNegativeAmount(formState.monthlyRent)) {
-      toastError('Monthly rent must be a non-negative number.');
+    if (hasField('monthlyRent') && formState.monthlyRent && !isValidPositiveAmount(formState.monthlyRent)) {
+      toastError('Monthly rent must be greater than zero.');
       return;
     }
-    if (hasField('securityDeposit') && formState.securityDeposit && !isValidNonNegativeAmount(formState.securityDeposit)) {
-      toastError('Security deposit must be a non-negative number.');
+    if (hasField('securityDeposit') && formState.securityDeposit && !isValidPositiveAmount(formState.securityDeposit)) {
+      toastError('Security deposit must be greater than zero.');
       return;
     }
     if (hasField('previousRent') && formState.previousRent && !isValidNonNegativeAmount(formState.previousRent)) {
@@ -1219,9 +1256,7 @@ function isValidNonNegativeAmount(value: string): boolean {
   const drawerTitle = (
     <div className="flex items-center gap-2">
       <FileText className="w-5 h-5 text-blue-600" />
-      <h2 className="font-bold text-sm tracking-wide text-slate-800">
-        Asset Details — New Registration
-      </h2>
+      <h2 className="font-bold text-sm tracking-wide text-slate-800">Registration</h2>
     </div>
   );
 
@@ -1249,22 +1284,19 @@ function isValidNonNegativeAmount(value: string): boolean {
   const buildingAssetName = asset.assetName ?? '-';
   const assetCategory = asset.assetCategoryName ?? '-';
   const shopName = record?.shopName ?? '-';
-  const zoneWard = `${toDisplay(asset.zoneName)} - ${toDisplay(asset.wardName)}`;
   const overviewColumns: Column<OverviewTableRow>[] = [
-    { key: 'zoneWardNo', label: 'Zone - Ward No', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'propertyNo', label: 'Asset No', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'zoneNo', label: 'Zone No', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'wardNo', label: 'Ward No', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'unitName', label: 'Unit Name', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'shopNumber', label: 'Unit Number', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'gatNumber', label: 'Asset Category', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
     { key: 'shopActNumber', label: 'Unit Act Number', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
   ];
   const overviewData: OverviewTableRow[] = [
     {
-      zoneWardNo: zoneWard,
-      propertyNo: asset.assetNo ?? '-',
+      zoneNo: toDisplay(asset.zoneName),
+      wardNo: toDisplay(asset.wardName),
       unitName: record?.shopName ?? '-',
       shopNumber: record?.shopNo ?? '-',
-      gatNumber: assetCategory,
       shopActNumber: asset.assetTypeId != null ? String(asset.assetTypeId) : '-',
     },
   ];
@@ -1272,7 +1304,7 @@ function isValidNonNegativeAmount(value: string): boolean {
     { key: 'shopArea', label: 'Unit Area (sq.mt)', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'renterName', label: 'Renter Name', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'monthlyRent', label: 'Monthly Rent (₹)', align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
-    { key: 'bharaniKaalavadi', label: 'Payment Period', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'bharaniKaalavadi', label: 'Duration', align: 'center', cellClassName: 'whitespace-nowrap' },
     { key: 'status', label: 'Status', align: 'center', cellClassName: 'whitespace-nowrap' },
   ];
   const constructionData: ConstructionTableRow[] = [
@@ -1292,10 +1324,18 @@ function isValidNonNegativeAmount(value: string): boolean {
     { label: 'वार्षिक भाडे उत्पन्न (अपेक्षित)', value: toCurrencyDisplay(asset.marketValue ?? asset.currentAssetValue ?? formState.revisedRent ?? formState.monthlyRent) },
   ];
   const documentCards = useMemo(() => {
+    const seen = new Set<string>();
+
     return localDocuments
       .filter((doc) => {
         const name = (doc.name || '').toLowerCase();
         return name === 'aadhar' || name === 'pan';
+      })
+      .filter((doc) => {
+        const key = `${(doc.name || '').toLowerCase()}|${(doc.fileName || '').toLowerCase()}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
       })
       .map((doc) => ({
         ...doc,
@@ -1305,20 +1345,28 @@ function isValidNonNegativeAmount(value: string): boolean {
   }, [localDocuments]);
 
   const mediaCards = useMemo(() => {
-    return assetPhotosAndPlans.slice(0, 3).map((doc) => ({
+    return assetPhotosAndPlans.map((doc) => ({
       ...doc,
       label: getFileTitle(doc),
       isImage: isImage(doc.contentType || '', doc.fileName || doc.name || ''),
     }));
   }, [assetPhotosAndPlans]);
 
+  const getMediaSearchText = (doc: AssetDocumentListItem) =>
+    `${doc.name || ''} ${doc.fileName || ''}`.toLowerCase();
+
   const leftMediaPanels = [
     {
       title: 'Asset Photo',
       doc:
         mediaCards.find((doc) => {
-          const name = (doc.name || '').toLowerCase();
-          return name.includes('asset image') || (name.includes('asset photo') && !name.includes('plan'));
+          const name = getMediaSearchText(doc);
+          return (
+            name.includes('asset image') ||
+            name.includes('asset photo') ||
+            name.includes('on spot') ||
+            name.includes('photo')
+          );
         }) ?? null,
       fallbackIcon: Building2,
       fallbackText: 'Asset Photo',
@@ -1326,8 +1374,8 @@ function isValidNonNegativeAmount(value: string): boolean {
     {
       title: 'OP Plan',
       doc: mediaCards.find((doc) => {
-        const name = (doc.name || '').toLowerCase();
-        return !name.includes('asset image') && !name.includes('asset photo') && !name.includes('asset photo plan');
+        const name = getMediaSearchText(doc);
+        return name.includes('op plan') || (name.includes('plan') && !name.includes('dp plan') && !name.includes('asset photo plan'));
       }) ?? null,
       fallbackIcon: Grid,
       fallbackText: 'OP Plan',
@@ -1335,8 +1383,8 @@ function isValidNonNegativeAmount(value: string): boolean {
     {
       title: 'DP Plan',
       doc: mediaCards.find((doc) => {
-        const name = (doc.name || '').toLowerCase();
-        return name.includes('asset photo plan');
+        const name = getMediaSearchText(doc);
+        return name.includes('dp plan') || name.includes('asset photo plan') || name.includes('digital plan');
       }) ?? null,
       fallbackIcon: MapPinned,
       fallbackText: 'DP Plan',
@@ -1437,7 +1485,7 @@ function isValidNonNegativeAmount(value: string): boolean {
 
         <div className="mb-4 overflow-hidden rounded-lg">
           <div className="bg-teal-600 text-white text-[10px] font-bold py-1.5 text-center">
-            Construction Details
+            Unit Details
           </div>
           <MasterTable
             columns={constructionColumns}
@@ -1614,6 +1662,17 @@ function isValidNonNegativeAmount(value: string): boolean {
                 </tbody>
               </table>
             </div>
+
+            {isRevertedRecord ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 shadow-sm">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                  Reason for Revert
+                </div>
+                <div className="mt-1 text-[11px] font-semibold text-slate-700">
+                  {record?.reason ?? record?.rejectionReason ?? '-'}
+                </div>
+              </div>
+            ) : null}
 
           </div>
         </div>

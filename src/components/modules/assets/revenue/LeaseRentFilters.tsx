@@ -2,6 +2,7 @@
 'use client';
 
 import { Label, SearchInput, Select } from '@/components/common';
+import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
 import type { FilterOption } from '../../../../types/asset/revenue.types';
 
 interface FiltersProps {
@@ -51,6 +52,14 @@ export function LeaseRentFilters({
   onAssetChange,
 }: FiltersProps) {
   const normalizeSelectValue = (value: string) => (value === 'all' ? null : value);
+  const handleSearchChange = (nextValue: string) => {
+    const sanitizedValue = nextValue
+      .split('')
+      .filter((char) => SEARCH_KEY_REGEX.test(char))
+      .join('');
+
+    setSearchQuery(sanitizedValue);
+  };
 
   return (
     <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 shadow-inner mb-4">
@@ -59,7 +68,7 @@ export function LeaseRentFilters({
           <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Search</Label>
           <SearchInput
             value={searchQuery}
-            onChange={setSearchQuery}
+            onChange={handleSearchChange}
             placeholder="Search by name, path or ID..."
             className="mb-0 w-full"
             showClear={false}

@@ -30,6 +30,8 @@ export function LeaseRentRegistration({
   totalCount = 0,
   totalPages = 1,
   searchTerm = '',
+  fromDate = '',
+  toDate = '',
   assetCategoryId = null,
   zoneId = null,
   wardId = null,
@@ -63,8 +65,8 @@ export function LeaseRentRegistration({
   const [zone, setZone] = useState(zoneId ? String(zoneId) : 'all');
   const [ward, setWard] = useState(wardId ? String(wardId) : 'all');
   const [assetSelect, setAssetSelect] = useState(assetId ? String(assetId) : 'all');
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
+  const [fromDateValue, setFromDateValue] = useState(fromDate);
+  const [toDateValue, setToDateValue] = useState(toDate);
 
   const [selectedRecordForHistory, setSelectedRecordForHistory] = useState<LeaseRentRecord | null>(null);
   const drawerAsset = (selectedAsset as AssetMasterDetails | null) ?? null;
@@ -173,6 +175,8 @@ export function LeaseRentRegistration({
     const currentZone = hasKey('zoneId') ? nextParams.zoneId : toNullableNumber(zone);
     const currentWard = hasKey('wardId') ? nextParams.wardId : toNullableNumber(ward);
     const currentAsset = hasKey('assetId') ? nextParams.assetId : toNullableNumber(assetSelect);
+    const currentFromDate = hasKey('fromDate') ? nextParams.fromDate : fromDateValue;
+    const currentToDate = hasKey('toDate') ? nextParams.toDate : toDateValue;
 
     if (currentCategory != null && Number.isFinite(currentCategory)) {
       params.set('assetCategoryId', String(currentCategory));
@@ -187,8 +191,13 @@ export function LeaseRentRegistration({
       params.set('assetId', String(currentAsset));
     }
 
+    const normalizedFromDate = currentFromDate == null ? '' : String(currentFromDate).trim();
+    const normalizedToDate = currentToDate == null ? '' : String(currentToDate).trim();
+    if (normalizedFromDate) params.set('fromDate', normalizedFromDate);
+    if (normalizedToDate) params.set('toDate', normalizedToDate);
+
     return `${pathname}?${params.toString()}`;
-  }, [assetSelect, category, pageNumber, pageSize, pathname, searchQuery, toNullableNumber, ward, zone]);
+  }, [assetSelect, category, fromDateValue, pageNumber, pageSize, pathname, searchQuery, toDateValue, toNullableNumber, ward, zone]);
 
   const updateQuery = useCallback(
     (nextParams: Record<string, string | number | null | undefined>) => {
@@ -269,6 +278,22 @@ export function LeaseRentRegistration({
       updateQuery({ pageNumber: 1, assetId: toNullableNumber(value) });
     },
     [toNullableNumber, updateQuery]
+  );
+
+  const handleFromDateChange = useCallback(
+    (value: string) => {
+      setFromDateValue(value);
+      updateQuery({ pageNumber: 1, fromDate: value || null });
+    },
+    [updateQuery]
+  );
+
+  const handleToDateChange = useCallback(
+    (value: string) => {
+      setToDateValue(value);
+      updateQuery({ pageNumber: 1, toDate: value || null });
+    },
+    [updateQuery]
   );
 
   const handleRegistrationAction = useCallback(
@@ -364,8 +389,8 @@ export function LeaseRentRegistration({
             <Input
               type="date"
               label="From Date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
+              value={fromDateValue}
+              onChange={(e) => handleFromDateChange(e.target.value)}
               className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400 focus:border-blue-500"
               fullWidth
             />
@@ -375,8 +400,8 @@ export function LeaseRentRegistration({
             <Input
               type="date"
               label="To Date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
+              value={toDateValue}
+              onChange={(e) => handleToDateChange(e.target.value)}
               className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400 focus:border-blue-500"
               fullWidth
             />
@@ -395,6 +420,7 @@ export function LeaseRentRegistration({
           pageSize={pageSize}
           totalCount={totalCount}
           totalPages={totalPages}
+          stage={stage}
           onPageChange={(nextPage) => updateQuery({ pageNumber: nextPage })}
           onPageSizeChange={(nextSize) => updateQuery({ pageNumber: 1, pageSize: nextSize })}
           onActionClick={handleRegistrationAction}

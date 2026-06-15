@@ -43,7 +43,7 @@ export interface AssetDashboardStatsDto {
  * Paginated response from /AssetMaster
  */
 export interface PagedAssetMasterResponse {
-  items: AssetMasterResponse[];
+  items: AssetRegisterApiRecord[];
   totalCount: number;
   pageNumber: number;
   pageSize: number;

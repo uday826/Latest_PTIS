@@ -34,6 +34,7 @@ export function mapAssetLeaseRentDetailsToPaymentDetail(
     assetId: record.assetId,
     assetNo: normalizeText(record.assetNo) || normalizeText(assetMaster?.assetNo) || String(record.assetId),
     assetName: normalizeText(record.assetName) || normalizeText(assetMaster?.assetName, '-'),
+    paymentFrequency: normalizeText(record.paymentFrequency),
     zone: normalizeText(record.zone) || normalizeText(assetMaster?.zoneName, '-'),
     wardNo: normalizeText(record.wardNo) || normalizeText(assetMaster?.wardName, '-'),
     category:

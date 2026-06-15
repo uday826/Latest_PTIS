@@ -71,7 +71,7 @@ export function AssetRegisterExportButton({
         currentPage += 1;
       }
 
-      await exportToExcel(allItems, categoryId, categoryName);
+      await exportToExcel(allItems, categoryId, t);
     } catch (error) {
       console.error('Failed to export asset register Excel:', error);
       toast.error('Failed to export asset register. Please try again.');

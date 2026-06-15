@@ -50,7 +50,7 @@ export function AssetRegisterHeaderSummary({
           className="min-h-19.5"
         />
         <DashboardCard
-          label={translate('Net_Book_Value') || 'Net Book Value'}
+          label={translate('Capital_Value') || 'Capital Value'}
           value={`\u20B9${netBookValue.toLocaleString('en-IN')}`}
           valueColor="text-emerald-600"
           className="min-h-19.5"

@@ -2,56 +2,26 @@
 
 import * as XLSX from 'xlsx';
 import { AssetRegisterApiRecord } from '@/types/municipal-asset/register.types';
-import { formatDate, formatBoolean, formatFieldValue } from './registerMappers';
+import { formatDate } from './registerMappers';
 
 export async function exportToExcel(
   items: AssetRegisterApiRecord[],
   categoryId: number,
-  categoryName: string
+  t?: (key: string) => string
 ) {
   const exportRows = items.map((record) => {
     return {
-      'Asset No': record.assetNo || '',
-      'Asset Name': record.assetName || '',
-      'Category': record.assetCategoryName || categoryName || '',
-      'Sub-Category': record.assetTypeName || '',
-      'Authority': record.authorityName || '',
-      'Organization': record.organizationName || '',
-      'Department': record.departmentName || '',
-      'Address': record.address || '',
-      'Ward': record.wardName || '',
-      'Zone': record.zoneName || '',
-      'Latitude': record.latitude == null ? '' : String(record.latitude),
-      'Longitude': record.longitude == null ? '' : String(record.longitude),
-      'CSN': record.csn || '',
-      'Purchase Date': formatDate(record.purchaseDate || undefined),
-      'Purchase Value': record.purchaseValue == null ? '' : String(record.purchaseValue),
-      'Market Value': record.marketValue == null ? '' : String(record.marketValue),
-      'Market Value Date': formatDate(record.marketValueDate || undefined),
-      'Capital Value': record.capitalValue == null ? '' : String(record.capitalValue),
-      'Last CV Date': formatDate(record.lastCVCalculationDate || undefined),
-      'Current Book Value': record.currentBookValue == null ? '' : String(record.currentBookValue),
-      'Depreciation Rate': record.depreciationRate == null ? '' : String(record.depreciationRate),
-      'Depreciation': record.depreciation == null ? '' : String(record.depreciation),
-      'Revenue Generating': formatBoolean(record.isRevenueGenerating),
-      'Operational Control': record.operationalControl || '',
-      'Field Values': formatFieldValue(record.fieldValues),
-      'Occupancy Status': record.occupancyStatus || '',
-      'Ownership Type': record.ownershipType || '',
-      'Asset Condition': record.assetCondition || '',
-      'Status': record.status || (record.isActive ? 'Active' : 'Inactive'),
-      'Net Book Value':
-        record.currentBookValue != null
-          ? String(record.currentBookValue)
-          : record.capitalValue != null
-            ? String(record.capitalValue)
-            : record.marketValue == null
-              ? ''
-              : String(record.marketValue),
-      'Built-Up Area (Sq.M)': record.builtUpAreaSqMeter == null ? '' : String(record.builtUpAreaSqMeter),
-      'Carpet Area (Sq.M)': record.carpetAreaSqMeter == null ? '' : String(record.carpetAreaSqMeter),
-      'Land Area (Sq.M)': record.landAreaSqMeter == null ? '' : String(record.landAreaSqMeter),
-      'Created Date': formatDate(record.createdDate || record.updatedDate || undefined),
+      [t ? t('Asset_ID') : 'Asset No']: record.assetNo || '',
+      [t ? t('Asset_Name') : 'Asset Name']: record.assetName || '',
+      [t ? t('Asset_Type') : 'Asset Type']: record.assetTypeName || '',
+      [t ? t('Ownership_Type') : 'Ownership Type']: record.ownershipType || '',
+      [t ? t('Address') : 'Address']: record.address || '',
+      [t ? t('Ward') : 'Ward']: record.wardName || '',
+      [t ? t('Acquisition_Date') : 'Acquisition Date']: formatDate(record.purchaseDate || undefined),
+      [t ? t('Capital_Value') : 'Capital Value']: record.capitalValue == null ? '' : String(record.capitalValue),
+      [t ? t('Condition') : 'Condition']: record.assetCondition || '',
+      [t ? t('Status') : 'Status']: record.status || (record.isActive ? 'Active' : 'Inactive'),
+      [t ? t('Custodian_Dept') : 'Custodian & Department']: [record.departmentName, record.organizationName].filter(Boolean).join(' - ') || '',
     };
   });
 

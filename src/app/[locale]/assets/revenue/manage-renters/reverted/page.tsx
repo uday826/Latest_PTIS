@@ -54,6 +54,8 @@ export default async function ManageRentersRevertedPage({
         data.pageNumber,
         data.pageSize,
         data.searchTerm,
+        data.fromDate,
+        data.toDate,
         data.assetCategoryId ?? '',
         data.zoneId ?? '',
         data.wardId ?? '',
@@ -67,6 +69,8 @@ export default async function ManageRentersRevertedPage({
       totalCount={data.totalCount}
       totalPages={data.totalPages}
       searchTerm={data.searchTerm}
+      fromDate={data.fromDate}
+      toDate={data.toDate}
       assetCategoryId={data.assetCategoryId}
       zoneId={data.zoneId}
       wardId={data.wardId}

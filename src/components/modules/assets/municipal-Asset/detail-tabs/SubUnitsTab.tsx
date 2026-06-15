@@ -4,13 +4,15 @@
 import { Badge, Button, Card, CardContent, Drawer, MasterTable } from '@/components/common';
 import type { AssetChildAssetItem, AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
 import { AlertCircle, Building2, Eye } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   blank,
   getSubUnitDetailColumns,
   getSubUnitFloorColumns,
   getSubUnitMainColumns,
   getSubUnitRenterColumns,
+
   getSubUnitRoomColumns
 } from './detailcolumn';
 
@@ -39,6 +41,8 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
 
   const [pageNumber, setPageNumber] = useState(1);
   const [selectedUnit, setSelectedUnit] = useState<SubUnitRow | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const pageSize = 10;
   const totalCount = children.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -106,115 +110,105 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
           emptyText="No sub-units available for this asset."
           headerTitle=""
           headerSubtitle=""
-          tableClassName="min-w-[3000px] table-fixed"
+          tableClassName="min-w-max"
           maxBodyHeightClassName="max-h-[calc(100vh-360px)]"
           containerClassName="overflow-hidden"
         />
       </Card>
 
       {/* ── Detail Drawer ─────────────────────────────────────────────────── */}
-      <Drawer
-        open={!!selectedUnit}
-        onClose={() => setSelectedUnit(null)}
-        width="xl"
-        title={
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-blue-600 p-2 text-white">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-lg font-bold text-slate-900">
-                {selectedUnit?.assetName || 'Sub-Unit Details'}
+      {mounted && createPortal(
+        <Drawer
+          open={!!selectedUnit}
+          onClose={() => setSelectedUnit(null)}
+          width="xl"
+          title={
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-blue-600 p-2 text-white">
+                <Building2 className="h-5 w-5" />
               </div>
-              <div className="text-xs font-medium text-slate-500">
-                {selectedUnit?.assetNo || `ID ${selectedUnit?.id}`}
-              </div>
-            </div>
-          </div>
-        }
-      >
-        {selectedUnit && (
-          <div className="space-y-5 p-5 font-sans">
-            {/* Status badges row */}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {[
-                { label: 'STATUS', value: selectedUnit.status },
-                { label: 'OCCUPANCY', value: selectedUnit.occupancyStatus },
-                { label: 'CATEGORY', value: selectedUnit.assetCategoryName },
-                { label: 'TYPE', value: selectedUnit.assetTypeName },
-              ].map(({ label, value }) => (
-                <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">{blank(value)}</p>
+              <div>
+                <div className="text-lg font-bold text-slate-900">
+                  {selectedUnit?.assetName || 'Sub-Unit Details'}
                 </div>
-              ))}
+                <div className="text-xs font-medium text-slate-500">
+                  {selectedUnit?.assetNo || `ID ${selectedUnit?.id}`}
+                </div>
+              </div>
             </div>
+          }
+        >
+          {selectedUnit && (
+            <div className="space-y-5 p-5 font-sans">
+              {/* Status badges row */}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                  { label: 'STATUS', value: selectedUnit.status },
+                  { label: 'OCCUPANCY', value: selectedUnit.occupancyStatus },
+                  { label: 'CATEGORY', value: selectedUnit.assetCategoryName },
+                  { label: 'TYPE', value: selectedUnit.assetTypeName },
+                ].map(({ label, value }) => (
+                  <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-900">{blank(value)}</p>
+                  </div>
+                ))}
+              </div>
 
-            {/* ── 1. Renter Details ──────────────────────────────────────────── */}
-            <Card padding="none" className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <CardContent className="p-4 border-b border-slate-100 bg-slate-50/50">
-                <SectionHeading title="Renter Details" />
-              </CardContent>
-              <MasterTable<Record<string, unknown>>
-                columns={renterColumns}
-                data={(selectedUnit.renterDetails ?? []) as Record<string, unknown>[]}
-                getRowKey={(row, index) => String(row.id ?? index)}
-                paginationConfig={{ enabled: false }}
-                emptyText="No renter information available."
-                tableClassName="min-w-[800px] table-fixed"
-                containerClassName="border-0 shadow-none"
-              />
-            </Card>
+              {/* ── 1. Renter Details ──────────────────────────────────────────── */}
+              <Card padding="none" className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <CardContent className="p-4 border-b border-slate-100 bg-slate-50/50">
+                  <SectionHeading title="Renter Details" />
+                </CardContent>
+                <MasterTable<Record<string, unknown>>
+                  columns={renterColumns}
+                  data={(selectedUnit.renterDetails ?? []) as Record<string, unknown>[]}
+                  getRowKey={(row, index) => String(row.id ?? index)}
+                  paginationConfig={{ enabled: false }}
+                  emptyText="No renter information available."
+                  tableClassName="min-w-[800px] table-fixed"
+                  containerClassName="border-0 shadow-none"
+                />
+              </Card>
 
-            {/* ── 2. Room Wise Submission Details ───────────────────────────── */}
-            <Card padding="none" className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <CardContent className="p-4 border-b border-slate-100 bg-slate-50/50">
-                <SectionHeading title="Room Wise Submission Details" />
-              </CardContent>
-              <MasterTable<Record<string, unknown>>
-                columns={roomColumns}
-                data={(selectedUnit.roomWiseSubmissions ?? []) as Record<string, unknown>[]}
-                getRowKey={(row, index) => String(row.id ?? index)}
-                paginationConfig={{ enabled: false }}
-                emptyText="No room-wise submission data available."
-                tableClassName="min-w-[1000px] table-fixed"
-                containerClassName="border-0 shadow-none"
-              />
-            </Card>
+              {/* ── 2. Room Wise Submission Details ───────────────────────────── */}
+              <Card padding="none" className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <CardContent className="p-4 border-b border-slate-100 bg-slate-50/50">
+                  <SectionHeading title="Room Wise Submission Details" />
+                </CardContent>
+                <MasterTable<Record<string, unknown>>
+                  columns={roomColumns}
+                  data={(selectedUnit.roomWiseSubmissions ?? []) as Record<string, unknown>[]}
+                  getRowKey={(row, index) => String(row.id ?? index)}
+                  paginationConfig={{ enabled: false }}
+                  emptyText="No room-wise submission data available."
+                  tableClassName="min-w-[1000px] table-fixed"
+                  containerClassName="border-0 shadow-none"
+                />
+              </Card>
 
-            {/* ── 3. Floor Details ──────────────────────────────────────────── */}
-            <Card padding="none" className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <CardContent className="p-4 border-b border-slate-100 bg-slate-50/50">
-                <SectionHeading title="Floor Details" />
-              </CardContent>
-              <MasterTable<Record<string, unknown>>
-                columns={floorColumns}
-                data={(selectedUnit.floorDetails ?? []) as Record<string, unknown>[]}
-                getRowKey={(row, index) => String(row.id ?? index)}
-                paginationConfig={{ enabled: false }}
-                emptyText="No floor details available."
-                tableClassName="min-w-[1100px] table-fixed"
-                containerClassName="border-0 shadow-none"
-              />
-            </Card>
+              {/* ── 3. Floor Details ──────────────────────────────────────────── */}
+              <Card padding="none" className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <CardContent className="p-4 border-b border-slate-100 bg-slate-50/50">
+                  <SectionHeading title="Floor Details" />
+                </CardContent>
+                <MasterTable<Record<string, unknown>>
+                  columns={floorColumns}
+                  data={(selectedUnit.floorDetails ?? []) as Record<string, unknown>[]}
+                  getRowKey={(row, index) => String(row.id ?? index)}
+                  paginationConfig={{ enabled: false }}
+                  emptyText="No floor details available."
+                  tableClassName="min-w-[1100px] table-fixed"
+                  containerClassName="border-0 shadow-none"
+                />
+              </Card>
 
-            {/* ── 4. Sub Unit Details (full-field table) ────────────────────── */}
-            <Card padding="none" className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <CardContent className="p-4 border-b border-slate-100 bg-slate-50/50">
-                <SectionHeading title="Sub Unit Details" />
-              </CardContent>
-              <MasterTable<Record<string, unknown>>
-                columns={subUnitDetailColumns}
-                data={[selectedUnit] as Record<string, unknown>[]}
-                getRowKey={(row) => String(row.id)}
-                paginationConfig={{ enabled: false }}
-                tableClassName="min-w-[2800px] table-fixed"
-                containerClassName="border-0 shadow-none"
-              />
-            </Card>
-          </div>
-        )}
-      </Drawer>
+
+            </div>
+          )}
+        </Drawer>,
+        document.body
+      )}
     </div>
   );
 }
