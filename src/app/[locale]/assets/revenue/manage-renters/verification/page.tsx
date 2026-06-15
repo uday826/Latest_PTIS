@@ -4,7 +4,7 @@ import {
   getManageRentersVerificationDetailsAction,
   getManageRentersAssetDetailsAction,
 } from './actions';
-import { fetchAssetDocumentsByAsset, fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
+import { fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
 import { getLeaseRentDetailsDocuments } from '@/lib/api/asset/asset-lease-rent-details-document.server.service';
 
 export const dynamic = 'force-dynamic';
@@ -35,15 +35,14 @@ export default async function ManageRentersVerificationPage({
 
   const assetId = selectedVerification?.assetId;
   const selectedAsset = assetId ? await getManageRentersAssetDetailsAction(assetId) : null;
-  const [assetDocuments, assetPhotosAndPlans, leaseRentDocuments] = assetId
+  const [assetPhotosAndPlans, leaseRentDocuments] = assetId
     ? await Promise.all([
-        fetchAssetDocumentsByAsset(assetId).then((res) => res.documents).catch(() => []),
         fetchAssetPhotosAndPlansByAsset(assetId).then((res) => res.documents).catch(() => []),
         selectedVerification?.id
           ? getLeaseRentDetailsDocuments(Number(selectedVerification.id)).then((res) => res.documents).catch(() => [])
           : Promise.resolve([]),
       ])
-    : [[], [], []];
+    : [[], []];
 
   const drawerRevertId = normalizeDrawerId(query.drawerRevertId);
   const selectedRevert = drawerRevertId
@@ -75,7 +74,7 @@ export default async function ManageRentersVerificationPage({
       verificationDrawerId={drawerVerificationId}
       selectedVerification={selectedVerification}
       selectedAsset={selectedAsset}
-      assetDocuments={[...assetDocuments, ...leaseRentDocuments]}
+      assetDocuments={leaseRentDocuments}
       assetPhotosAndPlans={assetPhotosAndPlans}
       revertDrawerId={drawerRevertId}
       selectedRevert={selectedRevert}

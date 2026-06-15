@@ -914,13 +914,27 @@ function isValidNonNegativeAmount(value: string): boolean {
     }
 
     // Validate Mobile Number (Indian format: 10 digits starting with 6-9)
-    if (hasField('mobileNumber') && formState.mobileNumber && !kycValidators.isValidMobile(formState.mobileNumber)) {
-      toastError('Mobile number must be a valid Indian 10-digit number starting with 6, 7, 8, or 9.');
-      return;
+    const mobileNumberDigits = formState.mobileNumber.replace(/\D/g, '');
+    const newTenantMobileDigits = formState.newTenantMobile.replace(/\D/g, '');
+    if (hasField('mobileNumber') && formState.mobileNumber) {
+      if (kycValidators.hasRepeatedSequence(mobileNumberDigits, 5)) {
+        toastError('Mobile number cannot contain repeated digits.');
+        return;
+      }
+      if (!kycValidators.isValidMobile(formState.mobileNumber)) {
+        toastError('Mobile number must be a valid Indian 10-digit number starting with 6, 7, 8, or 9.');
+        return;
+      }
     }
-    if (hasField('newTenantMobile') && formState.newTenantMobile && !kycValidators.isValidMobile(formState.newTenantMobile)) {
-      toastError('New tenant mobile number must be a valid Indian 10-digit number starting with 6, 7, 8, or 9.');
-      return;
+    if (hasField('newTenantMobile') && formState.newTenantMobile) {
+      if (kycValidators.hasRepeatedSequence(newTenantMobileDigits, 5)) {
+        toastError('New tenant mobile number cannot contain repeated digits.');
+        return;
+      }
+      if (!kycValidators.isValidMobile(formState.newTenantMobile)) {
+        toastError('New tenant mobile number must be a valid Indian 10-digit number starting with 6, 7, 8, or 9.');
+        return;
+      }
     }
 
     // Validate Pin Code (6 digits)
@@ -938,9 +952,16 @@ function isValidNonNegativeAmount(value: string): boolean {
     }
 
     // Validate Aadhaar Number (Indian format: 12 digits with valid start and no repeated sequences)
-    if (hasField('aadhaarNumber') && formState.aadhaarNumber && !kycValidators.isValidAadhar(formState.aadhaarNumber)) {
-      toastError('Aadhaar number must be a valid 12-digit Aadhaar number.');
-      return;
+    const aadhaarDigits = formState.aadhaarNumber.replace(/\D/g, '');
+    if (hasField('aadhaarNumber') && formState.aadhaarNumber) {
+      if (kycValidators.hasRepeatedSequence(aadhaarDigits, 5)) {
+        toastError('Aadhaar number cannot contain repeated digits.');
+        return;
+      }
+      if (!kycValidators.isValidAadhar(formState.aadhaarNumber)) {
+        toastError('Aadhaar number must be a valid 12-digit Aadhaar number.');
+        return;
+      }
     }
     if (hasField('emailAddress') && formState.emailAddress && !EMAIL_REGEX.test(formState.emailAddress)) {
       toastError('Email address must be a valid email format.');

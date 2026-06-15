@@ -291,16 +291,7 @@ export interface NewLeaseRegistrationDrawerProps {
 }
 
 export interface RegistrationHistoryModalProps {
-  record: {
-    id?: string;
-    shopName?: string;
-    assetId?: string;
-    category?: string;
-    tenantName?: string;
-    leaseType?: string;
-    rentAmount?: number;
-    paymentFrequency?: string;
-  };
+  record: Partial<Pick<LeaseRentRecord, 'id' | 'shopName' | 'assetId' | 'category' | 'tenantName' | 'leaseType' | 'rentAmount' | 'paymentFrequency'>>;
   onClose: () => void;
 }
 

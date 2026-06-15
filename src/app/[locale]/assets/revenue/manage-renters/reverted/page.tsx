@@ -5,7 +5,8 @@ import {
   getApplicationTypesAction,
   getManageRentersVerificationDetailsAction,
 } from './actions';
-import { fetchAssetDocumentsByAsset, fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
+import { fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
+import { getLeaseRentDetailsDocuments } from '@/lib/api/asset/asset-lease-rent-details-document.server.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,10 +40,12 @@ export default async function ManageRentersRevertedPage({
 
   const assetId = drawerAssetId || selectedRevert?.assetId;
   const selectedAsset = assetId ? await getManageRentersAssetDetailsAction(assetId) : null;
-  const [assetDocuments, assetPhotosAndPlans] = assetId
+  const [assetPhotosAndPlans, leaseRentDocuments] = assetId
     ? await Promise.all([
-        fetchAssetDocumentsByAsset(assetId).then((res) => res.documents).catch(() => []),
         fetchAssetPhotosAndPlansByAsset(assetId).then((res) => res.documents).catch(() => []),
+        selectedRegistration?.id
+          ? getLeaseRentDetailsDocuments(Number(selectedRegistration.id)).then((res) => res.documents).catch(() => [])
+          : Promise.resolve([]),
       ])
     : [[], []];
 
@@ -78,7 +81,7 @@ export default async function ManageRentersRevertedPage({
       drawerAssetId={drawerAssetId}
       selectedRegistration={selectedRegistration}
       selectedAsset={selectedAsset}
-      assetDocuments={assetDocuments}
+      assetDocuments={leaseRentDocuments}
       assetPhotosAndPlans={assetPhotosAndPlans}
       applicationTypes={applicationTypes}
       revertDrawerId={drawerRevertId}

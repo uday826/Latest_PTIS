@@ -4,7 +4,7 @@ import {
   getManageRentersVerificationDetailsAction,
   getManageRentersAssetDetailsAction,
 } from './actions';
-import { fetchAssetDocumentsByAsset, fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
+import { fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
 import { getLeaseRentDetailsDocuments } from '@/lib/api/asset/asset-lease-rent-details-document.server.service';
 
 export const dynamic = 'force-dynamic';
@@ -45,15 +45,14 @@ export default async function ManageRentersApprovalPage({
 
   const assetId = selectedApproval?.assetId || selectedRejection?.assetId || selectedRevert?.assetId;
   const selectedAsset = assetId ? await getManageRentersAssetDetailsAction(assetId) : null;
-  const [assetDocuments, assetPhotosAndPlans, leaseRentDocuments] = assetId
+  const [assetPhotosAndPlans, leaseRentDocuments] = assetId
     ? await Promise.all([
-        fetchAssetDocumentsByAsset(assetId).then((res) => res.documents).catch(() => []),
         fetchAssetPhotosAndPlansByAsset(assetId).then((res) => res.documents).catch(() => []),
         selectedApproval?.id
           ? getLeaseRentDetailsDocuments(Number(selectedApproval.id)).then((res) => res.documents).catch(() => [])
           : Promise.resolve([]),
       ])
-    : [[], [], []];
+    : [[], []];
 
   return (
     <LeaseRentRegistration
@@ -81,7 +80,7 @@ export default async function ManageRentersApprovalPage({
       approvalDrawerId={drawerApprovalId}
       selectedApproval={selectedApproval}
       selectedAsset={selectedAsset}
-      assetDocuments={[...assetDocuments, ...leaseRentDocuments]}
+      assetDocuments={leaseRentDocuments}
       assetPhotosAndPlans={assetPhotosAndPlans}
       rejectDrawerId={drawerRejectId}
       selectedRejection={selectedRejection}
