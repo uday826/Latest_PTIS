@@ -41,8 +41,8 @@ export interface UseBuildingBasicInfoFormReturn {
 export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
   // Sync initial values from the shared AssetFormContext so the building form
   // stays in-step with the wizard stepper's data.
-  const { 
-    formData: contextData, 
+  const {
+    formData: contextData,
     updateFormData: syncContext,
     submittedOnce: contextSubmittedOnce,
     setSubmittedOnce: setContextSubmittedOnce
@@ -86,6 +86,14 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
     status: contextData.status || "Active",
     condition: contextData.condition || "Good",
     assetCode: contextData.assetCode || "",
+    isMovableCategory: contextData.isMovableCategory,
+    parentBuildingId: contextData.parentBuildingId,
+    hasFloorDetails: contextData.hasFloorDetails,
+    plotNumber: contextData.plotNumber || "",
+    typeOfUseId: contextData.typeOfUseId || "",
+    subTypeOfUseId: contextData.subTypeOfUseId || "",
+    offset: contextData.offset || "",
+    offsetOp: contextData.offsetOp || "Subtract",
   });
 
   const {
@@ -139,6 +147,14 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
         status: contextData.status || "Active",
         condition: contextData.condition || "Good",
         assetCode: contextData.assetCode || "",
+        isMovableCategory: contextData.isMovableCategory,
+        parentBuildingId: contextData.parentBuildingId,
+        hasFloorDetails: contextData.hasFloorDetails,
+        plotNumber: contextData.plotNumber || "",
+        typeOfUseId: contextData.typeOfUseId || "",
+        subTypeOfUseId: contextData.subTypeOfUseId || "",
+        offset: contextData.offset || "",
+        offsetOp: contextData.offsetOp || "Subtract",
       });
     }
   }, [
@@ -174,6 +190,14 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
     contextData.status,
     contextData.condition,
     contextData.assetCode,
+    contextData.isMovableCategory,
+    contextData.parentBuildingId,
+    contextData.hasFloorDetails,
+    contextData.plotNumber,
+    contextData.typeOfUseId,
+    contextData.subTypeOfUseId,
+    contextData.offset,
+    contextData.offsetOp,
     baseUpdateFormData
   ]);
 
@@ -193,15 +217,31 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
       length: (contextData as any).length || "",
       width: (contextData as any).width || "",
       landArea: contextData.landArea || "",
+      isMovableCategory: contextData.isMovableCategory,
+      parentBuildingId: contextData.parentBuildingId,
+      hasFloorDetails: contextData.hasFloorDetails,
+      plotNumber: contextData.plotNumber || "",
+      typeOfUseId: contextData.typeOfUseId || "",
+      subTypeOfUseId: contextData.subTypeOfUseId || "",
+      offset: contextData.offset || "",
+      offsetOp: contextData.offsetOp || "Subtract",
     });
   }, [
-    contextData.category, 
-    contextData.assetType, 
-    contextData.categoryId, 
-    contextData.typeId, 
+    contextData.category,
+    contextData.assetType,
+    contextData.categoryId,
+    contextData.typeId,
     (contextData as any).length,
     (contextData as any).width,
     contextData.landArea,
+    contextData.isMovableCategory,
+    contextData.parentBuildingId,
+    contextData.hasFloorDetails,
+    contextData.plotNumber,
+    contextData.typeOfUseId,
+    contextData.subTypeOfUseId,
+    contextData.offset,
+    contextData.offsetOp,
     baseUpdateFormData
   ]);
 
@@ -214,7 +254,7 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
     [baseUpdateFormData, syncContext]
   );
 
-  // Auto-calculate land area if length and width change
+  // Auto-calculate land area if length, width, and offset/offsetOp change
   useEffect(() => {
     const isLand = formData.valuationType
       ? formData.valuationType === "LAND"
@@ -227,8 +267,12 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
     if (isLand || isBuilding) {
       const lenVal = parseFloat((formData as any).length || "0");
       const widthVal = parseFloat((formData as any).width || "0");
+      const offsetVal = isLand ? parseFloat((formData as any).offset || "0") : 0;
+      const isAdd = (formData as any).offsetOp === "Add";
       if (lenVal > 0 && widthVal > 0) {
-        const calculatedArea = (lenVal * widthVal).toFixed(2);
+        const calculatedArea = isAdd 
+          ? ((lenVal * widthVal) + offsetVal).toFixed(2)
+          : Math.max(0, (lenVal * widthVal) - offsetVal).toFixed(2);
         if (formData.landArea !== calculatedArea) {
           handleUpdateFormData({ landArea: calculatedArea });
         }
@@ -238,7 +282,7 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
         }
       }
     }
-  }, [formData.length, formData.width, formData.valuationType, formData.category, formData.landArea, handleUpdateFormData]);
+  }, [formData.length, formData.width, formData.offset, formData.offsetOp, formData.valuationType, formData.category, formData.landArea, handleUpdateFormData]);
 
   // Keep the shared context in sync so other wizard steps see updated values
   const handleChange = useCallback(

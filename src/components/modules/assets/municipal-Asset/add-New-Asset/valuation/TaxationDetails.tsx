@@ -24,7 +24,7 @@ export function TaxationDetails({ formData, onChange }: TaxationDetailsProps) {
         <Input
           label="Annual Property Tax (₹)"
           name="propertyTax"
-          value={formData.propertyTax}
+          value={formData.propertyTax ?? ""}
           onChange={onChange}
           placeholder="0.00"
           type="number"
@@ -32,7 +32,7 @@ export function TaxationDetails({ formData, onChange }: TaxationDetailsProps) {
         <Input
           label="Annual Water Tax (₹)"
           name="waterTax"
-          value={formData.waterTax}
+          value={formData.waterTax ?? ""}
           onChange={onChange}
           placeholder="0.00"
           type="number"
@@ -40,7 +40,7 @@ export function TaxationDetails({ formData, onChange }: TaxationDetailsProps) {
         <Input
           label="Annual Maintenance Cost (₹)"
           name="maintenanceCost"
-          value={formData.maintenanceCost}
+          value={formData.maintenanceCost ?? ""}
           onChange={onChange}
           placeholder="Estimated annual exp"
           type="number"
@@ -48,7 +48,7 @@ export function TaxationDetails({ formData, onChange }: TaxationDetailsProps) {
         <Input
           label="Insurance Premium (₹)"
           name="insurancePremium"
-          value={formData.insurancePremium}
+          value={formData.insurancePremium ?? ""}
           onChange={onChange}
           placeholder="If insured"
           type="number"
@@ -56,7 +56,7 @@ export function TaxationDetails({ formData, onChange }: TaxationDetailsProps) {
         <Input
           label="Last Paid Date (Tax)"
           name="taxLastPaidDate"
-          value={formData.taxLastPaidDate}
+          value={formData.taxLastPaidDate ?? ""}
           onChange={onChange}
           type="date"
         />

@@ -30,6 +30,9 @@ export function BuildingPropertyDetailsSection({
   subzones = [],
   isLoadingSubzones = false,
   onMoujaChange,
+  useTypes = [],
+  subUseTypes = [],
+  isLoadingSubTypes = false,
 }: BuildingPropertyDetailsSectionProps): React.JSX.Element {
   const isLand = formData.valuationType
     ? formData.valuationType === "LAND"
@@ -85,6 +88,7 @@ export function BuildingPropertyDetailsSection({
               onMoujaChange(e.target.value);
             }
           }}
+          disabled={formData.isMovableCategory}
           options={
             moujas && moujas.length > 0
               ? moujas.map((m) => {
@@ -95,7 +99,7 @@ export function BuildingPropertyDetailsSection({
           }
           className="font-semibold text-sm"
           selectSize="sm"
-          required
+          required={!formData.isMovableCategory}
           error={showError("mouja" as any) ? (errors as any).mouja : undefined}
         />
 
@@ -104,6 +108,7 @@ export function BuildingPropertyDetailsSection({
           name="zone"
           value={formData.zone}
           onChange={handleChange}
+          disabled={formData.isMovableCategory}
           options={
             zones && zones.length > 0
               ? zones.map((z) => {
@@ -124,7 +129,7 @@ export function BuildingPropertyDetailsSection({
           }
           className="font-semibold text-sm"
           selectSize="sm"
-          required
+          required={!formData.isMovableCategory}
           error={showError("zone") ? errors.zone : undefined}
         />
 
@@ -133,7 +138,7 @@ export function BuildingPropertyDetailsSection({
           name="ward"
           value={formData.ward}
           onChange={handleChange}
-          disabled={!formData.zone}
+          disabled={formData.isMovableCategory || !formData.zone}
           options={
             wards && wards.length > 0
               ? wards
@@ -153,16 +158,15 @@ export function BuildingPropertyDetailsSection({
           }
           className="font-semibold text-sm"
           selectSize="sm"
-          required
+          required={!formData.isMovableCategory}
           error={showError("ward") ? errors.ward : undefined}
         />
-
         <Select
           label="Subzone"
           name="subzone"
           value={formData.subzone}
           onChange={handleChange}
-          disabled={!formData.mouja || isLoadingSubzones}
+          disabled={formData.isMovableCategory || !formData.mouja || isLoadingSubzones}
           options={
             subzones && subzones.length > 0
               ? subzones.map((s) => {
@@ -179,7 +183,7 @@ export function BuildingPropertyDetailsSection({
           }
           className="font-semibold text-sm"
           selectSize="sm"
-          required
+          required={!formData.isMovableCategory}
           error={showError("subzone" as any) ? (errors as any).subzone : undefined}
         />
 
@@ -189,6 +193,7 @@ export function BuildingPropertyDetailsSection({
           value={formData.surveyNumber}
           onChange={handleChange}
           placeholder="e.g. CSN-123"
+          disabled={formData.isMovableCategory}
           className="h-8 text-[13px]"
           error={showError("surveyNumber") ? errors.surveyNumber : undefined}
         />
@@ -233,45 +238,129 @@ export function BuildingPropertyDetailsSection({
           selectSize="sm"
         /> */}
 
-        {(isLand || isBuilding) && (
-          <>
-            <Input
-              label="Length (Sq. Mtr)"
-              name="length"
-              value={(formData as any).length || ""}
-              onChange={handleChange}
-              placeholder="0.00"
-              type="text"
-              className="h-8 text-[13px]"
-              required
-              error={showError("length" as any) ? (errors as any).length : undefined}
-            />
-            <Input
-              label="Width (Sq. Mtr)"
-              name="width"
-              value={(formData as any).width || ""}
-              onChange={handleChange}
-              placeholder="0.00"
-              type="text"
-              className="h-8 text-[13px]"
-              required
-              error={showError("width" as any) ? (errors as any).width : undefined}
-            />
-            <Input
-              label="Total Area (Sq. Mtr)"
-              name="landArea"
-              value={formData.landArea || ""}
-              onChange={handleChange}
-              placeholder="0.00"
-              type="text"
-              readOnly
-              className="h-8 text-[13px] bg-slate-50 cursor-not-allowed"
-              required
-              error={showError("landArea" as any) ? (errors as any).landArea : undefined}
-            />
-          </>
-        )}
-      </CardContent>
-    </Card>
+        {
+          (isLand || isBuilding) && (
+            <>
+              <Input
+                label="Length (Sq. Mtr)"
+                name="length"
+                value={(formData as any).length || ""}
+                onChange={handleChange}
+                placeholder="0.00"
+                type="text"
+                className="h-8 text-[13px]"
+                required
+                error={showError("length" as any) ? (errors as any).length : undefined}
+              />
+              <Input
+                label="Width (Sq. Mtr)"
+                name="width"
+                value={(formData as any).width || ""}
+                onChange={handleChange}
+                placeholder="0.00"
+                type="text"
+                className="h-8 text-[13px]"
+                required
+                error={showError("width" as any) ? (errors as any).width : undefined}
+              />
+              {isLand && (
+                <>
+                  <Select
+                    label="Offset Operation"
+                    name="offsetOp"
+                    value={(formData as any).offsetOp || "Subtract"}
+                    onChange={handleChange}
+                    options={[
+                      { label: "Add", value: "Add" },
+                      { label: "Subtract", value: "Subtract" },
+                    ]}
+                    className="font-semibold text-sm"
+                    selectSize="sm"
+                    required
+                  />
+                  <Input
+                    label="Offset (Sq. Mtr)"
+                    name="offset"
+                    value={(formData as any).offset || ""}
+                    onChange={handleChange}
+                    placeholder="0.00"
+                    type="text"
+                    className="h-8 text-[13px]"
+                    required
+                    error={showError("offset" as any) ? (errors as any).offset : undefined}
+                  />
+                </>
+              )}
+              <Input
+                label="Total Area (Sq. Mtr)"
+                name="landArea"
+                value={formData.landArea || ""}
+                onChange={handleChange}
+                placeholder="0.00"
+                type="text"
+                readOnly
+                className="h-8 text-[13px] bg-slate-50 cursor-not-allowed"
+                required
+                error={showError("landArea" as any) ? (errors as any).landArea : undefined}
+              />
+            </>
+          )
+        }
+
+        {
+          isLand && (
+            <>
+              <Input
+                label="Plot Number"
+                name="plotNumber"
+                value={(formData as any).plotNumber || ""}
+                onChange={handleChange}
+                placeholder="e.g. 15"
+                className="h-8 text-[13px]"
+                required
+                error={showError("plotNumber" as any) ? (errors as any).plotNumber : undefined}
+              />
+              <Select
+                label="Type of Use"
+                name="typeOfUseId"
+                value={(formData as any).typeOfUseId || ""}
+                onChange={handleChange}
+                options={
+                  useTypes && useTypes.length > 0
+                    ? useTypes.map((ut) => ({
+                      label: ut.description || ut.typeOfUseCode || `Use Type ${ut.typeOfUseId}`,
+                      value: String(ut.typeOfUseId),
+                    }))
+                    : []
+                }
+                className="font-semibold text-sm"
+                selectSize="sm"
+                required
+                error={showError("typeOfUseId" as any) ? (errors as any).typeOfUseId : undefined}
+              />
+              <Select
+                label="Sub Type of Use"
+                name="subTypeOfUseId"
+                value={(formData as any).subTypeOfUseId || ""}
+                onChange={handleChange}
+                options={
+                  subUseTypes && subUseTypes.length > 0
+                    ? subUseTypes.map((sub) => ({
+                      label: sub.description || `Sub Type ${sub.subTypeOfUseId}`,
+                      value: String(sub.subTypeOfUseId),
+                    }))
+                    : []
+                }
+                className="font-semibold text-sm"
+                selectSize="sm"
+                disabled={!(formData as any).typeOfUseId || isLoadingSubTypes}
+                required
+                error={showError("subTypeOfUseId" as any) ? (errors as any).subTypeOfUseId : undefined}
+              />
+            </>
+          )
+        }
+      </CardContent >
+    </Card >
   );
 }

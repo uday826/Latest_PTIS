@@ -13,6 +13,7 @@ export interface BasicInfoPageProps {
   ownershipTypes?: OwnershipType[];
   prefetchedFields?: any[];
   subzones?: any[];
+  useTypes?: any[];
 }
 
 

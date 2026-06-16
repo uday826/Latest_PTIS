@@ -18,6 +18,18 @@ export function validateBuildingBasicInfo(
 ): BuildingBasicInfoFormErrors {
   const errors = validateForm(formData, buildingBasicInfoSchema) as BuildingBasicInfoFormErrors;
 
+  if (formData.isMovableCategory) {
+    // Location details are inherited & disabled, so bypass required validation on these
+    delete (errors as any).zone;
+    delete (errors as any).ward;
+    delete (errors as any).mouja;
+    delete (errors as any).subzone;
+    delete (errors as any).propertyNumber;
+    delete (errors as any).department;
+    delete (errors as any).fullAddress;
+    delete (errors as any).pinCode;
+  }
+
   // Conditionally mandate Total Land Area only for Land Assets
   const isLand =
     formData.category === "Land Assets" ||
@@ -31,6 +43,30 @@ export function validateBuildingBasicInfo(
 
   if ((isLand || isBuilding) && (!formData.landArea || String(formData.landArea).trim() === "")) {
     (errors as any).landArea = "Total Area is required.";
+  }
+
+  if (isLand) {
+    if (!formData.plotNumber || String(formData.plotNumber).trim() === "") {
+      (errors as any).plotNumber = "Plot Number is required.";
+    }
+    if (!formData.typeOfUseId || String(formData.typeOfUseId).trim() === "") {
+      (errors as any).typeOfUseId = "Type of Use is required.";
+    }
+    if (!formData.subTypeOfUseId || String(formData.subTypeOfUseId).trim() === "") {
+      (errors as any).subTypeOfUseId = "Sub Type of Use is required.";
+    }
+    if (!formData.offset || String(formData.offset).trim() === "") {
+      (errors as any).offset = "Offset is required.";
+    } else {
+      const offsetVal = Number(formData.offset);
+      if (isNaN(offsetVal) || offsetVal < 0) {
+        (errors as any).offset = "Offset must be a valid non-negative number.";
+      }
+    }
+  }
+
+  if (formData.isMovableCategory && !formData.parentBuildingId) {
+    (errors as any).parentBuildingId = "Parent Building/Property selection is required.";
   }
   if ((isLand || isBuilding) && (!(formData as any).length || String((formData as any).length).trim() === "")) {
     (errors as any).length = "Length is required.";

@@ -109,6 +109,8 @@ export function useBuildingBasicInfoFormState(
         sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\-_/]/g, "");
       } else if (name === "propertyNumber") {
         sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\-/]/g, "");
+      } else if (name === "plotNumber") {
+        sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\-_/.\s]/g, "");
       } else if (lowerName.includes("email")) {
         sanitizedValue = sanitizedValue.replace(/\s/g, "");
       } else if (name === "latitude" || name === "longitude") {
@@ -125,7 +127,8 @@ export function useBuildingBasicInfoFormState(
         lowerName.includes("rate") ||
         lowerName.includes("cost") ||
         lowerName.includes("price") ||
-        lowerName.includes("valuation")
+        lowerName.includes("valuation") ||
+        lowerName.includes("offset")
       ) {
         sanitizedValue = sanitizedValue.replace(/[^0-9.]/g, "");
         const parts = sanitizedValue.split(".");
@@ -143,6 +146,8 @@ export function useBuildingBasicInfoFormState(
         const patch: Partial<BuildingBasicInfoFormData> = { [name]: sanitizedValue };
         if (name === "zone") {
           patch.ward = "";
+        } else if (name === "typeOfUseId") {
+          patch.subTypeOfUseId = "";
         }
         return {
           ...prev,

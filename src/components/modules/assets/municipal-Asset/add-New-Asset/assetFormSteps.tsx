@@ -82,6 +82,7 @@ export function getFilteredSteps(category: string, assetType: string = "", paren
     if (!flags.hasFloorDetails)    filtered = filtered.filter(s => s.key !== 'floor-details');
     if (!flags.hasInventory)       filtered = filtered.filter(s => s.key !== 'furniture-fixture');
     if (!flags.hasLegalCompliance) filtered = filtered.filter(s => s.key !== 'legal-complience');
+    if (flags.isMovable)           filtered = filtered.filter(s => s.key !== 'furniture-fixture');
   } else {
     // ── Legacy fallback: no flags in URL (old links / edit flows) ──
     const config = getAssetConfig(category, assetType);
@@ -89,7 +90,7 @@ export function getFilteredSteps(category: string, assetType: string = "", paren
     const isMovable = catKey === 'MOVABLE';
 
     if (isMovable) {
-      filtered = filtered.filter(s => s.key !== 'legal-complience' && s.key !== 'floor-details');
+      filtered = filtered.filter(s => s.key !== 'legal-complience' && s.key !== 'floor-details' && s.key !== 'furniture-fixture');
     } else if (catKey === 'LAND') {
       const typeLower = (assetType || '').toLowerCase();
       const furnitureOk = ['garden', 'park', 'playground', 'reserved'].some(k => typeLower.includes(k));

@@ -66,14 +66,14 @@ export default function ValuationPage({ initialCategories = [], initialCondition
     vehicles: [],
   });
 
-  const assetType: string    = formData.assetType || "";
+  const assetType: string = formData.assetType || "";
   const valuationType: string = formData.valuationType || "";
 
   // Pure DB-flag driven — no string matching on category names.
   // valuationType comes from AssetCategoryMaster.ValuationType in the DB.
   // Fallback (valuationType not yet loaded): derive from step-control flags.
-  const isBuilding       = valuationType ? valuationType === "BUILDING"       : formData.hasFloorDetails === true;
-  const isLand           = valuationType ? valuationType === "LAND"           : (!formData.hasFloorDetails && !formData.isMovableCategory && !INFRASTRUCTURE_TYPES.some(t => assetType === t));
+  const isBuilding = valuationType ? valuationType === "BUILDING" : formData.hasFloorDetails === true;
+  const isLand = valuationType ? valuationType === "LAND" : (!formData.hasFloorDetails && !formData.isMovableCategory && !INFRASTRUCTURE_TYPES.some(t => assetType === t));
   const isInfrastructure = valuationType ? valuationType === "INFRASTRUCTURE" : INFRASTRUCTURE_TYPES.some(t => assetType === t);
 
   // Effect to load full asset details for this AssetId only, dynamically from DB
@@ -90,11 +90,11 @@ export default function ValuationPage({ initialCategories = [], initialCondition
                 const floorDetailsId = f.floorDetailsId ?? f.FloorDetailsId ?? f.id ?? f.Id ?? 0;
                 const assetIdVal = f.assetId ?? f.AssetId ?? 0;
                 const contextFloor = formData.floors?.find((cf: any) => cf.id === floorDetailsId || cf.floor === String(f.floorId || f.FloorId));
-                
+
                 const finalCapitalValue = f.CapitalValue ?? f.capitalValue ?? f.baseValue ?? f.BaseValue ?? f.marketValue ?? f.MarketValue ?? contextFloor?.finalCapitalValue ?? contextFloor?.baseValue ?? 0;
                 const builtUpArea = f.builtUpAreaSqFeet ?? f.BuiltUpAreaSqFeet ?? f.builtUpAreaSqMeter ?? f.BuiltUpAreaSqMeter ?? f.carpetAreaSqFeet ?? f.CarpetAreaSqFeet ?? contextFloor?.builtUpAreaSqFt ?? contextFloor?.builtUpAreaSqM ?? 0;
                 const carpetArea = f.carpetAreaSqFeet ?? f.CarpetAreaSqFeet ?? f.carpetAreaSqMeter ?? f.CarpetAreaSqMeter ?? contextFloor?.carpetAreaSqFt ?? contextFloor?.carpetAreaSqM ?? 0;
-                
+
                 return {
                   id: floorDetailsId || contextFloor?.id || 0,
                   floorDetailsId: floorDetailsId || contextFloor?.id || 0,
@@ -196,7 +196,7 @@ export default function ValuationPage({ initialCategories = [], initialCondition
             // 3. Bind AssetMaster properties (e.g. Land Area, Valuation Values)
             if (res.asset) {
               const asset = res.asset;
-              
+
               // Extract EAV attributes
               const attributes: Record<string, any> = {};
               if (asset.fieldValues && Array.isArray(asset.fieldValues)) {
@@ -244,11 +244,48 @@ export default function ValuationPage({ initialCategories = [], initialCondition
   }, [assetId]);
 
   useEffect(() => {
-    if (!isBuilding && !isLand && formData.grossValue && formData.grossValue !== formData.capitalValue) {
+    if (formData.isMovableCategory) {
+      const grossVal = parseFloat(formData.grossValue || "0");
+      const depRateStr = String(formData.depreciationRate ?? "10").trim();
+      const depRate = (parseFloat(depRateStr) || 0) / 100;
+
+      const cond = formData.condition || "Good";
+      const condFactor = cond === "Good" ? 0.85 : cond === "Average" ? 0.75 : cond === "Poor" ? 0.40 : 1.0;
+
+      const purchYear = formData.purchaseDate ? new Date(formData.purchaseDate).getFullYear() : new Date().getFullYear();
+      const ageInYears = Math.max(0, new Date().getFullYear() - purchYear);
+      const depFactor = Math.max(0.10, 1 - depRate * ageInYears);
+
+      const calculatedBookValue = Math.round(grossVal * depFactor * 100) / 100;
+      const calculatedCapitalValue = Math.round(calculatedBookValue * condFactor * 100) / 100;
+
+      if (
+        formData.currentBookValue !== String(calculatedBookValue) ||
+        formData.capitalValue !== String(calculatedCapitalValue) ||
+        formData.marketValue !== String(calculatedCapitalValue)
+      ) {
+        updateFormData({
+          currentBookValue: String(calculatedBookValue),
+          capitalValue: String(calculatedCapitalValue),
+          marketValue: String(calculatedCapitalValue),
+        });
+      }
+    } else if (!isBuilding && !isLand && formData.grossValue && formData.grossValue !== formData.capitalValue) {
       updateFormData({ capitalValue: formData.grossValue });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.grossValue, formData.capitalValue, updateFormData]);
+  }, [
+    formData.isMovableCategory,
+    formData.grossValue,
+    formData.purchaseDate,
+    formData.depreciationRate,
+    formData.condition,
+    isBuilding,
+    isLand,
+    formData.currentBookValue,
+    formData.capitalValue,
+    formData.marketValue,
+    updateFormData,
+  ]);
 
   if (isLoading) {
     return (
@@ -286,7 +323,9 @@ export default function ValuationPage({ initialCategories = [], initialCondition
       ) : (
         <>
           <AssetValuation formData={formData} onChange={handleInputChange} />
-          <TaxationDetails formData={formData} onChange={handleInputChange} />
+          {!formData.isMovableCategory && (
+            <TaxationDetails formData={formData} onChange={handleInputChange} />
+          )}
         </>
       )}
     </div>

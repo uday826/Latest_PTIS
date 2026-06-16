@@ -52,7 +52,7 @@ function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnail
     if (row.isRegistered) {
       const assetId = row.registeredUnits?.[0]?.assetId;
       const targetName = type === 'photo' ? row.photoName : row.invoice?.invoiceFileName;
-      
+
       if (!assetId || !targetName) {
         setSrc(null);
         return;
@@ -66,8 +66,8 @@ function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnail
           if (!active) return;
           if (docResponse.success && docResponse.data) {
             const documents = docResponse.data;
-            const targetDoc = documents.find((d: any) => 
-              d.fileName === targetName || 
+            const targetDoc = documents.find((d: any) =>
+              d.fileName === targetName ||
               d.fileName === `photo_${targetName}` ||
               d.fileName === `invoice_${targetName}`
             );
@@ -75,8 +75,8 @@ function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnail
               const fileRes = await fetchDocumentFileAction(targetDoc.id);
               if (!active) return;
               if (fileRes.success && fileRes.data) {
-                const isImage = fileRes.mimeType?.startsWith('image/') || 
-                                targetName.toLowerCase().match(/\.(jpg|jpeg|png|webp|gif|bmp)$/);
+                const isImage = fileRes.mimeType?.startsWith('image/') ||
+                  targetName.toLowerCase().match(/\.(jpg|jpeg|png|webp|gif|bmp)$/);
                 if (isImage) {
                   setSrc(`data:${fileRes.mimeType || 'image/jpeg'};base64,${fileRes.data}`);
                 }

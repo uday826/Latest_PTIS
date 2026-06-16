@@ -39,17 +39,17 @@ export function BuildingOwnershipDetailsSection({
     setIsMapOpen(false);
   };
 
-  const resolvedOwnershipOptions = ownershipTypes.length > 0 
+  const resolvedOwnershipOptions = ownershipTypes.length > 0
     ? ownershipTypes.map(ot => {
-        const label = ot.ownershipTypeName || ot.name || ot.code || `Ownership ${ot.id}`;
-        const value = ot.ownershipTypeName || ot.code || String(ot.id);
-        return { label, value };
-      })
+      const label = ot.ownershipTypeName || ot.name || ot.code || `Ownership ${ot.id}`;
+      const value = ot.ownershipTypeName || ot.code || String(ot.id);
+      return { label, value };
+    })
     : [
-        { label: "Municipal", value: "municipal" },
-        { label: "Leased", value: "leased" },
-        { label: "Private/Rented", value: "private" },
-      ];
+      { label: "Municipal", value: "municipal" },
+      { label: "Leased", value: "leased" },
+      { label: "Private/Rented", value: "private" },
+    ];
 
 
   return (
@@ -82,6 +82,7 @@ export function BuildingOwnershipDetailsSection({
           name="department"
           value={formData.department}
           onChange={handleChange}
+          disabled={formData.isMovableCategory}
           options={
             departments.map((d) => {
               const label = d.departmentName || `Department ${d.id}`;
@@ -90,7 +91,7 @@ export function BuildingOwnershipDetailsSection({
           }
           className="font-semibold text-sm"
           selectSize="sm"
-          required
+          required={!formData.isMovableCategory}
           error={showError("department") ? errors.department : undefined}
         />
 
@@ -176,9 +177,10 @@ export function BuildingOwnershipDetailsSection({
             value={formData.fullAddress}
             onChange={handleChange}
             placeholder="Shivaji Chowk, Station Road"
+            disabled={formData.isMovableCategory}
             rows={1}
             className="min-h-8 text-[13px]"
-            required
+            required={!formData.isMovableCategory}
             error={showError("fullAddress") ? !!errors.fullAddress : false}
             errorMessage={showError("fullAddress") ? errors.fullAddress : undefined}
           />
@@ -190,6 +192,8 @@ export function BuildingOwnershipDetailsSection({
           value={formData.locality}
           onChange={handleChange}
           placeholder="Ramdas Peth"
+          disabled={formData.isMovableCategory}
+          required={!formData.isMovableCategory}
           className="h-8 text-[13px]"
         />
 
@@ -199,9 +203,10 @@ export function BuildingOwnershipDetailsSection({
           value={formData.pinCode}
           onChange={handleChange}
           placeholder="400001"
+          disabled={formData.isMovableCategory}
           maxLength={6}
           className="h-8 text-[13px]"
-          required
+          required={!formData.isMovableCategory}
           error={showError("pinCode") ? errors.pinCode : undefined}
         />
 
@@ -229,6 +234,7 @@ export function BuildingOwnershipDetailsSection({
           <button
             type="button"
             onClick={() => setIsMapOpen(true)}
+            disabled={formData.isMovableCategory}
             className="h-7 w-full flex items-center justify-center gap-1 border bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 rounded-md transition-all font-black text-[9px] uppercase tracking-widest shadow-sm cursor-pointer active:scale-98"
           >
             <MapIcon className="size-3.5 shrink-0" />

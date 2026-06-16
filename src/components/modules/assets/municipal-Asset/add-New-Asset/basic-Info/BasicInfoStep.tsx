@@ -5,6 +5,7 @@ import { useBuildingBasicInfoForm } from "@/hooks/asset-hooks/building-basic-inf
 // New validated components for building/land assets
 import { BuildingOwnershipDetailsSection } from "./BuildingOwnershipDetailsSection";
 import { BuildingPropertyDetailsSection } from "./BuildingPropertyDetailsSection";
+import { MovableParentAssetSection } from "./MovableParentAssetSection";
 
 import { fetchDocumentFileAction, fetchUploadedDocumentsAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/common";
@@ -22,7 +23,7 @@ import type { Zone } from "@/lib/api/asset/zone.service";
 import type { OwnershipType } from "@/lib/api/asset/ownership-type.service";
 import type { BasicInfoPageProps } from "@/types/asset-types/basic-info/basicInfo.types";
 
-export default function BasicInfoPage({ wards = [], zones = [], departments = [], moujas = [], prefetchedFields = [], ownershipTypes = [] }: BasicInfoPageProps) {
+export default function BasicInfoPage({ wards = [], zones = [], departments = [], moujas = [], prefetchedFields = [], ownershipTypes = [], useTypes = [] }: BasicInfoPageProps) {
   return (
     <BuildingBasicInfoContent
       wards={wards}
@@ -31,6 +32,7 @@ export default function BasicInfoPage({ wards = [], zones = [], departments = []
       moujas={moujas}
       ownershipTypes={ownershipTypes}
       prefetchedFields={prefetchedFields}
+      useTypes={useTypes}
     />
   );
 }
@@ -46,6 +48,7 @@ function BuildingBasicInfoContent({
   moujas = [],
   ownershipTypes = [],
   prefetchedFields = [],
+  useTypes = [],
 }: {
   wards?: Ward[];
   zones?: Zone[];
@@ -53,6 +56,7 @@ function BuildingBasicInfoContent({
   moujas?: Mouja[];
   ownershipTypes?: OwnershipType[];
   prefetchedFields?: any[];
+  useTypes?: any[];
 }) {
   const {
     formData,
@@ -67,51 +71,66 @@ function BuildingBasicInfoContent({
   const [dynamicSubzones, setDynamicSubzones] = useState<any[]>([]);
   const [isLoadingSubzones, setIsLoadingSubzones] = useState(false);
 
-  // Load subzones initially if mouja is set in formData on mount
+  const [dynamicSubTypes, setDynamicSubTypes] = useState<any[]>([]);
+  const [isLoadingSubTypes, setIsLoadingSubTypes] = useState(false);
+
+  // Load subzones reactively whenever mouja is set or changed in formData
   useEffect(() => {
-    if (formData.mouja) {
-      const loadInitialSubzones = async () => {
-        setIsLoadingSubzones(true);
-        try {
-          const { fetchSubzonesByMoujaAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/basic-Info/actions");
-          const res = await fetchSubzonesByMoujaAction(formData.mouja);
-          if (res.success && res.data) {
-            setDynamicSubzones(res.data);
-          }
-        } catch (err) {
-          console.error("Failed to load initial subzones:", err);
-        } finally {
-          setIsLoadingSubzones(false);
-        }
-      };
-      loadInitialSubzones();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleMoujaChange = async (moujaId: string) => {
-    // Clear subzone selection first in the form state
-    updateFormData({ subzone: "" });
-
-    if (!moujaId) {
+    if (!formData.mouja) {
       setDynamicSubzones([]);
       return;
     }
 
-    setIsLoadingSubzones(true);
-    try {
-      const { fetchSubzonesByMoujaAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/basic-Info/actions");
-      const res = await fetchSubzonesByMoujaAction(moujaId);
-      if (res.success && res.data) {
-        setDynamicSubzones(res.data);
-      } else {
+    const loadSubzones = async () => {
+      setIsLoadingSubzones(true);
+      try {
+        const { fetchSubzonesByMoujaAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/basic-Info/actions");
+        const res = await fetchSubzonesByMoujaAction(formData.mouja);
+        if (res.success && res.data) {
+          setDynamicSubzones(res.data);
+        } else {
+          setDynamicSubzones([]);
+        }
+      } catch (err) {
+        console.error("Failed to load subzones:", err);
         setDynamicSubzones([]);
+      } finally {
+        setIsLoadingSubzones(false);
       }
-    } catch (err) {
-      console.error("Failed to load subzones:", err);
-    } finally {
-      setIsLoadingSubzones(false);
+    };
+    loadSubzones();
+  }, [formData.mouja]);
+
+  // Load subtypes of use reactively whenever typeOfUseId is set or changed in formData
+  useEffect(() => {
+    if (!formData.typeOfUseId) {
+      setDynamicSubTypes([]);
+      return;
     }
+
+    const loadSubTypes = async () => {
+      setIsLoadingSubTypes(true);
+      try {
+        const { fetchSubTypesByTypeAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/basic-Info/actions");
+        const res = await fetchSubTypesByTypeAction(formData.typeOfUseId);
+        if (res.success && res.data) {
+          setDynamicSubTypes(res.data);
+        } else {
+          setDynamicSubTypes([]);
+        }
+      } catch (err) {
+        console.error("Failed to load sub use types:", err);
+        setDynamicSubTypes([]);
+      } finally {
+        setIsLoadingSubTypes(false);
+      }
+    };
+    loadSubTypes();
+  }, [formData.typeOfUseId]);
+
+  const handleMoujaChange = (moujaId: string) => {
+    // Clear subzone selection in the form state on manual change
+    updateFormData({ subzone: "" });
   };
 
 
@@ -127,7 +146,7 @@ function BuildingBasicInfoContent({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<string | null>>, documentType: string) => {
     const file = e.target.files?.[0];
     const key = documentType === "front_photo" ? "frontPhoto" : "buildingPlan";
-    
+
     if (file) {
       // 1. File size validation (Max 5MB)
       const maxSizeMB = 5;
@@ -185,18 +204,18 @@ function BuildingBasicInfoContent({
     const loadUploadedDocs = async () => {
       const assetId = globalFormData.id || globalFormData.assetId;
       if (!assetId || (frontPhoto && buildingPlan)) return;
-      
+
       if (setIsDataLoading) setIsDataLoading(true);
       try {
         const res = await fetchUploadedDocumentsAction(assetId, true, true);
         if (res.success && res.data) {
           const docs: any[] = res.data;
 
-          
+
           // Front Photo
           if (!frontPhoto && !basicInfoFiles?.frontPhoto) {
-            const frontDoc = docs.find(d => 
-              d.documentType === "front_photo" || 
+            const frontDoc = docs.find(d =>
+              d.documentType === "front_photo" ||
               d.documentTitle?.toLowerCase().includes("front") ||
               d.fileName?.toLowerCase().includes("front") ||
               d.documentCode?.toLowerCase().includes("front") ||
@@ -212,11 +231,11 @@ function BuildingBasicInfoContent({
               }
             }
           }
-          
+
           // Building Plan
           if (!buildingPlan && !basicInfoFiles?.buildingPlan) {
-            const planDoc = docs.find(d => 
-              d.documentType === "building_plan" || 
+            const planDoc = docs.find(d =>
+              d.documentType === "building_plan" ||
               d.documentTitle?.toLowerCase().includes("plan") ||
               d.fileName?.toLowerCase().includes("plan") ||
               d.documentCode?.toLowerCase().includes("plan") ||
@@ -239,62 +258,80 @@ function BuildingBasicInfoContent({
         if (setIsDataLoading) setIsDataLoading(false);
       }
     };
-    
+
     // Only load if we have an assetId and we are missing one of the photos
     if (globalFormData.id || globalFormData.assetId) {
       loadUploadedDocs();
     }
   }, [globalFormData.id, globalFormData.assetId, basicInfoFiles]);
 
+  const showFormDetails = !formData.isMovableCategory || !!formData.parentBuildingId;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 [&_label]:!font-bold [&_span[id$=-label]]:!font-bold [&_span.text-gray-700]:!font-bold">
-      
+
       {/* Left Column (Forms) */}
       <div className="lg:col-span-4 space-y-3">
-        {/* Section A — Property Number Details */}
-        <BuildingPropertyDetailsSection
-          formData={formData}
-          errors={errors}
-          showError={showError}
-          handleChange={handleChange}
-          wards={wards}
-          zones={zones}
-          moujas={moujas}
-          subzones={dynamicSubzones}
-          isLoadingSubzones={isLoadingSubzones}
-          onMoujaChange={handleMoujaChange}
-        />
+        <div className={showFormDetails ? "lg:col-span-3 space-y-4" : "lg:col-span-4 space-y-4"}>
+          {formData.isMovableCategory && (
+            <MovableParentAssetSection
+              formData={formData}
+              updateFormData={updateFormData}
+            />
+          )}
 
-        {/* Section B — Ownership Details & Address Details */}
-        <BuildingOwnershipDetailsSection
-          formData={formData}
-          errors={errors}
-          showError={showError}
-          handleChange={handleChange}
-          departments={departments}
-          ownershipTypes={ownershipTypes}
-          updateFormData={updateFormData}
-        />
+          {showFormDetails && (
+            <>
+              {/* Section A — Property Number Details */}
+              <BuildingPropertyDetailsSection
+                formData={formData}
+                errors={errors}
+                showError={showError}
+                handleChange={handleChange}
+                wards={wards}
+                zones={zones}
+                moujas={moujas}
+                subzones={dynamicSubzones}
+                isLoadingSubzones={isLoadingSubzones}
+                onMoujaChange={handleMoujaChange}
+                useTypes={useTypes}
+                subUseTypes={dynamicSubTypes}
+                isLoadingSubTypes={isLoadingSubTypes}
+              />
+
+              {/* Section B — Ownership Details & Address Details */}
+              <BuildingOwnershipDetailsSection
+                formData={formData}
+                errors={errors}
+                showError={showError}
+                handleChange={handleChange}
+                departments={departments}
+                ownershipTypes={ownershipTypes}
+                updateFormData={updateFormData}
+              />
 
 
-        {/* Section C — Dynamic Attributes */}
-        <DynamicAttributes
-          formData={formData}
-          onAttributeChange={handleAttributeChange}
-          useApi={true}
-          prefetchedFields={prefetchedFields}
-        />
+              {/* Section C — Dynamic Attributes */}
+              <DynamicAttributes
+                formData={formData}
+                onAttributeChange={handleAttributeChange}
+                useApi={true}
+                prefetchedFields={prefetchedFields}
+              />
+            </>
+          )}
+        </div>
       </div>
 
       {/* Right Column (Media) */}
       <div className="lg:col-span-1 space-y-3">
-        
+
         {/* Media Card (Asset Image & Asset Photo Plan) */}
         <Card variant="bordered" className="bg-white border-slate-200/80 rounded-2xl shadow-sm p-3 space-y-3.5" padding="none">
           {/* Asset Image */}
           <div className="space-y-2">
             <span className="inline-block text-[10px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">Asset Image</span>
-            <div 
+            <div
               onClick={() => !frontPhoto && frontPhotoRef.current?.click()}
               className={`relative h-64 rounded-xl border flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all group ${frontPhoto ? 'border-slate-200' : 'border-slate-200 bg-[#e2ebf5]/30 hover:bg-[#e2ebf5]/60 hover:border-slate-300 shadow-sm'}`}
             >
@@ -349,12 +386,12 @@ function BuildingBasicInfoContent({
               )}
             </div>
           </div>
-          <input 
-            type="file" 
-            accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" 
-            className="hidden" 
-            ref={frontPhotoRef} 
-            onChange={(e) => handleFileChange(e, setFrontPhoto, "front_photo")} 
+          <input
+            type="file"
+            accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx"
+            className="hidden"
+            ref={frontPhotoRef}
+            onChange={(e) => handleFileChange(e, setFrontPhoto, "front_photo")}
           />
           {fileErrors.frontPhoto && (
             <p className="mt-1 text-[10px] font-medium text-red-500 leading-tight px-1">
@@ -365,7 +402,7 @@ function BuildingBasicInfoContent({
           {/* Asset Photo Plan */}
           <div className="space-y-2">
             <span className="inline-block text-[10px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">Asset Photo Plan</span>
-            <div 
+            <div
               onClick={() => !buildingPlan && planRef.current?.click()}
               className={`relative h-64 rounded-xl border flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all group ${buildingPlan ? 'border-slate-200' : 'border-slate-200 bg-[#e2ebf5]/30 hover:bg-[#e2ebf5]/60 hover:border-slate-300 shadow-sm'}`}
             >
@@ -420,12 +457,12 @@ function BuildingBasicInfoContent({
               )}
             </div>
           </div>
-          <input 
-            type="file" 
-            accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" 
-            className="hidden" 
-            ref={planRef} 
-            onChange={(e) => handleFileChange(e, setBuildingPlan, "building_plan")} 
+          <input
+            type="file"
+            accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx"
+            className="hidden"
+            ref={planRef}
+            onChange={(e) => handleFileChange(e, setBuildingPlan, "building_plan")}
           />
           {fileErrors.buildingPlan && (
             <p className="mt-1 text-[10px] font-medium text-red-500 leading-tight px-1">

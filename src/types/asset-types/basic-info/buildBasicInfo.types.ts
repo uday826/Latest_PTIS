@@ -26,6 +26,14 @@ export interface BuildingPropertyDetailsFormData {
   valuationType?: string;
   length?: string;
   width?: string;
+  isMovableCategory?: boolean;
+  parentBuildingId?: number | null;
+  hasFloorDetails?: boolean;
+  plotNumber?: string;
+  typeOfUseId?: string;
+  subTypeOfUseId?: string;
+  offset?: string;
+  offsetOp?: string;
 }
 
 // ─── Section B: Ownership & Address Details ───────────────────────────────────
@@ -45,13 +53,16 @@ export interface BuildingOwnershipDetailsFormData {
   inChargeEmail: string;
   latitude?: string;
   longitude?: string;
+  isMovableCategory?: boolean;
+  parentBuildingId?: number | null;
+  hasFloorDetails?: boolean;
 }
 
 // ─── Combined form model ──────────────────────────────────────────────────────
 
 export interface BuildingBasicInfoFormData
   extends BuildingPropertyDetailsFormData,
-    BuildingOwnershipDetailsFormData {
+  BuildingOwnershipDetailsFormData {
   id?: number;
   assetId?: number;
   /**
@@ -96,6 +107,9 @@ export interface BuildingPropertyDetailsSectionProps {
   subzones?: any[];
   isLoadingSubzones?: boolean;
   onMoujaChange?: (moujaId: string) => void;
+  useTypes?: any[];
+  subUseTypes?: any[];
+  isLoadingSubTypes?: boolean;
 }
 
 export interface BuildingOwnershipDetailsSectionProps {
@@ -141,6 +155,11 @@ export const INITIAL_BUILDING_BASIC_INFO: BuildingBasicInfoFormData = {
   surveyNumber: "",
   length: "",
   width: "",
+  plotNumber: "",
+  typeOfUseId: "",
+  subTypeOfUseId: "",
+  offset: "",
+  offsetOp: "Subtract",
   // Section B
   assetName: "",
   department: "",

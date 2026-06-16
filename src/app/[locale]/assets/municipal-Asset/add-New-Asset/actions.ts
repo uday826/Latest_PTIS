@@ -211,13 +211,15 @@ export async function submitAssetForm(formData: AssetFormData) {
 
     // Fetch definitions to resolve IDs for EAV dynamic fieldValues
     let fieldDefs: any[] = [];
+    let fieldDefsDebug: any = null;
     try {
       const defRes = await assetFieldDefinitionService.getFieldDefinitions(categoryId, typeId);
+      fieldDefsDebug = defRes;
       if (defRes.success && defRes.data) {
         fieldDefs = Array.isArray(defRes.data) ? defRes.data : ((defRes.data as any).items || (defRes.data as any).data || []);
       }
     } catch (err) {
-
+      fieldDefsDebug = { success: false, error: err instanceof Error ? err.message : String(err) };
     }
 
     const parseNumericId = (val: any, mapping?: Record<string, number>): number | null => {
@@ -299,7 +301,7 @@ export async function submitAssetForm(formData: AssetFormData) {
       assetName: formData.assetName || formData.assetType,
       assetCategoryId: categoryId,
       assetTypeId: typeId,
-      parentAssetId: null,
+      parentAssetId: parseNumericId(formData.parentBuildingId || (formData as any).parentAssetId),
       hierarchyLevel: 0,
       hierarchyPath: "",
       address: formData.fullAddress || "",
@@ -319,8 +321,8 @@ export async function submitAssetForm(formData: AssetFormData) {
       latitude: formData.latitude ? Number(formData.latitude) : null,
       longitude: formData.longitude ? Number(formData.longitude) : null,
       csn: formData.surveyNumber || (formData as any).csn || null,
-      typeOfUseId: null,
-      subTypeOfUseId: null,
+      typeOfUseId: parseNumericId(formData.typeOfUseId),
+      subTypeOfUseId: parseNumericId(formData.subTypeOfUseId),
       builtUpAreaSqMeter: totalBuiltUpSqM || null,
       carpetAreaSqMeter: totalCarpetSqM || null,
       landAreaSqMeter: (() => {
@@ -335,11 +337,11 @@ export async function submitAssetForm(formData: AssetFormData) {
       totalLength: Number(formData.length || formData.totalLength || formData.attributes?.length || formData.attributes?.totalLength) || null,
       averageWidth: Number(formData.width || formData.averageWidth || formData.attributes?.width || formData.attributes?.averageWidth) || null,
       hasLift: !!formData.attributes?.hasLift || !!formData.hasLift || false,
-      purchaseValue: Number(formData.purchaseValue || calculatedBuildingValue) || null,
+      purchaseValue: Number(formData.purchaseValue || formData.grossValue || calculatedBuildingValue) || null,
       purchaseDate: formData.purchaseDate || formData.attributes?.purchaseDate || null,
       marketValue: Number(formData.marketValue || formData.attributes?.marketValue || calculatedBuildingValue) || null,
       marketValueDate: formData.marketValueDate || formData.attributes?.marketValueDate || null,
-      capitalValue: calculatedBuildingValue || null,
+      capitalValue: Number(formData.capitalValue || calculatedBuildingValue) || null,
       lastCVCalculationDate: null,
       currentBookValue: Number(formData.currentBookValue || formData.attributes?.currentBookValue) || null,
       depreciationRate: Number(formData.depreciationRate || formData.attributes?.depreciationRate) || null,
@@ -365,6 +367,8 @@ export async function submitAssetForm(formData: AssetFormData) {
         propertyNumber: formData.propertyNumber,
         plotNumber: formData.plotNumber,
         surveyNumber: formData.surveyNumber,
+        offset: formData.offset,
+        offsetOp: formData.offsetOp,
       })
         .filter(([_, value]) => value !== undefined && value !== null && value !== "")
         .map(([key, value]) => {
@@ -477,6 +481,7 @@ export async function submitAssetForm(formData: AssetFormData) {
         const fs = require("fs");
         const logContent = `[${new Date().toISOString()}] SAVE FAILED\n` +
           `Request Payload:\n${JSON.stringify(apiRequest, null, 2)}\n\n` +
+          `Field Definitions API Response:\n${JSON.stringify(fieldDefsDebug, null, 2)}\n\n` +
           `Active DB Wards: ${JSON.stringify(dbWardIds)}\n` +
           `Active DB Zones: ${JSON.stringify(dbZoneIds)}\n` +
           `Active DB Departments: ${JSON.stringify(dbDeptIds)}\n` +

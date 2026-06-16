@@ -83,7 +83,7 @@ export function InventoryEditDrawer({
       footer={
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
           <Button variant="secondary" icon={X} onClick={onClose}>
-             Close
+            Close
           </Button>
           <Button variant="primary" icon={Receipt} onClick={openInvoiceDrawer}>
             {editInvoicePreviewLabel}

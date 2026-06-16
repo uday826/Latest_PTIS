@@ -14,10 +14,10 @@ interface DynamicFieldInputProps {
 /**
  * Isolated dynamic input component to maintain <200 lines file size.
  */
-export function DynamicFieldInput({ 
-  field, 
-  formData, 
-  onAttributeChange 
+export function DynamicFieldInput({
+  field,
+  formData,
+  onAttributeChange
 }: DynamicFieldInputProps) {
   const fieldName = field.fieldName;
   const fieldValue = formData.attributes?.[fieldName];
@@ -60,7 +60,7 @@ export function DynamicFieldInput({
       value={typeof fieldValue === "boolean" ? "" : (fieldValue as string | number ?? "")}
       onChange={(e) => {
         let val = e.target.value;
-        
+
         // Sanitize: 1. No leading spaces. 2. Numeric only for contact/pin fields.
         val = val.replace(/^\s+/, "");
         const lowerName = fieldName.toLowerCase();

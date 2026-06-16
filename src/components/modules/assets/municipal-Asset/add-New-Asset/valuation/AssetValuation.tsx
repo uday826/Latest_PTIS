@@ -24,42 +24,75 @@ export function AssetValuation({ formData, onChange }: AssetValuationProps) {
         <Input
           label="Gross Value (₹)"
           name="grossValue"
-          value={formData.grossValue}
+          value={formData.grossValue ?? ""}
           onChange={onChange}
           placeholder="Original Purchase Value"
           type="number"
           required
         />
+        {formData.isMovableCategory && (
+          <>
+            <Input
+              label="Purchase Date"
+              name="purchaseDate"
+              value={formData.purchaseDate ? String(formData.purchaseDate).split("T")[0] : ""}
+              onChange={onChange}
+              type="date"
+              required
+            />
+            <Input
+              label="Depreciation Rate (%)"
+              name="depreciationRate"
+              value={formData.depreciationRate ?? ""}
+              onChange={onChange}
+              placeholder="e.g. 10"
+              type="number"
+              required
+            />
+            <div className="flex flex-col">
+              <span className="mb-1.5 text-sm font-medium text-gray-700">
+                Asset Condition
+              </span>
+              <div className="h-10 px-3 bg-slate-100 border border-slate-200 rounded-lg text-sm text-slate-700 font-bold flex items-center">
+                {formData.condition || "Good"}
+              </div>
+            </div>
+          </>
+        )}
         <Input
           label="Current Book Value (₹)"
           name="currentBookValue"
-          value={formData.currentBookValue}
+          value={formData.currentBookValue ?? ""}
           onChange={onChange}
           placeholder="Value after Depreciation"
           type="number"
+          readOnly={formData.isMovableCategory}
+          className={formData.isMovableCategory ? "bg-slate-50 cursor-not-allowed text-slate-600" : ""}
         />
         <Input
           label="Market Value (₹)"
           name="marketValue"
-          value={formData.marketValue}
+          value={formData.marketValue ?? ""}
           onChange={onChange}
           placeholder="Fair Market Value"
           type="number"
+          readOnly={formData.isMovableCategory}
+          className={formData.isMovableCategory ? "bg-slate-50 cursor-not-allowed text-slate-600" : ""}
         />
         <Input
           label="Capital Value (₹)"
           name="capitalValue"
-          value={formData.capitalValue}
+          value={formData.capitalValue ?? ""}
           onChange={onChange}
           placeholder="Final Recorded Value"
           type="number"
           readOnly
           className="bg-emerald-50 font-black text-emerald-700"
         />
-        <Input
+        {/* <Input
           label="Valuation Date"
           name="lastValuationDate"
-          value={formData.lastValuationDate}
+          value={formData.lastValuationDate ?? ""}
           onChange={onChange}
           type="date"
           required
@@ -67,10 +100,10 @@ export function AssetValuation({ formData, onChange }: AssetValuationProps) {
         <Input
           label="Valuation Report No."
           name="valuationReportNo"
-          value={formData.valuationReportNo}
+          value={formData.valuationReportNo ?? ""}
           onChange={onChange}
           placeholder="e.g. VAL/2024/005"
-        />
+        /> */}
       </CardContent>
     </Card>
   );
