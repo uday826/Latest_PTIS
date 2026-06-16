@@ -22,6 +22,7 @@ const iconActionClassName = '!h-7 !w-7 !px-0 !py-0 !gap-0';
 
 const columns: Column<ApprovalRecord>[] = [
   { key: 'assetId', label: 'Asset No', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  { key: 'assetName', label: 'Asset Name', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'assetCategory', label: 'Asset Category', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'tenantName', label: 'Tenant Name', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   {
@@ -48,6 +49,10 @@ const columns: Column<ApprovalRecord>[] = [
       <span className="font-black text-slate-700">Rs. {Number(value).toLocaleString('en-IN')}</span>
     ),
   },
+  { key: 'leaseStartDate', label: 'Lease Start Date', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  { key: 'leaseEndDate', label: 'Lease End Date', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  { key: 'paymentFrequency', label: 'Payment Frequency', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  { key: 'remarks', label: 'Reason', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'submittedDate', label: 'Submitted Date', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   {
     key: 'status',

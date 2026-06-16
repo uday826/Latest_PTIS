@@ -619,7 +619,7 @@ interface ConstructionTableRow extends Record<string, unknown> {
   shopArea: string;
   renterName: string;
   monthlyRent: string;
-  bharaniKaalavadi: string;
+  bharaniKaalavadi: number | string;
   status: string;
 }
 

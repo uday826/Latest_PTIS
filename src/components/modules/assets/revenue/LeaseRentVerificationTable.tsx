@@ -20,6 +20,7 @@ const iconActionClassName = '!h-7 !w-7 !px-0 !py-0 !gap-0';
 
 const columns: Column<VerificationRecord>[] = [
   { key: 'assetId', label: 'Asset No', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  { key: 'assetName', label: 'Asset Name', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   {
     key: 'assetCategory',
     label: 'Asset Category',
@@ -29,6 +30,9 @@ const columns: Column<VerificationRecord>[] = [
   },
   { key: 'tenantName', label: 'Tenant Name', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'applicationType', label: 'Application Type', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  { key: 'leaseStartDate', label: 'Lease Start Date', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  { key: 'leaseEndDate', label: 'Lease End Date', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  { key: 'paymentFrequency', label: 'Payment Frequency', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'submittedDate', label: 'Submitted Date', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   {
     key: 'status',

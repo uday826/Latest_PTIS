@@ -313,6 +313,7 @@ export interface PreviousTenantHistoryItem {
   paymentFrequency: string;
   workflowStatus: string;
   rentStatus: string;
+  duration?: number | null;
 }
 
 export async function getPreviousTenantHistory(

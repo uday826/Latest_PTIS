@@ -132,9 +132,9 @@ function toLeaseRentRecord(item: AssetLeaseRentDetailsListItem): LeaseRentRecord
     terminationDate: item.terminationDate ?? null,
     reason: item.reason?.trim() || undefined,
     rentAmountDisplay: item.rentAmountDisplay?.trim() || undefined,
-    leaseDurationDisplay: item.leaseDurationDisplay?.trim() || undefined,
+    leaseDurationDisplay: item.duration ?? undefined,
+    duration: item.duration ?? null,
     workflowStatus: item.workflowStatus?.trim() || undefined,
-    reason: item.reason?.trim() || undefined,
     rejectionReason: item.rejectionReason?.trim() || undefined,
     category: pickAssetCategory(item),
     zone: item.zone ?? undefined,
@@ -160,6 +160,10 @@ function toVerificationRecord(item: AssetLeaseRentDetailsListItem): Verification
     submittedDate: item.updatedDate ? item.updatedDate.slice(0, 10) : item.createdDate ? item.createdDate.slice(0, 10) : '-',
     status: displayStatus,
     remarks: normalizeText(item.remarks ?? item.reason ?? item.rejectionReason),
+    assetName: item.assetName ?? undefined,
+    leaseStartDate: item.leaseStartDate ? item.leaseStartDate.slice(0, 10) : undefined,
+    leaseEndDate: item.leaseEndDate ? item.leaseEndDate.slice(0, 10) : undefined,
+    paymentFrequency: item.paymentFrequency ?? undefined,
   };
 }
 
@@ -178,6 +182,10 @@ function toApprovalRecord(item: AssetLeaseRentDetailsListItem): ApprovalRecord {
     submittedDate: item.updatedDate ? item.updatedDate.slice(0, 10) : item.createdDate ? item.createdDate.slice(0, 10) : '-',
     status: displayStatus,
     remarks: normalizeText(item.remarks ?? item.reason ?? item.rejectionReason),
+    assetName: item.assetName ?? undefined,
+    leaseStartDate: item.leaseStartDate ? item.leaseStartDate.slice(0, 10) : undefined,
+    leaseEndDate: item.leaseEndDate ? item.leaseEndDate.slice(0, 10) : undefined,
+    paymentFrequency: item.paymentFrequency ?? undefined,
   };
 }
 
@@ -490,6 +498,14 @@ export async function verifyAction(id: number, remarks?: string) {
 
 export async function approveAction(id: number, remarks?: string) {
   const res = await approveLeaseRent(id, remarks);
+  if (res.success) {
+    try {
+      const currentYear = new Date().getFullYear();
+      await apiClient.post(`/LeaseRentDemand/${id}`, { financeYear: currentYear });
+    } catch (err) {
+      console.error('Failed to generate LeaseRentDemand:', err);
+    }
+  }
   revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
   revalidatePath('/assets/revenue/manage-renters');
   return res;

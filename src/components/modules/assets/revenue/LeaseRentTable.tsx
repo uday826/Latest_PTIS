@@ -34,7 +34,6 @@ const baseColumns: Column<LeaseRentRecord>[] = [
         <span className="inline-flex rounded bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-blue-700">
           {row.leaseType}
         </span>
-        <p className="text-[9px] font-medium text-slate-400">{row.leaseRentType ?? '-'}</p>
       </div>
     ),
   },
@@ -60,13 +59,13 @@ const baseColumns: Column<LeaseRentRecord>[] = [
       const isReverted = displayVal.toLowerCase() === 'reverted';
       const isPending = displayVal.toLowerCase() === 'pending';
       const isVerified = displayVal.toLowerCase() === 'verified';
-      
+
       let badgeClass = 'border-slate-200 bg-slate-50 text-slate-700';
       if (isApproved) badgeClass = 'border-emerald-200 bg-emerald-50 text-emerald-700';
       if (isReverted) badgeClass = 'border-amber-200 bg-amber-50 text-amber-700';
       if (isPending) badgeClass = 'border-blue-200 bg-blue-50 text-blue-700';
       if (isVerified) badgeClass = 'border-teal-200 bg-teal-50 text-teal-700';
-      
+
       return (
         <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${badgeClass}`}>
           {displayVal}
@@ -86,7 +85,7 @@ const baseColumns: Column<LeaseRentRecord>[] = [
 ];
 
 const revertedColumns: Column<LeaseRentRecord>[] = [
-  ...baseColumns.slice(0, 3),
+  ...baseColumns,
   {
     key: 'reason',
     label: 'Reason',
@@ -98,7 +97,6 @@ const revertedColumns: Column<LeaseRentRecord>[] = [
       </span>
     ),
   },
-  ...baseColumns.slice(3),
 ];
 
 export function LeaseRentTable({

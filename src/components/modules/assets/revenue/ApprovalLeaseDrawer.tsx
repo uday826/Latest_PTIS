@@ -78,7 +78,7 @@ interface ConstructionTableRow extends Record<string, unknown> {
   shopArea: string;
   renterName: string;
   monthlyRent: string;
-  bharaniKaalavadi: string;
+  bharaniKaalavadi: number;
   status: string;
 }
 
@@ -389,7 +389,7 @@ export function ApprovalLeaseModal({
       shopArea: record.totalAreaSqFt != null ? String(record.totalAreaSqFt) : '-',
       renterName: record.tenantName ?? '-',
       monthlyRent: record.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-',
-      bharaniKaalavadi: record.leaseDurationDisplay ?? '-',
+      bharaniKaalavadi: record.duration ?? 0,
       status: record.workflowStatus ?? '-',
     },
   ];
@@ -726,8 +726,8 @@ export function ApprovalLeaseModal({
                 </tbody>
               </table>
             </div>
+          </div>
         </div>
-      </div>
       </div>
 
       <DocumentPreviewDrawer

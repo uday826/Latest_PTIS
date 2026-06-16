@@ -78,7 +78,7 @@ interface ConstructionTableRow extends Record<string, unknown> {
   shopArea: string;
   renterName: string;
   monthlyRent: string;
-  bharaniKaalavadi: string;
+  bharaniKaalavadi: number;
   status: string;
 }
 
@@ -349,7 +349,7 @@ export function VerificationLeaseModal({
   const asset = assetDetails as Record<string, any> | null;
 
   const currentTenantFields = [
-    { l: 'Sr. No:', v: toDisplay(record.id), l2: 'Duration:', v2: record.leaseDurationDisplay ?? '-' },
+    { l: 'Sr. No:', v: toDisplay(record.id), l2: 'Duration:', v2: record.duration ?? '0' },
     { l: 'Application Type:', v: record.applicationTypeName ?? '-', l2: 'Lease Period:', v2: `${toDateDisplay(record.leaseStartDate)} - ${toDateDisplay(record.leaseEndDate)}` },
     { l: 'Tenant Name:', v: record.tenantName ?? '-', vClass: 'font-bold text-slate-900', l2: 'Rent (₹):', v2: record.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-', v2Class: 'font-bold text-red-600' },
     { l: 'Mobile:', v: record.tenantMobile ?? '-', l2: 'Deposit (₹):', v2: record.securityDeposit != null ? `₹ ${toCurrencyDisplay(record.securityDeposit)}` : '-' },
@@ -395,7 +395,7 @@ export function VerificationLeaseModal({
       shopArea: record.totalAreaSqFt != null ? String(record.totalAreaSqFt) : '-',
       renterName: record.tenantName ?? '-',
       monthlyRent: record.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-',
-      bharaniKaalavadi: record.leaseDurationDisplay ?? '-',
+      bharaniKaalavadi: record.duration ?? 0,
       status: record.workflowStatus ?? '-',
     },
   ];
@@ -740,8 +740,8 @@ export function VerificationLeaseModal({
                 </tbody>
               </table>
             </div>
+          </div>
         </div>
-      </div>
       </div>
 
       <DocumentPreviewDrawer

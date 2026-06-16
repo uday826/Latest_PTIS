@@ -69,7 +69,8 @@ export interface LeaseRentRecord extends Record<string, unknown> {
   terminationDate?: string | null;
   reason?: string | null;
   rentAmountDisplay?: string;
-  leaseDurationDisplay?: string;
+  leaseDurationDisplay?: number | null;
+  duration?: number | null;
   workflowStatus?: string;
   rejectionReason?: string;
   category?: string;
@@ -88,6 +89,10 @@ export interface VerificationRecord extends Record<string, unknown> {
   submittedDate: string;
   status: string;
   remarks?: string;
+  assetName?: string;
+  leaseStartDate?: string;
+  leaseEndDate?: string;
+  paymentFrequency?: string;
 }
 
 export interface ApprovalRecord extends Record<string, unknown> {
@@ -101,6 +106,10 @@ export interface ApprovalRecord extends Record<string, unknown> {
   submittedDate: string;
   status: string;
   remarks?: string;
+  assetName?: string;
+  leaseStartDate?: string;
+  leaseEndDate?: string;
+  paymentFrequency?: string;
 }
 
 export interface ManageRentersTabCounts {
