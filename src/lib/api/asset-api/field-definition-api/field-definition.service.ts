@@ -70,7 +70,7 @@ export async function saveFieldDefinition(field: Record<string, unknown>): Promi
     id: isUpdate ? numericId : undefined,
     assetCategoryId: Number(field.assetCategoryId),
     assetTypeId: Number(field.assetTypeId),
-    fieldCode: String(field.fieldCode || '').trim(),
+    fieldCode: String(field.fieldCode || field.fieldName || '').trim().toUpperCase().replace(/[^A-Z0-9_]/g, '_').replace(/_+/g, '_'),
     fieldName: String(field.fieldName || '').trim(),
     fieldLabel: String(field.fieldLabel || '').trim(),
     fieldType: String(field.fieldType || 'text').trim(),
