@@ -4,9 +4,7 @@ import { getFilteredSteps } from '../add-New-Asset/assetFormSteps';
 const STEP_TO_DETAIL_TAB: Record<string, AssetDetailTabConfig> = {
   'basic-info': { key: 'overview', label: 'Overview' },
   'floor-details': { key: 'floor-details', label: 'Floor Details' },
-  'legal-complience': { key: 'legal-planning', label: 'Legal, Safety & Compliance' },
   'furniture-fixture': { key: 'furniture-fixtures', label: 'Furniture & Fixtures' },
-  valuation: { key: 'valuation', label: 'Valuation' },
   documents: { key: 'documents', label: 'Documents' },
   'standalone-sub-units': { key: 'sub-units', label: 'Sub-Units' },
 };

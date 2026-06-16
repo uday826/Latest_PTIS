@@ -78,46 +78,44 @@ export function getFloorDetailsColumns(): Column<FloorTableRow>[] {
       key: 'floorName',
       label: 'Floor',
       width: '180px',
+      align: 'center',
       render: (_value, row) => blank(row.floorName || `Floor ${row.floorId || row.id}`),
     },
     {
       key: 'constructionTypeName',
       label: 'Construction Type',
       width: '170px',
+      align: 'center',
       render: (value) => blank(value as string | null | undefined),
     },
     {
       key: 'typeOfUseName',
       label: 'Use Type',
       width: '140px',
+      align: 'center',
       render: (value) => blank(value as string | null | undefined),
     },
     {
       key: 'constructionYear',
       label: 'Year',
       width: '90px',
+      align: 'center',
       render: (value) => blank(value as string | number | null | undefined),
     },
     {
       key: 'builtUpAreaSqMeter',
       label: 'Built-up Area',
       width: '140px',
+      align: 'center',
       render: (_value, row) => areaText(row).builtUp,
     },
     {
       key: 'carpetAreaSqMeter',
       label: 'Carpet Area',
       width: '140px',
+      align: 'center',
       render: (_value, row) => areaText(row).carpet,
     },
-
-    {
-      key: 'capitalValue',
-      label: 'Capital Value',
-      width: '130px',
-      render: (value) => formatCurrency(value as string | number | null | undefined),
-    },
-
   ];
 }
 
@@ -203,8 +201,6 @@ export function getSubUnitMainColumns(): Column<SubUnitRow>[] {
     { key: 'zoneName', label: 'Zone', width: '110px', render: (v) => blank(v as string | null) },
     { key: 'wardName', label: 'Ward', width: '90px', render: (v) => blank(v as string | null) },
     { key: 'moujaName', label: 'Mouja', width: '110px', render: (v) => blank(v as string | null) },
-
-    { key: 'lastCVCalculationDate', label: 'Last CV Date', width: '130px', render: (v) => formatDate(v as string | null) },
 
   ];
 }

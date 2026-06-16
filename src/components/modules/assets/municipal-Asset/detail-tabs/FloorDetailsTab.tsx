@@ -49,12 +49,10 @@ export function FloorDetailsTab({ asset }: { asset: AssetDetailRecord }) {
 
   return (
     <div className="space-y-4 animate-in fade-in duration-300">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 max-w-xl">
         {[
           { label: 'Total Floors', value: blank(summary?.totalFloors ?? floors.length), icon: Layers },
-          { label: 'Total Base Value', value: formatCurrency(summary?.totalBaseValue), icon: BadgeIndianRupee },
           { label: 'Total Capital Value', value: formatCurrency(summary?.totalCapitalValue), icon: BadgeIndianRupee },
-          { label: 'Total Market Value', value: formatCurrency(summary?.totalMarketValue), icon: BadgeIndianRupee },
         ].map((item) => {
           const Icon = item.icon;
           return (
