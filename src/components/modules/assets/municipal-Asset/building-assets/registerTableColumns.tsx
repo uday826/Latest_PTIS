@@ -5,7 +5,7 @@ import { Eye, PencilLine, Printer } from 'lucide-react';
 import { Badge, type Column } from '@/components/common';
 import { IconOnlyActionButton } from '@/components/common/ActionButtons';
 import type { AssetRegisterRow } from '@/types/municipal-asset/register.types';
-import { formatDate, formatMoney } from './registerMappers';
+import { formatMoney } from './registerMappers';
 
 export function renderTruncatedText(value?: string) {
   const text = value || '-';
@@ -38,11 +38,11 @@ export function getRegisterColumns(
   t: (key: string) => string
 ): Column<AssetRegisterRow>[] {
   return [
-    { key: 'assetCode', label: t('Asset_ID') || 'Asset No', width: '150px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap font-semibold text-slate-900', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
+    { key: 'assetCode', label: t('Asset_ID') || 'Asset No', width: '180px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap font-semibold text-slate-900', render: (value) => <span className="whitespace-nowrap">{typeof value === 'string' ? value : '-'}</span> },
     {
       key: 'assetName',
       label: t('Asset_Name') || 'Asset Name',
-      width: '310px',
+      width: '220px',
       headerClassName: 'whitespace-nowrap text-center',
       cellClassName: 'align-middle text-center',
       render: (_, row) => (
@@ -51,48 +51,40 @@ export function getRegisterColumns(
         </div>
       ),
     },
-    { key: 'assetTypeName', label: t('Asset_Type') || 'Asset Type', width: '150px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
+    { key: 'assetTypeName', label: t('Asset_Type') || 'Asset Type', width: '130px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
     {
-      key: 'ownershipType',
-      label: t('Ownership_Type') || 'Ownership Type',
-      width: '150px',
+      key: 'departmentName',
+      label: t('Owning_Department') || 'Owning Department',
+      width: '160px',
       headerClassName: 'whitespace-nowrap text-center',
       cellClassName: 'align-middle text-center',
       render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
+    },
+    { key: 'capitalValue', label: t('Capital_Value') || 'Capital Value', width: '110px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.capitalValue) },
+    {
+      key: 'ownershipType',
+      label: t('Ownership_Type') || 'Ownership Type',
+      width: '130px',
+      headerClassName: 'whitespace-nowrap text-center',
+      cellClassName: 'align-middle text-center',
+      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
+    },
+    {
+      key: 'status',
+      label: t('Condition_And_Status') || 'Condition & Status',
+      width: '120px',
+      headerClassName: 'whitespace-nowrap text-center',
+      cellClassName: 'align-middle text-center',
+      render: (_, row) => (
+        <div className="flex items-center justify-center gap-1.5">
+          {renderBadge(row.assetCondition)}
+          {renderBadge(row.status)}
+        </div>
+      ),
     },
     {
       key: 'address',
       label: t('Address') || 'Address',
-      width: '200px',
-      headerClassName: 'whitespace-nowrap text-center',
-      cellClassName: 'align-middle text-center',
-      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
-    },
-    {
-      key: 'wardName',
-      label: t('Ward') || 'Ward',
-      width: '120px',
-      headerClassName: 'whitespace-nowrap text-center',
-      cellClassName: 'align-middle text-center',
-      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
-    },
-
-
-    { key: 'capitalValue', label: t('Capital_Value') || 'Capital Value', width: '140px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.capitalValue) },
-
-    { key: 'assetCondition', label: t('Condition') || 'Condition', width: '100px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderBadge(typeof value === 'string' ? value : undefined) },
-    { key: 'status', label: t('Status') || 'Status', width: '100px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderBadge(typeof value === 'string' ? value : undefined) },
-    {
-      key: 'departmentName',
-      label: t('Owning_Department') || 'Owning Department',
-      width: '180px',
-      headerClassName: 'whitespace-nowrap text-center',
-      cellClassName: 'align-middle text-center',
-      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
-    },
-    {
-      key: 'organizationName',
-      label: t('Organization') || 'Organization',
       width: '180px',
       headerClassName: 'whitespace-nowrap text-center',
       cellClassName: 'align-middle text-center',

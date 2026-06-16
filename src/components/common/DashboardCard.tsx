@@ -9,18 +9,20 @@ export interface DashboardCardProps {
     iconBg?: string;
     valueColor?: string;
     className?: string;
+    accentColor?: string;
 }
 export const DashboardCard = ({
     label,
     value,
     subLabel,
     icon,
-    iconBg = "bg-slate-100 text-slate-700",
+    iconBg = "bg-slate-50 text-slate-700 border-slate-200",
     valueColor = "text-slate-900",
     className = "",
+    accentColor,
 }: DashboardCardProps) => {
     const baseClasses = cn(
-        "relative flex items-center gap-4 rounded-md bg-white px-4 py-1 border border-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.05)]",
+        "relative flex items-center gap-4 rounded-lg bg-white px-5 py-4 border border-slate-200/80 shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_2px_rgba(0,0,0,0.03)] transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:border-slate-300/80",
         className
     );
     return (
@@ -30,25 +32,25 @@ export const DashboardCard = ({
             aria-label={label}
         >
             {/* Accent bar */}
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#1A86E8] rounded-l-md" />
+            <div className={cn("absolute left-0 top-0 bottom-0 w-1 rounded-l-lg", accentColor || "bg-[#1A86E8]")} />
             {/* Text */}
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-600">{label}</p>
+                <p className="text-[12px] font-bold uppercase tracking-wider text-slate-500">{label}</p>
                 <p
-                    className={cn("mt-1 text-xl font-bold", valueColor)}
+                    className={cn("mt-1 text-2xl font-extrabold tracking-tight", valueColor)}
                     title={String(value)}
                 >
                     {value}
                 </p>
                 {subLabel && (
-                    <p className="mt-0.5 text-xs text-slate-500">{subLabel}</p>
+                    <p className="mt-1 text-xs text-slate-500 font-medium">{subLabel}</p>
                 )}
             </div>
             {/* Icon */}
             {icon && (
                 <div
                     className={cn(
-                        "h-9 w-9 rounded flex items-center justify-center border border-slate-300",
+                        "h-10 w-10 rounded-lg flex items-center justify-center border",
                         iconBg
                     )}
                     aria-hidden="true"

@@ -1,29 +1,48 @@
-'use client';
-
 import * as XLSX from 'xlsx';
 import { AssetRegisterApiRecord } from '@/types/municipal-asset/register.types';
-import { formatDate } from './registerMappers';
+import { mapAssetToRow, formatMoney } from './registerMappers';
+import { getRegisterColumns } from './registerTableColumns';
 
 export async function exportToExcel(
   items: AssetRegisterApiRecord[],
   categoryId: number,
   t?: (key: string) => string
 ) {
-  const exportRows = items.map((record) => {
-    return {
-      [t ? t('Asset_ID') : 'Asset No']: record.assetNo || '',
-      [t ? t('Asset_Name') : 'Asset Name']: record.assetName || '',
-      [t ? t('Asset_Type') : 'Asset Type']: record.assetTypeName || '',
-      [t ? t('Ownership_Type') : 'Ownership Type']: record.ownershipType || '',
-      [t ? t('Address') : 'Address']: record.address || '',
-      [t ? t('Ward') : 'Ward']: record.wardName || '',
+  const translate = t || ((key: string) => key);
 
-      [t ? t('Capital_Value') : 'Capital Value']: record.capitalValue == null ? '' : String(record.capitalValue),
-      [t ? t('Condition') : 'Condition']: record.assetCondition || '',
-      [t ? t('Status') : 'Status']: record.status || (record.isActive ? 'Active' : 'Inactive'),
-      [t ? t('Owning_Department') : 'Owning Department']: record.departmentName || '',
-      [t ? t('Organization') : 'Organization']: record.organizationName || '',
-    };
+  // 1. Map API records to table row model
+  const mappedRows = items.map((item) => mapAssetToRow(item, ''));
+
+  // 2. Resolve the exact list of columns that are currently active in the UI
+  // Note: pathname and router are not needed for Excel metadata, we bypass them safely
+  const columns = getRegisterColumns('', {} as any, translate);
+
+  // 3. Filter out Action columns as they contain buttons/interactive components
+  const dataColumns = columns.filter((col) => col.key !== 'id');
+
+  // 4. Construct rows with header names matching the columns exactly
+  const exportRows = mappedRows.map((row) => {
+    const rowObj: Record<string, string> = {};
+
+    dataColumns.forEach((col) => {
+      let cellValue = '-';
+
+      if (col.key === 'status') {
+        // Condition & Status combined
+        const condition = row.assetCondition || '-';
+        const statusVal = row.status || '-';
+        cellValue = `${condition} | ${statusVal}`;
+      } else if (col.key === 'capitalValue') {
+        cellValue = row.capitalValue !== '-' ? formatMoney(row.capitalValue) : '-';
+      } else {
+        const rawValue = row[col.key as keyof typeof row];
+        cellValue = rawValue != null ? String(rawValue) : '-';
+      }
+
+      rowObj[String(col.label)] = cellValue;
+    });
+
+    return rowObj;
   });
 
   const workbook = XLSX.utils.book_new();
