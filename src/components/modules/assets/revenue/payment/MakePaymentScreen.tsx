@@ -359,27 +359,21 @@ export function MakePaymentScreen({
           <h3 className="font-bold text-slate-700">{t('title')}</h3>
         </div>
         <div className="px-2.5 py-1 text-[10px] font-bold bg-white border border-slate-200 rounded text-slate-600 shadow-sm">
-          {t('financeYear', { year: '2025' })}
+          {t('financeYear', { year: record.financeYear ? String(record.financeYear) : '2026' })}
         </div>
       </div>
 
       <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <Card variant="bordered" padding="none" className="bg-orange-50 border-orange-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-orange-400"></div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-5 h-5 rounded flex items-center justify-center bg-orange-500 text-white text-[10px] font-bold">?</div>
-              <span className="text-xs font-bold text-orange-800">{t('pendingDemand')}</span>
-            </div>
-            <p className="text-xl font-black text-orange-600">{`₹ ${pendingDemandAmount.toLocaleString('en-IN')}`}</p>
-          </Card>
+        <div className="mb-4">
           <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-5 h-5 rounded flex items-center justify-center bg-emerald-500 text-white text-[10px] font-bold">?</div>
-              <span className="text-xs font-bold text-emerald-800">{t('currentDemand')}</span>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded flex items-center justify-center bg-emerald-500 text-white text-xs font-bold">?</div>
+                <span className="text-base font-extrabold text-emerald-800 uppercase tracking-wider">Demand</span>
+              </div>
+              <p className="text-2xl font-black text-emerald-600">{`₹ ${currentDemandAmount.toLocaleString('en-IN')}`}</p>
             </div>
-            <p className="text-xl font-black text-emerald-600">{`₹ ${currentDemandAmount.toLocaleString('en-IN')}`}</p>
           </Card>
         </div>
 

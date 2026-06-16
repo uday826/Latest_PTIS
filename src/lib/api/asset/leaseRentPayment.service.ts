@@ -7,6 +7,7 @@ import type {
   LeaseRentPaymentListResponse,
   LeaseRentPaymentQueryParams,
   ProcessLeaseRentPaymentRequest,
+  LeaseRentDemandSummary,
 } from '@/types/asset/leaseRentPayment.types';
 
 function buildLeaseRentPaymentQuery(params: LeaseRentPaymentQueryParams = {}): string {
@@ -67,6 +68,15 @@ export const leaseRentPaymentService = {
     return apiClient.post<unknown>(
       `/LeaseRentPayment/${encodeURIComponent(String(leaseId))}/process`,
       payload
+    );
+  },
+
+  getLeaseRentDemandSummary: async (
+    leaseId: number | string,
+    financeYear: number | string
+  ): Promise<ApiResponse<LeaseRentDemandSummary>> => {
+    return apiClient.get<LeaseRentDemandSummary>(
+      `/LeaseRentDemand/${encodeURIComponent(String(leaseId))}/summary?financeYear=${encodeURIComponent(String(financeYear))}`
     );
   },
 };

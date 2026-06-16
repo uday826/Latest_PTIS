@@ -30,10 +30,26 @@ export async function getMakePaymentRecordAction(recordId: string): Promise<Leas
   if (!record) return null;
 
   const assetResponse = await leaseRentPaymentService.getAssetById(record.assetId);
-  return mapAssetLeaseRentDetailsToPaymentDetail(
+  const baseDetail = mapAssetLeaseRentDetailsToPaymentDetail(
     record,
     assetResponse.success ? assetResponse.data ?? null : null
   );
+
+  const currentYear = new Date().getFullYear();
+  baseDetail.financeYear = currentYear;
+  
+  const demandSummaryRes = await leaseRentPaymentService.getLeaseRentDemandSummary(parsedRecordId, currentYear);
+  if (demandSummaryRes.success && demandSummaryRes.data) {
+    const summary = demandSummaryRes.data;
+    baseDetail.currentDemand = summary.totalRent ?? 0;
+    baseDetail.penalty = summary.totalPenalty ?? 0;
+    baseDetail.gst = summary.totalGst ?? 0;
+    baseDetail.totalPayable = summary.totalDemand ?? 0;
+    baseDetail.pendingDue = summary.totalPending ?? 0;
+    baseDetail.financeYear = summary.financeYear ?? currentYear;
+  }
+
+  return baseDetail;
 }
 
 export interface ProcessLeaseRentPaymentActionResult {

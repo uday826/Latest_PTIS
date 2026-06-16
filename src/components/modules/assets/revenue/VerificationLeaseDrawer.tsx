@@ -532,7 +532,7 @@ export function VerificationLeaseModal({
                       </div>
                       {item.leaseStartDate && (
                         <div className="text-[9px] text-slate-400 font-medium">
-                          Duration: {new Date(item.leaseStartDate).toLocaleDateString('en-IN')} - {item.leaseEndDate ? new Date(item.leaseEndDate).toLocaleDateString('en-IN') : 'Present'}
+                          Duration: {item.duration} Months
                         </div>
                       )}
                       <div className="text-[9px] text-slate-500 font-semibold">

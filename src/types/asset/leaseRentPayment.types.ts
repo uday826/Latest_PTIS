@@ -54,6 +54,7 @@ export interface LeaseRentPaymentDetail {
   penalty: number;
   gst: number;
   totalPayable: number;
+  financeYear?: number;
 }
 
 export interface LeaseRentPaymentHistoryItem {
@@ -115,4 +116,19 @@ export interface AssetMasterPaymentDetail {
   moujaName: string | null;
   typeOfUseName: string | null;
   subTypeOfUseName: string | null;
+}
+
+export interface LeaseRentDemandSummary {
+  leaseRegistrationId: number;
+  financeYear: number;
+  totalRent: number;
+  totalPenalty: number;
+  totalGst: number;
+  totalDemand: number;
+  totalPaid: number;
+  totalPending: number;
+  demandCount: number;
+  paidCount: number;
+  partialCount: number;
+  pendingCount: number;
 }
