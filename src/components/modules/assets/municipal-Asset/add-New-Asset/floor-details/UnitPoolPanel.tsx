@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Plus, Layers, Edit2, Trash2, CheckCircle2, Loader2, Home } from "lucide-react";
 import { Input } from "@/components/common";
+import { useConfirm } from "@/components/common/ConfirmProvider";
 import { SubUnitDetailedConfigurator } from "../sub-units/SubUnitDetailedConfigurator";
 import type { PoolUnit } from "@/types/asset/floor-details.types";
 import {
@@ -42,6 +43,7 @@ const typeBadge: Record<string, string> = {
 
 export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFloors = [] }: UnitPoolPanelProps) {
   const { formData, registerSubmitHook, setSubunitFiles } = useAssetForm();
+  const { confirm } = useConfirm();
 
   // ── Pool state ────────────────────────────────────────────────────────────
   const [pool, setPool] = useState<PoolUnit[]>([]);
@@ -617,32 +619,32 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
       <div className="fixed inset-0 z-[60] bg-slate-50 flex flex-col">
         <SubUnitDetailedConfigurator
           unit={(() => {
-              // Destructure 'rooms' out of renterDetails so it cannot override activeUnit.rooms
-              const { rooms: _rdRooms, ...renterRest } = activeUnit.renterDetails || {};
-              void _rdRooms; // intentionally unused — we always use activeUnit.rooms
-              return {
-                ...activeUnit,
-                ...renterRest,
-                // These always win — set explicitly after the renterDetails spread
-                unitNumber: activeUnit.unitNumber,
-                unitType: activeUnit.unitType,
-                carpetAreaSqFeet: activeUnit.carpetAreaSqFt,
-                rooms: activeUnit.rooms,       // ← authoritative room list from pool
-                floorId: activeUnit.selectedFloorId,
-                floorDetailsId: activeUnit.floorDetailsId,
-                subFloorId: activeUnit.subFloorId,
-                departmentId: activeUnit.departmentId,
-                locationAddress: activeUnit.locationAddress,
-                locationLat: activeUnit.locationLat,
-                locationLng: activeUnit.locationLng,
-                conYear: activeUnit.conYear,
-                conType: activeUnit.conType,
-                useType: activeUnit.useType,
-                subUseType: activeUnit.subUseType,
-                photoFile: activeUnit.photoFile,
-                planFile: activeUnit.planFile,
-              };
-            })()}
+            // Destructure 'rooms' out of renterDetails so it cannot override activeUnit.rooms
+            const { rooms: _rdRooms, ...renterRest } = activeUnit.renterDetails || {};
+            void _rdRooms; // intentionally unused — we always use activeUnit.rooms
+            return {
+              ...activeUnit,
+              ...renterRest,
+              // These always win — set explicitly after the renterDetails spread
+              unitNumber: activeUnit.unitNumber,
+              unitType: activeUnit.unitType,
+              carpetAreaSqFeet: activeUnit.carpetAreaSqFt,
+              rooms: activeUnit.rooms,       // ← authoritative room list from pool
+              floorId: activeUnit.selectedFloorId,
+              floorDetailsId: activeUnit.floorDetailsId,
+              subFloorId: activeUnit.subFloorId,
+              departmentId: activeUnit.departmentId,
+              locationAddress: activeUnit.locationAddress,
+              locationLat: activeUnit.locationLat,
+              locationLng: activeUnit.locationLng,
+              conYear: activeUnit.conYear,
+              conType: activeUnit.conType,
+              useType: activeUnit.useType,
+              subUseType: activeUnit.subUseType,
+              photoFile: activeUnit.photoFile,
+              planFile: activeUnit.planFile,
+            };
+          })()}
           floors={parentFloors}
           parentBuildingName={formData.assetName || "Unit Configuration"}
           onSave={handleSaveUnitDetail}
@@ -655,26 +657,27 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2.5 bg-[#0f172a] text-white">
+      <div className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-[#C8E1FC] via-[#DBEAFF] to-[#EDF5FF] border-b border-[#A3CBFA] text-[#1d4ed8]">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-blue-500/20 rounded-lg"><Home className="size-4 text-blue-400" /></div>
+          <div className="bg-[#1d4ed8] p-1 rounded-lg text-white shadow-sm flex items-center justify-center shrink-0">
+            <Home className="size-3.5 text-white" />
+          </div>
           <div>
-            <h3 className="text-xs font-black uppercase tracking-wider">Unit Management Pool</h3>
-            <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-widest mt-0.5">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[#1d4ed8]">Unit Management Pool</h3>
+            <p className="text-[9px] text-[#000000]/75 font-semibold uppercase tracking-widest mt-0.5">
               Generate units directly against the building → configure their details
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest">
-          <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded">{pool.length} total</span>
-          {savedCount > 0 && <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded">{savedCount} saved</span>}
+        <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest">
+          <span className="px-2 py-0.5 bg-blue-100/80 text-blue-700 border border-blue-200/50 rounded">{pool.length} total</span>
+          {savedCount > 0 && <span className="px-2 py-0.5 bg-emerald-100/80 text-emerald-700 border border-emerald-200/50 rounded">{savedCount} saved</span>}
         </div>
       </div>
 
       <div className="p-3 space-y-3">
         <div className="bg-slate-50 rounded-xl border border-slate-200 p-3 space-y-2">
           <div className="flex items-center gap-2 mb-1">
-            <span className="flex items-center justify-center size-5 rounded-full bg-blue-600 text-white text-[10px] font-black">1</span>
             <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Generate Units</span>
           </div>
           {/* Only Type + Count — asset numbers generated same way as main asset (Akola01-BLDG-MUNI-FLAT-0001) */}
@@ -721,7 +724,6 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
 
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center size-5 rounded-full bg-blue-600 text-white text-[10px] font-black">2</span>
             <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Configure Unit Details</span>
           </div>
 
@@ -734,12 +736,12 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
             <div className="rounded-xl border border-slate-200 overflow-hidden">
               <table className="w-full text-xs text-left">
                 <thead>
-                  <tr className="bg-slate-800 text-slate-200 text-xs font-black uppercase tracking-widest">
+                  <tr className="bg-gradient-to-r from-[#C8E1FC] via-[#DBEAFF] to-[#EDF5FF] border-b border-[#A3CBFA] text-[#1d4ed8] text-xs font-black uppercase tracking-widest">
                     <th className="px-3 py-2">Unit Number</th>
                     <th className="px-3 py-2">Type</th>
                     <th className="px-3 py-2">Floor</th>
                     <th className="px-3 py-2">Department</th>
-                    <th className="px-3 py-2 text-right">Area (SqFt)</th>
+                    <th className="px-3 py-2 text-center">Area (SqFt)</th>
                     <th className="px-3 py-2 text-center">Status</th>
                     <th className="px-3 py-2 text-center">Actions</th>
                   </tr>
@@ -759,7 +761,7 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
                       <td className="px-3 py-2 font-semibold text-slate-600 truncate max-w-[120px]" title={(unit.departmentId ? departments.find((d: any) => String(d.value) === String(unit.departmentId))?.label : "") || unit.departmentName || ""}>
                         {(unit.departmentId ? departments.find((d: any) => String(d.value) === String(unit.departmentId))?.label : "") || unit.departmentName || "—"}
                       </td>
-                      <td className="px-3 py-2 text-right font-mono text-[10px]">
+                      <td className="px-3 py-2 text-center font-mono text-xs">
                         {unit.carpetAreaSqFt > 0
                           ? <span className="font-bold text-slate-700">{unit.carpetAreaSqFt.toFixed(2)}</span>
                           : <span className="text-slate-400 italic text-[9px]">pending</span>
@@ -769,8 +771,8 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
                         {unit.isSaved && !unit.isModified
                           ? <span title="Saved to database"><CheckCircle2 className="size-4 text-emerald-500 mx-auto" /></span>
                           : unit.isModified
-                            ? <span className="text-[9px] font-bold text-amber-600 uppercase">Modified</span>
-                            : <span className="text-[9px] font-bold text-slate-400 uppercase">Pending</span>
+                            ? <span className="text-xs font-bold text-amber-600 uppercase">Modified</span>
+                            : <span className="text-xs font-bold text-slate-400 uppercase">Pending</span>
                         }
                       </td>
                       <td className="px-3 py-1.5 text-center">
@@ -778,15 +780,25 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
                           <button
                             type="button"
                             onClick={() => setActiveUnit(unit)}
-                            className="px-2 py-1 rounded-lg text-[9px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors flex items-center gap-1"
+                            className="px-2.5 py-1 rounded-lg text-[10px] font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-1 shadow-sm"
                             title="Configure Unit Details">
-                            <Edit2 className="size-3" /> Details
+                            <Plus className="size-3.5" strokeWidth={3} /> Add Details
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleRemove(unit.tempId)}
-                            className="p-1 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors">
-                            <Trash2 className="size-3" />
+                            onClick={() => {
+                              confirm({
+                                variant: "delete",
+                                title: "Delete Unit",
+                                description: `Are you sure you want to delete unit ${unit.unitNumber}?`,
+                                onConfirm: () => {
+                                  handleRemove(unit.tempId);
+                                }
+                              });
+                            }}
+                            className="p-1 rounded-lg text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors"
+                            title="Delete Unit">
+                            <Trash2 className="size-3.5" />
                           </button>
                         </div>
                       </td>

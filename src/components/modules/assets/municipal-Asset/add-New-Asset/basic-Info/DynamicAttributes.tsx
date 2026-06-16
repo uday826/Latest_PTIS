@@ -170,16 +170,16 @@ export function DynamicAttributes({
     <div className="space-y-2">
       {mergedSections.map((section: MergedFieldSection) => (
         <Card key={section.title} variant="bordered" padding="sm" className="shadow-sm border-blue-100 bg-white">
-          <CardHeader className="flex items-center gap-2 border-b border-slate-100 pb-1.5 mb-2">
-            <div className="bg-gradient-to-br from-emerald-600 to-teal-500 p-1.5 rounded-lg text-white shadow-sm flex items-center justify-center">
+          <CardHeader className="flex items-center gap-2 bg-gradient-to-r from-[#C8E1FC] via-[#DBEAFF] to-[#EDF5FF] border border-[#A3CBFA] rounded-xl py-1 px-2.5 mb-2.5 shadow-sm">
+            <div className="bg-[#1d4ed8] p-1 rounded-lg text-white shadow-sm flex items-center justify-center shrink-0">
               <Sliders className="size-3.5 text-white" />
             </div>
-            <CardTitle className="text-xs font-black text-slate-800 uppercase tracking-widest">
+            <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">
               {section.title}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 items-start">
+          <CardContent className="p-2.5">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 items-start text-[11px] [&_label]:text-[11px] [&_label]:mb-1 [&_span[id$=-label]]:text-[11px] [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-7 [&_input]:!text-[11px] [&_input]:!rounded-md [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-7 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px] [&_span.text-red-600]:text-[10px] [&_span.text-red-600]:mt-0.5">
               {[...section.fields]
                 .sort((a, b) => {
                   const isABool = a.fieldType?.toLowerCase() === "checkbox" || a.fieldType?.toLowerCase() === "boolean";

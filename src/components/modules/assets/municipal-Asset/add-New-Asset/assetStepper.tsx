@@ -9,7 +9,7 @@ export function AssetStepper({
   steps,
 }: AssetStepperProps) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#CBD8EA] bg-white px-3 py-1.5 shadow-sm">
+    <div className="overflow-x-auto py-1">
       <div className="flex min-w-max items-center gap-0">
         {steps.map((step, index) => {
           const isCompleted = step.id < currentStepId;

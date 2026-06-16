@@ -255,5 +255,22 @@
       "no": "क्र.:",
       "meterNo": "मीटर क्र.:"
     }
+  },
+  "validation": {
+    "floorRequired": "कृपया मजला निवडा",
+    "constructionYearRequired": "कृपया बांधकामाचे वर्ष प्रविष्ट करा",
+    "constructionTypeRequired": "कृपया बांधकामाचा प्रकार निवडा",
+    "typeOfUseRequired": "कृपया वापराचा प्रकार निवडा",
+    "subTypeOfUseRequired": "कृपया वापराचा उप-प्रकार निवडा",
+    "floorAlreadyExists": "या मजल्याचा तपशील आधीच अस्तित्वात आहे."
+  },
+  "messages": {
+    "updateSuccess": "मजला तपशील यशस्वीरित्या अद्यतनित केले गेले.",
+    "saveSuccess": "मजला तपशील यशस्वीरित्या जतन केले गेले.",
+    "deleteSuccess": "मजला तपशील यशस्वीरित्या हटविला गेला.",
+    "deleteFailed": "मजला तपशील हटविण्यात अपयशी.",
+    "genericError": "एक त्रुटी आली: {message}",
+    "failedToSave": "मजला तपशील जतन करण्यात अपयशी.",
+    "failedToUpdate": "मजला तपशील अद्यतनित करण्यात अपयशी."
   }
 }

@@ -21,7 +21,7 @@ export const departmentService = {
    * Get all active Departments
    */
   getDepartments: async (): Promise<ApiResponse<Department[]>> => {
-    const response = await apiClient.get<any>("/OwningDepartment", { cacheStrategy: 300 });
+    const response = await apiClient.get<any>("/OwningDepartment?pageSize=-1", { cacheStrategy: 300 });
     if (response.success) {
       const items = Array.isArray(response.data)
         ? response.data

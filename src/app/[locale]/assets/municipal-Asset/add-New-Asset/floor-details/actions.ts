@@ -161,7 +161,31 @@ export async function saveFloorDetail(data: FloorDetailApiRequest): Promise<Acti
 
     const text = await response.text();
     if (!response.ok) {
-      return { success: false, error: text || response.statusText || "Failed to save floor detail" };
+      let errMsg = text || response.statusText || "Failed to save floor detail";
+      try {
+        const parsed = JSON.parse(text);
+        if (parsed && typeof parsed === "object") {
+          if (parsed.message) {
+            errMsg = parsed.message;
+          } else if (parsed.error) {
+            errMsg = parsed.error;
+          } else if (parsed.errors && typeof parsed.errors === "object" && !Array.isArray(parsed.errors)) {
+            const errorsObj = parsed.errors as Record<string, any>;
+            const firstKey = Object.keys(errorsObj)[0];
+            if (firstKey) {
+              const val = errorsObj[firstKey];
+              if (Array.isArray(val) && val.length > 0) {
+                errMsg = val[0];
+              } else if (typeof val === "string") {
+                errMsg = val;
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // Ignore JSON parsing errors
+      }
+      return { success: false, error: errMsg };
     }
 
     const trimmed = text.trim();

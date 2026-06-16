@@ -383,9 +383,6 @@ export default function LegalCompliancePage() {
       <div className="mb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-100 rounded-xl">
-              <ShieldCheck className="text-emerald-600 size-5" />
-            </div>
             <div>
               <h2 className="text-lg font-bold text-slate-800">Legal, Safety & Compliance</h2>
               <p className="text-xs text-slate-500">
@@ -393,14 +390,6 @@ export default function LegalCompliancePage() {
               </p>
             </div>
           </div>
-          {requiredCount > 0 && (
-            <div className="flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-1.5">
-              <CheckCircle2 className="size-4 text-emerald-600" />
-              <span className="text-xs font-semibold text-slate-700">
-                {uploadedRequiredCount}/{requiredCount} Required
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -438,11 +427,11 @@ export default function LegalCompliancePage() {
 
       {/* Optional Documents Section */}
       {groupedDefinitions.optional.length > 0 && (
-        <div className="border border-slate-200 bg-white rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+        <div className="border border-emerald-200 bg-white rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 border-b border-emerald-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FileBox className="text-slate-500 size-4" />
-              <h3 className="font-bold text-slate-700 text-sm">Optional Documents</h3>
+              <FileBox className="text-emerald-600 size-4" />
+              <h3 className="font-bold text-emerald-800 text-sm">Optional Documents</h3>
               <span className="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
                 Optional
               </span>
@@ -477,14 +466,6 @@ export default function LegalCompliancePage() {
           </p>
         </div>
       )}
-
-      {/* Status Indicator */}
-      <div className="mt-2 p-2 bg-emerald-50/50 rounded-xl border border-emerald-100 flex items-center gap-3">
-        <div className="bg-emerald-600 size-2 rounded-full animate-pulse" />
-        <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">
-          Compliance Check: Deferred Upload Configured
-        </p>
-      </div>
     </div>
   );
 }
@@ -512,7 +493,7 @@ function DocumentUploadCard({ definition, state, onFileSelect, onDelete, onView,
   };
 
   const statusConfig = {
-    pending: { bg: "bg-slate-50", border: "border-slate-200", icon: FileUp, iconColor: "text-slate-400" },
+    pending: { bg: "bg-gradient-to-r from-[#C8E1FC] via-[#DBEAFF] to-[#EDF5FF]", border: "border-[#A3CBFA]", icon: FileUp, iconColor: "text-[#1d4ed8]" },
     uploading: { bg: "bg-blue-50", border: "border-blue-200", icon: Loader2, iconColor: "text-blue-600" },
     uploaded: { bg: "bg-emerald-50", border: "border-emerald-200", icon: CheckCircle2, iconColor: "text-emerald-600" },
     error: { bg: "bg-red-50", border: "border-red-200", icon: AlertCircle, iconColor: "text-red-500" }
@@ -522,7 +503,7 @@ function DocumentUploadCard({ definition, state, onFileSelect, onDelete, onView,
   const StatusIcon = config.icon;
 
   return (
-    <div className={`${config.bg} ${config.border} border rounded-xl p-3 transition-all hover:shadow-sm`}>
+    <div className={`${config.bg} ${config.border} border rounded-xl p-3 transition-all hover:shadow-sm max-w-md`}>
       <div className="flex items-start gap-3">
         <div className={`p-2 rounded-lg ${status === "uploaded" ? "bg-emerald-100" : status === "error" ? "bg-red-100" : "bg-white"}`}>
           <StatusIcon className={`size-5 ${config.iconColor} ${status === "uploading" ? "animate-spin" : ""}`} />

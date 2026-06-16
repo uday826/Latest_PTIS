@@ -45,35 +45,59 @@ export function BuildingPropertyDetailsSection({
       padding="sm"
       className="shadow-sm border-slate-200/80 bg-white rounded-2xl"
     >
-      <CardHeader className="flex items-center gap-2 border-b border-slate-100 pb-1.5 mb-2">
-        <div className="bg-gradient-to-br from-blue-600 to-indigo-500 p-1.5 rounded-lg text-white shadow-sm flex items-center justify-center">
+      <CardHeader className="flex items-center gap-2 bg-gradient-to-r from-[#C8E1FC] via-[#DBEAFF] to-[#EDF5FF] border border-[#A3CBFA] rounded-xl py-1 px-2.5 mb-2.5 shadow-sm">
+        <div className="bg-[#1d4ed8] p-1 rounded-lg text-white shadow-sm flex items-center justify-center shrink-0">
           <Building className="size-3.5 text-white" />
         </div>
-        <CardTitle className="text-xs font-black text-slate-800 uppercase tracking-widest">
+        <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">
           Asset Details
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 items-start">
+      <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 items-start text-[11px] [&_label]:text-[11px] [&_label]:mb-1 [&_span[id$=-label]]:text-[11px] [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-7 [&_input]:!text-[11px] [&_input]:!rounded-md [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-7 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px] [&_span.text-red-600]:text-[10px] [&_span.text-red-600]:mt-0.5">
         {/* Asset Category — read-only */}
         <div className="flex flex-col">
-          <span className="mb-1.5 text-[13px] font-medium text-gray-700">
+          <span className="mb-1 text-[11px] font-medium text-gray-700">
             Asset Category
           </span>
-          <div className="h-8 px-2 bg-slate-100 border border-slate-200 rounded-md text-[13px] text-slate-700 font-bold flex items-center">
+          <div className="h-7 px-2 bg-slate-100 border border-slate-200 rounded-md text-[11px] text-slate-700 font-bold flex items-center">
             {formData.category}
           </div>
         </div>
 
         {/* Asset Type — read-only */}
         <div className="flex flex-col">
-          <span className="mb-1.5 text-[13px] font-medium text-gray-700">
+          <span className="mb-1 text-[11px] font-medium text-gray-700">
             Asset Type
           </span>
-          <div className="h-8 px-2 bg-slate-100 border border-slate-200 rounded-md text-[13px] text-slate-700 font-bold flex items-center truncate">
+          <div className="h-7 px-2 bg-slate-100 border border-slate-200 rounded-md text-[11px] text-slate-700 font-bold flex items-center truncate">
             {formData.assetType || "—"}
           </div>
         </div>
+
+        <Select
+          label="Mouja"
+          name="mouja"
+          value={formData.mouja}
+          onChange={(e) => {
+            handleChange(e);
+            if (onMoujaChange) {
+              onMoujaChange(e.target.value);
+            }
+          }}
+          options={
+            moujas && moujas.length > 0
+              ? moujas.map((m) => {
+                const label = m.moujaName || `Mouja ${m.id}`;
+                return { label, value: String(m.id) };
+              })
+              : []
+          }
+          className="font-semibold text-sm"
+          selectSize="sm"
+          required
+          error={showError("mouja" as any) ? (errors as any).mouja : undefined}
+        />
 
         <Select
           label="Zone"
@@ -132,29 +156,7 @@ export function BuildingPropertyDetailsSection({
           required
           error={showError("ward") ? errors.ward : undefined}
         />
-        <Select
-          label="Mouja"
-          name="mouja"
-          value={formData.mouja}
-          onChange={(e) => {
-            handleChange(e);
-            if (onMoujaChange) {
-              onMoujaChange(e.target.value);
-            }
-          }}
-          options={
-            moujas && moujas.length > 0
-              ? moujas.map((m) => {
-                const label = m.moujaName || `Mouja ${m.id}`;
-                return { label, value: String(m.id) };
-              })
-              : []
-          }
-          className="font-semibold text-sm"
-          selectSize="sm"
-          required
-          error={showError("mouja" as any) ? (errors as any).mouja : undefined}
-        />
+
         <Select
           label="Subzone"
           name="subzone"
@@ -181,11 +183,6 @@ export function BuildingPropertyDetailsSection({
           error={showError("subzone" as any) ? (errors as any).subzone : undefined}
         />
 
-
-
-
-
-
         <Input
           label={isLand ? "CSN No. / Survey Number" : "CSN No."}
           name="surveyNumber"
@@ -196,16 +193,18 @@ export function BuildingPropertyDetailsSection({
           error={showError("surveyNumber") ? errors.surveyNumber : undefined}
         />
 
-        <Input
-          label="Property No"
-          name="propertyNumber"
-          value={formData.propertyNumber}
-          onChange={handleChange}
-          placeholder="e.g. MC/WD15/2024/001"
-          className="h-8 text-[13px]"
-          required
-          error={showError("propertyNumber") ? errors.propertyNumber : undefined}
-        />
+        <div className="hidden">
+          <Input
+            label="Property No"
+            name="propertyNumber"
+            value={formData.propertyNumber}
+            onChange={handleChange}
+            placeholder="e.g. MC/WD15/2024/001"
+            className="h-8 text-[13px]"
+            required
+            error={showError("propertyNumber") ? errors.propertyNumber : undefined}
+          />
+        </div>
 
         <Select
           label="Asset Condition"

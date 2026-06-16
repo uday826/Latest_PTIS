@@ -2,12 +2,13 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import { X, Save, Building2, UploadCloud, FileText, IndianRupee, ImagePlus, CheckCircle2, Layers, Loader2 } from "lucide-react";
-import { Input, Select } from "@/components/common";
+import { Input, Select, Card, CardContent, CardHeader, CardTitle } from "@/components/common";
 import { fetchSubUseTypesAction, fetchUploadedDocumentsAction, fetchFloorsByAsset, fetchFloorDropdownOptions, fetchSubFloorAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { fetchDocumentFileAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { useAssetForm } from "../AssetFormContext";
 import { toast } from "sonner";
 import { RoomWiseSubmissionDrawer } from "./RoomWiseSubmissionDrawer";
+import { useConfirm } from "@/components/common/ConfirmProvider";
 
 interface CustomDigitInputProps {
   value: string;
@@ -66,7 +67,7 @@ function CustomBoxedInput({ value = "", onChange, length, type = "numeric", grou
   for (let i = 0; i < length; i++) {
     if (groupSizes && currentGroupCount === groupSizes[currentGroupIndex] && i < length) {
       boxes.push(
-        <span key={`sep-${i}`} className="text-slate-400 font-bold mx-0.5 select-none flex items-center justify-center">
+        <span key={`sep-${i}`} className="text-slate-400 font-bold mx-0.5 select-none flex items-center justify-center text-[10px]">
           -
         </span>
       );
@@ -84,16 +85,16 @@ function CustomBoxedInput({ value = "", onChange, length, type = "numeric", grou
         onChange={(e) => handleCharChange(i, e.target.value)}
         onKeyDown={(e) => handleKeyDown(i, e)}
         onPaste={handlePaste}
-        className="w-[21px] h-7 border border-slate-300 rounded text-center text-xs font-black text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white shrink-0"
+        className="boxed-digit-input flex-1 min-w-[12px] max-w-[16px] !h-[22px] !px-0 border border-slate-300 rounded text-center text-[10px] font-black text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
       />
     );
     currentGroupCount++;
   }
 
   return (
-    <div className="flex items-center gap-0.5 border border-slate-200 bg-slate-50/50 rounded-xl p-1 w-fit max-w-full overflow-hidden">
+    <div className="flex items-center gap-0.5 border border-slate-200 bg-slate-50/50 rounded-md py-0.5 px-1 w-full max-w-fit overflow-hidden">
       {showPrefix && (
-        <div className="w-7 h-7 bg-slate-100 border border-slate-200 rounded text-center text-[9px] font-black text-slate-500 flex items-center justify-center select-none shrink-0">
+        <div className="w-6 h-[22px] bg-slate-100 border border-slate-200 rounded text-center text-[8px] font-black text-slate-500 flex items-center justify-center select-none shrink-0">
           {showPrefix}
         </div>
       )}
@@ -114,36 +115,9 @@ interface SubUnitDetailedConfiguratorProps {
   departments?: { label: string; value: string }[];
 }
 
-/** Labelled field wrapper — each Field is relative so Select dropdowns position correctly */
-function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`relative min-w-0 flex-1 ${className}`}>
-      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5 truncate">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
 
-/** Row wrapper — each row has an explicit z-index so dropdowns appear above rows below */
-function Row({ children, z = 10, className = "" }: { children: React.ReactNode; z?: number; className?: string }) {
-  return (
-    <div className={`flex gap-3 relative ${className}`} style={{ zIndex: z }}>
-      {children}
-    </div>
-  );
-}
 
-/** Section header bar */
-function SectionBar({ icon, title, color = "bg-blue-600" }: { icon: React.ReactNode; title: string; color?: string }) {
-  return (
-    <div className={`flex items-center gap-2 px-3 py-1.5 ${color} rounded-t-xl shrink-0`}>
-      {icon}
-      <span className="text-xs font-bold text-white uppercase tracking-widest">{title}</span>
-    </div>
-  );
-}
+
 
 
 
@@ -184,7 +158,7 @@ export function SubUnitDetailedConfigurator({
   floors: propFloors = [],
   dropdownOptions: propDropdownOptions = null,
 }: SubUnitDetailedConfiguratorProps) {
-
+  const { confirm } = useConfirm();
   const { formData: globalFormData, subunitFiles } = useAssetForm();
   const assetId = unit.id || unit.dbId;
   const staged = subunitFiles?.[assetId];
@@ -404,7 +378,7 @@ export function SubUnitDetailedConfigurator({
     unitIdRef.current = unitId;
     setFormData({ ...unit });
     setRoomsList(Array.isArray(unit?.rooms) ? unit.rooms : []);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unitId]);
 
   useEffect(() => {
@@ -665,27 +639,25 @@ export function SubUnitDetailedConfigurator({
     : (Number(formData.carpetAreaSqFeet) || 0);
 
 
-  const inp = "h-8 text-xs";
+  const inp = "h-7 text-[11px] !px-2 !py-0.5 !rounded-md";
 
   const renderDepartmentSelect = () => (
-    <select
+    <Select
+      label="Department *"
       name="departmentId"
       value={formData.departmentId || ""}
-      onChange={(e) => {
-        const selectedName = e.target.options[e.target.selectedIndex].text;
+      onChange={(e, val) => {
+        const matched = departments.find((d: any) => String(d.value) === String(val));
         setFormData((prev: any) => ({
           ...prev,
-          departmentId: e.target.value,
-          departmentName: e.target.value ? selectedName : "",
+          departmentId: val,
+          departmentName: matched ? matched.label : "",
         }));
       }}
-      className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-200`}
-    >
-      <option value="">— Select Department —</option>
-      {departments.map((d: any) => (
-        <option key={d.value} value={d.value}>{d.label}</option>
-      ))}
-    </select>
+      options={departments}
+      placeholder="— Select Department —"
+      selectSize="sm"
+    />
   );
 
   // ── Unit type detection — drives which fields are shown ───────────────────
@@ -705,7 +677,7 @@ export function SubUnitDetailedConfigurator({
     <div className="flex flex-col h-full overflow-hidden bg-slate-50">
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-[#0f172a] border-b border-slate-700 shrink-0">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-[#1e293b] border-b border-white/10 shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-1.5 bg-blue-500/20 rounded-lg border border-blue-500/30">
             <Building2 className="size-4 text-blue-400" />
@@ -715,13 +687,13 @@ export function SubUnitDetailedConfigurator({
             <p className="text-[10px] text-blue-400 font-semibold tracking-widest uppercase">{parentBuildingName}</p>
           </div>
         </div>
-        <button onClick={onCancel} className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors">
-          <X className="size-4" />
+        <button onClick={onCancel} className="px-3 py-1.5 border border-slate-500 hover:border-slate-300 hover:bg-slate-800 rounded-lg text-[10px] font-bold text-slate-300 uppercase transition-colors">
+          Close
         </button>
       </div>
 
       {/* ── Body ── */}
-      <div className="flex-1 overflow-y-auto p-3 custom-scrollbar relative">
+      <div className="flex-1 overflow-y-auto p-3 custom-scrollbar relative [&_input:not(.boxed-digit-input)]:!h-7 [&_input:not(.boxed-digit-input)]:!text-[11px] [&_input:not(.boxed-digit-input)]:!rounded-md [&_input:not(.boxed-digit-input)]:!px-2 [&_label]:text-[11px] [&_label]:mb-1 [&_label]:!font-bold [&_span[id$=-label]]:text-[11px] [&_span[id$=-label]]:!font-bold [&_span.text-gray-700]:!font-bold [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-7 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px]">
         {loading && (
           <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-50 flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">
@@ -731,9 +703,9 @@ export function SubUnitDetailedConfigurator({
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
           {/* Left Column (Forms) */}
-          <div className="lg:col-span-3 space-y-3">
+          <div className="lg:col-span-4 space-y-3">
 
             {/* ════════════════════════════════════════════
             TYPE-AWARE BASIC INFORMATION
@@ -741,364 +713,324 @@ export function SubUnitDetailedConfigurator({
             Flat → KYC fields  |  Shop → GST/ShopAct
             Office → Company   |  Department → Staff
         ════════════════════════════════════════════ */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-              <SectionBar icon={<FileText className="size-3.5 text-white" />} title={sectionTitle} color={sectionColor} />
-              <div className="p-3 space-y-2">
+            <Card variant="bordered" padding="sm" className="shadow-sm border-slate-200/80 bg-white rounded-2xl">
+              <CardHeader className="flex items-center gap-2 bg-gradient-to-r from-[#C8E1FC] via-[#DBEAFF] to-[#EDF5FF] border border-[#A3CBFA] rounded-xl py-1 px-2.5 mb-2.5 shadow-sm">
+                <div className="bg-[#1d4ed8] p-1 rounded-lg text-white shadow-sm flex items-center justify-center shrink-0">
+                  <FileText className="size-3.5 text-white" />
+                </div>
+                <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">{sectionTitle}</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 items-start">
+                {/* Always visible: type badge */}
+                <Input label="Type" name="unitType" value={formData.unitType || ""} readOnly
+                  className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
+                <Input label="Building" value={parentBuildingName} readOnly
+                  className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
+                {renderDepartmentSelect()}
+                <Input label="Property No" name="propertyNo" value={formData.propertyNo || ""} onChange={handleChange} className={inp} />
+                <Input label="Survey No" name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
 
-                {/* Row 0 — always visible: unit number + type badge */}
-                <Row z={60}>
-                  <Field label="Asset No.">
-                    <Input name="unitNumber" value={formData.unitNumber || formData.subAssetId || ""} readOnly
-                      className={`${inp} font-bold text-slate-500 bg-slate-100 cursor-not-allowed`} />
-                  </Field>
-                  <Field label="Type">
-                    <Input name="unitType" value={formData.unitType || ""} readOnly
-                      className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
-                  </Field>
-                  <Field label="Building">
-                    <Input value={parentBuildingName} readOnly
-                      className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
-                  </Field>
-                  <Field label="Department *">
-                    {renderDepartmentSelect()}
-                  </Field>
-                </Row>
+                {/* 6th input depending on type */}
+                {!isShop && !isOffice && !isRoom && !isDepartment && (
+                  <Input label={`Owner / Resident Name${formData.rentType ? " *" : ""}`} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Full name" />
+                )}
+                {isShop && (
+                  <Input label="Shop Name" name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} placeholder="e.g. Sharma Grocery" />
+                )}
+                {isOffice && (
+                  <Input label="Office / Unit Name" name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} placeholder="e.g. North Wing Office" />
+                )}
+                {isRoom && (
+                  <Input label="Room Type" name="roomTypeDesc" value={formData.roomTypeDesc || ""} onChange={handleChange} className={inp} placeholder="e.g. Conference Room" />
+                )}
+                {isDepartment && (
+                  <Input label="Department Name" name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} placeholder="e.g. Finance Department" />
+                )}
 
                 {/* ── FLAT fields ─────────────────────────────────────── */}
                 {!isShop && !isOffice && !isRoom && !isDepartment && (<>
-                  <Row z={50}>
-                    <Field label="Property No">
-                      <Input name="propertyNo" value={formData.propertyNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="Survey No">
-                      <Input name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label={`Owner / Resident Name${formData.rentType ? " *" : ""}`}>
-                      <Input name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Full name" />
-                    </Field>
-                    <Field label="Mobile No">
-                      <CustomBoxedInput
-                        value={formData.mobileNo || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
-                        length={10}
-                        type="numeric"
-                        showPrefix="+91"
-                      />
-                    </Field>
-                  </Row>
-                  <Row z={40}>
-                    <Field label="Email ID">
-                      <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} placeholder="Optional" />
-                    </Field>
-                    <Field label="Aadhaar Card No">
-                      <CustomBoxedInput
-                        value={formData.aadhaar || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
-                        length={12}
-                        type="numeric"
-                        groupSizes={[4, 4, 4]}
-                      />
-                    </Field>
-                    <Field label="PAN Card No">
-                      <CustomBoxedInput
-                        value={formData.pan || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
-                        length={10}
-                        type="alphanumeric"
-                      />
-                    </Field>
-                    <div className="flex-1 min-w-0" />
-                  </Row>
+                  <Input label="Email ID" name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} placeholder="Optional" />
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Mobile No</span>
+                    <CustomBoxedInput
+                      value={formData.mobileNo || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
+                      length={10}
+                      type="numeric"
+                      showPrefix="+91"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Aadhaar Card No</span>
+                    <CustomBoxedInput
+                      value={formData.aadhaar || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                      length={12}
+                      type="numeric"
+                      groupSizes={[4, 4, 4]}
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">PAN Card No</span>
+                    <CustomBoxedInput
+                      value={formData.pan || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                      length={10}
+                      type="alphanumeric"
+                    />
+                  </div>
                 </>)}
 
                 {/* ── SHOP fields ─────────────────────────────────────── */}
                 {isShop && (<>
-                  <Row z={50}>
-                    <Field label="Property No">
-                      <Input name="propertyNo" value={formData.propertyNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="Survey No">
-                      <Input name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="Shop Name">
-                      <Input name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} placeholder="e.g. Sharma Grocery" />
-                    </Field>
-                    <Field label={`Shopkeeper / Renter Name${formData.rentType ? " *" : ""}`}>
-                      <Input name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                  </Row>
-                  <Row z={40}>
-                    <Field label="Mobile No">
-                      <CustomBoxedInput
-                        value={formData.mobileNo || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
-                        length={10}
-                        type="numeric"
-                        showPrefix="+91"
-                      />
-                    </Field>
-                    <Field label="Email ID">
-                      <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="GST No">
-                      <Input name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
-                    </Field>
-                    <Field label="Shop Act No">
-                      <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                  </Row>
-                  <Row z={30}>
-                    <Field label="Aadhaar Card No">
-                      <CustomBoxedInput
-                        value={formData.aadhaar || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
-                        length={12}
-                        type="numeric"
-                        groupSizes={[4, 4, 4]}
-                      />
-                    </Field>
-                    <Field label="PAN Card No">
-                      <CustomBoxedInput
-                        value={formData.pan || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
-                        length={10}
-                        type="alphanumeric"
-                      />
-                    </Field>
-                    <div className="flex-1 min-w-0" />
-                    <div className="flex-1 min-w-0" />
-                  </Row>
+                  <Input label={`Shopkeeper / Renter Name${formData.rentType ? " *" : ""}`} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} />
+                  <Input label="Email ID" name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} placeholder="Optional" />
+                  <Input label="GST No" name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
+                  <Input label="Shop Act No" name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Mobile No</span>
+                    <CustomBoxedInput
+                      value={formData.mobileNo || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
+                      length={10}
+                      type="numeric"
+                      showPrefix="+91"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Aadhaar Card No</span>
+                    <CustomBoxedInput
+                      value={formData.aadhaar || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                      length={12}
+                      type="numeric"
+                      groupSizes={[4, 4, 4]}
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">PAN Card No</span>
+                    <CustomBoxedInput
+                      value={formData.pan || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                      length={10}
+                      type="alphanumeric"
+                    />
+                  </div>
                 </>)}
 
                 {/* ── OFFICE fields ────────────────────────────────────── */}
                 {isOffice && (<>
-                  <Row z={50}>
-                    <Field label="Property No">
-                      <Input name="propertyNo" value={formData.propertyNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="Survey No">
-                      <Input name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="Office / Unit Name">
-                      <Input name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} placeholder="e.g. North Wing Office" />
-                    </Field>
-                    <Field label={`Company / Tenant Name${formData.rentType ? " *" : ""}`}>
-                      <Input name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Company name" />
-                    </Field>
-                  </Row>
-                  <Row z={40}>
-                    <Field label="Mobile No">
-                      <CustomBoxedInput
-                        value={formData.mobileNo || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
-                        length={10}
-                        type="numeric"
-                        showPrefix="+91"
-                      />
-                    </Field>
-                    <Field label="Email ID">
-                      <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="GST No">
-                      <Input name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
-                    </Field>
-                    <Field label="Shop Act No">
-                      <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                  </Row>
-                  <Row z={30}>
-                    <Field label="Aadhaar Card No">
-                      <CustomBoxedInput
-                        value={formData.aadhaar || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
-                        length={12}
-                        type="numeric"
-                        groupSizes={[4, 4, 4]}
-                      />
-                    </Field>
-                    <Field label="PAN Card No">
-                      <CustomBoxedInput
-                        value={formData.pan || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
-                        length={10}
-                        type="alphanumeric"
-                      />
-                    </Field>
-                    <div className="flex-1 min-w-0" />
-                    <div className="flex-1 min-w-0" />
-                  </Row>
+                  <Input label={`Company / Tenant Name${formData.rentType ? " *" : ""}`} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Company name" />
+                  <Input label="Email ID" name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} placeholder="Optional" />
+                  <Input label="GST No" name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
+                  <Input label="Shop Act No" name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Mobile No</span>
+                    <CustomBoxedInput
+                      value={formData.mobileNo || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
+                      length={10}
+                      type="numeric"
+                      showPrefix="+91"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Aadhaar Card No</span>
+                    <CustomBoxedInput
+                      value={formData.aadhaar || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                      length={12}
+                      type="numeric"
+                      groupSizes={[4, 4, 4]}
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">PAN Card No</span>
+                    <CustomBoxedInput
+                      value={formData.pan || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                      length={10}
+                      type="alphanumeric"
+                    />
+                  </div>
                 </>)}
 
                 {/* ── ROOM fields ──────────────────────────────────────── */}
                 {isRoom && (<>
-                  <Row z={50}>
-                    <Field label="Property No">
-                      <Input name="propertyNo" value={formData.propertyNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="Survey No">
-                      <Input name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="Room Type">
-                      <Input name="roomTypeDesc" value={formData.roomTypeDesc || ""} onChange={handleChange} className={inp} placeholder="e.g. Conference Room" />
-                    </Field>
-                    <Field label={`Occupant Name${formData.rentType ? " *" : ""}`}>
-                      <Input name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Who uses this room" />
-                    </Field>
-                  </Row>
-                  <Row z={40}>
-                    <Field label="Mobile No">
-                      <CustomBoxedInput
-                        value={formData.mobileNo || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
-                        length={10}
-                        type="numeric"
-                        showPrefix="+91"
-                      />
-                    </Field>
-                    <Field label="Email ID">
-                      <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="Usage / Purpose">
-                      <Input name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} placeholder="e.g. Storage, Meeting" />
-                    </Field>
-                    <div className="flex-1 min-w-0" />
-                  </Row>
-                  <Row z={30}>
-                    <Field label="Aadhaar Card No">
-                      <CustomBoxedInput
-                        value={formData.aadhaar || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
-                        length={12}
-                        type="numeric"
-                        groupSizes={[4, 4, 4]}
-                      />
-                    </Field>
-                    <Field label="PAN Card No">
-                      <CustomBoxedInput
-                        value={formData.pan || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
-                        length={10}
-                        type="alphanumeric"
-                      />
-                    </Field>
-                    <Field label="GST No">
-                      <Input name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
-                    </Field>
-                    <Field label="Shop Act No">
-                      <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                  </Row>
+                  <Input label={`Occupant Name${formData.rentType ? " *" : ""}`} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Who uses this room" />
+                  <Input label="Email ID" name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} placeholder="Optional" />
+                  <Input label="Usage / Purpose" name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} placeholder="e.g. Storage, Meeting" />
+                  <Input label="GST No" name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
+                  <Input label="Shop Act No" name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Mobile No</span>
+                    <CustomBoxedInput
+                      value={formData.mobileNo || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
+                      length={10}
+                      type="numeric"
+                      showPrefix="+91"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Aadhaar Card No</span>
+                    <CustomBoxedInput
+                      value={formData.aadhaar || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                      length={12}
+                      type="numeric"
+                      groupSizes={[4, 4, 4]}
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">PAN Card No</span>
+                    <CustomBoxedInput
+                      value={formData.pan || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                      length={10}
+                      type="alphanumeric"
+                    />
+                  </div>
                 </>)}
 
                 {/* ── DEPARTMENT fields ────────────────────────────────── */}
                 {isDepartment && (<>
-                  <Row z={50}>
-                    <Field label="Property No">
-                      <Input name="propertyNo" value={formData.propertyNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="Survey No">
-                      <Input name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="Department Name">
-                      <Input name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} placeholder="e.g. Finance Department" />
-                    </Field>
-                    <Field label="Department Head / In-Charge">
-                      <Input name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Officer name" />
-                    </Field>
-                  </Row>
-                  <Row z={40}>
-                    <Field label="Mobile No">
-                      <CustomBoxedInput
-                        value={formData.mobileNo || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
-                        length={10}
-                        type="numeric"
-                        showPrefix="+91"
-                      />
-                    </Field>
-                    <Field label="Email ID">
-                      <Input name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                    <Field label="No. of Staff">
-                      <Input name="noOfStaff" type="number" onFocus={selectOnFocus} min={0} value={formData.noOfStaff || ""} onChange={handleChange} className={inp} placeholder="Head count" />
-                    </Field>
-                    <Field label="Remarks">
-                      <Input name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} placeholder="Optional notes" />
-                    </Field>
-                  </Row>
-                  <Row z={30}>
-                    <Field label="Aadhaar Card No">
-                      <CustomBoxedInput
-                        value={formData.aadhaar || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
-                        length={12}
-                        type="numeric"
-                        groupSizes={[4, 4, 4]}
-                      />
-                    </Field>
-                    <Field label="PAN Card No">
-                      <CustomBoxedInput
-                        value={formData.pan || ""}
-                        onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
-                        length={10}
-                        type="alphanumeric"
-                      />
-                    </Field>
-                    <Field label="GST No">
-                      <Input name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
-                    </Field>
-                    <Field label="Shop Act No">
-                      <Input name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
-                    </Field>
-                  </Row>
+                  <Input label="Department Head / In-Charge" name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Officer name" />
+                  <Input label="Email ID" name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} placeholder="Optional" />
+                  <Input label="No. of Staff" name="noOfStaff" type="number" onFocus={selectOnFocus} min={0} value={formData.noOfStaff || ""} onChange={handleChange} className={inp} placeholder="Head count" />
+                  <Input label="Remarks" name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} placeholder="Optional notes" />
+                  <Input label="GST No" name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
+                  <Input label="Shop Act No" name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Mobile No</span>
+                    <CustomBoxedInput
+                      value={formData.mobileNo || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
+                      length={10}
+                      type="numeric"
+                      showPrefix="+91"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Aadhaar Card No</span>
+                    <CustomBoxedInput
+                      value={formData.aadhaar || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
+                      length={12}
+                      type="numeric"
+                      groupSizes={[4, 4, 4]}
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">PAN Card No</span>
+                    <CustomBoxedInput
+                      value={formData.pan || ""}
+                      onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
+                      length={10}
+                      type="alphanumeric"
+                    />
+                  </div>
                 </>)}
 
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
 
 
 
 
             {/* Departments are internal allocations — they don't pay rent */}
-            {showRentSection && <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-              <SectionBar icon={<IndianRupee className="size-3.5 text-white" />} title="Rent Information" color="bg-cyan-600" />
-              <div className="p-3 space-y-2">
-
-                <Row z={20}>
-                  <Field label="Lease / Rent Type">
-                    <Select selectSize="sm" name="rentType" value={formData.rentType || ""} onChange={handleChange}
-                      options={[{ label: "Commercial Lease", value: "Commercial Lease" }, { label: "Residential Rent", value: "Residential Rent" }]} className={inp} />
-                  </Field>
-                  <Field label={`Lease Start${formData.rentType ? " *" : ""}`}>
-                    <Input type="date" name="leaseStart" value={formData.leaseStart || ""} onChange={handleChange} className={inp} />
-                  </Field>
-                  <Field label={`Lease End${formData.rentType ? " *" : ""}`}>
-                    <Input type="date" name="leaseEnd" value={formData.leaseEnd || ""} onChange={handleChange} className={inp} />
-                  </Field>
-                  <Field label="Duration">
-                    <Input name="duration" value={formData.duration || "Auto-calculated"} onChange={() => { }} readOnly className={`${inp} bg-slate-100 text-slate-500 italic`} />
-                  </Field>
-                </Row>
-
-                <Row z={10}>
-                  <Field label="Rent Frequency">
-                    <Select selectSize="sm" name="rentFreq" value={formData.rentFreq || ""} onChange={handleChange}
-                      options={[{ label: "Monthly", value: "Monthly" }, { label: "Yearly", value: "Yearly" }]} className={inp} />
-                  </Field>
-                  <Field label={`Rent Amount (₹)${formData.rentType ? " *" : ""}`}>
-                    <Input name="rentAmount" type="number" onFocus={selectOnFocus} min={0} value={formData.rentAmount || ""} onChange={handleChange} className={`${inp} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`} />
-                  </Field>
-                  <Field label="Security Deposit (₹)">
-                    <Input name="securityDeposit" type="number" onFocus={selectOnFocus} min={0} value={formData.securityDeposit || ""} onChange={handleChange} className={`${inp} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`} />
-                  </Field>
-                  <Field label="Deposit Type">
-                    <Select selectSize="sm" name="depositType" value={formData.depositType || ""} onChange={handleChange}
-                      options={[{ label: "Refundable", value: "Refundable" }, { label: "Non-Refundable", value: "Non-Refundable" }]} className={inp} />
-                  </Field>
-                </Row>
-              </div>
-            </div>}
+            {showRentSection && (
+              <Card variant="bordered" padding="sm" className="shadow-sm border-slate-200/80 bg-white rounded-2xl">
+                <CardHeader className="flex items-center gap-2 bg-gradient-to-r from-[#C8E1FC] via-[#DBEAFF] to-[#EDF5FF] border border-[#A3CBFA] rounded-xl py-1 px-2.5 mb-2.5 shadow-sm">
+                  <div className="bg-[#1d4ed8] p-1 rounded-lg text-white shadow-sm flex items-center justify-center shrink-0">
+                    <IndianRupee className="size-3.5 text-white" />
+                  </div>
+                  <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">Rent Information</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 items-start">
+                  <Select
+                    label="Lease / Rent Type"
+                    name="rentType"
+                    value={formData.rentType || ""}
+                    onChange={(e, val) => setFormData((prev: any) => ({ ...prev, rentType: val }))}
+                    options={[
+                      { label: "Commercial Lease", value: "Commercial Lease" },
+                      { label: "Residential Rent", value: "Residential Rent" }
+                    ]}
+                    placeholder="Select..."
+                    selectSize="sm"
+                  />
+                  <Input
+                    label={`Lease Start${formData.rentType ? " *" : ""}`}
+                    type="date"
+                    name="leaseStart"
+                    value={formData.leaseStart || ""}
+                    onChange={handleChange}
+                    className={inp}
+                  />
+                  <Input
+                    label={`Lease End${formData.rentType ? " *" : ""}`}
+                    type="date"
+                    name="leaseEnd"
+                    value={formData.leaseEnd || ""}
+                    onChange={handleChange}
+                    className={inp}
+                  />
+                  <Input
+                    label="Duration"
+                    name="duration"
+                    value={formData.duration || "Auto-calculated"}
+                    readOnly
+                    className={`${inp} bg-slate-100 text-slate-500 italic`}
+                  />
+                  <Select
+                    label="Rent Frequency"
+                    name="rentFreq"
+                    value={formData.rentFreq || ""}
+                    onChange={(e, val) => setFormData((prev: any) => ({ ...prev, rentFreq: val }))}
+                    options={[
+                      { label: "Monthly", value: "Monthly" },
+                      { label: "Yearly", value: "Yearly" }
+                    ]}
+                    placeholder="Select..."
+                    selectSize="sm"
+                  />
+                  <Input
+                    label={`Rent Amount (₹)${formData.rentType ? " *" : ""}`}
+                    name="rentAmount"
+                    type="number"
+                    onFocus={selectOnFocus}
+                    min={0}
+                    value={formData.rentAmount || ""}
+                    onChange={handleChange}
+                    className={`${inp} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                  />
+                  <Input
+                    label="Security Deposit (₹)"
+                    name="securityDeposit"
+                    type="number"
+                    onFocus={selectOnFocus}
+                    min={0}
+                    value={formData.securityDeposit || ""}
+                    onChange={handleChange}
+                    className={`${inp} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                  />
+                  <Select
+                    label="Deposit Type"
+                    name="depositType"
+                    value={formData.depositType || ""}
+                    onChange={(e, val) => setFormData((prev: any) => ({ ...prev, depositType: val }))}
+                    options={[
+                      { label: "Refundable", value: "Refundable" },
+                      { label: "Non-Refundable", value: "Non-Refundable" }
+                    ]}
+                    placeholder="Select..."
+                    selectSize="sm"
+                  />
+                </CardContent>
+              </Card>
+            )}
 
             {/* ════════════════════════════════════════════
             FLOOR & CONSTRUCTION DETAILS
@@ -1106,126 +1038,102 @@ export function SubUnitDetailedConfigurator({
             details for this specific sub-unit.
             Capital Value is auto-calculated from area.
         ════════════════════════════════════════════ */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-              <SectionBar icon={<Building2 className="size-3.5 text-white" />} title="Floor & Construction Details" color="bg-cyan-600" />
-              <div className="p-3 space-y-2">
-
-                {/* Row 1: Floor selection + Con Year + Con Type */}
-                <Row z={30}>
-                  <Field label="Assign to Floor *">
-                    {floorSelectOptions.length > 1 ? (
-                      <select
-                        value={formData.floorId ? String(formData.floorId) : ""}
-                        onChange={handleFloorSelect}
-                        className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}
-                      >
-                        {floorSelectOptions.map((o) => (
-                          <option key={o.value} value={o.value}>{o.label}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <div className={`${inp} flex items-center px-2 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-[10px] font-semibold`}>
-                        No floors available in master data.
-                      </div>
-                    )}
-                  </Field>
-                  <Field label="Sub Floor">
-                    <select
-                      name="subFloorId"
-                      value={formData.subFloorId ? String(formData.subFloorId) : ""}
-                      onChange={(e) => setFormData((p: any) => ({ ...p, subFloorId: e.target.value }))}
-                      className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}
-                    >
-                      <option value="">— Select Sub Floor —</option>
-                      {subFloorOptions.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
-                    </select>
-                  </Field>
-                  <Field label="Construction Year *">
-                    <Input
-                      name="conYear"
-                      value={formData.conYear || ""}
-                      onChange={handleChange}
-                      placeholder={`e.g. ${new Date().getFullYear()}`}
-                      maxLength={4}
-                      className={inp}
-                    />
-                  </Field>
-                  <Field label="Construction Type *">
-                    <select
-                      name="conType"
-                      value={formData.conType || ""}
-                      onChange={(e) => setFormData((p: any) => ({ ...p, conType: e.target.value }))}
-                      className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}
-                    >
-                      <option value="">Select Con Type…</option>
-                      {(dropdownOptions?.constructionTypes || []).map((o: any) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
-                    </select>
-                  </Field>
-                  <Field label="Type of Use *">
-                    <select
-                      name="useType"
-                      value={formData.useType || ""}
-                      onChange={(e) => setFormData((p: any) => ({ ...p, useType: e.target.value, subUseType: "" }))}
-                      className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}
-                    >
-                      <option value="">Select Use Type…</option>
-                      {(dropdownOptions?.useTypes || []).map((o: any) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
-                    </select>
-                  </Field>
-                </Row>
-
-                {/* Row 2: Sub-Type + Area */}
-                <Row z={20}>
-                  <Field label="Sub-Type of Use">
-                    <select
-                      name="subUseType"
-                      value={formData.subUseType || ""}
-                      onChange={(e) => setFormData((p: any) => ({ ...p, subUseType: e.target.value }))}
-                      className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}
-                    >
-                      <option value="">Select Sub-Type…</option>
-                      {(dynamicSubUseTypes.length > 0 ? dynamicSubUseTypes : (dropdownOptions?.subUseTypes || []).filter((o: any) => String(o.typeOfUseId) === String(formData.useType)))
-                        .map((o: any) => (
-                          <option key={o.value} value={o.value}>{o.label}</option>
-                        ))}
-                    </select>
-                  </Field>
-                  <Field label="Unit Area (SqFt) — from rooms *">
-                    <Input
-                      value={area}
-                      readOnly
-                      className={`${inp} bg-slate-50 text-slate-600 font-mono font-semibold cursor-default`}
-                    />
-                  </Field>
-                </Row>
-              </div>
-            </div>
+            <Card variant="bordered" padding="sm" className="shadow-sm border-slate-200/80 bg-white rounded-2xl">
+              <CardHeader className="flex items-center gap-2 bg-gradient-to-r from-[#C8E1FC] via-[#DBEAFF] to-[#EDF5FF] border border-[#A3CBFA] rounded-xl py-1 px-2.5 mb-2.5 shadow-sm">
+                <div className="bg-[#1d4ed8] p-1 rounded-lg text-white shadow-sm flex items-center justify-center shrink-0">
+                  <Building2 className="size-3.5 text-white" />
+                </div>
+                <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">Floor & Construction Details</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 items-start">
+                {floorSelectOptions.length > 1 ? (
+                  <Select
+                    label="Assign to Floor *"
+                    value={formData.floorId ? String(formData.floorId) : ""}
+                    onChange={(e, val) => {
+                      const event = {
+                        target: { value: val }
+                      } as React.ChangeEvent<HTMLSelectElement>;
+                      handleFloorSelect(event);
+                    }}
+                    options={floorSelectOptions.slice(1)}
+                    placeholder="— Select Floor —"
+                    selectSize="sm"
+                  />
+                ) : (
+                  <div className="flex flex-col">
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Assign to Floor *</span>
+                    <div className={`${inp} flex items-center px-2 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-[10px] font-semibold`}>
+                      No floors available in master data.
+                    </div>
+                  </div>
+                )}
+                <Select
+                  label="Sub Floor"
+                  name="subFloorId"
+                  value={formData.subFloorId ? String(formData.subFloorId) : ""}
+                  onChange={(e, val) => setFormData((p: any) => ({ ...p, subFloorId: val }))}
+                  options={subFloorOptions}
+                  placeholder="— Select Sub Floor —"
+                  selectSize="sm"
+                />
+                <Input
+                  label="Construction Year *"
+                  name="conYear"
+                  value={formData.conYear || ""}
+                  onChange={handleChange}
+                  placeholder={`e.g. ${new Date().getFullYear()}`}
+                  maxLength={4}
+                  className={inp}
+                />
+                <Select
+                  label="Construction Type *"
+                  name="conType"
+                  value={formData.conType || ""}
+                  onChange={(e, val) => setFormData((p: any) => ({ ...p, conType: val }))}
+                  options={dropdownOptions?.constructionTypes || []}
+                  placeholder="Select Con Type…"
+                  selectSize="sm"
+                />
+                <Select
+                  label="Type of Use *"
+                  name="useType"
+                  value={formData.useType || ""}
+                  onChange={(e, val) => setFormData((p: any) => ({ ...p, useType: val, subUseType: "" }))}
+                  options={dropdownOptions?.useTypes || []}
+                  placeholder="Select Use Type…"
+                  selectSize="sm"
+                />
+                <Select
+                  label="Sub-Type of Use"
+                  name="subUseType"
+                  value={formData.subUseType || ""}
+                  onChange={(e, val) => setFormData((p: any) => ({ ...p, subUseType: val }))}
+                  options={(dynamicSubUseTypes.length > 0 ? dynamicSubUseTypes : (dropdownOptions?.subUseTypes || []).filter((o: any) => String(o.typeOfUseId) === String(formData.useType)))}
+                  placeholder="Select Sub-Type…"
+                  selectSize="sm"
+                />
+                <Input
+                  label="Unit Area (SqFt) — from rooms *"
+                  value={area}
+                  readOnly
+                  className={`${inp} bg-slate-50 text-slate-600 font-mono font-semibold cursor-default`}
+                />
+              </CardContent>
+            </Card>
 
             {/* ════════════════════════════════════════════
             ROOM CONFIGURATION & VALUATION SUMMARY
         ════════════════════════════════════════════ */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-              <SectionBar icon={<Layers className="size-3.5 text-white" />} title="Room-Wise Configuration & Valuation" color="bg-cyan-600" />
-              <div className="p-3">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                      <CheckCircle2 className="size-4 text-emerald-500" />
-                      Room-Wise Valuation Active
-                    </h4>
-                    <p className="text-[10px] text-slate-500 font-medium">
-                      {roomsList.length > 0
-                        ? `This unit contains ${roomsList.length} configured rooms totaling ${area} SqFt. The valuation is completely determined by this layout.`
-                        : "No rooms configured yet. You can build rooms for this subunit to calculate its total area and valuation dynamically."}
-                    </p>
-                  </div>
-
+            <Card variant="bordered" padding="sm" className="shadow-sm border-slate-200/80 bg-white rounded-2xl">
+              <CardHeader className="flex items-center gap-2 bg-gradient-to-r from-[#C8E1FC] via-[#DBEAFF] to-[#EDF5FF] border border-[#A3CBFA] rounded-xl py-1 px-2.5 mb-2.5 shadow-sm">
+                <div className="bg-[#1d4ed8] p-1 rounded-lg text-white shadow-sm flex items-center justify-center shrink-0">
+                  <Layers className="size-3.5 text-white" />
+                </div>
+                <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">Room-Wise Configuration</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-end">
                   <button
                     type="button"
                     onClick={() => setIsRoomsDrawerOpen(true)}
@@ -1237,97 +1145,156 @@ export function SubUnitDetailedConfigurator({
                 </div>
 
                 {roomsList.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200/60">
+                  <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200/60">
                     <div>
-                      <span className="block text-[8px] font-black text-slate-400 uppercase tracking-widest">Total Rooms</span>
+                      <span className="block text-[10px] font-black text-slate-700 uppercase tracking-wider mb-1">Total Rooms</span>
                       <span className="font-mono text-xs font-black text-slate-700">{roomsList.reduce((acc, r) => acc + Number(r.count || 0), 0)} Rooms</span>
                     </div>
                     <div>
-                      <span className="block text-[8px] font-black text-slate-400 uppercase tracking-widest">Carpet Area</span>
-                      <span className="font-mono text-xs font-black text-emerald-700">{area} SqFt</span>
+                      <span className="block text-[10px] font-black text-slate-700 uppercase tracking-wider mb-1">Carpet Area</span>
+                      <span className="font-mono text-xs font-black text-emerald-700">
+                        {Number(area).toFixed(2)} SqFt ({(Number(area) / 10.7639).toFixed(2)} m²)
+                      </span>
                     </div>
                     <div className="col-span-2 md:col-span-2">
-                      <span className="block text-[8px] font-black text-slate-400 uppercase tracking-widest">Room Types Added</span>
+                      <span className="block text-[10px] font-black text-slate-700 uppercase tracking-wider mb-1">Room Types Added</span>
                       <span className="text-[10px] font-bold text-slate-600 truncate block">
                         {Array.from(new Set(roomsList.map(r => r.roomType))).join(", ")}
                       </span>
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
           </div> {/* end Left Column */}
 
           {/* Right Column (Media) */}
           <div className="lg:col-span-1 space-y-3">
-            {/* Front Photo */}
-            <div className="bg-blue-50/50 rounded-2xl border border-blue-100 shadow-sm overflow-hidden">
-              <div className="py-2 px-3 border-b border-blue-100/60 bg-blue-50 flex flex-row items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <ImagePlus className="size-3.5 text-blue-600" />
-                  <span className="text-[10px] font-black text-blue-900 uppercase tracking-wider">Asset Image</span>
-                </div>
-              </div>
-              <div className="p-2.5 flex flex-col items-center gap-2">
+            <Card variant="bordered" className="bg-white border-slate-200/80 rounded-2xl shadow-sm p-3 space-y-3.5" padding="none">
+              {/* Asset Image */}
+              <div className="space-y-2">
+                <span className="inline-block text-[10px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">Asset Image</span>
                 <div
-                  onClick={() => photoRef.current?.click()}
-                  className="w-full h-24 rounded-xl border border-dashed border-blue-200 bg-white hover:bg-blue-50 flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-colors"
+                  onClick={() => !photoPreview && photoRef.current?.click()}
+                  className={`relative h-64 rounded-xl border flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all group ${photoPreview ? 'border-slate-200' : 'border-slate-200 bg-[#e2ebf5]/30 hover:bg-[#e2ebf5]/60 hover:border-slate-300 shadow-sm'}`}
                 >
                   {photoPreview ? (
-                    <img src={photoPreview} alt="Front Photo" className="w-full h-full object-cover" />
+                    <>
+                      <img src={photoPreview} alt="Asset Image" className="w-full h-full object-cover" />
+                      {/* Top right action buttons (always visible when image exists) */}
+                      <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            photoRef.current?.click();
+                          }}
+                          className="px-2.5 py-1 bg-white hover:bg-slate-50 text-blue-600 rounded-full shadow-md transition-colors flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
+                          title="Replace Image"
+                        >
+                          Replace
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            confirm({
+                              variant: "delete",
+                              title: "Delete Image",
+                              description: "Are you sure you want to delete this image?",
+                              onConfirm: () => {
+                                setPhotoPreview(null);
+                                setPhotoFile(null);
+                                if (photoRef.current) photoRef.current.value = "";
+                              }
+                            });
+                          }}
+                          className="px-2.5 py-1 bg-white hover:bg-red-50 text-red-600 rounded-full shadow-md transition-colors flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
+                          title="Delete Image"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
                   ) : (
-                    <div className="text-center text-slate-400 select-none">
-                      <UploadCloud className="size-5 text-blue-300 mb-0.5 mx-auto" />
-                      <span className="text-[9px] font-bold text-blue-600">Click to upload</span>
+                    <div className="flex flex-col items-center justify-center text-slate-400 select-none p-4">
+                      <div className="p-2.5 bg-blue-50 border border-blue-100 rounded-full text-blue-500 mb-2 group-hover:scale-110 transition-transform">
+                        <UploadCloud className="size-5" />
+                      </div>
+                      <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Upload Asset Image</span>
+                      <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tight mt-1 text-center">Click to browse file</span>
+                    </div>
+                  )}
+
+                  {/* Badge */}
+                  {photoPreview && (
+                    <div className="absolute top-2.5 left-2.5 bg-[#4c8bf5] text-white text-[9px] font-black px-2 py-0.5 rounded-full tracking-wider shadow-sm select-none z-10">
+                      +1 More
                     </div>
                   )}
                 </div>
-                <input ref={photoRef} type="file" accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" className="hidden" onChange={handlePhotoChange} />
-                <button
-                  type="button"
-                  onClick={() => photoRef.current?.click()}
-                  className="mt-1.5 w-full h-6 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center justify-center gap-1 text-[9px] font-bold transition-colors"
-                >
-                  <UploadCloud className="size-3" />
-                  {photoPreview ? "Change Photo" : "Add Photo"}
-                </button>
               </div>
-            </div>
+              <input ref={photoRef} type="file" accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" className="hidden" onChange={handlePhotoChange} />
 
-            {/* Asset Photo Plan */}
-            <div className="bg-amber-50/50 rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
-              <div className="py-2 px-3 border-b border-amber-100/60 bg-amber-50 flex flex-row items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <FileText className="size-3.5 text-amber-600" />
-                  <span className="text-[10px] font-black text-amber-900 uppercase tracking-wider">Asset Photo Plan</span>
-                </div>
-              </div>
-              <div className="p-2.5 flex flex-col items-center gap-2">
+              {/* Photo Plan */}
+              <div className="space-y-2">
+                <span className="inline-block text-[10px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">Asset Photo Plan</span>
                 <div
-                  onClick={() => planRef.current?.click()}
-                  className="w-full h-24 rounded-xl border border-dashed border-amber-200 bg-white hover:bg-amber-50 flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-colors"
+                  onClick={() => !planPreview && planRef.current?.click()}
+                  className={`relative h-64 rounded-xl border flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all group ${planPreview ? 'border-slate-200' : 'border-slate-200 bg-[#e2ebf5]/30 hover:bg-[#e2ebf5]/60 hover:border-slate-300 shadow-sm'}`}
                 >
                   {planPreview ? (
-                    <img src={planPreview} alt="Approved Plan" className="w-full h-full object-cover" />
+                    <>
+                      <img src={planPreview} alt="Photo Plan" className="w-full h-full object-cover" />
+                      {/* Top right action buttons (always visible when image exists) */}
+                      <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            planRef.current?.click();
+                          }}
+                          className="px-2.5 py-1 bg-white hover:bg-slate-50 text-blue-600 rounded-full shadow-md transition-colors flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
+                          title="Replace Image"
+                        >
+                          Replace
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            confirm({
+                              variant: "delete",
+                              title: "Delete Photo Plan",
+                              description: "Are you sure you want to delete this photo plan?",
+                              onConfirm: () => {
+                                setPlanPreview(null);
+                                setPlanFile(null);
+                                if (planRef.current) planRef.current.value = "";
+                              }
+                            });
+                          }}
+                          className="px-2.5 py-1 bg-white hover:bg-red-50 text-red-600 rounded-full shadow-md transition-colors flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
+                          title="Delete Image"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
                   ) : (
-                    <div className="text-center text-slate-400 select-none">
-                      <UploadCloud className="size-5 text-amber-300 mb-0.5 mx-auto" />
-                      <span className="text-[9px] font-bold text-amber-600">Click to upload</span>
+                    <div className="flex flex-col items-center justify-center text-slate-400 select-none p-4">
+                      <div className="p-2.5 bg-blue-50 border border-blue-100 rounded-full text-blue-500 mb-2 group-hover:scale-110 transition-transform">
+                        <UploadCloud className="size-5" />
+                      </div>
+                      <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Upload Asset Photo Plan</span>
+                      <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tight mt-1 text-center">Click to browse file</span>
                     </div>
                   )}
                 </div>
-                <input ref={planRef} type="file" accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" className="hidden" onChange={handlePlanChange} />
-                <button
-                  type="button"
-                  onClick={() => planRef.current?.click()}
-                  className="mt-2 w-full py-1.5 px-3 bg-white border border-amber-200 text-[10px] font-bold text-amber-700 rounded-lg hover:bg-amber-50 transition-colors flex items-center justify-center gap-1"
-                >
-                  <UploadCloud className="size-3" />
-                  {planPreview ? "Change Plan" : "Upload Plan"}
-                </button>
               </div>
-            </div>
+              <input ref={planRef} type="file" accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" className="hidden" onChange={handlePlanChange} />
+            </Card>
           </div>
         </div>
 

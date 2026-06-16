@@ -15,6 +15,7 @@ import { Loader2 } from "lucide-react";
 import { useAssetForm } from "../AssetFormContext";
 import { toast } from "sonner";
 import { calculateMovableCVAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
+import { fetchUploadedDocumentsAction, fetchDocumentFileAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 
 interface Props {
   parentAssetId?: number | null;
@@ -31,6 +32,133 @@ const formatCurrencyCompact = (value: number): string => {
   }
   return formatCurrency(value);
 };
+
+interface RowDocumentThumbnailProps {
+  row: any;
+  type: 'photo' | 'invoice';
+  handlePreview: () => void;
+}
+
+function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnailProps) {
+  const [src, setSrc] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (type === 'photo' && row.photoUrl) {
+      setSrc(row.photoUrl);
+      return;
+    }
+
+    if (row.isRegistered) {
+      const assetId = row.registeredUnits?.[0]?.assetId;
+      const targetName = type === 'photo' ? row.photoName : row.invoice?.invoiceFileName;
+      
+      if (!assetId || !targetName) {
+        setSrc(null);
+        return;
+      }
+
+      let active = true;
+      const load = async () => {
+        try {
+          setLoading(true);
+          const docResponse = await fetchUploadedDocumentsAction(assetId, true, true);
+          if (!active) return;
+          if (docResponse.success && docResponse.data) {
+            const documents = docResponse.data;
+            const targetDoc = documents.find((d: any) => 
+              d.fileName === targetName || 
+              d.fileName === `photo_${targetName}` ||
+              d.fileName === `invoice_${targetName}`
+            );
+            if (targetDoc) {
+              const fileRes = await fetchDocumentFileAction(targetDoc.id);
+              if (!active) return;
+              if (fileRes.success && fileRes.data) {
+                const isImage = fileRes.mimeType?.startsWith('image/') || 
+                                targetName.toLowerCase().match(/\.(jpg|jpeg|png|webp|gif|bmp)$/);
+                if (isImage) {
+                  setSrc(`data:${fileRes.mimeType || 'image/jpeg'};base64,${fileRes.data}`);
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Failed to load thumbnail:", err);
+        } finally {
+          if (active) setLoading(false);
+        }
+      };
+      load();
+      return () => {
+        active = false;
+      };
+    }
+  }, [row.photoUrl, row.photoName, row.invoice?.invoiceFileName, row.isRegistered, type]);
+
+  if (loading) {
+    return (
+      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400">
+        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (type === 'photo') {
+    if (src) {
+      return (
+        <img
+          src={src}
+          alt={row.itemName}
+          className="h-12 w-12 rounded-lg border object-cover cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={handlePreview}
+          title="Click to preview photo"
+        />
+      );
+    }
+    if (row.photoName) {
+      return (
+        <div
+          className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-blue-500 cursor-pointer hover:bg-slate-100 transition-colors"
+          onClick={handlePreview}
+          title={`Click to preview: ${row.photoName}`}
+        >
+          <ImageIcon className="h-5 w-5" />
+        </div>
+      );
+    }
+    return (
+      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400" title="No photo uploaded">
+        <Package2 className="h-4 w-4" />
+      </div>
+    );
+  } else {
+    const invoiceNumber = row.invoice?.invoiceNumber;
+    if (invoiceNumber) {
+      return (
+        <div
+          className="flex flex-col h-12 w-12 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-600 cursor-pointer hover:bg-amber-100 transition-colors overflow-hidden"
+          onClick={handlePreview}
+          title={`Click to preview Invoice: ${invoiceNumber}`}
+        >
+          {src ? (
+            <img src={src} alt="Invoice" className="h-full w-full object-cover" />
+          ) : (
+            <>
+              <FileText className="h-4 w-4 mb-1" />
+              <span className="text-[9px] font-bold leading-none truncate w-10 text-center">{invoiceNumber}</span>
+            </>
+          )}
+        </div>
+      );
+    }
+    return (
+      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400" title="No invoice uploaded">
+        <FileText className="h-4 w-4 opacity-50" />
+      </div>
+    );
+  }
+}
 
 export default function FurnitureFixtureClient({ parentAssetId, categories = [], conditions = [], itemNames = [], itemModels = [], initialBatches = null }: Props): React.ReactElement {
   // Pass parentAssetId to state hook for immediate save operations
@@ -99,17 +227,28 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
       <div className="space-y-2 pb-1.5">
         {/* <TableHeader title="Furniture & Fixtures Inventory" subtitle="" icon={Package2} className="rounded-xl border border-[#CBD8EA] bg-[#F5F8FD] shadow-sm" /> */}
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-          {s.summaryCards.map((card, index) => (
-            <Card key={card.type} variant="bordered" className={`rounded-xl border border-[#D8E3F1] bg-white shadow-sm ${card.cardRing}`}>
-              <CardContent className="flex items-start justify-between gap-2 px-2 py-1.5">
-                <div className="min-w-0">
-                  <p className="truncate text-base font-bold leading-none text-[#1D4ED8] sm:text-lg lg:text-md xl:text-base">{formatCurrencyCompact(card.totalAmount)}</p>
-                  <p className="mt-1 text-xs font-semibold text-slate-700 truncate sm:text-sm">{String.fromCharCode(65 + index)}) {card.label}</p>
-                  <p className="text-[10px] text-slate-500 sm:text-xs">{card.totalItems} items</p>
+          {s.summaryCards.map((card, index) => {
+            const normalizedType = card.type.toLowerCase().replace(/\s+/g, "-");
+            let textColorClass = "text-slate-700";
+            if (normalizedType === "furniture") textColorClass = "text-violet-700";
+            else if (normalizedType === "it-equipment") textColorClass = "text-blue-700";
+            else if (normalizedType === "electronic-fixtures") textColorClass = "text-emerald-700";
+            else if (normalizedType === "vehicle") textColorClass = "text-amber-700";
+
+            return (
+              <Card key={card.type} variant="bordered" padding="none" className={`rounded-xl border border-[#D8E3F1] bg-white shadow-sm ${card.cardRing}`}>
+                <div className="px-3.5 py-3 min-w-0 w-full">
+                  <p className={`text-[10px] font-black uppercase tracking-wider truncate sm:text-xs ${textColorClass}`}>
+                    {String.fromCharCode(65 + index)}) {card.label}
+                  </p>
+                  <p className="mt-1.5 truncate text-base font-bold leading-none text-[#1D4ED8] sm:text-lg">
+                    {formatCurrencyCompact(card.totalAmount)}
+                  </p>
+                  <p className="mt-1.5 text-[10px] text-slate-500 leading-none">{card.totalItems} items</p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
 
         <Card variant="bordered" padding="sm" className="rounded-xl border border-[#BFD0E6] bg-white shadow-md">
@@ -165,49 +304,41 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
             <MasterTable
               data={tableData}
               columns={[
-                { key: "srNo", label: "No." },
+                { key: "srNo", label: "No.", align: "center" },
                 {
-                  key: "type", label: "Type", render: (_, row) => {
+                  key: "type", label: "Type", align: "center", render: (_, row) => {
                     const meta = inventoryMeta[row.type];
                     return <Badge variant="outline" size="sm" className={meta?.badgeClassName || "bg-gray-50 text-gray-700 border-gray-200"}>{meta?.label || row.type}</Badge>;
                   }
                 },
-                { key: "photoUrl", label: "Photo", render: (_, row) => {
-                  if (row.photoUrl) {
-                    return <img src={row.photoUrl} alt={row.itemName} className="h-12 w-12 rounded-lg border object-cover cursor-pointer hover:opacity-80 transition-opacity" onClick={() => s.handlePreviewDocument(row, 'photo')} title="Click to preview local photo" />;
-                  } else if (row.photoName) {
-                    return <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-blue-500 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => s.handlePreviewDocument(row, 'photo')} title={`Click to preview: ${row.photoName}`}><ImageIcon className="h-5 w-5" /></div>;
-                  } else {
-                    return <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400" title="No photo uploaded"><Package2 className="h-4 w-4" /></div>;
-                  }
-                } },
                 { key: "itemName", label: "Item / Equipment Name" },
                 { key: "modelName", label: "Type / Model / Brand", render: (val) => <span className="font-medium text-blue-700">{String(val ?? "-")}</span> },
                 { key: "specifications", label: "Specs / Reg No." },
-                { key: "purchaseDate", label: "Date" },
-                { key: "owningDepartment", label: "Owning Dept", render: (val) => <span className="text-slate-600">{String(val ?? "-")}</span> },
-                { key: "condition", label: "Cond. / Status", render: (val) => <Badge variant="default" size="sm" className="border-sky-200 bg-sky-50 text-sky-700">{String(val ?? "-")}</Badge> },
-                { key: "quantity", label: "Quantity" },
-                { key: "unitValue", label: "Unit Value (₹)", render: (val) => formatCurrency(Number(val ?? 0)) },
-                { key: "total", label: "Total (₹)", render: (val) => <span className="font-semibold text-blue-700">{formatCurrency(Number(val ?? 0))}</span> },
-                { key: "totalCV", label: "Live CV (₹)", render: (val) => <span className="font-bold text-emerald-600">{formatCurrency(Number(val ?? 0))}</span> },
-                { key: "invoice", label: "Invoice", render: (val, row) => {
-                  const inv = val as any;
-                  if (inv?.invoiceNumber) {
-                    return (
-                      <div 
-                        className="flex flex-col h-12 w-12 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-600 cursor-pointer hover:bg-amber-100 transition-colors" 
-                        onClick={() => s.handlePreviewDocument(row, 'invoice')} 
-                        title={`Click to preview Invoice: ${inv.invoiceNumber}`}
-                      >
-                        <FileText className="h-4 w-4 mb-1" />
-                        <span className="text-[9px] font-bold leading-none truncate w-10 text-center">{inv.invoiceNumber}</span>
-                      </div>
-                    );
-                  } else {
-                    return <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400" title="No invoice uploaded"><FileText className="h-4 w-4 opacity-50" /></div>;
-                  }
-                } },
+                { key: "purchaseDate", label: "Purchase Date", align: "center" },
+                { key: "owningDepartment", label: "Owning Department", render: (val) => <span className="text-slate-600">{String(val ?? "-")}</span> },
+                { key: "condition", label: "Cond. / Status", align: "center", render: (val) => <Badge variant="default" size="sm" className="border-sky-200 bg-sky-50 text-sky-700">{String(val ?? "-")}</Badge> },
+                { key: "quantity", label: "Quantity", align: "center" },
+                { key: "unitValue", label: "Unit Value (₹)", align: "center", render: (val) => formatCurrency(Number(val ?? 0)) },
+                { key: "total", label: "Total (₹)", align: "center", render: (val) => <span className="font-semibold text-blue-700">{formatCurrency(Number(val ?? 0))}</span> },
+                { key: "totalCV", label: "CV (₹)", align: "center", render: (val) => <span className="font-bold text-emerald-600">{formatCurrency(Number(val ?? 0))}</span> },
+                {
+                  key: "photoUrl", label: "Photo", align: "center", render: (_, row) => (
+                    <RowDocumentThumbnail
+                      row={row}
+                      type="photo"
+                      handlePreview={() => s.handlePreviewDocument(row, 'photo')}
+                    />
+                  )
+                },
+                {
+                  key: "invoice", label: "Invoice", align: "center", render: (_, row) => (
+                    <RowDocumentThumbnail
+                      row={row}
+                      type="invoice"
+                      handlePreview={() => s.handlePreviewDocument(row, 'invoice')}
+                    />
+                  )
+                },
               ]}
               emptyText="No inventory rows added yet."
               renderActions={(row) => (
@@ -216,23 +347,8 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
                   <DeleteButton onClick={() => s.handleDeleteRow(row.id)} />
                 </>
               )}
-              actionLabel="Actions" pageNumber={s.currentPage} pageSize={PAGE_SIZE} totalCount={s.filteredRows.length} totalPages={Math.max(1, Math.ceil(s.filteredRows.length / PAGE_SIZE))} onPageChange={s.setCurrentPage} paginationConfig={{ enabled: true }} maxBodyHeightClassName="max-h-none" tableClassName="min-w-[1160px]" containerClassName="overflow-hidden rounded-xl border border-[#CBD8EA]"
+              actionLabel="Actions" pageNumber={s.currentPage} pageSize={PAGE_SIZE} totalCount={s.filteredRows.length} totalPages={Math.max(1, Math.ceil(s.filteredRows.length / PAGE_SIZE))} onPageChange={s.setCurrentPage} paginationConfig={{ enabled: true }} maxBodyHeightClassName="max-h-none" tableClassName="min-w-[1160px] text-xs [&_th]:text-[11px] [&_td]:text-xs [&_th]:py-2 [&_td]:py-1.5" containerClassName="overflow-hidden rounded-xl border border-[#CBD8EA]"
             />
-          </div>
-          <div className="border-t border-[#D7E1EE] bg-[#F7FAFF] p-3 flex sm:justify-end gap-3 flex-wrap">
-            <Card variant="bordered" className="w-full sm:max-w-[260px] overflow-hidden rounded-xl border border-[#0F172A] bg-[#0F172A] text-white shadow-md">
-              <CardContent className="px-3 py-2 flex justify-between items-center">
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-300">GRAND PURCHASE TOTAL</p>
-                  <p className="mt-1 text-lg font-bold sm:text-xl">{formatCurrency(s.grandAssetValue)}</p>
-                  <p className="mt-1 text-xs text-slate-300">{s.rows.length} items</p>
-                </div>
-                <div className="text-right border-l border-slate-700 pl-3">
-                  <p className="text-[10px] font-semibold text-emerald-300">GRAND CV</p>
-                  <p className="mt-1 text-lg font-bold sm:text-xl text-emerald-400">{formatCurrency(s.grandCV)}</p>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </Card>
 
@@ -240,10 +356,7 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
           <div className="mt-4 pt-4 border-t border-slate-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-800">Category-wise CV & Individual Asset Register</h3>
-                <p className="text-sm text-slate-500">
-                  Each item will be registered as a separate Asset Master with unique Asset No. when you click <strong>Save &amp; Next</strong>.
-                </p>
+                <h3 className="text-lg font-bold text-slate-800">Category-wise CV </h3>
               </div>
               <div className="mt-3 sm:mt-0 flex flex-col items-end gap-2">
                 {s.isSaving && (

@@ -13,6 +13,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAssetForm } from "../AssetFormContext";
 import { DynamicAttributes } from "./DynamicAttributes";
+import { useConfirm } from "@/components/common/ConfirmProvider";
 
 import type { Department } from "@/lib/api/asset/department.service";
 import type { Mouja } from "@/lib/api/asset/mouja.service";
@@ -61,6 +62,7 @@ function BuildingBasicInfoContent({
     handleAttributeChange,
     updateFormData,
   } = useBuildingBasicInfoForm();
+  const { confirm } = useConfirm();
 
   const [dynamicSubzones, setDynamicSubzones] = useState<any[]>([]);
   const [isLoadingSubzones, setIsLoadingSubzones] = useState(false);
@@ -245,10 +247,10 @@ function BuildingBasicInfoContent({
   }, [globalFormData.id, globalFormData.assetId, basicInfoFiles]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 [&_label]:!font-bold [&_span[id$=-label]]:!font-bold [&_span.text-gray-700]:!font-bold">
       
       {/* Left Column (Forms) */}
-      <div className="lg:col-span-3 space-y-4">
+      <div className="lg:col-span-4 space-y-3">
         {/* Section A — Property Number Details */}
         <BuildingPropertyDetailsSection
           formData={formData}
@@ -284,115 +286,153 @@ function BuildingBasicInfoContent({
         />
       </div>
 
-      {/* Right Column (Media & Map) */}
-      <div className="lg:col-span-1 space-y-4">
+      {/* Right Column (Media) */}
+      <div className="lg:col-span-1 space-y-3">
         
-        {/* Asset Image Card */}
-        <Card variant="bordered" className="bg-blue-50/50 border-blue-100 rounded-2xl shadow-sm">
-          <CardHeader className="py-2.5 px-3 border-b border-blue-100/60 bg-blue-50 rounded-t-2xl flex flex-row items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <ImagePlus className="size-3.5 text-blue-600" />
-              <CardTitle className="text-[10px] font-black text-blue-900 uppercase tracking-wider">Asset Image</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="p-2.5">
+        {/* Media Card (Asset Image & Asset Photo Plan) */}
+        <Card variant="bordered" className="bg-white border-slate-200/80 rounded-2xl shadow-sm p-3 space-y-3.5" padding="none">
+          {/* Asset Image */}
+          <div className="space-y-2">
+            <span className="inline-block text-[10px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">Asset Image</span>
             <div 
-              className={`relative h-24 rounded-xl border border-dashed ${frontPhoto ? 'border-blue-300' : 'border-blue-200 bg-white hover:bg-blue-50'} flex flex-col items-center justify-center transition-colors cursor-pointer overflow-hidden`}
               onClick={() => !frontPhoto && frontPhotoRef.current?.click()}
+              className={`relative h-64 rounded-xl border flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all group ${frontPhoto ? 'border-slate-200' : 'border-slate-200 bg-[#e2ebf5]/30 hover:bg-[#e2ebf5]/60 hover:border-slate-300 shadow-sm'}`}
             >
               {frontPhoto ? (
                 <>
-                  <img src={frontPhoto} alt="Front Photo" className="w-full h-full object-cover" />
-                  <button 
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setFrontPhoto(null); }}
-                    className="absolute top-1 right-1 bg-black/50 hover:bg-red-500 text-white rounded-full p-1 transition-colors"
-                  >
-                    <X className="size-2.5" />
-                  </button>
+                  <img src={frontPhoto} alt="Asset Image" className="w-full h-full object-cover" />
+                  {/* Top right action buttons (always visible when image exists) */}
+                  <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        frontPhotoRef.current?.click();
+                      }}
+                      className="px-2.5 py-1 bg-white hover:bg-slate-50 text-blue-600 rounded-full shadow-md transition-colors flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
+                      title="Replace Image"
+                    >
+                      Replace
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        confirm({
+                          variant: "delete",
+                          title: "Delete Image",
+                          description: "Are you sure you want to delete this image?",
+                          onConfirm: () => {
+                            setFrontPhoto(null);
+                            if (setBasicInfoFiles) {
+                              setBasicInfoFiles(prev => ({ ...prev, frontPhoto: null }));
+                            }
+                            if (frontPhotoRef.current) frontPhotoRef.current.value = "";
+                          }
+                        });
+                      }}
+                      className="px-2.5 py-1 bg-white hover:bg-red-50 text-red-600 rounded-full shadow-md transition-colors flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
+                      title="Delete Image"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </>
               ) : (
-                <>
-                  <UploadCloud className="size-5 text-blue-300 mb-0.5" />
-                  <span className="text-[9px] font-bold text-blue-600">Click to upload</span>
-                </>
+                <div className="flex flex-col items-center justify-center text-slate-400 select-none p-4">
+                  <div className="p-2.5 bg-blue-50 border border-blue-100 rounded-full text-blue-500 mb-2 group-hover:scale-110 transition-transform">
+                    <UploadCloud className="size-5" />
+                  </div>
+                  <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Upload Asset Image</span>
+                  <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tight mt-1 text-center">Click to browse file</span>
+                </div>
               )}
             </div>
-            <input 
-              type="file" 
-              accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" 
-              className="hidden" 
-              ref={frontPhotoRef} 
-              onChange={(e) => handleFileChange(e, setFrontPhoto, "front_photo")} 
-            />
-            <button 
-              type="button" 
-              onClick={() => frontPhotoRef.current?.click()}
-              className="mt-1.5 w-full h-6 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center justify-center gap-1 text-[9px] font-bold transition-colors"
-            >
-              <ImagePlus className="size-3" /> {frontPhoto ? 'Change Photo' : 'Add Photo'}
-            </button>
-            {fileErrors.frontPhoto && (
-              <p className="mt-1.5 text-[10px] font-medium text-red-500 leading-tight">
-                {fileErrors.frontPhoto}
-              </p>
-            )}
-          </CardContent>
-        </Card>
+          </div>
+          <input 
+            type="file" 
+            accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" 
+            className="hidden" 
+            ref={frontPhotoRef} 
+            onChange={(e) => handleFileChange(e, setFrontPhoto, "front_photo")} 
+          />
+          {fileErrors.frontPhoto && (
+            <p className="mt-1 text-[10px] font-medium text-red-500 leading-tight px-1">
+              {fileErrors.frontPhoto}
+            </p>
+          )}
 
-        {/* Asset Photo Plan Card */}
-        <Card variant="bordered" className="bg-amber-50/50 border-amber-100 rounded-2xl shadow-sm">
-          <CardHeader className="py-2.5 px-3 border-b border-amber-100/60 bg-amber-50 rounded-t-2xl flex flex-row items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <UploadCloud className="size-3.5 text-amber-600" />
-              <CardTitle className="text-[10px] font-black text-amber-900 uppercase tracking-wider">Asset Photo Plan</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="p-2.5">
+          {/* Asset Photo Plan */}
+          <div className="space-y-2">
+            <span className="inline-block text-[10px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">Asset Photo Plan</span>
             <div 
-              className={`relative h-24 rounded-xl border border-dashed ${buildingPlan ? 'border-amber-300' : 'border-amber-200 bg-white hover:bg-amber-50'} flex flex-col items-center justify-center transition-colors cursor-pointer overflow-hidden`}
               onClick={() => !buildingPlan && planRef.current?.click()}
+              className={`relative h-64 rounded-xl border flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all group ${buildingPlan ? 'border-slate-200' : 'border-slate-200 bg-[#e2ebf5]/30 hover:bg-[#e2ebf5]/60 hover:border-slate-300 shadow-sm'}`}
             >
               {buildingPlan ? (
                 <>
-                  <img src={buildingPlan} alt="Building Plan" className="w-full h-full object-cover opacity-80" />
-                  <button 
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setBuildingPlan(null); }}
-                    className="absolute top-1 right-1 bg-black/50 hover:bg-red-500 text-white rounded-full p-1 transition-colors"
-                  >
-                    <X className="size-2.5" />
-                  </button>
+                  <img src={buildingPlan} alt="Photo Plan" className="w-full h-full object-cover" />
+                  {/* Top right action buttons (always visible when image exists) */}
+                  <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        planRef.current?.click();
+                      }}
+                      className="px-2.5 py-1 bg-white hover:bg-slate-50 text-blue-600 rounded-full shadow-md transition-colors flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
+                      title="Replace Image"
+                    >
+                      Replace
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        confirm({
+                          variant: "delete",
+                          title: "Delete Photo Plan",
+                          description: "Are you sure you want to delete this photo plan?",
+                          onConfirm: () => {
+                            setBuildingPlan(null);
+                            if (setBasicInfoFiles) {
+                              setBasicInfoFiles(prev => ({ ...prev, buildingPlan: null }));
+                            }
+                            if (planRef.current) planRef.current.value = "";
+                          }
+                        });
+                      }}
+                      className="px-2.5 py-1 bg-white hover:bg-red-50 text-red-600 rounded-full shadow-md transition-colors flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
+                      title="Delete Image"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </>
               ) : (
-                <>
-                  <UploadCloud className="size-5 text-amber-300 mb-0.5" />
-                  <span className="text-[9px] font-bold text-amber-600">Click to upload</span>
-                </>
+                <div className="flex flex-col items-center justify-center text-slate-400 select-none p-4">
+                  <div className="p-2.5 bg-blue-50 border border-blue-100 rounded-full text-blue-500 mb-2 group-hover:scale-110 transition-transform">
+                    <UploadCloud className="size-5" />
+                  </div>
+                  <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Upload Asset Photo Plan</span>
+                  <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tight mt-1 text-center">Click to browse file</span>
+                </div>
               )}
             </div>
-            <input 
-              type="file" 
-              accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" 
-              className="hidden" 
-              ref={planRef} 
-              onChange={(e) => handleFileChange(e, setBuildingPlan, "building_plan")} 
-            />
-            <button 
-              type="button" 
-              onClick={() => planRef.current?.click()}
-              className="mt-2 w-full py-1.5 px-3 bg-white border border-amber-200 text-[10px] font-bold text-amber-700 rounded-lg hover:bg-amber-50 transition-colors"
-            >
-              {buildingPlan ? "Change Plan" : "Upload Plan"}
-            </button>
-            {fileErrors.buildingPlan && (
-              <p className="mt-1.5 text-[10px] font-medium text-red-500 leading-tight">
-                {fileErrors.buildingPlan}
-              </p>
-            )}
-          </CardContent>
+          </div>
+          <input 
+            type="file" 
+            accept=".bmp,.doc,.docx,.gif,.jpeg,.jpg,.pdf,.png,.ppt,.pptx,.tif,.tiff,.txt,.webp,.xls,.xlsx" 
+            className="hidden" 
+            ref={planRef} 
+            onChange={(e) => handleFileChange(e, setBuildingPlan, "building_plan")} 
+          />
+          {fileErrors.buildingPlan && (
+            <p className="mt-1 text-[10px] font-medium text-red-500 leading-tight px-1">
+              {fileErrors.buildingPlan}
+            </p>
+          )}
         </Card>
-
       </div>
 
     </div>

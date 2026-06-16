@@ -255,5 +255,22 @@
       "no": "सं.:",
       "meterNo": "मीटर सं.:"
     }
+  },
+  "validation": {
+    "floorRequired": "कृपया मंजिल चुनें",
+    "constructionYearRequired": "कृपया निर्माण वर्ष दर्ज करें",
+    "constructionTypeRequired": "कृपया निर्माण प्रकार चुनें",
+    "typeOfUseRequired": "कृपया उपयोग का प्रकार चुनें",
+    "subTypeOfUseRequired": "कृपया उपयोग का उप-प्रकार चुनें",
+    "floorAlreadyExists": "इस मंजिल का विवरण पहले से मौजूद है।"
+  },
+  "messages": {
+    "updateSuccess": "मंजिल का विवरण सफलतापूर्वक अपडेट किया गया।",
+    "saveSuccess": "मंजिल का विवरण सफलतापूर्वक सहेजा गया।",
+    "deleteSuccess": "मंजिल का विवरण सफलतापूर्वक हटा दिया गया।",
+    "deleteFailed": "मंजिल विवरण हटाने में विफल।",
+    "genericError": "एक त्रुटि हुई: {message}",
+    "failedToSave": "मंजिल विवरण सहेजने में विफल।",
+    "failedToUpdate": "मंजिल विवरण अपडेट करने में विफल।"
   }
 }

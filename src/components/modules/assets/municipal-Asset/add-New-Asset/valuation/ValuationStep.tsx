@@ -10,11 +10,10 @@ import { useAssetForm } from "../AssetFormContext";
 import { useSearchParams } from "next/navigation";
 import { getAssetValuationDataAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/valuation/actions";
 import { Loader2 } from "lucide-react";
-
 // Fallback infrastructure type-name list — only used when categoryCode is absent (legacy URLs)
 const INFRASTRUCTURE_TYPES = ["Road", "Bridge", "Subway", "Bridge/Subway", "Water Tank", "Water Tank/Reservoir"];
 
-export default function ValuationPage() {
+export default function ValuationPage({ initialCategories = [], initialConditions = [] }: { initialCategories?: any[]; initialConditions?: any[] }) {
   const { formData, handleInputChange, updateFormData, registerSubmitHook, setIsDataLoading } = useAssetForm();
   const searchParams = useSearchParams();
 
@@ -37,6 +36,21 @@ export default function ValuationPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [dynamicFloors, setDynamicFloors] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>(initialCategories);
+  const [conditions, setConditions] = useState<any[]>(initialConditions);
+  const [rawInventories, setRawInventories] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (initialCategories.length > 0) {
+      setCategories(initialCategories);
+    }
+  }, [initialCategories]);
+
+  useEffect(() => {
+    if (initialConditions.length > 0) {
+      setConditions(initialConditions);
+    }
+  }, [initialConditions]);
 
   const [plotCV, setPlotCV] = useState<any>(null);
   const [buildingCV, setBuildingCV] = useState<any>(null);
@@ -121,8 +135,8 @@ export default function ValuationPage() {
               setPlotCV(res.plotCV);
             }
 
-            // 2. Bind dynamic inventory valuation totals saved in DB with robust category matching and casing
             if (res.inventories && res.inventories.length > 0) {
+              setRawInventories(res.inventories);
               const furniture: any[] = [];
               const it: any[] = [];
               const electronic: any[] = [];
@@ -253,11 +267,10 @@ export default function ValuationPage() {
       {isBuilding && !isInfrastructure ? (
         <BuildingValuationSummary
           floors={floors}
-          furnitureItems={inventoryState.furnitureItems}
-          itEquipmentItems={inventoryState.itEquipmentItems}
-          electronicFixtures={inventoryState.electronicFixtures}
-          vehicles={inventoryState.vehicles}
+          rawInventories={rawInventories}
+          categories={categories}
           buildingCV={buildingCV}
+          conditions={conditions}
         />
       ) : isInfrastructure ? (
         <InfrastructureValuation formData={formData} onChange={handleInputChange} />
@@ -276,19 +289,6 @@ export default function ValuationPage() {
           <TaxationDetails formData={formData} onChange={handleInputChange} />
         </>
       )}
-
-      <div className="mt-2 p-2 bg-emerald-50/50 rounded-xl border border-emerald-100 flex items-center gap-3">
-        <div className="bg-emerald-600 size-2 rounded-full animate-pulse" />
-        <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">
-          {isBuilding && !isInfrastructure
-            ? "Financial Summary: Building capital value auto-calculated from floor construction details"
-            : isInfrastructure
-            ? "Financial Summary: Infrastructure valuation auto-calculated from metrics and depreciation"
-            : isLand
-            ? "Financial Summary: Land valuation auto-calculated based on area and market rates"
-            : "Financial Summary: Total capital value calculated based on current market rates"}
-        </p>
-      </div>
     </div>
   );
 }

@@ -82,12 +82,12 @@ export default function FurnitureFixturePage({ parentAssetId, categories = [], c
       {/* Temporarily hidden - SafetyInfrastructure section */}
       {/* {showForm && <SafetyInfrastructure formData={formData} onToggle={handleToggleChange} onChange={handleInputChange} />} */}
       
-      <div className="mt-2 p-2 bg-violet-50/50 rounded-xl border border-violet-100 flex items-center gap-3">
+      {/* <div className="mt-2 p-2 bg-violet-50/50 rounded-xl border border-violet-100 flex items-center gap-3">
         <div className="bg-violet-600 size-2 rounded-full animate-pulse" />
         <p className="text-[10px] font-black text-violet-800 uppercase tracking-widest">
           Dynamic Inventory: Showing fields relevant to {formData.category} category
         </p>
-      </div>
+      </div> */}
     </div>
   );
 }

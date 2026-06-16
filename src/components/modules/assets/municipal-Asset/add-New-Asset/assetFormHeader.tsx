@@ -56,14 +56,17 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50/50 rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-      {/* Top Header — dark navy for new, amber-tinted for edit */}
-      <div className={`${isEditMode ? 'bg-[#1a1200]' : 'bg-[#0f172a]'} text-white px-4 py-2 flex items-center justify-between border-b ${isEditMode ? 'border-amber-900/40' : 'border-slate-800'} shrink-0`}>
+    <div className="flex flex-col h-full bg-slate-50/50 overflow-hidden">
+      {/* Top Wizard Header — styled to match the main site header color */}
+      <div 
+        className="text-white px-4 py-2 flex items-center justify-between border-b border-white/10 shrink-0"
+        style={{ backgroundColor: '#1e293b' }}
+      >
         <div className="flex items-center gap-3">
-          <div className={`${isEditMode ? 'bg-amber-900/40 border-amber-700/40' : 'bg-[#1e293b] border-slate-700/50'} p-2 rounded-lg border flex items-center justify-center shadow-inner`}>
+          <div className="bg-white/15 border border-white/20 p-2 rounded-lg flex items-center justify-center shadow-inner">
             {isEditMode
-              ? <PencilLine className="size-5 text-amber-400" />
-              : <Home className="size-5 text-blue-400" />
+              ? <PencilLine className="size-5 text-yellow-300" />
+              : <Home className="size-5 text-white" />
             }
           </div>
           <div>
@@ -77,10 +80,10 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-amber-500 font-extrabold uppercase tracking-wider mt-1.5">
+            <p className="text-[10px] text-yellow-300 font-extrabold uppercase tracking-wider mt-1.5">
               Step {currentStep?.id ?? 1} of {steps.length} | {currentStep?.label ?? 'Basic Info'}
               {isEditMode && assetCode && (
-                <span className="ml-2 text-amber-400/70">• {assetCode}</span>
+                <span className="ml-2 text-white/70">• {assetCode}</span>
               )}
             </p>
           </div>
@@ -88,16 +91,16 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
         <div className="flex items-center gap-3">
           <button
             onClick={handleBackToDashboard}
-            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-red-400 rounded-lg border border-slate-700 hover:border-slate-600 transition-all cursor-pointer shadow-sm flex items-center justify-center"
+            className="px-3 py-1.5 border border-slate-500 hover:border-slate-300 hover:bg-slate-800 rounded-lg text-[10px] font-bold text-slate-300 uppercase transition-colors"
             title="Close Wizard"
           >
-            <span>Close</span>
+            Close
           </button>
         </div>
       </div>
 
       {/* Stepper container */}
-      <div className="px-4 py-1.5 bg-white border-b border-slate-100 shrink-0">
+      <div className="px-4 py-1.5 bg-white border-b border-slate-100 shadow-sm relative z-10 shrink-0">
         <AssetStepper
           currentStepId={currentStep?.id ?? 1}
           steps={steps}
@@ -105,7 +108,7 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
       </div>
 
       {/* Main wizard step content */}
-      <div className="flex-1 p-2 bg-slate-50/30 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 pt-3 px-3 pb-1.5 bg-slate-50/30 overflow-y-auto custom-scrollbar">
         {children}
       </div>
 

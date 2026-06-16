@@ -134,6 +134,15 @@ export async function getAssetValuationDataAction(assetId: number, isBuildingCli
       }
     }
 
+    try {
+      const fs = require('fs');
+      fs.writeFileSync('C:/Users/yash.more/.gemini/antigravity-ide/brain/c68ce206-f891-4e08-b66f-5c6c1ccb1b92/raw_valuation_data.json', JSON.stringify({
+        inventories: inventoriesList
+      }, null, 2));
+    } catch (e) {
+      console.error("Failed to write debug file:", e);
+    }
+
     return {
       success: true,
       asset: assetObj,

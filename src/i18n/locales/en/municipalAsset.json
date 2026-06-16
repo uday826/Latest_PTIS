@@ -255,5 +255,22 @@
       "no": "No:",
       "meterNo": "Meter No:"
     }
+  },
+  "validation": {
+    "floorRequired": "Please select Floor",
+    "constructionYearRequired": "Please enter Construction Year",
+    "constructionTypeRequired": "Please select Construction Type",
+    "typeOfUseRequired": "Please select Type of Use",
+    "subTypeOfUseRequired": "Please select Sub Type of Use",
+    "floorAlreadyExists": "Floor details already exist."
+  },
+  "messages": {
+    "updateSuccess": "Floor details updated successfully.",
+    "saveSuccess": "Floor details saved successfully.",
+    "deleteSuccess": "Floor detail deleted successfully.",
+    "deleteFailed": "Failed to delete floor detail.",
+    "genericError": "An error occurred: {message}",
+    "failedToSave": "Failed to save floor details.",
+    "failedToUpdate": "Failed to update floor details."
   }
 }

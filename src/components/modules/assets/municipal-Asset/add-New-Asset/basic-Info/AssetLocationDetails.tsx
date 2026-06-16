@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, Input } from "@/components/common";
+import { Card, CardContent, CardHeader, CardTitle, Input, TextArea } from "@/components/common";
 import { Map as MapIcon, MapPin, Ruler } from "lucide-react";
 import React from "react";
 import { useAssetForm } from "../AssetFormContext";
@@ -125,16 +125,17 @@ export function AssetLocationDetails({ formData, onChange }: AssetWizardStepProp
         )}
 
         <div className={`space-y-2 transition-all duration-500 ${formData.inheritLocation ? "opacity-60 pointer-events-none grayscale-[0.5]" : ""}`}>
-          <Input
+          <TextArea
             label="Full Postal Address"
             name="fullAddress"
             value={formData.fullAddress}
             onChange={onChange}
             placeholder="Detailed street address, building name, etc."
             required
-            fullWidth
+            rows={2}
             disabled={!!formData.inheritLocation}
-            error={showError("fullAddress") ? errors?.fullAddress : undefined}
+            error={showError("fullAddress") ? !!errors?.fullAddress : false}
+            errorMessage={showError("fullAddress") ? errors?.fullAddress : undefined}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3">
             <Input

@@ -30,7 +30,7 @@ export function DynamicFieldInput({
         value={String(fieldValue ?? "")}
         onChange={(e) => onAttributeChange(fieldName, e.target.value)}
         options={field.options.map((opt: string) => ({ label: opt, value: opt }))}
-        className="font-medium text-sm h-8"
+        className="font-medium text-[11px] h-7"
         selectSize="sm"
         required={field.isRequired}
       />
@@ -40,7 +40,7 @@ export function DynamicFieldInput({
   const typeLower = field.fieldType?.toLowerCase();
   if (typeLower === "checkbox" || typeLower === "boolean") {
     return (
-      <div className="flex items-center gap-2 h-8 pt-6">
+      <div className="flex items-center gap-2 h-7 pt-4">
         <ToggleSwitch
           checked={Boolean(fieldValue || false)}
           onChange={(val) => onAttributeChange(fieldName, val)}
@@ -133,7 +133,7 @@ export function DynamicFieldInput({
         }
         onAttributeChange(fieldName, val);
       }}
-      className="h-8 text-[13px] font-medium text-slate-700"
+      className="h-7 text-[11px] font-medium text-slate-700"
       placeholder={`Enter ${field.fieldLabel.toLowerCase()}`}
       required={field.isRequired}
     />

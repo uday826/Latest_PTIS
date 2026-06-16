@@ -73,7 +73,7 @@ export function InventoryFormSection({
 
   return (
     <div className="rounded-xl border border-[#CFD9E6] bg-[#F7FAFF] p-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 2xl:items-end">
+      <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 items-end text-[11px] [&_label]:text-[11px] [&_label]:mb-1 [&_label]:!font-bold [&_span[id$=-label]]:text-[11px] [&_span[id$=-label]]:!font-bold [&_span.text-gray-700]:!font-bold [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-7 [&_input]:!text-[11px] [&_input]:!rounded-md [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-7 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px] [&_span.text-red-600]:text-[10px] [&_span.text-red-600]:mt-0.5">
         <Select
           label="Type"
           value={form.type}
@@ -81,9 +81,8 @@ export function InventoryFormSection({
           options={dynamicCategoryOptions}
           placeholder="Select type"
           required={true}
+          selectSize="sm"
         />
-
-
 
         <Select
           label={addLabels.itemName}
@@ -93,6 +92,7 @@ export function InventoryFormSection({
           placeholder={form.type ? "Select item name" : "Select type first"}
           disabled={!form.type}
           required={true}
+          selectSize="sm"
         />
 
         <Select
@@ -103,6 +103,7 @@ export function InventoryFormSection({
           placeholder={form.itemName ? "Select model" : "Select item name first"}
           disabled={!form.itemName}
           required={true}
+          selectSize="sm"
         />
 
         <Input
@@ -111,6 +112,7 @@ export function InventoryFormSection({
           value={form.specifications}
           onChange={(event) => updateForm("specifications", event.target.value)}
           required={true}
+          fullWidth={true}
         />
 
         <Input
@@ -119,6 +121,7 @@ export function InventoryFormSection({
           value={form.purchaseDate}
           onChange={(event) => updateForm("purchaseDate", event.target.value)}
           required={true}
+          fullWidth={true}
         />
 
         <Select
@@ -128,6 +131,7 @@ export function InventoryFormSection({
           options={addConditionOptions}
           placeholder="Select condition"
           required={true}
+          selectSize="sm"
         />
 
         <Select
@@ -137,6 +141,7 @@ export function InventoryFormSection({
           options={departments}
           placeholder="-- Select --"
           required={true}
+          selectSize="sm"
         />
 
         <Input
@@ -146,6 +151,7 @@ export function InventoryFormSection({
           value={form.quantity}
           onChange={(event) => updateForm("quantity", event.target.value)}
           required={true}
+          fullWidth={true}
         />
 
         <Input
@@ -155,10 +161,12 @@ export function InventoryFormSection({
           value={form.unitValue}
           onChange={(event) => updateForm("unitValue", event.target.value)}
           required={true}
+          fullWidth={true}
         />
-        <div className="flex gap-2 items-start sm:col-span-2 lg:col-span-1 w-full">
-          <div className="flex flex-col gap-1 w-full flex-1 min-w-0">
-            <span className="text-sm font-medium text-gray-700">Photo</span>
+
+        <div className="flex items-end gap-3 lg:col-span-5 w-full">
+          <div className="flex flex-col gap-1 min-w-0">
+            <span className="text-[11px] font-bold text-gray-700">Photo</span>
             <input
               ref={addPhotoInputRef}
               type="file"
@@ -169,29 +177,30 @@ export function InventoryFormSection({
             <UploadButton
               label={form.photoName || "Upload"}
               title={form.photoName || "Upload"}
-              className="justify-start h-8 px-3 bg-blue-400 hover:bg-blue-500 text-white border-none w-full overflow-hidden [&>span]:truncate [&>span]:min-w-0"
+              className="justify-center h-[26px] w-[100px] bg-blue-600 hover:bg-blue-700 text-white border-none text-[9px] font-black uppercase tracking-wider rounded-md overflow-hidden [&>span]:truncate [&>span]:min-w-0"
               onClick={() => addPhotoInputRef.current?.click()}
             />
           </div>
-          <div className="flex flex-col gap-1 w-full flex-1 min-w-0">
-            <span className="text-sm font-medium text-gray-700">Invoice</span>
+
+          <div className="flex flex-col gap-1 min-w-0">
+            <span className="text-[11px] font-bold text-gray-700">Invoice</span>
             <Button
               variant="primary"
               icon={Receipt}
               title={addInvoicePreviewLabel}
-              className="justify-start h-8 px-3 whitespace-nowrap bg-[#FBBF24] text-white hover:bg-[#F59E0B] border-none w-full overflow-hidden [&>span]:truncate [&>span]:min-w-0"
+              className="justify-center h-[26px] w-[100px] whitespace-nowrap bg-blue-600 hover:bg-blue-700 text-white border-none text-[9px] font-black uppercase tracking-wider rounded-md overflow-hidden [&>span]:truncate [&>span]:min-w-0 [&_svg]:size-3"
               onClick={openInvoiceDrawer}
             >
               {addInvoicePreviewLabel}
             </Button>
           </div>
-        </div>
 
-        <AddButton
-          label="Add Row"
-          className="h-8 w-full whitespace-nowrap sm:col-span-2 sm:w-auto lg:col-span-1"
-          onClick={handleAddRow}
-        />
+          <AddButton
+            label="Add Row"
+            className="h-[26px] w-[100px] whitespace-nowrap text-[9px] font-black uppercase tracking-wider rounded-md bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all"
+            onClick={handleAddRow}
+          />
+        </div>
       </div>
 
       {formError ? (

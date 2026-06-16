@@ -173,7 +173,12 @@ export function useFurnitureFixtureState(
   const dynamicRates = useMemo(() => {
     if (categories.length === 0) return {};
     const rates: Record<string, number> = {};
-    categories.forEach(c => { rates[c.typeName] = c.depreciationRate; });
+    categories.forEach(c => {
+      rates[c.typeName] = c.depreciationRate;
+      if (c.typeName === "Electronics") {
+        rates["Electronic Fixtures"] = c.depreciationRate;
+      }
+    });
     return rates;
   }, [categories]);
 
@@ -181,15 +186,27 @@ export function useFurnitureFixtureState(
   const dynamicConditions = useMemo(() => {
     if (conditions.length === 0) return {};
     const factors: Record<string, number> = {};
-    conditions.forEach(c => { factors[c.conditionName] = c.conditionFactor; });
+    conditions.forEach(c => {
+      const cat = categories.find(cat => cat.id === c.inventoryItemCategoryId);
+      if (cat) {
+        factors[`${cat.typeName.toLowerCase()}_${c.conditionName.toLowerCase()}`] = c.conditionFactor;
+        if (cat.typeName === "Electronics") {
+          factors[`electronic fixtures_${c.conditionName.toLowerCase()}`] = c.conditionFactor;
+        }
+      }
+      factors[c.conditionName.toLowerCase()] = c.conditionFactor;
+      factors[c.conditionName] = c.conditionFactor;
+    });
     return factors;
-  }, [conditions]);
+  }, [conditions, categories]);
+
+  const enrichedRows = useMemo(() => enrichRows(rows, dynamicRates, dynamicConditions), [rows, dynamicRates, dynamicConditions]);
 
   const addPhotoInputRef = useRef<HTMLInputElement | null>(null);
   const editPhotoInputRef = useRef<HTMLInputElement | null>(null);
   const invoiceInputRef = useRef<HTMLInputElement | null>(null);
 
-  const filteredRows = useMemo(() => filterType === "all" ? rows : rows.filter(r => r.type === filterType), [filterType, rows]);
+  const filteredRows = useMemo(() => filterType === "all" ? enrichedRows : enrichedRows.filter(r => r.type === filterType), [filterType, enrichedRows]);
   const paginatedRows = useMemo(() => filteredRows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE), [currentPage, filteredRows]);
 
   // Build Type dropdown options from actual categories
@@ -294,7 +311,6 @@ export function useFurnitureFixtureState(
     return [];
   }, [conditions, categories, editForm.type]);
 
-  const enrichedRows = useMemo(() => enrichRows(rows, dynamicRates, dynamicConditions), [rows, dynamicRates, dynamicConditions]);
   const categoryGroups = useMemo(() => buildCategoryGroups(enrichedRows), [enrichedRows]);
 
   const grandAssetValue = useMemo(() => rows.reduce((sum, row) => sum + row.total, 0), [rows]);
@@ -311,7 +327,7 @@ export function useFurnitureFixtureState(
           label: cat.typeName,
           totalAmount: typeRows.reduce((sum, r) => sum + r.total, 0),
           totalItems: typeRows.reduce((sum, r) => sum + r.quantity, 0),
-          cardRing: inventoryMeta[cat.typeName as InventoryType]?.cardRing || "border-l-4 border-l-blue-500",
+          cardRing: inventoryMeta[normalizedCatType as InventoryType]?.cardRing || "border-l-4 border-l-blue-500",
         };
       });
     }

@@ -7,6 +7,8 @@ import { Input, Select, Button } from "@/components/common";
 import { saveFloorDetail, updateFloorDetail, deleteFloorDetail, fetchSubFloorAction, fetchSubUseTypesAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { RoomWiseSubmissionDrawer } from "../sub-units/RoomWiseSubmissionDrawer";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/common/ConfirmProvider";
+import { useTranslations } from "next-intl";
 
 import { EyeIcon } from "lucide-react";
 
@@ -17,6 +19,28 @@ interface DirectRoomRegistrationPanelProps {
 
 export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [] }: DirectRoomRegistrationPanelProps) {
   const { formData } = useAssetForm();
+  const { confirm } = useConfirm();
+  const t = useTranslations("floor");
+  const tMunicipal = useTranslations("municipalAsset");
+
+  const getLocalizedError = (err: string) => {
+    if (!err) return "";
+    if (err === "A record with the same details already exists.") {
+      try {
+        return tMunicipal("validation.floorAlreadyExists") || "Floor details already exist.";
+      } catch (e) {
+        return "Floor details already exist.";
+      }
+    }
+    if (err === "SubTypeOfUseId must be greater than 0") {
+      try {
+        return tMunicipal("validation.subTypeOfUseRequired") || "Sub Type of Use must be selected";
+      } catch (e) {
+        return "Sub Type of Use must be selected";
+      }
+    }
+    return err;
+  };
 
   // Local state for floors saved to the DB
   const [savedFloors, setSavedFloors] = useState<any[]>(initialFloors);
@@ -37,7 +61,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
     isTaxable: true,
     floor: "",
     subFloor: "",
-    conYear: new Date().getFullYear().toString(),
+    conYear: "",
     conType: "",
     useType: "",
     subUseType: "",
@@ -92,8 +116,24 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
   };
 
   const handleAddFloor = async () => {
-    if (!formState.floor || !formState.conType || !formState.useType) {
-      toast.error("Please fill in all mandatory fields (Floor, Construction Type, Type of Use).");
+    if (!formState.floor) {
+      toast.error(tMunicipal("validation.floorRequired") || "Please select Floor");
+      return;
+    }
+    if (!formState.conYear) {
+      toast.error(tMunicipal("validation.constructionYearRequired") || "Please enter Construction Year");
+      return;
+    }
+    if (!formState.conType) {
+      toast.error(tMunicipal("validation.constructionTypeRequired") || "Please select Construction Type");
+      return;
+    }
+    if (!formState.useType) {
+      toast.error(tMunicipal("validation.typeOfUseRequired") || "Please select Type of Use");
+      return;
+    }
+    if (!formState.subUseType) {
+      toast.error(tMunicipal("validation.subTypeOfUseRequired") || "Please select Sub Type of Use");
       return;
     }
 
@@ -177,7 +217,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
           };
 
           setSavedFloors(prev => prev.map(f => f.id === editingId ? enrichedData : f));
-          toast.success("Floor details updated successfully.");
+          toast.success(tMunicipal("messages.updateSuccess") || "Floor details updated successfully.");
 
           // Reset form and editing state
           setEditingId(null);
@@ -185,7 +225,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
             isTaxable: true,
             floor: "",
             subFloor: "",
-            conYear: new Date().getFullYear().toString(),
+            conYear: "",
             conType: "",
             useType: "",
             subUseType: "",
@@ -196,7 +236,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
           });
           setRoomData([]);
         } else {
-          toast.error(res.error || "Failed to update floor details.");
+          toast.error(getLocalizedError(res.error) || tMunicipal("messages.failedToUpdate") || "Failed to update floor details.");
         }
       } else {
         const res = await saveFloorDetail(payload);
@@ -224,14 +264,14 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
 
           // We added it successfully
           setSavedFloors(prev => [...prev, enrichedData]);
-          toast.success("Floor details saved successfully.");
+          toast.success(tMunicipal("messages.saveSuccess") || "Floor details saved successfully.");
 
           // Reset form
           setFormState({
             isTaxable: true,
             floor: "",
             subFloor: "",
-            conYear: new Date().getFullYear().toString(),
+            conYear: "",
             conType: "",
             useType: "",
             subUseType: "",
@@ -242,11 +282,11 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
           });
           setRoomData([]);
         } else {
-          toast.error(res.error || "Failed to save floor details.");
+          toast.error(getLocalizedError(res.error) || tMunicipal("messages.failedToSave") || "Failed to save floor details.");
         }
       }
     } catch (err: any) {
-      toast.error("An error occurred: " + err.message);
+      toast.error(tMunicipal("messages.genericError", { message: err.message }) || "An error occurred: " + err.message);
     } finally {
       setIsLoading(false);
     }
@@ -364,7 +404,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
       isTaxable: true,
       floor: "",
       subFloor: "",
-      conYear: new Date().getFullYear().toString(),
+      conYear: "",
       conType: "",
       useType: "",
       subUseType: "",
@@ -377,21 +417,27 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this floor detail?")) return;
-    setIsLoading(true);
-    try {
-      const res = await deleteFloorDetail(id);
-      if (res.success) {
-        setSavedFloors(prev => prev.filter(f => f.id !== id));
-        toast.success("Floor detail deleted successfully.");
-      } else {
-        toast.error(res.error || "Failed to delete.");
+    confirm({
+      variant: "delete",
+      title: t("floor.delete.confirmTitle") || "Delete Floor Detail",
+      description: t("floor.delete.confirmDescription") || "Are you sure you want to delete this floor detail?",
+      onConfirm: async () => {
+        setIsLoading(true);
+        try {
+          const res = await deleteFloorDetail(id);
+          if (res.success) {
+            setSavedFloors(prev => prev.filter(f => f.id !== id));
+            toast.success(tMunicipal("messages.deleteSuccess") || "Floor detail deleted successfully.");
+          } else {
+            toast.error(getLocalizedError(res.error) || tMunicipal("messages.deleteFailed") || "Failed to delete.");
+          }
+        } catch (e: any) {
+          toast.error(tMunicipal("messages.genericError", { message: e.message }) || "Error: " + e.message);
+        } finally {
+          setIsLoading(false);
+        }
       }
-    } catch (e: any) {
-      toast.error("Error: " + e.message);
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   const handleSaveRooms = (rooms: any[], calculatedAreaSqFt: number) => {
@@ -408,18 +454,6 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-      <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-            <Building className="size-5" />
-          </div>
-          <div>
-            <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wide">Direct Room Registration</h3>
-            <p className="text-[10px] text-slate-500 font-medium">Add floors and their total dimensions directly.</p>
-          </div>
-        </div>
-      </div>
-
       <div className="p-5 space-y-6">
         {/* Add Floor Details Form */}
         <div className="border border-slate-200 bg-slate-50/40 rounded-xl p-5 relative DirectRoomRegistrationPanel-form">
@@ -440,7 +474,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
           )}
 
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mt-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 mt-3 items-start text-[11px] [&_label]:text-[11px] [&_label]:mb-1 [&_label]:!font-bold [&_span[id$=-label]]:text-[11px] [&_span[id$=-label]]:!font-bold [&_span.text-gray-700]:!font-bold [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-7 [&_input]:!text-[11px] [&_input]:!rounded-md [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-7 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px] [&_span.text-red-600]:text-[10px] [&_span.text-red-600]:mt-0.5">
 
 
 
@@ -469,8 +503,12 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
               type="text"
               name="conYear"
               value={formState.conYear || ""}
-              onChange={handleInputChange}
-              className="h-8 text-[13px] font-mono"
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                setFormState((p: any) => ({ ...p, conYear: val }));
+              }}
+              maxLength={4}
+              className="font-mono"
             />
 
             <Select
@@ -495,6 +533,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
 
             <Select
               label="Sub Type of Use"
+              required
               options={subUseTypeOptions || []}
               value={formState.subUseType}
               onChange={(_, val) => setFormState((p: any) => ({ ...p, subUseType: val }))}
@@ -514,23 +553,22 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
             />
 
             <div className="flex flex-col">
-              <label className="mb-1.5 text-sm font-medium text-gray-700">
+              <label className="mb-1 text-[11px] font-bold text-gray-700">
                 Rooms<span className="text-red-500"> *</span>
               </label>
-              <div className="relative">
+              <div className="flex items-center gap-1">
                 <Input
-                  naked
                   type="number"
                   name="rooms"
                   min={0}
                   value={formState.rooms}
-                  onChange={handleInputChange}
-                  className="px-3 py-1 pr-14 h-8 w-full border border-gray-300 rounded-lg text-sm text-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400"
+                  readOnly
+                  className="bg-slate-100 border-slate-200 cursor-not-allowed font-bold text-slate-800 !w-full"
                 />
                 <button
                   type="button"
                   onClick={() => setIsDrawerOpen(true)}
-                  className="absolute right-1 top-1 h-6 px-2 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-md text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1 shadow-sm transition-all"
+                  className="h-7 px-2 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-md text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1 shadow-sm transition-all shrink-0"
                   title="Add Room Details"
                 >
                   <Plus className="size-3" strokeWidth={3} /> Add
@@ -545,8 +583,8 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
               name="carpetAreaSqFt"
               min={0}
               value={formState.carpetAreaSqFt}
-              onChange={handleInputChange}
-              className="h-8 text-[13px] font-mono font-bold text-blue-700"
+              readOnly
+              className="bg-slate-100 border-slate-200 cursor-not-allowed font-mono font-bold text-blue-700"
             />
 
             <Input
@@ -555,8 +593,8 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
               name="builtUpAreaSqFt"
               min={0}
               value={formState.builtUpAreaSqFt}
-              onChange={handleInputChange}
-              className="h-8 text-[13px] font-mono font-bold text-emerald-700"
+              readOnly
+              className="bg-slate-100 border-slate-200 cursor-not-allowed font-mono font-bold text-emerald-700"
             />
 
           </div>
@@ -606,27 +644,27 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
             </span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-sm whitespace-nowrap bg-white">
+            <table className="w-full border-collapse text-left text-xs whitespace-nowrap bg-white">
               <thead className="bg-slate-100 border-b border-slate-200">
-                <tr className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                <tr className="text-[10px] font-black text-slate-700 uppercase tracking-wider">
 
-                  <th className="py-3 px-4">Floor</th>
-                  <th className="py-3 px-4">Sub Floor</th>
-                  <th className="py-3 px-4">Con Yr</th>
-                  <th className="py-3 px-4">Con Type</th>
-                  <th className="py-3 px-4">Use</th>
-                  <th className="py-3 px-4">Sub Type</th>
-                  <th className="py-3 px-4 text-center">Renter</th>
-                  <th className="py-3 px-4 text-center">Rooms</th>
-                  <th className="py-3 px-4 text-right">Carpet (SqFt)</th>
-                  <th className="py-3 px-4 text-right">Builtup (SqFt)</th>
-                  <th className="py-3 px-4 text-center">Action</th>
+                  <th className="py-2.5 px-4">Floor</th>
+                  <th className="py-2.5 px-4">Sub Floor</th>
+                  <th className="py-2.5 px-4">Con Yr</th>
+                  <th className="py-2.5 px-4">Con Type</th>
+                  <th className="py-2.5 px-4">Type of Use</th>
+                  <th className="py-2.5 px-4">Sub Type of Use</th>
+                  <th className="py-2.5 px-4 text-center">Renter</th>
+                  <th className="py-2.5 px-4 text-center">Rooms</th>
+                  <th className="py-2.5 px-4 text-center">Carpet (SqFt / SqM)</th>
+                  <th className="py-2.5 px-4 text-center">Builtup (SqFt / SqM)</th>
+                  <th className="py-2.5 px-4 text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {savedFloors.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="py-8 text-center text-slate-400 font-bold uppercase tracking-wider bg-white text-xs">
+                    <td colSpan={11} className="py-8 text-center text-slate-400 font-bold uppercase tracking-wider bg-white text-[11px]">
                       No floor details added yet.
                     </td>
                   </tr>
@@ -639,117 +677,21 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
                   return (
                     <tr key={f.id || i} className="hover:bg-slate-50/60 transition-colors bg-white text-slate-800">
 
-                      <td className="py-3 px-4 font-semibold text-slate-900">{floorName}</td>
-                      <td className="py-3 px-4 text-slate-600">{f.subFloorName || f.subFloorId || '-'}</td>
-                      <td className="py-3 px-4 font-mono text-slate-700">{f.constructionYear}</td>
-                      <td className="py-3 px-4 text-slate-600">{conTypeName}</td>
-                      <td className="py-3 px-4 text-slate-600">{f.useTypeName || useTypeName}</td>
-                      <td className="py-3 px-4 text-slate-600">{f.subTypeOfUseName || f.subTypeOfUseId || '-'}</td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-2.5 px-4 font-bold text-slate-900">{floorName}</td>
+                      <td className="py-2.5 px-4 font-semibold text-slate-800">{f.subFloorName || f.subFloorId || '-'}</td>
+                      <td className="py-2.5 px-4 font-mono font-bold text-slate-800">{f.constructionYear}</td>
+                      <td className="py-2.5 px-4 font-semibold text-slate-800">{conTypeName}</td>
+                      <td className="py-2.5 px-4 font-semibold text-slate-800">{f.useTypeName || useTypeName}</td>
+                      <td className="py-2.5 px-4 font-semibold text-slate-800">{f.subTypeOfUseName || f.subTypeOfUseId || '-'}</td>
+                      <td className="py-2.5 px-4 text-center">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${f.isRented ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
                           {f.isRented ? 'Yes' : 'No'}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-center font-bold text-slate-800">{f.noOfRooms}</td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-blue-700">{f.carpetAreaSqFeet?.toFixed(2)}</td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-emerald-700">{f.builtUpAreaSqFeet?.toFixed(2)}</td>
-                      <td className="py-2 px-4 text-center flex items-center justify-center gap-2">
-                        <button
-                          type="button"
-                          title="View Room Details"
-                          onClick={() => {
-                            const mappedRooms = Array.isArray(f.roomDetails)
-                              ? f.roomDetails.map((r: any) => {
-                                const rOffsets = Array.isArray(r.offsets)
-                                  ? r.offsets.map((off: any) => ({
-                                    id: String(off.id || ""),
-                                    shape: off.shape || "Rectangle",
-                                    length: (() => {
-                                      const val = Number(off.length ?? off.lengthMtr ?? 0);
-                                      if (val === 0 && off.shape === "Square" && Number(off.areaSqM || 0) > 0) {
-                                        return Math.round(Math.sqrt(Number(off.areaSqM)) * 100) / 100;
-                                      }
-                                      return val;
-                                    })(),
-                                    width: Number(off.width ?? off.widthMtr ?? 0),
-                                    height: Number(off.height ?? off.heightMtr ?? 0),
-                                    base1: Number(off.base1 ?? off.base1Mtr ?? 0),
-                                    base2: Number(off.base2 ?? off.base2Mtr ?? 0),
-                                    radius: (() => {
-                                      const val = Number(off.radius ?? off.length ?? off.lengthMtr ?? off.widthMtr ?? 0);
-                                      const areaSqM = Number(off.areaSqM || 0);
-                                      if (val === 0 && areaSqM > 0) {
-                                        if (off.shape === "Circle") return Math.round(Math.sqrt(areaSqM / Math.PI) * 100) / 100;
-                                        if (off.shape === "Semi Circle") return Math.round(Math.sqrt((areaSqM * 2) / Math.PI) * 100) / 100;
-                                        if (off.shape === "Quarter") return Math.round(Math.sqrt((areaSqM * 4) / Math.PI) * 100) / 100;
-                                      }
-                                      return val;
-                                    })(),
-                                    areaSqM: Number(off.areaSqM || 0),
-                                    op: off.op || "Subtract",
-                                  }))
-                                  : [];
-
-                                const areaSqM = Number(r.areaSqMtr || r.areaSqM || 0);
-                                const resolvedLength = (() => {
-                                  const val = Number(r.lengthMtr || 0);
-                                  if (val === 0 && r.shape === "Square" && areaSqM > 0) {
-                                    return Math.round(Math.sqrt(areaSqM) * 100) / 100;
-                                  }
-                                  return val;
-                                })();
-                                const resolvedRadius = (() => {
-                                  const val = Number(r.radiusMtr || r.lengthMtr || r.widthMtr || 0);
-                                  if (val === 0 && areaSqM > 0) {
-                                    if (r.shape === "Circle") return Math.round(Math.sqrt(areaSqM / Math.PI) * 100) / 100;
-                                    if (r.shape === "Semi Circle") return Math.round(Math.sqrt((areaSqM * 2) / Math.PI) * 100) / 100;
-                                    if (r.shape === "Quarter") return Math.round(Math.sqrt((areaSqM * 4) / Math.PI) * 100) / 100;
-                                  }
-                                  return val;
-                                })();
-
-                                return {
-                                  id: String(r.id || Math.random()),
-                                  roomNo: String(r.roomNo || "1"),
-                                  roomType: String(r.roomType || "Bed Room"),
-                                  shape: String(r.shape || "Rectangle"),
-                                  length: resolvedLength,
-                                  width: Number(r.widthMtr || 0),
-                                  height: Number(r.heightMtr || 0),
-                                  areaSqM: areaSqM,
-                                  areaSqFt: areaSqM * 10.7639,
-                                  base1: Number(r.base1Mtr || 0),
-                                  base2: Number(r.base2Mtr || 0),
-                                  radius: resolvedRadius,
-                                  hasOffset: rOffsets.length > 0 ? "Yes" : "No",
-                                  offsets: rOffsets,
-                                  offsetShape: rOffsets.length > 0 ? rOffsets[0].shape : "Rectangle",
-                                  offsetLength: rOffsets.length > 0 ? rOffsets[0].length : 0,
-                                  offsetWidth: rOffsets.length > 0 ? rOffsets[0].width : 0,
-                                  offsetHeight: rOffsets.length > 0 ? rOffsets[0].height : 0,
-                                  offsetBase1: rOffsets.length > 0 ? rOffsets[0].base1 : 0,
-                                  offsetBase2: rOffsets.length > 0 ? rOffsets[0].base2 : 0,
-                                  offsetRadius: rOffsets.length > 0 ? rOffsets[0].radius : 0,
-                                  offsetAreaSqM: rOffsets.length > 0 ? rOffsets[0].areaSqM : 0,
-                                  offsetOp: rOffsets.length > 0 ? rOffsets[0].op : "Subtract",
-                                  netAreaSqM: Number(r.totalAreaSqMtr || r.areaSqMtr || 0) / Number(r.noOfRooms || 1),
-                                  netAreaSqFt: (Number(r.totalAreaSqMtr || r.areaSqMtr || 0) / Number(r.noOfRooms || 1)) * 10.7639,
-                                  count: Number(r.noOfRooms || 1),
-                                  outer: r.outerYesNo ? "Yes" : "No",
-                                  minus: r.minusYesNo ? "Yes" : "No",
-                                };
-                              })
-                              : [];
-                            setSelectedFloorForView({
-                              unitNumber: `Floor ${floorName}`,
-                              rooms: mappedRooms,
-                            });
-                            setIsViewDrawerOpen(true);
-                          }}
-                          className="p-1.5 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-all border border-blue-100/50"
-                        >
-                          <EyeIcon className="size-4" />
-                        </button>
+                      <td className="py-2.5 px-4 text-center font-bold text-slate-800">{f.noOfRooms}</td>
+                      <td className="py-2.5 px-4 text-center font-mono font-bold text-blue-700">{f.carpetAreaSqFeet?.toFixed(2)} / {((f.carpetAreaSqFeet || 0) / 10.7639).toFixed(2)}</td>
+                      <td className="py-2.5 px-4 text-center font-mono font-bold text-emerald-700">{f.builtUpAreaSqFeet?.toFixed(2)} / {((f.builtUpAreaSqFeet || 0) / 10.7639).toFixed(2)}</td>
+                      <td className="py-1.5 px-3 text-center flex items-center justify-center gap-2">
                         <button
                           type="button"
                           title="Edit Floor Details"
