@@ -75,6 +75,9 @@ export function useBuildingBasicInfoFormState(
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
+      const target = e.target as HTMLInputElement;
+      const start = target.selectionStart;
+      const end = target.selectionEnd;
       
       // Sanitize: 1. No leading spaces. 2. Numeric only for contact/pin fields.
       let sanitizedValue = value.replace(/^\s+/, "");
@@ -131,6 +134,11 @@ export function useBuildingBasicInfoFormState(
         }
       }
 
+      const isTitleCased = name === "assetName" || name === "inChargeName" || name === "inChargeDesignation";
+      if (isTitleCased) {
+        sanitizedValue = sanitizedValue.replace(/\b\w/g, (char) => char.toUpperCase());
+      }
+
       setFormData((prev) => {
         const patch: Partial<BuildingBasicInfoFormData> = { [name]: sanitizedValue };
         if (name === "zone") {
@@ -141,6 +149,14 @@ export function useBuildingBasicInfoFormState(
           ...patch,
         };
       });
+
+      if (start !== null && end !== null && isTitleCased) {
+        requestAnimationFrame(() => {
+          try {
+            target.setSelectionRange(start, end);
+          } catch {}
+        });
+      }
     },
     []
   );

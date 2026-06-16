@@ -301,6 +301,9 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    const target = e.target as HTMLInputElement;
+    const start = target.selectionStart;
+    const end = target.selectionEnd;
     
     // Sanitize: 1. No leading spaces. 2. Numeric only for contact/pin fields.
     let sanitizedValue = value.replace(/^\s+/, "");
@@ -357,6 +360,11 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    const isTitleCased = name === "assetName" || name === "inChargeName" || name === "inChargeDesignation";
+    if (isTitleCased) {
+      sanitizedValue = sanitizedValue.replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
     setFormData((prev) => {
       const newData = { ...prev, [name]: sanitizedValue };
 
@@ -371,6 +379,14 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
 
       return newData;
     });
+
+    if (start !== null && end !== null && isTitleCased) {
+      requestAnimationFrame(() => {
+        try {
+          target.setSelectionRange(start, end);
+        } catch {}
+      });
+    }
   };
 
   const handleToggleChange = (name: string, checked: boolean) => {
