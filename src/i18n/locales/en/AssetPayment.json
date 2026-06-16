@@ -63,8 +63,26 @@
     "payNow": "Pay Now",
     "drawer": {
       "title": "Select Months",
+      "subtitle": "Choose one or more periods to include in this payment.",
       "cancel": "Cancel",
-      "apply": "Apply"
+      "apply": "Apply",
+      "selectAll": "Select All",
+      "clear": "Clear",
+      "selectedSummary": "{count, plural, =0 {No periods selected} one {# period selected} other {# periods selected}}",
+      "amountSummary": "Total: \u20b9{amount}",
+      "refresh": "Refresh",
+      "table": {
+        "month": "Month",
+        "rent": "Rent",
+        "penalty": "Penalty",
+        "gst": "GST",
+        "total": "Total",
+        "status": "Status",
+        "select": "Select"
+      },
+      "empty": "No demand rows are available for this lease.",
+      "loading": "Loading demand rows...",
+      "loadError": "Unable to load demand rows. Please try again."
     }
   },
   "otherPayment": {
