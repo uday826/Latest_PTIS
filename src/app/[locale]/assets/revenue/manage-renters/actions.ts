@@ -156,7 +156,7 @@ function toVerificationRecord(item: AssetLeaseRentDetailsListItem): Verification
       .map((value) => String(value).trim())
       .join(' | '),
     tenantName: normalizeText(item.tenantName),
-    applicationType: normalizeText(item.applicationTypeName ?? item.leaseRentType ?? item.leaseType),
+    applicationType: normalizeText(item.leaseType),
     submittedDate: item.updatedDate ? item.updatedDate.slice(0, 10) : item.createdDate ? item.createdDate.slice(0, 10) : '-',
     status: displayStatus,
     remarks: normalizeText(item.remarks ?? item.reason ?? item.rejectionReason),

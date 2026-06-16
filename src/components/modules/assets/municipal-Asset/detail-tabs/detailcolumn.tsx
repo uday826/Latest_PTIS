@@ -103,13 +103,6 @@ export function getFloorDetailsColumns(): Column<FloorTableRow>[] {
       render: (value) => blank(value as string | number | null | undefined),
     },
     {
-      key: 'builtUpAreaSqMeter',
-      label: 'Built-up Area',
-      width: '140px',
-      align: 'center',
-      render: (_value, row) => areaText(row).builtUp,
-    },
-    {
       key: 'carpetAreaSqMeter',
       label: 'Carpet Area',
       width: '140px',
@@ -125,29 +118,28 @@ type InventoryUnitRow = Record<string, unknown> & InventoryUnitResponse;
 
 export function getInventoryBatchColumns(): Column<InventoryRow>[] {
   return [
-    { key: 'batchId', label: 'Batch ID', width: '110px' },
-    { key: 'inventoryType', label: 'Inventory Type', width: '160px' },
-    { key: 'itemName', label: 'Item Name', width: '180px' },
-    { key: 'modelBrand', label: 'Model / Brand', width: '190px' },
+    { key: 'inventoryType', label: 'Inventory Type', align: 'center' },
+    { key: 'itemName', label: 'Item Name', align: 'center' },
+    { key: 'modelBrand', label: 'Model / Brand', align: 'center' },
     {
       key: 'quantity',
       label: 'Qty',
-      width: '90px',
+      align: 'center',
       render: (value: unknown) => <span className="font-semibold">{blank(value as string | number | null)}</span>,
     },
     {
       key: 'condition',
       label: 'Condition',
-      width: '140px',
+      align: 'center',
       render: (value: unknown) => (
         <Badge variant="secondary" size="sm" className="border-emerald-200 bg-emerald-50 text-emerald-700">
           {blank(value as string | number | null)}
         </Badge>
       ),
     },
-    { key: 'unitValue', label: 'Unit Value', width: '120px', render: (value: unknown) => formatMoney(Number((value as number) ?? 0)) },
-    { key: 'totalBatchValue', label: 'Purchase Value', width: '140px', render: (value: unknown) => formatMoney(Number((value as number) ?? 0)) },
-    { key: 'totalBatchCV', label: 'Capital Value', width: '140px', render: (value: unknown) => formatMoney(Number((value as number) ?? 0)) },
+    { key: 'unitValue', label: 'Unit Value', align: 'center', render: (value: unknown) => formatMoney(Number((value as number) ?? 0)) },
+    { key: 'totalBatchValue', label: 'Purchase Value', align: 'center', render: (value: unknown) => formatMoney(Number((value as number) ?? 0)) },
+    { key: 'totalBatchCV', label: 'Capital Value', align: 'center', render: (value: unknown) => formatMoney(Number((value as number) ?? 0)) },
   ];
 }
 
@@ -191,13 +183,11 @@ export function getSubUnitMainColumns(): Column<SubUnitRow>[] {
     { key: 'assetName', label: 'Asset Name', width: '200px', render: (v) => blank(v as string | null) },
     { key: 'assetCategoryName', label: 'Category', width: '140px', render: (v) => blank(v as string | null) },
     { key: 'assetTypeName', label: 'Type', width: '160px', render: (v) => blank(v as string | null) },
-    { key: 'status', label: 'Status', width: '100px', render: (v) => blank(v as string | null) },
     { key: 'occupancyStatus', label: 'Occupancy', width: '110px', render: (v) => blank(v as string | null) },
     { key: 'typeOfUseName', label: 'Use Type', width: '130px', render: (v) => blank(v as string | null) },
     { key: 'subTypeOfUseName', label: 'Sub Use Type', width: '140px', render: (v) => blank(v as string | null) },
     { key: 'builtUpAreaSqMeter', label: 'Built-up (sq.m)', width: '130px', render: (v) => formatArea(v as string | number | null) },
     { key: 'carpetAreaSqMeter', label: 'Carpet (sq.m)', width: '120px', render: (v) => formatArea(v as string | number | null) },
-    { key: 'capitalValue', label: 'Capital Value', width: '120px', render: (v) => formatNumber(v as string | number | null) },
     { key: 'zoneName', label: 'Zone', width: '110px', render: (v) => blank(v as string | null) },
     { key: 'wardName', label: 'Ward', width: '90px', render: (v) => blank(v as string | null) },
     { key: 'moujaName', label: 'Mouja', width: '110px', render: (v) => blank(v as string | null) },
@@ -211,7 +201,6 @@ export function getSubUnitRenterColumns(): Column<Record<string, unknown>>[] {
     { key: 'leaseRentType', label: 'Lease Type', width: '120px', render: (v) => blank(v as string | null) },
     { key: 'mobileNo', label: 'Mobile', width: '120px', render: (v) => blank(v as string | null) },
     { key: 'emailId', label: 'Email', width: '180px', render: (v) => blank(v as string | null) },
-    { key: 'agreementId', label: 'Agreement', width: '120px', render: (v) => blank(v as string | null) },
     { key: 'rentAmount', label: 'Rent', width: '110px', align: 'center', render: (v) => formatNumber(v as string | number | null) },
     { key: 'securityDeposit', label: 'Deposit', width: '120px', align: 'center', cellClassName: 'font-semibold text-emerald-700', render: (v) => formatNumber(v as string | number | null) },
   ];
@@ -250,13 +239,11 @@ export function getSubUnitDetailColumns(): Column<Record<string, unknown>>[] {
     { key: 'assetName', label: 'Asset Name', width: '200px', render: (v) => blank(v as string | null) },
     { key: 'assetCategoryName', label: 'Category', width: '140px', render: (v) => blank(v as string | null) },
     { key: 'assetTypeName', label: 'Type', width: '160px', render: (v) => blank(v as string | null) },
-    { key: 'status', label: 'Status', width: '100px', render: (v) => blank(v as string | null) },
     { key: 'occupancyStatus', label: 'Occupancy', width: '110px', render: (v) => blank(v as string | null) },
     { key: 'typeOfUseName', label: 'Use Type', width: '130px', render: (v) => blank(v as string | null) },
     { key: 'subTypeOfUseName', label: 'Sub Use Type', width: '140px', render: (v) => blank(v as string | null) },
     { key: 'builtUpAreaSqMeter', label: 'Built-up (sq.m)', width: '130px', render: (v) => formatArea(v as string | number | null) },
     { key: 'carpetAreaSqMeter', label: 'Carpet (sq.m)', width: '120px', render: (v) => formatArea(v as string | number | null) },
-    { key: 'capitalValue', label: 'Capital Value', width: '120px', render: (v) => formatNumber(v as string | number | null) },
     { key: 'zoneName', label: 'Zone', width: '110px', render: (v) => blank(v as string | null) },
     { key: 'wardName', label: 'Ward', width: '90px', render: (v) => blank(v as string | null) },
     { key: 'moujaName', label: 'Mouja', width: '110px', render: (v) => blank(v as string | null) },

@@ -29,7 +29,7 @@ const columns: Column<VerificationRecord>[] = [
     render: (_value, row) => <span>{row.assetCategory}</span>,
   },
   { key: 'tenantName', label: 'Tenant Name', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
-  { key: 'applicationType', label: 'Application Type', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  { key: 'applicationType', label: 'Rent / Lease Type', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'leaseStartDate', label: 'Lease Start Date', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'leaseEndDate', label: 'Lease End Date', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'paymentFrequency', label: 'Payment Frequency', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },

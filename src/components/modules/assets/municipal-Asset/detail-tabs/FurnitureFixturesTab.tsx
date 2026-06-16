@@ -128,7 +128,7 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
               <Eye className="h-4 w-4" />
             </Button>
           )}
-          tableClassName="min-w-[1400px]"
+          tableClassName="min-w-full"
           maxBodyHeightClassName="max-h-[calc(100vh-360px)]"
           containerClassName="overflow-hidden"
         />

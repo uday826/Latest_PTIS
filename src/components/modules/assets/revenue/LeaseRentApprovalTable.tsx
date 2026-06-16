@@ -40,20 +40,19 @@ const columns: Column<ApprovalRecord>[] = [
       </span>
     ),
   },
-  {
-    key: 'rentAmount',
-    label: 'Rent Amount (Rs.)',
-    align: 'center',
-    cellClassName: '!px-2 !py-2',
-    render: (value) => (
-      <span className="font-black text-slate-700">Rs. {Number(value).toLocaleString('en-IN')}</span>
-    ),
-  },
   { key: 'leaseStartDate', label: 'Lease Start Date', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'leaseEndDate', label: 'Lease End Date', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'paymentFrequency', label: 'Payment Frequency', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
-  { key: 'remarks', label: 'Reason', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
   { key: 'submittedDate', label: 'Submitted Date', align: 'center', cellClassName: '!px-2 !py-2 whitespace-nowrap' },
+  {
+    key: 'rentAmount',
+    label: 'Rent Amount',
+    align: 'center',
+    cellClassName: '!px-2 !py-2',
+    render: (value) => (
+      <span>{Number(value).toLocaleString('en-IN')}</span>
+    ),
+  },
   {
     key: 'status',
     label: 'Status',

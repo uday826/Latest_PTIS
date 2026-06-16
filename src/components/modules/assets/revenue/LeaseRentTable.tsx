@@ -79,8 +79,14 @@ const baseColumns: Column<LeaseRentRecord>[] = [
     align: 'center',
     cellClassName: '!px-2 !py-2',
     render: (_value, row) => (
-      <span className="font-black text-slate-800">{row.rentAmountDisplay ?? `Rs. ${Number(row.rentAmount).toLocaleString('en-IN')}`}</span>
+      <span>{Number(row.rentAmount).toLocaleString('en-IN')}</span>
     ),
+  },
+  {
+    key: 'paymentFrequency',
+    label: 'Payment Frequency',
+    align: 'center',
+    cellClassName: '!px-2 !py-2 whitespace-nowrap',
   },
 ];
 
