@@ -10,6 +10,8 @@
     "Asset_Name":  "मालमत्तेचे नाव",
     "Asset_Type":  "मालमत्ता प्रकार",
     "Location_Ward":  "ठिकाण आणि प्रभाग",
+    "Address":  "पत्ता",
+    "Ward":  "प्रभाग",
     "Acquisition_Date":  "संपादन तारीख",
     "Acquisition_Value":  "संपादन मूल्य",
     "Current_Value":  "सध्याचे मूल्य",

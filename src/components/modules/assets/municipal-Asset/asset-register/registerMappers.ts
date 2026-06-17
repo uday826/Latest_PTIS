@@ -101,4 +101,3 @@ export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName
     assetTypeId: record.assetTypeId || null,
   };
 }
-

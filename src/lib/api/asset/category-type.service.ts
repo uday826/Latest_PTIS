@@ -1,30 +1,9 @@
 import { apiClient } from "@/services/api.service";
 import { ApiResponse } from "@/types/common.types";
+import type { AssetCategory } from "@/types/asset-type/asset-category.types";
+import type { AssetType, ApiCategoryItem, ApiTypeItem } from "@/types/municipal-asset-service.types";
 
-export interface AssetCategory {
-  id: number;
-  categoryName: string;
-  categoryCode: string;
-  isActive: boolean;
-  isMovable: boolean;
-  hasFloorDetails: boolean;
-  hasInventory: boolean;
-  isInventoryMandatory: boolean;
-  hasLegalCompliance: boolean;
-  // BUILDING | LAND | INFRASTRUCTURE | MOVABLE | GENERIC — drives valuation form
-  valuationType: string;
-}
-
-export interface AssetType {
-  id: number;
-  typeName?: string;
-  assetTypeName?: string;
-  categoryId?: number;
-  assetCategoryId?: number;
-  isActive: boolean;
-  allowUnitRegistration?: boolean;
-  allowRoomRegistration?: boolean;
-}
+export type { AssetCategory, AssetType };
 
 /**
  * Service for fetching Asset Categories and Types from Master Data
@@ -34,34 +13,36 @@ export const categoryTypeService = {
    * Get all active Asset Categories
    */
   getCategories: async (): Promise<ApiResponse<AssetCategory[]>> => {
-    const response = await apiClient.get<any>("/AssetCategory?pageSize=1000", { cacheStrategy: 300 });
+    const response = await apiClient.get<{ items?: ApiCategoryItem[] } | ApiCategoryItem[]>("/AssetCategory?pageSize=1000", { cacheStrategy: 300 });
     if (response.success && response.data) {
-      let items = Array.isArray(response.data) ? response.data : (response.data.items || []);
-      items = items.filter((item: any) => 
-        item.isActive !== false && item.isActive !== 0 && 
-        item.IsActive !== false && item.IsActive !== 0 && 
+      const data = response.data;
+      let items = Array.isArray(data) ? data : (data.items || []);
+      items = items.filter((item) => 
+        item.isActive !== false && 
+        item.IsActive !== false && 
         item.status?.toLowerCase() !== 'inactive'
       );
       return { ...response, data: items };
     }
-    return response;
+    return response as ApiResponse<AssetCategory[]>;
   },
 
   /**
    * Get all active Asset Types
    */
   getAllTypes: async (): Promise<ApiResponse<AssetType[]>> => {
-    const response = await apiClient.get<any>("/AssetType?pageSize=1000", { cacheStrategy: 300 });
+    const response = await apiClient.get<{ items?: ApiTypeItem[] } | ApiTypeItem[]>("/AssetType?pageSize=1000", { cacheStrategy: 300 });
     if (response.success && response.data) {
-      let items = Array.isArray(response.data) ? response.data : (response.data.items || []);
-      items = items.filter((item: any) => 
-        item.isActive !== false && item.isActive !== 0 && 
-        item.IsActive !== false && item.IsActive !== 0 && 
+      const data = response.data;
+      let items = Array.isArray(data) ? data : (data.items || []);
+      items = items.filter((item) => 
+        item.isActive !== false && 
+        item.IsActive !== false && 
         item.status?.toLowerCase() !== 'inactive'
       );
       return { ...response, data: items };
     }
-    return response;
+    return response as ApiResponse<AssetType[]>;
   },
 
   /**
@@ -73,11 +54,11 @@ export const categoryTypeService = {
     
     if (response.success && response.data) {
       const targetId = Number(categoryId);
-      const items = Array.isArray(response.data) ? response.data : [];
+      const items = Array.isArray(response.data) ? (response.data as ApiTypeItem[]) : [];
       
       // 2. Filter using every possible ID field name found in the database/API
-      const filtered = items.filter((t: any) => {
-        const tCategoryId = Number(t.categoryId || t.AssetCategoryId || t.assetCategoryId || t.category || t.AssetCategory);
+      const filtered = items.filter((t) => {
+        const tCategoryId = Number(t.categoryId || t.assetCategoryId || t.category || t.AssetCategory);
         return tCategoryId === targetId;
       });
       

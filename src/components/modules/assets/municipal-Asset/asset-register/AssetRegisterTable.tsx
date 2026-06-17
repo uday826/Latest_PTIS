@@ -4,10 +4,9 @@ import { useMemo, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { MasterTable } from '@/components/common';
-import type { AssetRegisterRow } from './registerMappers';
+import type { AssetRegisterRow, AssetRegisterTableProps } from '@/types/municipal-asset-register.types';
 import { getRegisterColumns } from './registerTableColumns';
 import { useQueryTransition } from '@/hooks/useQueryTransition';
-import type { AssetRegisterTableProps } from '@/types/asset-types/asset-register.types';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 

@@ -1,10 +1,9 @@
-import { AssetRegisterFilters } from '@/components/modules/assets/municipal-Asset/building-assets/AssetRegisterFilters';
-import { AssetRegisterExportButton } from '@/components/modules/assets/municipal-Asset/building-assets/AssetRegisterExportButton';
-import type { AssetRegisterControlsProps } from '@/types/asset-types/asset-register.types';
+import { AssetRegisterFilters } from '@/components/modules/assets/municipal-Asset/asset-register/AssetRegisterFilters';
+import { AssetRegisterExportButton } from '@/components/modules/assets/municipal-Asset/asset-register/AssetRegisterExportButton';
+import type { AssetRegisterControlsProps } from '@/types/municipal-asset-register.types';
 
 export function AssetRegisterControls({
   categoryId,
-  categoryName,
   search,
   assetTypeId,
   zoneId,
@@ -33,7 +32,6 @@ export function AssetRegisterControls({
       />
       <AssetRegisterExportButton
         categoryId={categoryId}
-        categoryName={categoryName}
         search={search}
         assetTypeId={assetTypeId}
         zoneId={zoneId}

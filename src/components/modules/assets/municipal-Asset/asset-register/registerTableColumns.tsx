@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, PencilLine, Printer } from 'lucide-react';
 import { Badge, type Column } from '@/components/common';
 import { IconOnlyActionButton } from '@/components/common/ActionButtons';
-import type { AssetRegisterRow } from '@/types/municipal-asset/register.types';
+import type { AssetRegisterRow } from '@/types/municipal-asset-register.types';
 import { formatMoney } from './registerMappers';
 
 export function renderTruncatedText(value?: string) {

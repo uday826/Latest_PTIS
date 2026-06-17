@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
-import { AssetRegisterApiRecord } from '@/types/municipal-asset/register.types';
+import { useRouter } from 'next/navigation';
+import { AssetRegisterApiRecord } from '@/types/municipal-asset-service.types';
 import { mapAssetToRow, formatMoney } from './registerMappers';
 import { getRegisterColumns } from './registerTableColumns';
 
@@ -15,7 +16,7 @@ export async function exportToExcel(
 
   // 2. Resolve the exact list of columns that are currently active in the UI
   // Note: pathname and router are not needed for Excel metadata, we bypass them safely
-  const columns = getRegisterColumns('', {} as any, translate);
+  const columns = getRegisterColumns('', {} as unknown as ReturnType<typeof useRouter>, translate);
 
   // 3. Filter out Action columns as they contain buttons/interactive components
   const dataColumns = columns.filter((col) => col.key !== 'id');

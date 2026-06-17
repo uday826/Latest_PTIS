@@ -3,15 +3,14 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { ExportButton, useToast } from '@/components/common';
-import { fetchAssetRegisterPage } from '@/app/[locale]/assets/municipal-Asset/asset-register/[categoryId]/actions';
+import { fetchAssetRegisterPage } from '@/app/[locale]/assets/municipal-Asset/asset-register/[categoryId]/action';
 import { exportToExcel } from './registerExport';
-import type { AssetRegisterExportButtonProps } from '@/types/asset-types/asset-register.types';
+import type { AssetRegisterExportButtonProps } from '@/types/municipal-asset-register.types';
 
 const EXPORT_BATCH_SIZE = 200;
 
 export function AssetRegisterExportButton({
   categoryId,
-  categoryName,
   search,
   assetTypeId,
   zoneId,
