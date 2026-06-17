@@ -26,7 +26,11 @@
       "assetName": "मालमत्ता नाव",
       "tenantName": "भाडेकरू नाव",
       "leaseType": "लीज प्रकार",
-      "financeYear": "आर्थिक वर्ष"
+      "financeYear": "आर्थिक वर्ष",
+      "shopName": "दुकान नाव",
+      "email": "ईमेल",
+      "leaseStartDate": "लीज प्रारंभ तिथि",
+      "leaseEndDate": "लीज समाप्ति तिथि"
     },
     "back": "मागे"
   },
@@ -63,6 +67,10 @@
     "selectMonths": "महिने निवडा",
     "selectedMonths": "निवडलेले: {months}",
     "payNow": "आता पेमेंट करा",
+    "fullPayment": "पूर्ण पेमेंट",
+    "customAmount": "कस्टम राशि",
+    "selectYears": "वर्ष निवडा",
+    "processing": "प्रसंस्करण...",
     "drawer": {
       "title": "महिने निवडा",
       "subtitle": "या पेमेंटमध्ये समाविष्ट करण्यासाठी एक किंवा अधिक कालावधी निवडा.",

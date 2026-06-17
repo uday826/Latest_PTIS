@@ -26,7 +26,11 @@
       "assetName": "संपत्ति नाम",
       "tenantName": "किरायेदार नाम",
       "leaseType": "लीज़ प्रकार",
-      "financeYear": "वित्तीय वर्ष"
+      "financeYear": "वित्तीय वर्ष",
+      "shopName": "दुकान नाम",
+      "email": "ईमेल",
+      "leaseStartDate": "लीज़ प्रारंभ तिथि",
+      "leaseEndDate": "लीज़ समाप्ति तिथि"
     },
     "back": "वापस"
   },
@@ -37,6 +41,8 @@
     "currentDemand": "वर्तमान मांग",
     "penalty": "जुर्माना",
     "gst": "जीएसटी",
+    "totalPaid": "कुल भुगतान",
+    "totalPendingDemand": "कुल लंबित मांग",
     "totalAmount": "कुल राशि",
     "mobileNumber": "मोबाइल नंबर",
     "emailAddress": "ईमेल पता",
@@ -61,6 +67,10 @@
     "selectMonths": "महीने चुनें",
     "selectedMonths": "चयनित: {months}",
     "payNow": "अभी भुगतान करें",
+    "fullPayment": "पूर्ण भुगतान",
+    "customAmount": "कस्टम राशि",
+    "selectYears": "वर्ष चुनें",
+    "processing": "प्रसंस्करण...",
     "drawer": {
       "title": "महीने चुनें",
       "subtitle": "इस भुगतान में शामिल करने के लिए एक या अधिक अवधि चुनें।",

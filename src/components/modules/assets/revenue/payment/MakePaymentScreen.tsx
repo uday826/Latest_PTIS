@@ -594,7 +594,7 @@ export function MakePaymentScreen({
               <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-3 shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
                 <div className="flex items-center justify-between w-full">
-                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Demand</span>
+                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">{t('currentDemand')}</span>
                   <p className="text-sm font-black text-emerald-600">{`₹ ${record.currentDemand.toLocaleString('en-IN')}`}</p>
                 </div>
               </Card>
@@ -743,7 +743,7 @@ export function MakePaymentScreen({
           {/* Pending Payment Options — only three: Full Pending, Custom Amount, Period Selection */}
           <div className="space-y-1.5 pt-2">
             <div className="border-t border-slate-200 mb-3" />
-            <label className="text-sm font-semibold text-slate-700">Payment Types</label>
+            <label className="text-sm font-semibold text-slate-700">{t('paymentType')}</label>
             <RadioGroup
               value={pendingSubOption}
               onValueChange={(value) => setPendingSubOption(value as PendingSubOption)}
@@ -758,7 +758,7 @@ export function MakePaymentScreen({
                   }`}
               >
                 <RadioGroupItem value="FULL_BUCKET" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                <span className={`text-xs font-semibold ${pendingSubOption === 'FULL_BUCKET' ? 'text-blue-700' : 'text-slate-700'}`}>Full Payment</span>
+                <span className={`text-xs font-semibold ${pendingSubOption === 'FULL_BUCKET' ? 'text-blue-700' : 'text-slate-700'}`}>{t('fullPayment')}</span>
               </label>
               <label
                 onClick={() => setPendingSubOption('CUSTOM_AMOUNT')}
@@ -768,7 +768,7 @@ export function MakePaymentScreen({
                   }`}
               >
                 <RadioGroupItem value="CUSTOM_AMOUNT" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                <span className={`text-xs font-semibold ${pendingSubOption === 'CUSTOM_AMOUNT' ? 'text-blue-700' : 'text-slate-700'}`}>Custom Amount</span>
+                <span className={`text-xs font-semibold ${pendingSubOption === 'CUSTOM_AMOUNT' ? 'text-blue-700' : 'text-slate-700'}`}>{t('customAmount')}</span>
               </label>
               <label
                 onClick={() => {
@@ -782,7 +782,7 @@ export function MakePaymentScreen({
               >
                 <RadioGroupItem value="PERIOD_SELECTION" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
                 <span className={`text-xs font-semibold ${pendingSubOption === 'PERIOD_SELECTION' ? 'text-blue-700' : 'text-slate-700'}`}>
-                  {isYearlyPayment ? 'Select Years' : 'Select Months'}
+                  {isYearlyPayment ? t('selectYears') : t('selectMonths')}
                 </span>
               </label>
             </RadioGroup>
@@ -810,7 +810,7 @@ export function MakePaymentScreen({
               onClick={handlePayNow}
               disabled={isPending || !selectedMode || !pendingSubOption || record.pendingDue <= 0}
             >
-              {isPending ? 'Processing...' : t('payNow')}
+              {isPending ? t('processing') : t('payNow')}
             </Button>
           </div>
         </Card>

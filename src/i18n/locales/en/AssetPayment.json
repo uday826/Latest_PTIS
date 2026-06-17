@@ -26,7 +26,11 @@
       "assetName": "Asset Name",
       "tenantName": "Tenant Name",
       "leaseType": "Lease Type",
-      "financeYear": "Finance Year"
+      "financeYear": "Finance Year",
+      "shopName": "Shop Name",
+      "email": "Email",
+      "leaseStartDate": "Lease Start Date",
+      "leaseEndDate": "Lease End Date"
     },
     "back": "Back"
   },
@@ -63,6 +67,10 @@
     "selectMonths": "Select Months",
     "selectedMonths": "Selected: {months}",
     "payNow": "Pay Now",
+    "fullPayment": "Full Payment",
+    "customAmount": "Custom Amount",
+    "selectYears": "Select Years",
+    "processing": "Processing...",
     "drawer": {
       "title": "Select Months",
       "subtitle": "Choose one or more periods to include in this payment.",

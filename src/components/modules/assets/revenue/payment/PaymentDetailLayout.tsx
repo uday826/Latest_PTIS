@@ -169,14 +169,14 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
 
             <div className="grid grid-cols-2 gap-3 my-3">
               <InfoItem icon={<Building2 className="w-3 h-3" />} label={t('assetInfo.assetCategory')} value={category} iconClassName="bg-teal-100 text-teal-600" />
-              <InfoItem icon={<FileText className="w-3 h-3" />} label="Shop Name" value={shopName} iconClassName="bg-rose-100 text-rose-600" />
+              <InfoItem icon={<FileText className="w-3 h-3" />} label={t('assetInfo.shopName')} value={shopName} iconClassName="bg-rose-100 text-rose-600" />
             </div>
 
             <InfoItem icon={<MapPin className="w-3 h-3" />} label={t('assetInfo.assetName')} value={record.assetName} iconClassName="bg-orange-100 text-orange-600" />
 
             <div className="grid grid-cols-2 gap-3 my-3">
               <InfoItem icon={<User className="w-3 h-3" />} label={t('assetInfo.tenantName')} value={record.tenantName} iconClassName="bg-indigo-100 text-indigo-600" />
-              <InfoItem icon={<User className="w-3 h-3" />} label="Email" value={record.tenantEmail} iconClassName="bg-indigo-100 text-indigo-600" />
+              <InfoItem icon={<User className="w-3 h-3" />} label={t('assetInfo.email')} value={record.tenantEmail} iconClassName="bg-indigo-100 text-indigo-600" />
             </div>
 
             <div className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50 my-3">
@@ -194,7 +194,7 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
                   <Calendar className="w-3 h-3" />
                 </div>
                 <div>
-                  <p className="text-[9px] text-slate-500 font-bold uppercase">Lease Start Date</p>
+                  <p className="text-[9px] text-slate-500 font-bold uppercase">{t('assetInfo.leaseStartDate')}</p>
                   <p className="text-[11px] font-bold text-slate-800 mt-0.5">
                     {record.leaseStartDate ? new Date(record.leaseStartDate).toLocaleDateString('en-GB') : '-'}
                   </p>
@@ -205,7 +205,7 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
                   <Calendar className="w-3 h-3" />
                 </div>
                 <div>
-                  <p className="text-[9px] text-slate-500 font-bold uppercase">Lease End Date</p>
+                  <p className="text-[9px] text-slate-500 font-bold uppercase">{t('assetInfo.leaseEndDate')}</p>
                   <p className="text-[11px] font-bold text-slate-800 mt-0.5">
                     {record.leaseEndDate ? new Date(record.leaseEndDate).toLocaleDateString('en-GB') : '-'}
                   </p>
