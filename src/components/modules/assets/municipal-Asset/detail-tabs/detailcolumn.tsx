@@ -16,9 +16,9 @@ export function blank(value?: string | number | null) {
   return value === null || value === undefined || value === '' ? '-' : String(value);
 }
 
-export function boolToYesNo(value?: boolean | null) {
-  if (value === true) return 'Yes';
-  if (value === false) return 'No';
+export function boolToYesNo(value?: boolean | null, t?: any) {
+  if (value === true) return t ? t('subUnitsTab.yes') : 'Yes';
+  if (value === false) return t ? t('subUnitsTab.no') : 'No';
   return '-';
 }
 
@@ -72,39 +72,39 @@ function areaText(floor: AssetFloorDetailItem) {
 // ─── FloorDetailsTab Columns ──────────────────────────────────────────────────
 type FloorTableRow = AssetFloorDetailItem & Record<string, unknown>;
 
-export function getFloorDetailsColumns(): Column<FloorTableRow>[] {
+export function getFloorDetailsColumns(t: any): Column<FloorTableRow>[] {
   return [
     {
       key: 'floorName',
-      label: 'Floor',
+      label: t('floorTab.cols.floorName'),
       width: '180px',
       align: 'center',
-      render: (_value, row) => blank(row.floorName || `Floor ${row.floorId || row.id}`),
+      render: (_value, row) => blank(row.floorName || `${t('floorTab.cols.floorName')} ${row.floorId || row.id}`),
     },
     {
       key: 'constructionTypeName',
-      label: 'Construction Type',
+      label: t('floorTab.cols.constructionType'),
       width: '170px',
       align: 'center',
       render: (value) => blank(value as string | null | undefined),
     },
     {
       key: 'typeOfUseName',
-      label: 'Use Type',
+      label: t('floorTab.cols.useType'),
       width: '140px',
       align: 'center',
       render: (value) => blank(value as string | null | undefined),
     },
     {
       key: 'constructionYear',
-      label: 'Year',
+      label: t('floorTab.cols.year'),
       width: '90px',
       align: 'center',
       render: (value) => blank(value as string | number | null | undefined),
     },
     {
       key: 'carpetAreaSqMeter',
-      label: 'Carpet Area',
+      label: t('floorTab.cols.carpetArea'),
       width: '140px',
       align: 'center',
       render: (_value, row) => areaText(row).carpet,
@@ -116,20 +116,20 @@ export function getFloorDetailsColumns(): Column<FloorTableRow>[] {
 type InventoryRow = Record<string, unknown> & InventoryBatchDetail;
 type InventoryUnitRow = Record<string, unknown> & InventoryUnitResponse;
 
-export function getInventoryBatchColumns(): Column<InventoryRow>[] {
+export function getInventoryBatchColumns(t: any): Column<InventoryRow>[] {
   return [
-    { key: 'inventoryType', label: 'Inventory Type', align: 'center' },
-    { key: 'itemName', label: 'Item Name', align: 'center' },
-    { key: 'modelBrand', label: 'Model / Brand', align: 'center' },
+    { key: 'inventoryType', label: t('furnitureTab.cols.inventoryType'), align: 'center' },
+    { key: 'itemName', label: t('furnitureTab.cols.itemName'), align: 'center' },
+    { key: 'modelBrand', label: t('furnitureTab.cols.modelBrand'), align: 'center' },
     {
       key: 'quantity',
-      label: 'Qty',
+      label: t('furnitureTab.cols.qty'),
       align: 'center',
       render: (value: unknown) => <span className="font-semibold">{blank(value as string | number | null)}</span>,
     },
     {
       key: 'condition',
-      label: 'Condition',
+      label: t('furnitureTab.cols.condition'),
       align: 'center',
       render: (value: unknown) => (
         <Badge variant="secondary" size="sm" className="border-emerald-200 bg-emerald-50 text-emerald-700">
@@ -137,20 +137,20 @@ export function getInventoryBatchColumns(): Column<InventoryRow>[] {
         </Badge>
       ),
     },
-    { key: 'unitValue', label: 'Unit Value', align: 'center', render: (value: unknown) => formatMoney(Number((value as number) ?? 0)) },
-    { key: 'totalBatchValue', label: 'Purchase Value', align: 'center', render: (value: unknown) => formatMoney(Number((value as number) ?? 0)) },
-    { key: 'totalBatchCV', label: 'Capital Value', align: 'center', render: (value: unknown) => formatMoney(Number((value as number) ?? 0)) },
+    { key: 'unitValue', label: t('furnitureTab.cols.unitValue'), align: 'center', render: (value: unknown) => formatMoney(Number((value as number) ?? 0)) },
+    { key: 'totalBatchValue', label: t('furnitureTab.cols.purchaseValue'), align: 'center', render: (value: unknown) => formatMoney(Number((value as number) ?? 0)) },
+    { key: 'totalBatchCV', label: t('furnitureTab.cols.capitalValue'), align: 'center', render: (value: unknown) => formatMoney(Number((value as number) ?? 0)) },
   ];
 }
 
-export function getInventoryUnitColumns(): Column<InventoryUnitRow>[] {
+export function getInventoryUnitColumns(t: any): Column<InventoryUnitRow>[] {
   return [
-    { key: 'assetNo', label: 'Asset No', width: '200px', cellClassName: 'font-semibold text-blue-600' },
-    { key: 'assetName', label: 'Asset Name', width: '360px' },
-    { key: 'unitNumber', label: 'Unit #', width: '100px' },
+    { key: 'assetNo', label: t('furnitureTab.cols.assetNo'), width: '200px', cellClassName: 'font-semibold text-blue-600' },
+    { key: 'assetName', label: t('furnitureTab.cols.assetName'), width: '360px' },
+    { key: 'unitNumber', label: t('furnitureTab.cols.unitHash'), width: '100px' },
     {
       key: 'condition',
-      label: 'Condition',
+      label: t('furnitureTab.cols.condition'),
       width: '140px',
       render: (value: unknown) => (
         <Badge variant="secondary" size="sm" className="border-emerald-200 bg-emerald-50 text-emerald-700">
@@ -160,13 +160,13 @@ export function getInventoryUnitColumns(): Column<InventoryUnitRow>[] {
     },
     {
       key: 'unitPurchaseValue',
-      label: 'Purchase Value',
+      label: t('furnitureTab.cols.purchaseValue'),
       width: '160px',
       render: (value: unknown) => <span className="font-medium text-slate-700">{formatMoney(Number((value as number) ?? 0))}</span>,
     },
     {
       key: 'unitCapitalValue',
-      label: 'Capital Value',
+      label: t('furnitureTab.cols.capitalValue'),
       width: '160px',
       render: (value: unknown) => <span className="font-semibold text-emerald-700">{formatMoney(Number((value as number) ?? 0))}</span>,
     },
@@ -176,78 +176,73 @@ export function getInventoryUnitColumns(): Column<InventoryUnitRow>[] {
 // ─── SubUnitsTab Columns ──────────────────────────────────────────────────────
 type SubUnitRow = AssetChildAssetItem & Record<string, unknown>;
 
-export function getSubUnitMainColumns(): Column<SubUnitRow>[] {
+export function getSubUnitMainColumns(t: any): Column<SubUnitRow>[] {
   return [
-
-    { key: 'assetNo', label: 'Asset No', width: '130px', render: (v) => <span className="font-semibold text-blue-700">{blank(v as string | null)}</span> },
-    { key: 'assetName', label: 'Asset Name', width: '200px', render: (v) => blank(v as string | null) },
-    { key: 'assetCategoryName', label: 'Category', width: '140px', render: (v) => blank(v as string | null) },
-    { key: 'assetTypeName', label: 'Type', width: '160px', render: (v) => blank(v as string | null) },
-    { key: 'occupancyStatus', label: 'Occupancy', width: '110px', render: (v) => blank(v as string | null) },
-    { key: 'typeOfUseName', label: 'Use Type', width: '130px', render: (v) => blank(v as string | null) },
-    { key: 'subTypeOfUseName', label: 'Sub Use Type', width: '140px', render: (v) => blank(v as string | null) },
-    { key: 'builtUpAreaSqMeter', label: 'Built-up (sq.m)', width: '130px', render: (v) => formatArea(v as string | number | null) },
-    { key: 'carpetAreaSqMeter', label: 'Carpet (sq.m)', width: '120px', render: (v) => formatArea(v as string | number | null) },
-    { key: 'zoneName', label: 'Zone', width: '110px', render: (v) => blank(v as string | null) },
-    { key: 'wardName', label: 'Ward', width: '90px', render: (v) => blank(v as string | null) },
-    { key: 'moujaName', label: 'Mouja', width: '110px', render: (v) => blank(v as string | null) },
-
+    { key: 'assetNo', label: t('subUnitsTab.cols.assetNo'), width: '130px', render: (v) => <span className="font-semibold text-blue-700">{blank(v as string | null)}</span> },
+    { key: 'assetName', label: t('subUnitsTab.cols.assetName'), width: '200px', render: (v) => blank(v as string | null) },
+    { key: 'assetCategoryName', label: t('subUnitsTab.cols.category'), width: '140px', render: (v) => blank(v as string | null) },
+    { key: 'assetTypeName', label: t('subUnitsTab.cols.type'), width: '160px', render: (v) => blank(v as string | null) },
+    { key: 'occupancyStatus', label: t('subUnitsTab.cols.occupancy'), width: '110px', render: (v) => blank(v as string | null) },
+    { key: 'typeOfUseName', label: t('subUnitsTab.cols.useType'), width: '130px', render: (v) => blank(v as string | null) },
+    { key: 'subTypeOfUseName', label: t('subUnitsTab.cols.subUseType'), width: '140px', render: (v) => blank(v as string | null) },
+    { key: 'builtUpAreaSqMeter', label: t('subUnitsTab.cols.builtUp'), width: '130px', render: (v) => formatArea(v as string | number | null) },
+    { key: 'carpetAreaSqMeter', label: t('subUnitsTab.cols.carpet'), width: '120px', render: (v) => formatArea(v as string | number | null) },
+    { key: 'zoneName', label: t('subUnitsTab.cols.zone'), width: '110px', render: (v) => blank(v as string | null) },
+    { key: 'wardName', label: t('subUnitsTab.cols.ward'), width: '90px', render: (v) => blank(v as string | null) },
+    { key: 'moujaName', label: t('subUnitsTab.cols.mouja'), width: '110px', render: (v) => blank(v as string | null) },
   ];
 }
 
-export function getSubUnitRenterColumns(): Column<Record<string, unknown>>[] {
+export function getSubUnitRenterColumns(t: any): Column<Record<string, unknown>>[] {
   return [
-    { key: 'renterName', label: 'Renter Name', width: '180px', render: (v) => <span className="font-semibold text-slate-900">{blank(v as string | null)}</span> },
-    { key: 'leaseRentType', label: 'Lease Type', width: '120px', render: (v) => blank(v as string | null) },
-    { key: 'mobileNo', label: 'Mobile', width: '120px', render: (v) => blank(v as string | null) },
-    { key: 'emailId', label: 'Email', width: '180px', render: (v) => blank(v as string | null) },
-    { key: 'rentAmount', label: 'Rent', width: '110px', align: 'center', render: (v) => formatNumber(v as string | number | null) },
-    { key: 'securityDeposit', label: 'Deposit', width: '120px', align: 'center', cellClassName: 'font-semibold text-emerald-700', render: (v) => formatNumber(v as string | number | null) },
+    { key: 'renterName', label: t('subUnitsTab.cols.renterName'), width: '180px', render: (v) => <span className="font-semibold text-slate-900">{blank(v as string | null)}</span> },
+    { key: 'leaseRentType', label: t('subUnitsTab.cols.leaseType'), width: '120px', render: (v) => blank(v as string | null) },
+    { key: 'mobileNo', label: t('subUnitsTab.cols.mobile'), width: '120px', render: (v) => blank(v as string | null) },
+    { key: 'emailId', label: t('subUnitsTab.cols.email'), width: '180px', render: (v) => blank(v as string | null) },
+    { key: 'rentAmount', label: t('subUnitsTab.cols.rent'), width: '110px', align: 'center', render: (v) => formatNumber(v as string | number | null) },
+    { key: 'securityDeposit', label: t('subUnitsTab.cols.deposit'), width: '120px', align: 'center', cellClassName: 'font-semibold text-emerald-700', render: (v) => formatNumber(v as string | number | null) },
   ];
 }
 
-export function getSubUnitRoomColumns(): Column<Record<string, unknown>>[] {
+export function getSubUnitRoomColumns(t: any): Column<Record<string, unknown>>[] {
   return [
-    { key: 'roomNo', label: 'Room No', width: '110px', render: (v) => <span className="font-semibold text-slate-900">{blank(v as string | null)}</span> },
-    { key: 'roomType', label: 'Room Type', width: '140px', render: (v) => blank(v as string | null) },
-    { key: 'shape', label: 'Shape', width: '110px', render: (v) => blank(v as string | null) },
-    { key: 'submissionType', label: 'Submission Type', width: '160px', render: (v) => blank(v as string | null) },
-    { key: 'lengthMtr', label: 'L', width: '80px', align: 'center', render: (v) => blank(v as string | number | null) },
-    { key: 'widthMtr', label: 'W', width: '80px', align: 'center', render: (v) => blank(v as string | number | null) },
-    { key: 'heightMtr', label: 'H', width: '80px', align: 'center', render: (v) => blank(v as string | number | null) },
-    { key: 'outerYesNo', label: 'Outer', width: '90px', align: 'center', render: (v) => boolToYesNo(v as boolean | null) },
-    { key: 'minusYesNo', label: 'Minus', width: '90px', align: 'center', render: (v) => boolToYesNo(v as boolean | null) },
+    { key: 'roomNo', label: t('subUnitsTab.cols.roomNo'), width: '110px', render: (v) => <span className="font-semibold text-slate-900">{blank(v as string | null)}</span> },
+    { key: 'roomType', label: t('subUnitsTab.cols.roomType'), width: '140px', render: (v) => blank(v as string | null) },
+    { key: 'shape', label: t('subUnitsTab.cols.shape'), width: '110px', render: (v) => blank(v as string | null) },
+    { key: 'submissionType', label: t('subUnitsTab.cols.submissionType'), width: '160px', render: (v) => blank(v as string | null) },
+    { key: 'lengthMtr', label: t('subUnitsTab.cols.length'), width: '80px', align: 'center', render: (v) => blank(v as string | number | null) },
+    { key: 'widthMtr', label: t('subUnitsTab.cols.width'), width: '80px', align: 'center', render: (v) => blank(v as string | number | null) },
+    { key: 'heightMtr', label: t('subUnitsTab.cols.height'), width: '80px', align: 'center', render: (v) => blank(v as string | number | null) },
+    { key: 'outerYesNo', label: t('subUnitsTab.cols.outer'), width: '90px', align: 'center', render: (v) => boolToYesNo(v as boolean | null, t) },
+    { key: 'minusYesNo', label: t('subUnitsTab.cols.minus'), width: '90px', align: 'center', render: (v) => boolToYesNo(v as boolean | null, t) },
   ];
 }
 
-export function getSubUnitFloorColumns(): Column<Record<string, unknown>>[] {
+export function getSubUnitFloorColumns(t: any): Column<Record<string, unknown>>[] {
   return [
-    { key: 'floorName', label: 'Floor', width: '120px', render: (v) => <span className="font-semibold text-slate-900">{blank(v as string | null)}</span> },
-    { key: 'constructionYear', label: 'Construction Year', width: '150px', render: (v) => blank(v as string | null) },
-    { key: 'constructionTypeName', label: 'Construction Type', width: '160px', render: (v) => blank(v as string | null) },
-    { key: 'typeOfUseName', label: 'Use Type', width: '140px', render: (v) => blank(v as string | null) },
-    { key: 'carpetAreaSqMeter', label: 'Carpet', width: '110px', align: 'center', render: (v) => formatArea(v as string | number | null) },
-    { key: 'builtUpAreaSqMeter', label: 'Built-up', width: '110px', align: 'center', render: (v) => formatArea(v as string | number | null) },
-    { key: 'capitalValue', label: 'Capital Value', width: '130px', align: 'center', render: (v) => formatNumber(v as string | number | null) },
+    { key: 'floorName', label: t('subUnitsTab.cols.floor'), width: '120px', render: (v) => <span className="font-semibold text-slate-900">{blank(v as string | null)}</span> },
+    { key: 'constructionYear', label: t('subUnitsTab.cols.constructionYear'), width: '150px', render: (v) => blank(v as string | null) },
+    { key: 'constructionTypeName', label: t('subUnitsTab.cols.constructionType'), width: '160px', render: (v) => blank(v as string | null) },
+    { key: 'typeOfUseName', label: t('subUnitsTab.cols.useType'), width: '140px', render: (v) => blank(v as string | null) },
+    { key: 'carpetAreaSqMeter', label: t('subUnitsTab.cols.carpet'), width: '110px', align: 'center', render: (v) => formatArea(v as string | number | null) },
+    { key: 'builtUpAreaSqMeter', label: t('subUnitsTab.cols.builtUp'), width: '110px', align: 'center', render: (v) => formatArea(v as string | number | null) },
+    { key: 'capitalValue', label: t('subUnitsTab.cols.capitalValue'), width: '130px', align: 'center', render: (v) => formatNumber(v as string | number | null) },
   ];
 }
 
-export function getSubUnitDetailColumns(): Column<Record<string, unknown>>[] {
+export function getSubUnitDetailColumns(t: any): Column<Record<string, unknown>>[] {
   return [
-
-    { key: 'assetNo', label: 'Asset No', width: '130px', render: (v) => <span className="font-semibold text-blue-700">{blank(v as string | null)}</span> },
-    { key: 'assetName', label: 'Asset Name', width: '200px', render: (v) => blank(v as string | null) },
-    { key: 'assetCategoryName', label: 'Category', width: '140px', render: (v) => blank(v as string | null) },
-    { key: 'assetTypeName', label: 'Type', width: '160px', render: (v) => blank(v as string | null) },
-    { key: 'occupancyStatus', label: 'Occupancy', width: '110px', render: (v) => blank(v as string | null) },
-    { key: 'typeOfUseName', label: 'Use Type', width: '130px', render: (v) => blank(v as string | null) },
-    { key: 'subTypeOfUseName', label: 'Sub Use Type', width: '140px', render: (v) => blank(v as string | null) },
-    { key: 'builtUpAreaSqMeter', label: 'Built-up (sq.m)', width: '130px', render: (v) => formatArea(v as string | number | null) },
-    { key: 'carpetAreaSqMeter', label: 'Carpet (sq.m)', width: '120px', render: (v) => formatArea(v as string | number | null) },
-    { key: 'zoneName', label: 'Zone', width: '110px', render: (v) => blank(v as string | null) },
-    { key: 'wardName', label: 'Ward', width: '90px', render: (v) => blank(v as string | null) },
-    { key: 'moujaName', label: 'Mouja', width: '110px', render: (v) => blank(v as string | null) },
-
-
+    { key: 'assetNo', label: t('subUnitsTab.cols.assetNo'), width: '130px', render: (v) => <span className="font-semibold text-blue-700">{blank(v as string | null)}</span> },
+    { key: 'assetName', label: t('subUnitsTab.cols.assetName'), width: '200px', render: (v) => blank(v as string | null) },
+    { key: 'assetCategoryName', label: t('subUnitsTab.cols.category'), width: '140px', render: (v) => blank(v as string | null) },
+    { key: 'assetTypeName', label: t('subUnitsTab.cols.type'), width: '160px', render: (v) => blank(v as string | null) },
+    { key: 'occupancyStatus', label: t('subUnitsTab.cols.occupancy'), width: '110px', render: (v) => blank(v as string | null) },
+    { key: 'typeOfUseName', label: t('subUnitsTab.cols.useType'), width: '130px', render: (v) => blank(v as string | null) },
+    { key: 'subTypeOfUseName', label: t('subUnitsTab.cols.subUseType'), width: '140px', render: (v) => blank(v as string | null) },
+    { key: 'builtUpAreaSqMeter', label: t('subUnitsTab.cols.builtUp'), width: '130px', render: (v) => formatArea(v as string | number | null) },
+    { key: 'carpetAreaSqMeter', label: t('subUnitsTab.cols.carpet'), width: '120px', render: (v) => formatArea(v as string | number | null) },
+    { key: 'zoneName', label: t('subUnitsTab.cols.zone'), width: '110px', render: (v) => blank(v as string | null) },
+    { key: 'wardName', label: t('subUnitsTab.cols.ward'), width: '90px', render: (v) => blank(v as string | null) },
+    { key: 'moujaName', label: t('subUnitsTab.cols.mouja'), width: '110px', render: (v) => blank(v as string | null) },
   ];
 }

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DocumentsTab } from './detail-tabs/DocumentsTab';
 import { FloorDetailsTab } from './detail-tabs/FloorDetailsTab';
 import { FurnitureFixturesTab } from './detail-tabs/FurnitureFixturesTab';
@@ -46,6 +47,7 @@ const TAB_ICONS: Record<AssetDetailTabKey, React.ElementType> = {
 };
 
 export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: AssetDetailProps) {
+  const t = useTranslations('assetDetail');
   const visibleTabs = useMemo(
     () => (tabs.length > 0 ? tabs : [{ key: 'overview' as const, label: 'Overview' }]),
     [tabs]
@@ -94,23 +96,23 @@ export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
         <Card variant="default" padding="sm" className="group relative min-h-22 overflow-hidden border-blue-200 shadow-sm">
           <div className="absolute left-0 top-0 h-full w-1 bg-blue-500" />
-          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Info className="h-3 w-3 text-blue-500" /> Asset ID</p>
+          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Info className="h-3 w-3 text-blue-500" /> {t('overviewTab.assetNo')}</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.assetNo)}</p>
         </Card>
         <Card variant="default" padding="sm" className="min-h-22 border-slate-200 shadow-sm">
-          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Map className="h-3 w-3 text-blue-500" /> Zone</p>
+          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Map className="h-3 w-3 text-blue-500" /> {t('overviewTab.zone')}</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.zoneName)}</p>
         </Card>
         <Card variant="default" padding="sm" className="min-h-22 border-slate-200 shadow-sm">
-          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><MapPin className="h-3 w-3 text-blue-500" /> Ward</p>
+          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><MapPin className="h-3 w-3 text-blue-500" /> {t('overviewTab.ward')}</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.wardName)}</p>
         </Card>
         <Card variant="default" padding="sm" className="min-h-22 border-slate-200 shadow-sm">
-          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><ClipboardList className="h-3 w-3 text-blue-500" /> Category</p>
+          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><ClipboardList className="h-3 w-3 text-blue-500" /> {t('overviewTab.category')}</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.assetCategoryName)}</p>
         </Card>
         <Card variant="default" padding="sm" className="min-h-22 border-slate-200 shadow-sm">
-          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Search className="h-3 w-3 text-blue-500" /> CSN</p>
+          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Search className="h-3 w-3 text-blue-500" /> {t('overviewTab.csn')}</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.csn)}</p>
         </Card>
       </div>
@@ -126,7 +128,7 @@ export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: 
                   icon={TAB_ICONS[tab.key]}
                   className="relative h-auto px-1 pb-3 pt-2 text-[13px] font-bold"
                 >
-                  {tab.label}
+                  {t(`tabs.${tab.key}`, { defaultValue: tab.label })}
                 </Tabs.Tab>
               ))}
             </Tabs.TabList>

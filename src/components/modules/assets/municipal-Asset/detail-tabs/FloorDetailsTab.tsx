@@ -1,16 +1,16 @@
-/* eslint-disable i18next/no-literal-string */
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { MasterTable } from '@/components/common';
 import type { AssetDetailRecord, AssetFloorDetailItem } from '@/types/municipal-asset/detail-tabs.types';
 import { AlertCircle, BadgeIndianRupee, Layers } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { blank, formatCurrency, getFloorDetailsColumns } from './detailcolumn';
 
 type FloorTableRow = AssetFloorDetailItem & Record<string, unknown>;
 
 export function FloorDetailsTab({ asset }: { asset: AssetDetailRecord }) {
+  const t = useTranslations('assetDetail');
   const summary = asset.floorSummary;
   const floors = useMemo(() => summary?.floorDetails ?? [], [summary?.floorDetails]);
   const [pageNumber, setPageNumber] = useState(1);
@@ -33,14 +33,14 @@ export function FloorDetailsTab({ asset }: { asset: AssetDetailRecord }) {
     setPageNumber(1);
   }, [summary?.totalFloors]);
 
-  const columns = useMemo(() => getFloorDetailsColumns(), []);
+  const columns = useMemo(() => getFloorDetailsColumns(t), [t]);
 
   if (asset.floorSummaryError) {
     return (
       <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
         <div className="flex items-center gap-2 font-bold">
           <AlertCircle className="h-4 w-4" />
-          Floor details could not be loaded
+          {t('floorTab.errorTitle')}
         </div>
         <p className="mt-1 text-xs">{asset.floorSummaryError}</p>
       </div>
@@ -51,8 +51,8 @@ export function FloorDetailsTab({ asset }: { asset: AssetDetailRecord }) {
     <div className="space-y-4 animate-in fade-in duration-300">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 max-w-xl">
         {[
-          { label: 'Total Floors', value: blank(summary?.totalFloors ?? floors.length), icon: Layers },
-          { label: 'Total Capital Value', value: formatCurrency(summary?.totalCapitalValue), icon: BadgeIndianRupee },
+          { label: t('floorTab.totalFloors'), value: blank(summary?.totalFloors ?? floors.length), icon: Layers },
+          { label: t('floorTab.totalCapitalValue'), value: formatCurrency(summary?.totalCapitalValue), icon: BadgeIndianRupee },
         ].map((item) => {
           const Icon = item.icon;
           return (
@@ -71,9 +71,9 @@ export function FloorDetailsTab({ asset }: { asset: AssetDetailRecord }) {
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
           <div className="flex items-center gap-2 text-slate-800">
             <Layers className="h-4 w-4 text-blue-600" />
-            <h3 className="text-sm font-bold">Floor Details</h3>
+            <h3 className="text-sm font-bold">{t('floorTab.title')}</h3>
           </div>
-          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-600">{floors.length} floors</span>
+          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-600">{t('floorTab.floorsCount', { count: floors.length })}</span>
         </div>
 
         <MasterTable<FloorTableRow>
@@ -86,7 +86,7 @@ export function FloorDetailsTab({ asset }: { asset: AssetDetailRecord }) {
           totalPages={totalPages}
           onPageChange={setPageNumber}
           paginationConfig={{ enabled: true }}
-          emptyText="No floor details available for this asset."
+          emptyText={t('floorTab.emptyText')}
           headerTitle=""
           headerSubtitle=""
           tableClassName="min-w-[1280px]"

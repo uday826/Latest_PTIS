@@ -73,6 +73,7 @@ export default getRequestConfig(async ({ locale }) => {
     inventoryConditionMessages,
     ownershipTypeMessages,
     owningDepartmentMessages,
+    assetDetailMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -167,6 +168,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/inventoryCondition.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/ownership-type.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/owning-department.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetDetail.json`).then((m) => m.default),
   ]);
 
 
@@ -232,6 +234,7 @@ export default getRequestConfig(async ({ locale }) => {
       inventoryCondition: inventoryConditionMessages,
       ownershipType: ownershipTypeMessages,
       owningDepartment: owningDepartmentMessages,
+      assetDetail: assetDetailMessages,
     },
   };
 });
