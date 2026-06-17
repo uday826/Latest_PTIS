@@ -111,7 +111,7 @@ function toLeaseRentRecord(item: AssetLeaseRentDetailsListItem): LeaseRentRecord
     tenantPanCardNo: item.tenantPanCardNo?.trim() || undefined,
     tenantAddress: item.tenantAddress?.trim() || undefined,
     pinCode: (item as { pinCode?: string | null }).pinCode?.trim() || undefined,
-    leaseType: item.leaseType?.trim() || '-',
+    leaseType: item.leaseType?.trim() || '',
     leaseRentType: item.leaseRentType?.trim() || undefined,
     applicationTypeName: item.applicationTypeName?.trim() || undefined,
     applicationTypeId: item.applicationTypeId ?? null,
@@ -451,6 +451,7 @@ export async function createLeaseRentRegistrationAction(
     monthlyRent: toNum(data.monthlyRent),
     securityDeposit: toNum(data.securityDeposit) ?? 0,
     paymentFrequency: data.paymentFrequency?.trim() || null,
+    duration: toNum(data.duration),
     reason: data.reason?.trim() || null,
   };
 

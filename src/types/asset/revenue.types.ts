@@ -182,6 +182,7 @@ export interface ManageRentersApprovalPageData extends ManageRentersWorkflowBase
 
 export interface LeaseRentFormSubmitData {
   assetId: number;
+  parentAssetId?: number;
   applicationTypeId: number;
   shopNo?: string;
   floorId?: number;
@@ -205,6 +206,7 @@ export interface LeaseRentFormSubmitData {
   monthlyRent?: number;
   securityDeposit?: number;
   paymentFrequency?: string;
+  duration?: number;
   reason?: string;
 }
 

@@ -21,7 +21,7 @@ import {
   Image as ImageIcon,
   Loader2,
 } from 'lucide-react';
-import { Button, Drawer, Label, MasterTable, type Column, useToast } from '@/components/common';
+import { Button, Drawer, Label, MasterTable, type Column, useToast, Select, type Option } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { EMAIL_REGEX } from '@/lib/utils/validation-rules';
 import { kycValidators } from '@/lib/utils/kyc-validation.constants';
@@ -85,6 +85,12 @@ function firstNonEmpty(...values: Array<unknown>): string {
     if (text) return text;
   }
   return '';
+}
+
+/** Strip legacy '-' placeholder values so empty selects show placeholder */
+function sanitizeSelectValue(value: unknown): string {
+  const str = typeof value === 'string' ? value.trim() : '';
+  return str === '-' ? '' : str;
 }
 
 function toDateDisplay(value: unknown): string {
@@ -161,19 +167,19 @@ function buildInitialFormState(
     tenantName: firstNonEmpty(record?.tenantName),
     mobileNumber: firstNonEmpty(record?.tenantMobile, asset.inChargeMobile),
     emailAddress: firstNonEmpty(record?.tenantEmail, asset.inChargeEmail),
-    tenantType: firstNonEmpty((record as Record<string, unknown> | null)?.tenantType, 'Individual'),
+    tenantType: sanitizeSelectValue((record as Record<string, unknown> | null)?.tenantType),
     aadhaarNumber: firstNonEmpty(record?.tenantAadhaarNo),
     panNumber: firstNonEmpty(record?.tenantPanCardNo),
     pinCode: firstNonEmpty(record?.pinCode, asset.pinCode),
     residentialAddress: firstNonEmpty(record?.tenantAddress, asset.address),
     shopNo: firstNonEmpty(record?.shopNo, asset.assetNo),
     shopName: firstNonEmpty(record?.shopName, asset.assetName),
-    leaseType: firstNonEmpty(record?.leaseType, 'Rent'),
+    leaseType: sanitizeSelectValue(record?.leaseType),
     leaseStartDate: toDateInputValue(record?.leaseStartDate ?? record?.submittedDate ?? asset.createdDate ?? ''),
     leaseEndDate: toDateInputValue(record?.leaseEndDate ?? asset.updatedDate ?? ''),
     monthlyRent: rentValue,
     securityDeposit: record?.securityDeposit != null ? String(record.securityDeposit).replace(/,/g, '') : '',
-    paymentFrequency: firstNonEmpty(record?.paymentFrequency, 'Monthly'),
+    paymentFrequency: sanitizeSelectValue(record?.paymentFrequency),
     existingTenantName: firstNonEmpty(record?.previousTenantName, record?.tenantName),
     oldLeaseStartDate: toDateInputValue(record?.oldLeaseStartDate ?? record?.submittedDate ?? asset.createdDate ?? ''),
     oldLeaseEndDate: toDateInputValue(record?.oldLeaseEndDate ?? asset.updatedDate ?? ''),
@@ -219,9 +225,9 @@ function buildTemplate(
       { key: 'renewalEndDate', label: t('drawers.form.renewalEndDate'), icon: Calendar, type: 'date' },
       { key: 'previousRent', label: t('drawers.form.previousRent'), icon: IndianRupee, type: 'number', placeholder: t('drawers.form.previousRentPlaceholder') },
       { key: 'revisedRent', label: t('drawers.form.revisedRent'), icon: IndianRupee, type: 'number', placeholder: t('drawers.form.revisedRentPlaceholder'), required: true },
-      { key: 'paymentFrequency', label: t('drawers.form.paymentFrequency'), icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'] },
+      { key: 'paymentFrequency', label: t('drawers.form.paymentFrequency'), icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'], required: true },
       { key: 'securityDeposit', label: t('drawers.form.securityDeposit'), icon: IndianRupee, type: 'number', placeholder: '0' },
-      { key: 'leaseType', label: t('drawers.form.leaseType'), icon: FileText, type: 'select', options: ['Rent', 'Lease'] },
+      { key: 'leaseType', label: t('drawers.form.leaseType'), icon: FileText, type: 'select', options: ['Rent', 'Lease'], required: true },
       { key: 'reasonForRenewal', label: t('drawers.form.reasonForRenewal'), icon: FileText, type: 'textarea', placeholder: t('drawers.form.reasonForRenewalPlaceholder'), colSpan: 2 },
     ],
   };
@@ -270,10 +276,10 @@ function buildTemplate(
       { key: 'applicationType', label: t('drawers.form.applicationType'), icon: FileText, type: 'select', colSpan: 2, options: typeOptions },
       { key: 'tenantName', label: t('drawers.form.tenantName'), icon: User, type: 'text', placeholder: t('drawers.form.tenantNamePlaceholder'), required: true },
       { key: 'mobileNumber', label: t('drawers.form.mobileNumber'), icon: Phone, type: 'text', placeholder: t('drawers.form.mobileNumberPlaceholder') },
-      { key: 'leaseType', label: t('drawers.form.leaseType'), icon: FileText, type: 'select', options: ['Rent', 'Lease'] },
+      { key: 'leaseType', label: t('drawers.form.leaseType'), icon: FileText, type: 'select', options: ['Rent', 'Lease'], required: true },
       { key: 'previousRent', label: t('drawers.form.previousRent'), icon: IndianRupee, type: 'number', placeholder: t('drawers.form.previousRentPlaceholder') },
       { key: 'revisedRent', label: t('drawers.form.revisedRent'), icon: IndianRupee, type: 'number', placeholder: t('drawers.form.revisedRentPlaceholder'), required: true },
-      { key: 'paymentFrequency', label: t('drawers.form.paymentFrequency'), icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'] },
+      { key: 'paymentFrequency', label: t('drawers.form.paymentFrequency'), icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'], required: true },
       { key: 'leaseStartDate', label: t('drawers.form.leaseStartDate'), icon: Calendar, type: 'date' },
       { key: 'leaseEndDate', label: t('drawers.form.leaseEndDate'), icon: Calendar, type: 'date' },
       { key: 'remarksDescription', label: t('drawers.form.remarksDescription'), icon: FileText, type: 'textarea', placeholder: t('drawers.form.remarksDescriptionPlaceholder'), colSpan: 2 },
@@ -291,7 +297,7 @@ function buildTemplate(
       { key: 'tenantName', label: t('drawers.form.tenantName'), icon: User, type: 'text', placeholder: t('drawers.form.tenantNamePlaceholder'), required: true },
       { key: 'mobileNumber', label: t('drawers.form.mobileNumber'), icon: Phone, type: 'text', placeholder: t('drawers.form.mobileNumberPlaceholder'), required: true },
       { key: 'emailAddress', label: t('drawers.form.emailAddress'), icon: Mail, type: 'text', placeholder: 'email@example.com', required: true },
-      { key: 'tenantType', label: t('drawers.form.tenantType'), icon: BadgeCheck, type: 'select', options: ['Individual', 'Business', 'Government', 'Trust'] },
+      { key: 'tenantType', label: t('drawers.form.tenantType'), icon: BadgeCheck, type: 'select', options: ['Individual', 'Business', 'Government', 'Trust'], required: true },
       { key: 'aadhaarNumber', label: t('drawers.form.aadhaarNumber'), icon: FileText, type: 'text', placeholder: t('drawers.form.aadhaarNumberPlaceholder') },
       { key: 'panNumber', label: t('drawers.form.panNumber'), icon: FileText, type: 'text', placeholder: t('drawers.form.panNumberPlaceholder') },
       { key: 'leaseType', label: t('drawers.form.leaseType'), icon: FileText, type: 'select', options: ['Rent', 'Lease'], required: true },
@@ -299,7 +305,7 @@ function buildTemplate(
       { key: 'leaseStartDate', label: t('drawers.form.leaseStartDate'), icon: Calendar, type: 'date', required: true },
       { key: 'leaseEndDate', label: t('drawers.form.leaseEndDate'), icon: Calendar, type: 'date' },
       { key: 'securityDeposit', label: t('drawers.form.securityDeposit'), icon: IndianRupee, type: 'number', placeholder: '0.00' },
-      { key: 'paymentFrequency', label: t('drawers.form.paymentFrequency'), icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'] },
+      { key: 'paymentFrequency', label: t('drawers.form.paymentFrequency'), icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'], required: true },
       { key: 'pinCode', label: t('drawers.form.pinCode'), icon: MapPinned, type: 'text', placeholder: t('drawers.form.pinCodePlaceholder') },
       { key: 'residentialAddress', label: t('drawers.form.residentialAddress'), icon: MapPin, type: 'textarea', placeholder: t('drawers.form.residentialAddressPlaceholder'), colSpan: 2 },
       { key: 'remarksDescription', label: t('drawers.form.remarksDescription'), icon: FileText, type: 'textarea', placeholder: t('drawers.form.remarksDescriptionPlaceholder'), colSpan: 2, required: true },
@@ -324,6 +330,17 @@ function buildTemplate(
   }
 }
 
+function calculateDurationInMonths(startDateStr?: string, endDateStr?: string): number | undefined {
+  if (!startDateStr || !endDateStr) return undefined;
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return undefined;
+
+  const diffTime = end.getTime() - start.getTime() + (24 * 60 * 60 * 1000); // inclusive of end day
+  const months = Math.round(diffTime / (30.4375 * 24 * 60 * 60 * 1000));
+  return months >= 0 ? months : 0;
+}
+
 function buildSubmitData(
   formState: FormState,
   assetId: number,
@@ -345,15 +362,17 @@ function buildSubmitData(
         previousTenantMobile: formState.mobileNumber || undefined,
         tenantName: formState.existingTenantName || 'N/A',
         tenantMobile: formState.mobileNumber || undefined,
-        leaseType: formState.leaseType || 'Rent',
+        leaseType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseRentType: sanitizeSelectValue(formState.leaseType) || undefined,
         oldLeaseStartDate: formState.oldLeaseStartDate || undefined,
         oldLeaseEndDate: formState.oldLeaseEndDate || undefined,
         leaseStartDate: formState.renewalStartDate || undefined,
         leaseEndDate: formState.renewalEndDate || undefined,
+        duration: calculateDurationInMonths(formState.renewalStartDate, formState.renewalEndDate),
         previousMonthlyRent: toNum(formState.previousRent),
         monthlyRent: toNum(formState.revisedRent),
         securityDeposit: toNum(formState.securityDeposit),
-        paymentFrequency: formState.paymentFrequency || 'Monthly',
+        paymentFrequency: sanitizeSelectValue(formState.paymentFrequency) || undefined,
         reason: formState.reasonForRenewal || undefined,
       };
 
@@ -365,7 +384,11 @@ function buildSubmitData(
         previousTenantMobile: formState.mobileNumber || undefined,
         tenantName: formState.newTenantDetails || 'N/A',
         tenantMobile: formState.newTenantMobile || undefined,
-        tenantType: formState.relationship || undefined,
+        tenantType: sanitizeSelectValue(formState.relationship || formState.tenantType) || undefined,
+        leaseType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseRentType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseStartDate: formState.leaseStartDate || undefined,
+        paymentFrequency: sanitizeSelectValue(formState.paymentFrequency) || undefined,
         reason: formState.reasonForTransfer || undefined,
       };
 
@@ -373,9 +396,13 @@ function buildSubmitData(
       return {
         assetId,
         applicationTypeId: selectedTypeId,
-        tenantType: 'Individual',
+        tenantType: sanitizeSelectValue(formState.tenantType) || undefined,
         tenantName: formState.tenantName || 'N/A',
         tenantMobile: formState.mobileNumber || undefined,
+        leaseType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseRentType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseStartDate: formState.leaseStartDate || undefined,
+        paymentFrequency: sanitizeSelectValue(formState.paymentFrequency) || undefined,
         terminationDate: formState.vacatingDate || undefined,
         securityDeposit: toNum(formState.securityDepositRefund),
         reason: [formState.reasonForTermination, formState.remarksDescription].filter(Boolean).join(' - ') || undefined,
@@ -388,12 +415,14 @@ function buildSubmitData(
         tenantType: 'Individual',
         tenantName: formState.tenantName || 'N/A',
         tenantMobile: formState.mobileNumber || undefined,
-        leaseType: formState.leaseType || 'Rent',
+        leaseType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseRentType: sanitizeSelectValue(formState.leaseType) || undefined,
         previousMonthlyRent: toNum(formState.previousRent),
         monthlyRent: toNum(formState.revisedRent),
-        paymentFrequency: formState.paymentFrequency || 'Monthly',
+        paymentFrequency: sanitizeSelectValue(formState.paymentFrequency) || undefined,
         leaseStartDate: formState.leaseStartDate || undefined,
         leaseEndDate: formState.leaseEndDate || undefined,
+        duration: calculateDurationInMonths(formState.leaseStartDate, formState.leaseEndDate),
         reason: formState.remarksDescription || undefined,
       };
 
@@ -406,16 +435,18 @@ function buildSubmitData(
         tenantName: formState.tenantName || 'N/A',
         tenantMobile: formState.mobileNumber || undefined,
         tenantEmail: formState.emailAddress || undefined,
-        tenantType: formState.tenantType || 'Individual',
+        tenantType: sanitizeSelectValue(formState.tenantType) || undefined,
         tenantAadhaarNo: formState.aadhaarNumber || undefined,
         tenantPanCardNo: formState.panNumber || undefined,
         tenantAddress: formState.residentialAddress || undefined,
-        leaseType: formState.leaseType || 'Rent',
+        leaseType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseRentType: sanitizeSelectValue(formState.leaseType) || undefined,
         leaseStartDate: formState.leaseStartDate || undefined,
         leaseEndDate: formState.leaseEndDate || undefined,
+        duration: calculateDurationInMonths(formState.leaseStartDate, formState.leaseEndDate),
         monthlyRent: toNum(formState.monthlyRent),
         securityDeposit: toNum(formState.securityDeposit),
-        paymentFrequency: formState.paymentFrequency || 'Monthly',
+        paymentFrequency: sanitizeSelectValue(formState.paymentFrequency) || undefined,
         reason: formState.remarksDescription || undefined,
       };
   }
@@ -570,19 +601,15 @@ function RenderField({
         <Icon className="w-3 h-3 text-slate-400" /> {field.label}
       </Label>
       {field.type === 'select' ? (
-        <select
-          className={sharedInputClass}
+        <Select
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          options={(field.options ?? []).map((opt): Option => ({ label: opt, value: opt }))}
+          onChange={(_, val) => setValue(val)}
+          placeholder="— Select —"
           disabled={disabled}
-          aria-disabled={disabled}
-        >
-          {(field.options ?? []).map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+          selectSize="sm"
+          className="w-full"
+        />
       ) : field.type === 'textarea' ? (
         <textarea
           className="w-full min-h-[60px] px-2 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
@@ -1165,7 +1192,14 @@ export function NewLeaseRegistrationModal({
           };
           result = await updateAssetLeaseRentDetailsAction(targetRecordId, updatePayload);
         } else {
-          result = await createLeaseRentRegistrationAction(payload);
+          const parentAssetId =
+            toPositiveNumber(asset.id) ??
+            toPositiveNumber(record?.assetMasterId) ??
+            toPositiveNumber(asset.assetId);
+          result = await createLeaseRentRegistrationAction({
+            ...payload,
+            parentAssetId,
+          });
           leaseRentDetailsId = extractLeaseRentDetailsId(result);
         }
 

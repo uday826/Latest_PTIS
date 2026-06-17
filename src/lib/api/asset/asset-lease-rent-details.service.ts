@@ -327,34 +327,12 @@ export async function getPreviousTenantHistory(
   return response.success && response.data?.items ? response.data.items : [];
 }
 
-export interface CreateAssetLeaseRentDetailsPayload {
+export interface CreateAssetLeaseRentDetailsPayload extends Partial<Omit<AssetLeaseRentDetailsListItem, 'id'>> {
   isActive: boolean;
   createdBy: number;
   assetId: number;
-  shopNo?: string | null;
-  floorId?: number | null;
-  shopName?: string | null;
-  tenantName: string;
-  tenantMobile?: string | null;
-  tenantEmail?: string | null;
-  tenantType?: string | null;
-  tenantAadhaarNo?: string | null;
-  tenantPanCardNo?: string | null;
-  tenantAddress?: string | null;
-  previousTenantName?: string | null;
-  previousTenantMobile?: string | null;
   applicationTypeId: number;
-  leaseType?: string | null;
-  oldLeaseStartDate?: string | null;
-  oldLeaseEndDate?: string | null;
-  leaseStartDate?: string | null;
-  leaseEndDate?: string | null;
-  terminationDate?: string | null;
-  previousMonthlyRent?: number | null;
-  monthlyRent?: number | null;
-  securityDeposit?: number | null;
-  paymentFrequency?: string | null;
-  reason?: string | null;
+  tenantName: string;
 }
 
 export async function createAssetLeaseRentDetails(
