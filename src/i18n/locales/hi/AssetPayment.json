@@ -87,6 +87,8 @@
         "penalty": "जुर्माना",
         "gst": "जीएसटी",
         "total": "कुल",
+        "paidAmount": "भुगतान",
+        "pendingAmount": "बकाया",
         "status": "स्थिति",
         "select": "चुनें"
       },

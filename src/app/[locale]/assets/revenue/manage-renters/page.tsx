@@ -35,6 +35,8 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
     ? data.records.find((record) => Number(record.assetMasterId) === drawerAssetId) ?? null
     : null;
   const fetchedAsset = drawerAssetId ? await getManageRentersAssetDetailsAction(drawerAssetId) : null;
+  const selectedRegistrationId = Number(selectedRegistration?.id);
+  const hasLeaseRentDetailsId = Number.isFinite(selectedRegistrationId) && selectedRegistrationId > 0;
   const selectedAsset = fetchedAsset ?? (selectedRegistration ? {
     id: selectedRegistration.assetMasterId ?? drawerAssetId ?? 0,
     assetId: selectedRegistration.assetMasterId ?? drawerAssetId ?? 0,
@@ -48,8 +50,8 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
     ? await Promise.all([
       fetchAssetDocumentsByAsset(drawerAssetId).then((result) => result.documents).catch(() => []),
       fetchAssetPhotosAndPlansByAsset(drawerAssetId).then((result) => result.documents).catch(() => []),
-      selectedRegistration?.id
-        ? getLeaseRentDetailsDocuments(Number(selectedRegistration.id)).then((result) => result.documents)
+      hasLeaseRentDetailsId
+        ? getLeaseRentDetailsDocuments(selectedRegistrationId).then((result) => result.documents)
         : Promise.resolve([]),
     ])
     : [[], [], []];

@@ -40,11 +40,13 @@ export default async function ManageRentersRevertedPage({
 
   const assetId = drawerAssetId || selectedRevert?.assetId;
   const selectedAsset = assetId ? await getManageRentersAssetDetailsAction(assetId) : null;
+  const selectedRegistrationId = Number(selectedRegistration?.id);
+  const hasLeaseRentDetailsId = Number.isFinite(selectedRegistrationId) && selectedRegistrationId > 0;
   const [assetPhotosAndPlans, leaseRentDocuments] = assetId
     ? await Promise.all([
         fetchAssetPhotosAndPlansByAsset(assetId).then((res) => res.documents).catch(() => []),
-        selectedRegistration?.id
-          ? getLeaseRentDetailsDocuments(Number(selectedRegistration.id)).then((res) => res.documents).catch(() => [])
+        hasLeaseRentDetailsId
+          ? getLeaseRentDetailsDocuments(selectedRegistrationId).then((res) => res.documents).catch(() => [])
           : Promise.resolve([]),
       ])
     : [[], []];
