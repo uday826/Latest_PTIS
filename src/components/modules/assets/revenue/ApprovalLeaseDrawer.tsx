@@ -13,7 +13,7 @@ import {
   Building2,
   MapPinned,
 } from 'lucide-react';
-import { Button, Drawer, MasterTable, type Column, useConfirm, useToast } from '@/components/common';
+import { Button, Drawer, MasterTable, type Column, useToast } from '@/components/common';
 import type { ApprovalLeaseModalProps } from '../../../../types/asset/revenue.types';
 import { approveAction, getPreviousTenantHistoryAction } from '@/app/[locale]/assets/revenue/manage-renters/actions';
 import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
@@ -93,7 +93,7 @@ export function ApprovalLeaseModal({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  
+
   const { success: toastSuccess, error: toastError } = useToast();
   const [historyItems, setHistoryItems] = useState<any[]>([]);
 

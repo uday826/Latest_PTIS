@@ -22,7 +22,6 @@ export function StandaloneSubUnitStep({
 }) {
   const { formData, updateFormData, setSubunitFiles, registerSubmitHook } = useAssetForm();
   const [isGenerating, setIsGenerating] = useState(false);
-  
   const initializedRef = useRef(false);
 
   const parentBuildingId = formData.parentBuildingId;
@@ -278,13 +277,11 @@ export function StandaloneSubUnitStep({
   const handleSaveAll = useCallback(async (): Promise<boolean> => {
     if (units.length === 0) return true;
 
-    
     const loadingToast = toast.loading("Saving all units to database...");
 
     const pId = Number(parentBuildingId || formData.id || formData.assetId || 0);
     if (!pId) {
       toast.error("Parent building ID not resolved.", { id: loadingToast });
-      
       return false;
     }
 
@@ -306,9 +303,8 @@ export function StandaloneSubUnitStep({
         }
       } catch { }
 
-      // Create missing floor details
       const uniqueFloorLevels = new Set<number>(
-        unsaved.map((u: any) => u.floorId).filter((id: any): id is number => !!id)
+        unsaved.map((u: any) => u.floorId as number).filter((id: any): id is number => !!id)
       );
       for (const floorLevelId of uniqueFloorLevels) {
         if (!floorDetailsMap.has(floorLevelId)) {
@@ -441,8 +437,6 @@ export function StandaloneSubUnitStep({
     } catch (err: any) {
       toast.error(err.message || "Save failed.", { id: loadingToast });
       return false;
-    } finally {
-      
     }
   }, [units, parentBuildingId, formData.id]);
 

@@ -9,12 +9,14 @@ export function AssetRegisterControls({
   assetTypeId,
   zoneId,
   wardId,
+  owningDepartmentId,
   totalCount,
   pageSize,
   assets,
   assetTypeOptions,
   zoneOptions,
   wardOptions,
+  owningDepartmentOptions,
 }: AssetRegisterControlsProps) {
   return (
     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -23,9 +25,11 @@ export function AssetRegisterControls({
         assetTypeId={assetTypeId}
         zoneId={zoneId}
         wardId={wardId}
+        owningDepartmentId={owningDepartmentId}
         assetTypeOptions={assetTypeOptions}
         zoneOptions={zoneOptions}
         wardOptions={wardOptions}
+        owningDepartmentOptions={owningDepartmentOptions}
       />
       <AssetRegisterExportButton
         categoryId={categoryId}

@@ -47,7 +47,7 @@ export function formatFieldValue(value: unknown): string {
 }
 
 export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName: string): AssetRegisterRow {
-  const record = item;
+  const record = item as any;
   const parsedId = Number(record.id);
   const safeId = Number.isFinite(parsedId) && parsedId > 0 ? parsedId : null;
   return {

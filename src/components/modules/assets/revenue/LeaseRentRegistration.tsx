@@ -1,9 +1,10 @@
+
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
 import { startTransition, useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Input, Label, SearchInput, Select } from '@/components/common';
+import { Input, Label, SearchInput, SearchSelect, Select } from '@/components/common';
 import { LeaseRentFilters } from './LeaseRentFilters';
 import { LeaseRentTable } from './LeaseRentTable';
 import { LeaseRentVerificationTable } from './LeaseRentVerificationTable';
@@ -361,14 +362,14 @@ export function LeaseRentRegistration({
         <div className="grid grid-cols-1 gap-4 md:grid-cols-[200px_minmax(0,1fr)_170px_170px]">
           <div className="space-y-1.5">
             <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Asset Category</Label>
-            <Select
+            <SearchSelect
+              name="category"
               value={category}
               onChange={(_, value) => handleCategoryChange(value === 'all' ? null : value)}
               options={[
                 { label: 'All Categories', value: 'all' },
                 ...categoryOptions,
               ]}
-              selectSize="sm"
               className="w-full"
               placeholder="All Categories"
             />

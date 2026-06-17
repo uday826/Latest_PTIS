@@ -67,11 +67,8 @@ export interface AssetRegisterApiRecord {
   assetName?: string;
   name?: string;
   categoryName?: string;
-  assetCategoryName?: string;
   assetCategoryId?: number | null;
-  assetTypeName?: string;
   assetTypeId?: number | null;
-  departmentName?: string;
   department?: string;
   parentAssetId?: number;
 

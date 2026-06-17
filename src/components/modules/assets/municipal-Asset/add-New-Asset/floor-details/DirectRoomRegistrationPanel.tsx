@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Edit2, Building, Map, Layers, X } from "lucide-react";
+import { Plus, Trash2, Edit2, Layers } from "lucide-react";
 import { useAssetForm } from "../AssetFormContext";
 import { Input, Select, Button } from "@/components/common";
 import { saveFloorDetail, updateFloorDetail, deleteFloorDetail, fetchSubFloorAction, fetchSubUseTypesAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
@@ -9,8 +9,6 @@ import { RoomWiseSubmissionDrawer } from "../sub-units/RoomWiseSubmissionDrawer"
 import { toast } from "sonner";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { useTranslations } from "next-intl";
-
-import { EyeIcon } from "lucide-react";
 
 interface DirectRoomRegistrationPanelProps {
   dropdownOptions: any;
@@ -107,13 +105,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
     }
   }, [formState.useType]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement;
-    setFormState((prev: any) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }));
-  };
+
 
   const handleAddFloor = async () => {
     if (!formState.floor) {

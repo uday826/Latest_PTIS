@@ -12,11 +12,23 @@ export async function getPaymentHistoryRecordAction(recordId: string): Promise<L
   const record = await getAssetLeaseRentDetailsById(parsedRecordId);
   if (!record) return null;
 
-  const assetResponse = await leaseRentPaymentService.getAssetById(record.assetId);
-  return mapAssetLeaseRentDetailsToPaymentDetail(
+  const [assetResponse, summaryResponse] = await Promise.all([
+    leaseRentPaymentService.getAssetById(record.assetId),
+    leaseRentPaymentService.getLeaseRentDemandSummary(parsedRecordId),
+  ]);
+
+  const baseDetail = mapAssetLeaseRentDetailsToPaymentDetail(
     record,
     assetResponse.success ? assetResponse.data ?? null : null
   );
+
+  if (summaryResponse.success && summaryResponse.data) {
+    const summary = summaryResponse.data;
+    baseDetail.totalPaid = summary.totalPaid ?? 0;
+    baseDetail.totalPending = summary.totalPending ?? 0;
+  }
+
+  return baseDetail;
 }
 
 export async function getPaymentHistoryItemsAction(recordId: string): Promise<LeaseRentPaymentHistoryItem[]> {

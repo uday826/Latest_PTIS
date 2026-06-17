@@ -50,6 +50,8 @@ export default async function PaymentPage({ searchParams }: PageProps) {
     'leaseType',
     'rentDue',
     'status',
+    'leaseStartDate',
+    'leaseEndDate',
   ];
   const rawSortBy = typeof query.SortBy === 'string' ? query.SortBy : '';
   const sortBy = allowedSortBy.includes(rawSortBy as keyof PaymentRecordRow)

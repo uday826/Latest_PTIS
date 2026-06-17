@@ -17,9 +17,11 @@ export function AssetRegisterFilters({
   assetTypeId,
   zoneId,
   wardId,
+  owningDepartmentId,
   assetTypeOptions,
   zoneOptions,
   wardOptions,
+  owningDepartmentOptions,
 }: AssetRegisterFiltersProps) {
   const t = useTranslations('assetRegister');
   const { updateQueries } = useQueryTransition();
@@ -59,6 +61,10 @@ export function AssetRegisterFilters({
 
   const handleWardChange = (newWard: string) => {
     updateQueries({ wardId: newWard === 'all' ? null : newWard, page: '1' });
+  };
+
+  const handleOwningDepartmentChange = (newDept: string) => {
+    updateQueries({ owningDepartmentId: newDept === 'all' ? null : newDept, page: '1' });
   };
 
   return (
@@ -106,6 +112,18 @@ export function AssetRegisterFilters({
             value={wardId}
             onChange={(_, value) => handleWardChange(value)}
             placeholder={t('All_Wards') || 'All Wards'}
+            className="w-full"
+          />
+        </div>
+
+        <div className="w-full sm:w-57.5">
+          <SearchSelect
+            name="owningDepartment"
+            label=""
+            options={owningDepartmentOptions}
+            value={owningDepartmentId}
+            onChange={(_, value) => handleOwningDepartmentChange(value)}
+            placeholder={t('All_Departments') || 'All Departments'}
             className="w-full"
           />
         </div>

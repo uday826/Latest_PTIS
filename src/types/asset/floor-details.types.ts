@@ -185,6 +185,11 @@ export interface FloorDetailApiResponse extends FloorDetailApiRequest {
   id: number;
   createdDate: string;
   updatedDate?: string | null;
+  subFloorName?: string | null;
+  subTypeOfUseName?: string | null;
+  useTypeName?: string | null;
+  roomDetails?: any[] | null;
+  roomWiseDetails?: any[] | null;
 }
 
 export interface SubUnitApiRequest {

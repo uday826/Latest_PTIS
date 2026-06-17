@@ -14,6 +14,7 @@ function normalizeStatus(status: string): string {
   const value = status.trim().toLowerCase();
   if (value === 'paid') return 'Paid';
   if (value === 'unpaid') return 'Unpaid';
+  if (value === 'partial') return 'Partial';
   return status;
 }
 
@@ -124,8 +125,14 @@ function normalizeLeaseType(item: AssetLeaseRentDetailsListItem): string {
 }
 
 function normalizePaymentStatusValue(item: AssetLeaseRentDetailsListItem): string {
-  const paymentStatus = normalizeOptionText(item.paymentStatus).toLowerCase();
-  return paymentStatus === 'paid' ? 'Paid' : 'Unpaid';
+  const statusVal = item.paymentStatus ?? (item as any).PaymentStatus;
+  return normalizeOptionText(statusVal) || '-';
+}
+
+function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  return Number.isNaN(d.getTime()) ? '-' : d.toLocaleDateString('en-GB');
 }
 
 function normalizeRentDue(item: AssetLeaseRentDetailsListItem): number {
@@ -153,6 +160,8 @@ export interface PaymentRecordRow {
   leaseType: string;
   rentDue: number;
   status: string;
+  leaseStartDate: string;
+  leaseEndDate: string;
 }
 
 function mapAssetLeaseRentDetailsToPaymentRow(item: AssetLeaseRentDetailsListItem): PaymentRecordRow {
@@ -175,6 +184,8 @@ function mapAssetLeaseRentDetailsToPaymentRow(item: AssetLeaseRentDetailsListIte
     leaseType: normalizeLeaseType(item),
     rentDue: normalizeRentDue(item),
     status: normalizePaymentStatusValue(item),
+    leaseStartDate: formatDate(item.leaseStartDate),
+    leaseEndDate: formatDate(item.leaseEndDate),
   };
 }
 

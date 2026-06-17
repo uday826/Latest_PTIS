@@ -636,9 +636,7 @@ export function AssetFormFooter() {
               if (setBasicInfoFiles) setBasicInfoFiles({});
             }
           } else {
-            const errorMsg = res.error || "Unknown bulk upload error";
-
-
+            // Bulk upload error
           }
         }
 

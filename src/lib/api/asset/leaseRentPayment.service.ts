@@ -76,10 +76,11 @@ export const leaseRentPaymentService = {
 
   getLeaseRentDemandSummary: async (
     leaseId: number | string,
-    financeYear: number | string
+    financeYear?: number | string | null
   ): Promise<ApiResponse<LeaseRentDemandSummary>> => {
+    const query = financeYear ? `?financeYear=${encodeURIComponent(String(financeYear))}` : '';
     return apiClient.get<LeaseRentDemandSummary>(
-      `/LeaseRentDemand/${encodeURIComponent(String(leaseId))}/summary?financeYear=${encodeURIComponent(String(financeYear))}`
+      `/LeaseRentDemand/${encodeURIComponent(String(leaseId))}/summary${query}`
     );
   },
 

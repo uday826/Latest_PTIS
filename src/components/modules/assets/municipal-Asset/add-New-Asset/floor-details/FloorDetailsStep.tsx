@@ -26,8 +26,6 @@ export default function FloorDetailsPage({
   // would conflict and override UnitPoolPanel's save logic.
   const { formData } = useAssetForm();
 
-  // If both flags are undefined, default to true for Unit Registration to maintain backward compatibility
-  // const showUnitRegistration = formData.allowUnitRegistration ?? true;
   const showRoomRegistration = formData.allowRoomRegistration ?? false;
 
   return (

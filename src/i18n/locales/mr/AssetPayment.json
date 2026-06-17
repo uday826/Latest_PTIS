@@ -38,6 +38,8 @@
     "penalty": "दंड",
     "gst": "जीएसटी",
     "totalAmount": "एकूण रक्कम",
+    "totalPaid": "एकूण भरलेले",
+    "totalPendingDemand": "एकूण प्रलंबित मागणी",
     "mobileNumber": "मोबाईल नंबर",
     "emailAddress": "ईमेल पत्ता",
     "paymentMode": "पेमेंट मोड",
@@ -172,6 +174,8 @@
       "type": "प्रकार",
       "amount": "रक्कम",
       "status": "स्थिती",
+      "leaseStartDate": "लीज प्रारंभ तारीख",
+      "leaseEndDate": "लीज समाप्ती तारीख",
       "action": "क्रिया",
       "pay": "पेमेंट"
     },
