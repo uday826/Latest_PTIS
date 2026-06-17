@@ -1,13 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-<<<<<<< Updated upstream
-import { Plus, Layers, Trash2, CheckCircle2, Loader2, Home } from "lucide-react";
-import { Input } from "@/components/common";
-=======
 import { Plus, Layers, Edit2, Trash2, CheckCircle2, Loader2, Home } from "lucide-react";
 import { Input, SearchSelect } from "@/components/common";
->>>>>>> Stashed changes
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { SubUnitDetailedConfigurator } from "../sub-units/SubUnitDetailedConfigurator";
 import type { PoolUnit } from "@/types/asset/floor-details.types";

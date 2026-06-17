@@ -1,14 +1,8 @@
 "use client";
 
-<<<<<<< Updated upstream
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, Input, Select } from "@/components/common";
-import { Search, Building, Loader2, MapPin, X } from "lucide-react";
-=======
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, Input, Select, SearchSelect } from "@/components/common";
 import { Search, Building, Layers, Loader2, MapPin, X } from "lucide-react";
->>>>>>> Stashed changes
 import { fetchAssetsByFilter, fetchAssetMasterById } from "@/app/[locale]/assets/actions";
 import { fetchFloorsByAsset, getSubUnitsByAssetAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { toast } from "sonner";
@@ -25,7 +19,7 @@ export function MovableParentAssetSection({
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedParentAsset, setSelectedParentAsset] = useState<any | null>(null);
-  
+
   const [floors, setFloors] = useState<any[]>([]);
   const [subunits, setSubunits] = useState<any[]>([]);
   const [isLoadingFloors, setIsLoadingFloors] = useState(false);
