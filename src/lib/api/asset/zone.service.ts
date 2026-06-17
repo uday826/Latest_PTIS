@@ -1,16 +1,8 @@
 import { apiClient } from "@/services/api.service";
 import { ApiResponse } from "@/types/common.types";
+import type { Zone } from "@/types/municipal-asset-service.types";
 
-export interface Zone {
-  id: number;
-  zoneNo: string;
-  ZoneNo?: string;
-  zoneName?: string;
-  ZoneName?: string;
-  description?: string;
-  sequenceNo?: number;
-  isActive?: boolean;
-}
+export type { Zone };
 
 /**
  * Service for fetching Zone master data
@@ -20,27 +12,29 @@ export const zoneService = {
    * Get all active Zones
    */
   getZones: async (): Promise<ApiResponse<Zone[]>> => {
-    const response = await apiClient.get<any>("/Zone?pageSize=-1");
+    const response = await apiClient.get<{ items?: Zone[] } | Zone[]>("/Zone?pageSize=-1");
     if (response.success && response.data) {
-      const items = Array.isArray(response.data)
-        ? response.data
-        : (response.data.items || response.data.Items || response.data.data || []);
+      const data = response.data;
+      const items = Array.isArray(data)
+        ? data
+        : (data.items || []);
       return { ...response, data: items };
     }
-    return response;
+    return response as ApiResponse<Zone[]>;
   },
 
   /**
    * Get all SubZones for Capital Value calculation
    */
-  getSubZones: async (): Promise<ApiResponse<any[]>> => {
-    const response = await apiClient.get<any>("/SubZoneDetailsForCV", { cacheStrategy: 300 });
+  getSubZones: async (): Promise<ApiResponse<unknown[]>> => {
+    const response = await apiClient.get<{ items?: unknown[] } | unknown[]>("/SubZoneDetailsForCV", { cacheStrategy: 300 });
     if (response.success && response.data) {
-      const items = Array.isArray(response.data)
-        ? response.data
-        : (response.data.items || response.data.Items || response.data.data || []);
+      const data = response.data;
+      const items = Array.isArray(data)
+        ? data
+        : (data.items || []);
       return { ...response, data: items };
     }
-    return response;
+    return response as ApiResponse<unknown[]>;
   },
 };

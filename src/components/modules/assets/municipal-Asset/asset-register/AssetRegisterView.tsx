@@ -1,12 +1,12 @@
 import { getTranslations } from 'next-intl/server';
 import { Card, CardContent } from '@/components/common';
-import { mapAssetToRow } from '@/components/modules/assets/municipal-Asset/building-assets/registerMappers';
-import type { AssetRegisterApiRecord } from '@/components/modules/assets/municipal-Asset/building-assets/registerMappers';
-import { AssetRegisterBackButton } from '@/components/modules/assets/municipal-Asset/building-assets/AssetRegisterBackButton';
-import { AssetRegisterControls } from '@/components/modules/assets/municipal-Asset/building-assets/AssetRegisterControls';
-import { AssetRegisterHeaderSummary } from '@/components/modules/assets/municipal-Asset/building-assets/AssetRegisterHeaderSummary';
-import { AssetRegisterTable } from '@/components/modules/assets/municipal-Asset/building-assets/AssetRegisterTable';
-import type { AssetRegisterViewProps } from '@/types/asset-types/asset-register.types';
+import { mapAssetToRow } from '@/components/modules/assets/municipal-Asset/asset-register/registerMappers';
+import type { AssetRegisterViewProps } from '@/types/municipal-asset-register.types';
+import type { AssetRegisterApiRecord } from '@/types/municipal-asset-service.types';
+import { AssetRegisterBackButton } from './AssetRegisterBackButton';
+import { AssetRegisterControls } from './AssetRegisterControls';
+import { AssetRegisterHeaderSummary } from './AssetRegisterHeaderSummary';
+import { AssetRegisterTable } from './AssetRegisterTable';
 
 export async function AssetRegisterView({
   locale,

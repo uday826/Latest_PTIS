@@ -1,6 +1,7 @@
+
 import { Building2Icon, Coins, CheckCircle2 } from 'lucide-react';
 import { CardContent, DashboardCard } from '@/components/common';
-import type { AssetRegisterHeaderSummaryProps } from '@/types/asset-types/asset-register.types';
+import type { AssetRegisterHeaderSummaryProps } from '@/types/municipal-asset-register.types';
 
 export function AssetRegisterHeaderSummary({
   registerSubtitle,

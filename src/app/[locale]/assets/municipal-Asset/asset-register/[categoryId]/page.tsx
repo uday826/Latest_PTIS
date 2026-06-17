@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
+import { setRequestLocale } from 'next-intl/server';
 import { parsePaginationParams } from '@/lib/utils/pagination';
-import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
-import { AssetRegisterView } from '@/components/modules/assets/municipal-Asset/building-assets/AssetRegisterView';
+import { AssetRegisterView } from '@/components/modules/assets/municipal-Asset/asset-register/AssetRegisterView';
 import {
   fetchAssetRegisterPage,
   fetchAssetTypesByCategory,
@@ -9,7 +9,9 @@ import {
   fetchWards,
   fetchCategoryNameById,
   fetchDepartments,
-} from './actions';
+} from './action';
+
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{
@@ -41,17 +43,20 @@ function isValidFilterValue(value: string): boolean {
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const;
 
+const INDIAN_LANGUAGE_SEARCH_REGEX = /^[\p{L}\p{M}\p{N}\s.,\-()/]$/u;
+
 function sanitizeSearch(value: string | undefined): string {
   return (value || '')
     .trim()
     .split('')
-    .filter((char) => SEARCH_KEY_REGEX.test(char))
+    .filter((char) => INDIAN_LANGUAGE_SEARCH_REGEX.test(char))
     .join('')
     .slice(0, 200);
 }
 
 export default async function Page({ params, searchParams }: PageProps) {
   const { locale, categoryId } = await params;
+  setRequestLocale(locale);
   const query = await searchParams;
   const parsed = Number(categoryId);
 
@@ -88,18 +93,9 @@ export default async function Page({ params, searchParams }: PageProps) {
       safeOwningDepartmentId === 'all' ? null : Number(safeOwningDepartmentId)
     ),
     fetchAssetTypesByCategory(parsed),
-    fetchZones().catch((error: any) => {
-      console.error('Failed to fetch zones for asset register:', error);
-      return [];
-    }),
-    fetchWards(safeZoneId).catch((error: any) => {
-      console.error('Failed to fetch wards for asset register:', error);
-      return [];
-    }),
-    fetchDepartments().catch((error: any) => {
-      console.error('Failed to fetch departments for asset register:', error);
-      return [];
-    }),
+    fetchZones(),
+    fetchWards(safeZoneId),
+    fetchDepartments(),
   ]);
 
   if (assetsResult.error) {
@@ -112,7 +108,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 
   let finalWardId = safeWardId;
   if (safeZoneId !== 'all' && safeWardId !== 'all') {
-    const ward = wardsResult.find((w: any) => String(w.id) === safeWardId);
+    const ward = wardsResult.find((w) => String(w.id) === safeWardId);
     if (!ward || String(ward.zoneId) !== safeZoneId) {
       finalWardId = 'all';
     }

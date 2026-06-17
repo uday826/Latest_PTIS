@@ -1,20 +1,8 @@
 import { apiClient } from "@/services/api.service";
 import { ApiResponse } from "@/types/common.types";
+import type { Ward } from "@/types/municipal-asset-service.types";
 
-export interface Ward {
-  id: number;
-  wardName: string;
-  WardName?: string;
-  wardNo?: string;
-  WardNo?: string;
-  name?: string;
-  Name?: string;
-  description?: string;
-  Description?: string;
-  wardCode?: string;
-  isActive?: boolean;
-  zoneId?: number | string | null;
-}
+export type { Ward };
 
 /**
  * Service for fetching Ward master data
@@ -28,13 +16,14 @@ export const wardService = {
     if (zoneId && zoneId !== "all") {
       url += `&ZoneId=${zoneId}`;
     }
-    const response = await apiClient.get<any>(url);
+    const response = await apiClient.get<{ items?: Ward[] } | Ward[]>(url);
     if (response.success && response.data) {
-      const items = Array.isArray(response.data)
-        ? response.data
-        : (response.data.items || response.data.Items || response.data.data || []);
+      const data = response.data;
+      const items = Array.isArray(data)
+        ? data
+        : (data.items || []);
       return { ...response, data: items };
     }
-    return response;
+    return response as ApiResponse<Ward[]>;
   },
 };

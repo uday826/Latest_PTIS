@@ -5,7 +5,7 @@ import { categoryTypeService } from "@/lib/api/asset/category-type.service";
 import { wardService } from "@/lib/api/asset/ward.service";
 import { zoneService } from "@/lib/api/asset/zone.service";
 import { departmentService } from "@/lib/api/asset/department.service";
-import type { AssetRegisterPageResult } from "@/types/municipal-asset/register.types";
+import type { AssetRegisterPageResult } from "@/types/municipal-asset-service.types";
 
 const EMPTY_ASSET_REGISTER_PAGE_RESULT: AssetRegisterPageResult = {
   items: [],
@@ -134,4 +134,3 @@ export async function fetchDepartments() {
   }
   return [];
 }
-

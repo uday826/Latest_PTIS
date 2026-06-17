@@ -9,8 +9,8 @@ import {
   SearchSelect,
 } from '@/components/common';
 import { useDebounce } from '@/hooks/useDebounce';
+import type { AssetRegisterFiltersProps } from '@/types/municipal-asset-register.types';
 import { useQueryTransition } from '@/hooks/useQueryTransition';
-import type { AssetRegisterFiltersProps } from '@/types/asset-types/asset-register.types';
 
 export function AssetRegisterFilters({
   search,
