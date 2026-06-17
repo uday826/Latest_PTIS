@@ -792,7 +792,7 @@ export function MakePaymentScreen({
                   }`}
               >
                 <RadioGroupItem value="CUSTOM_AMOUNT" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                <span className={`text-xs font-semibold ${pendingSubOption === 'CUSTOM_AMOUNT' ? 'text-blue-700' : 'text-slate-700'}`}>{t('customAmount')}</span>
+                <span className={`text-xs font-semibold ${pendingSubOption === 'CUSTOM_AMOUNT' ? 'text-blue-700' : 'text-slate-700'}`}>{t('partialAmount')}</span>
               </label>
               <label
                 onClick={() => {
