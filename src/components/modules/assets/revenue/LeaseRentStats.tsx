@@ -2,6 +2,7 @@
 
 import { CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 import { DashboardCard } from '@/components/common/DashboardCard';
+import { useTranslations } from 'next-intl';
 import type { LeaseRentRegistrationStats } from '../../../../types/asset/revenue.types';
 
 interface StatsProps {
@@ -10,37 +11,39 @@ interface StatsProps {
 }
 
 export function LeaseRentStats({ stats, onStatClick }: StatsProps) {
+  const t = useTranslations('revenueManagement');
+
   const cards = [
     {
-      label: 'Total Approved',
+      label: t('stats.totalApproved'),
       value: stats.totalApproved,
       icon: CheckCircle2,
       iconBg: 'bg-emerald-100 text-emerald-700',
       valueColor: 'text-emerald-700',
     },
     {
-      label: 'Total Verified',
+      label: t('stats.totalVerified'),
       value: stats.totalVerified,
       icon: CheckCircle2,
       iconBg: 'bg-teal-100 text-teal-700',
       valueColor: 'text-teal-700',
     },
     {
-      label: 'Verification Pending',
+      label: t('stats.verificationPending'),
       value: stats.verificationPending,
       icon: AlertCircle,
       iconBg: 'bg-blue-100 text-blue-700',
       valueColor: 'text-blue-700',
     },
     {
-      label: 'Approval Pending',
+      label: t('stats.approvalPending'),
       value: stats.approvalPending,
       icon: AlertCircle,
       iconBg: 'bg-amber-100 text-amber-700',
       valueColor: 'text-amber-700',
     },
     {
-      label: 'Total Rejected',
+      label: t('stats.totalRejected'),
       value: stats.totalRejected,
       icon: XCircle,
       iconBg: 'bg-rose-100 text-rose-700',

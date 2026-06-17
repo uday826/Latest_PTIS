@@ -1,8 +1,8 @@
-/* eslint-disable i18next/no-literal-string */
 import { ReactNode } from 'react';
 import { Card, CardContent } from '@/components/common';
 import { ManageRentersTabs } from '@/components/modules/assets/revenue/ManageRentersTabs';
 import { getManageRentersTabCountsAction } from './registration-actions';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +17,7 @@ interface LayoutProps {
 export default async function ManageRentersLayout({ children, params }: LayoutProps) {
   const { locale } = await params;
   const tabCounts = await getManageRentersTabCountsAction();
+  const t = await getTranslations({ locale, namespace: 'revenueManagement' });
 
   return (
     <div className="flex h-full min-h-[calc(100vh-120px)] w-full overflow-y-auto bg-slate-50/50 p-6 custom-scrollbar">
@@ -26,10 +27,10 @@ export default async function ManageRentersLayout({ children, params }: LayoutPr
             <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <h1 className="flex items-center gap-2 text-xl font-black tracking-tight text-slate-800">
-                  Lease & Rent Registration
+                  {t('layout.title')}
                 </h1>
                 <p className="mt-0.5 text-[10px] font-medium text-slate-500">
-                  Manage tenant details, lease agreements & rental properties
+                  {t('layout.description')}
                 </p>
               </div>
 

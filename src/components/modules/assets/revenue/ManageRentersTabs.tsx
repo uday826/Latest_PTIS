@@ -7,23 +7,26 @@ import { CheckCircle, Eye, FileText, Undo2 } from 'lucide-react';
 import { Tabs } from '@/components/common';
 import type { ManageRentersTabKey, ManageRentersTabsProps } from '../../../../types/asset/revenue.types';
 
+import { useTranslations } from 'next-intl';
+
 interface ManageRentersTab {
   key: ManageRentersTabKey;
-  label: string;
+  labelKey: string;
   icon: typeof FileText;
   countKey: keyof import('../../../../types/asset/revenue.types').ManageRentersTabCounts;
 }
 
 const tabs: ManageRentersTab[] = [
-  { key: 'registration', label: 'Registration', icon: FileText, countKey: 'registrationCount' },
-  { key: 'verification', label: 'Verification', icon: Eye, countKey: 'verificationCount' },
-  { key: 'approval', label: 'Approval', icon: CheckCircle, countKey: 'approvalCount' },
-  { key: 'reverted', label: 'Reverted', icon: Undo2, countKey: 'revertedCount' },
+  { key: 'registration', labelKey: 'tabs.registration', icon: FileText, countKey: 'registrationCount' },
+  { key: 'verification', labelKey: 'tabs.verification', icon: Eye, countKey: 'verificationCount' },
+  { key: 'approval', labelKey: 'tabs.approval', icon: CheckCircle, countKey: 'approvalCount' },
+  { key: 'reverted', labelKey: 'tabs.reverted', icon: Undo2, countKey: 'revertedCount' },
 ];
 
 export function ManageRentersTabs({ locale, counts }: ManageRentersTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations('revenueManagement');
 
   useEffect(() => {
     router.refresh();
@@ -49,7 +52,7 @@ export function ManageRentersTabs({ locale, counts }: ManageRentersTabsProps) {
       label: (
         <span className="flex items-center gap-2">
           <Icon className="h-3.5 w-3.5 text-slate-400" />
-          <span>{tab.label}</span>
+          <span>{t(tab.labelKey)}</span>
           {tab.key !== 'registration' && count > 0 && (
             <span
               className={`inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none ${

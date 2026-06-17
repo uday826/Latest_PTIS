@@ -1,9 +1,9 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import { Label, SearchInput, SearchSelect } from '@/components/common';
 import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
 import type { FilterOption } from '../../../../types/asset/revenue.types';
+import { useTranslations } from 'next-intl';
 
 interface FiltersProps {
   searchQuery: string;
@@ -26,11 +26,6 @@ interface FiltersProps {
   onAssetChange?: (value: string | null) => void;
 }
 
-const ALL_CATEGORY_OPTION = { label: 'All Categories', value: 'all' };
-const ALL_ZONE_OPTION = { label: 'All Zones', value: 'all' };
-const ALL_WARD_OPTION = { label: 'All Wards', value: 'all' };
-const ALL_ASSET_OPTION = { label: 'All Assets', value: 'all' };
-
 export function LeaseRentFilters({
   searchQuery,
   setSearchQuery,
@@ -51,6 +46,7 @@ export function LeaseRentFilters({
   onWardChange,
   onAssetChange,
 }: FiltersProps) {
+  const t = useTranslations('revenueManagement');
   const normalizeSelectValue = (value: string) => (value === 'all' ? null : value);
   const handleSearchChange = (nextValue: string) => {
     const sanitizedValue = nextValue
@@ -61,22 +57,27 @@ export function LeaseRentFilters({
     setSearchQuery(sanitizedValue);
   };
 
+  const ALL_CATEGORY_OPTION = { label: t('filters.allCategories'), value: 'all' };
+  const ALL_ZONE_OPTION = { label: t('filters.allZones'), value: 'all' };
+  const ALL_WARD_OPTION = { label: t('filters.allWards'), value: 'all' };
+  const ALL_ASSET_OPTION = { label: t('filters.allAssets'), value: 'all' };
+
   return (
     <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 shadow-inner mb-4">
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="space-y-1">
-          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Search</Label>
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('filters.search')}</Label>
           <SearchInput
             value={searchQuery}
             onChange={handleSearchChange}
-            placeholder="Search by name, path or ID..."
+            placeholder={t('filters.searchPlaceholder')}
             className="mb-0 w-full"
             showClear={false}
           />
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Asset Category</Label>
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('filters.category')}</Label>
           <SearchSelect
             name="category"
             value={category}
@@ -85,36 +86,36 @@ export function LeaseRentFilters({
             }
             options={[ALL_CATEGORY_OPTION, ...categoryOptions]}
             className="w-full"
-            placeholder="All Categories"
+            placeholder={t('filters.allCategories')}
           />
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Zone</Label>
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('filters.zone')}</Label>
           <SearchSelect
             name="zone"
             value={zone}
             onChange={(_, value) => (onZoneChange ? onZoneChange(normalizeSelectValue(value)) : setZone(value))}
             options={[ALL_ZONE_OPTION, ...zoneOptions]}
             className="w-full"
-            placeholder="All Zones"
+            placeholder={t('filters.allZones')}
           />
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ward</Label>
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('filters.ward')}</Label>
           <SearchSelect
             name="ward"
             value={ward}
             onChange={(_, value) => (onWardChange ? onWardChange(normalizeSelectValue(value)) : setWard(value))}
             options={[ALL_WARD_OPTION, ...wardOptions]}
             className="w-full"
-            placeholder="All Wards"
+            placeholder={t('filters.allWards')}
           />
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Select Asset</Label>
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('filters.selectAsset')}</Label>
           <SearchSelect
             name="assetSelect"
             value={assetSelect}
@@ -123,7 +124,7 @@ export function LeaseRentFilters({
             }
             options={[ALL_ASSET_OPTION, ...assetOptions]}
             className="w-full"
-            placeholder="All Assets"
+            placeholder={t('filters.allAssets')}
           />
         </div>
       </div>

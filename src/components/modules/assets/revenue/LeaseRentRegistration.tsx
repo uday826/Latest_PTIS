@@ -4,6 +4,7 @@
 
 import { startTransition, useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Input, Label, SearchInput, SearchSelect, Select } from '@/components/common';
 import { LeaseRentFilters } from './LeaseRentFilters';
 import { LeaseRentTable } from './LeaseRentTable';
@@ -331,6 +332,8 @@ export function LeaseRentRegistration({
     return () => clearTimeout(timer);
   }, [searchQuery, searchTerm, updateQuery]);
 
+  const t = useTranslations('revenueManagement');
+
   const renderStageFilters = () => {
     if (stage === 'registration' || stage === 'reverted') {
       return (
@@ -361,26 +364,26 @@ export function LeaseRentRegistration({
       <div className="mb-4 rounded-2xl border border-slate-200/60 bg-slate-50 p-4 shadow-sm">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-[200px_minmax(0,1fr)_170px_170px]">
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Asset Category</Label>
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('filters.category')}</Label>
             <SearchSelect
               name="category"
               value={category}
               onChange={(_, value) => handleCategoryChange(value === 'all' ? null : value)}
               options={[
-                { label: 'All Categories', value: 'all' },
+                { label: t('filters.allCategories'), value: 'all' },
                 ...categoryOptions,
               ]}
               className="w-full"
-              placeholder="All Categories"
+              placeholder={t('filters.allCategories')}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Smart Search</Label>
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('filters.smartSearch')}</Label>
             <SearchInput
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search across all fields..."
+              placeholder={t('filters.smartSearchPlaceholder')}
               className="mb-0 w-full"
               showClear={false}
             />
@@ -389,7 +392,7 @@ export function LeaseRentRegistration({
           <div className="space-y-1.5">
             <Input
               type="date"
-              label="From Date"
+              label={t('filters.fromDate')}
               value={fromDateValue}
               onChange={(e) => handleFromDateChange(e.target.value)}
               className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400 focus:border-blue-500"
@@ -400,7 +403,7 @@ export function LeaseRentRegistration({
           <div className="space-y-1.5">
             <Input
               type="date"
-              label="To Date"
+              label={t('filters.toDate')}
               value={toDateValue}
               onChange={(e) => handleToDateChange(e.target.value)}
               className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400 focus:border-blue-500"
