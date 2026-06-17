@@ -1,7 +1,6 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
-import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, PencilLine, Printer } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -67,7 +66,7 @@ export function renderBadge(value?: string) {
 }
 
 export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName: string): AssetRegisterRow {
-  const record = item as AssetRegisterApiRecord;
+  const record = item as any;
   const parsedId = Number(record.id);
   const safeId = Number.isFinite(parsedId) && parsedId > 0 ? parsedId : null;
   return {
@@ -303,7 +302,7 @@ export async function exportToExcel(
   categoryId: number,
   categoryName: string
 ) {
-  const exportRows = items.map((record) => {
+  const exportRows = items.map((record: any) => {
     return {
       'Asset No': record.assetNo || record.assetNo || '',
       'Asset Name': record.assetName || record.name || '',

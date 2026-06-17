@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Search, IndianRupee, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/common/Card';
-import { Button, MasterTable, SearchInput, Select, type Column } from '@/components/common';
+import { Button, MasterTable, SearchInput, SearchSelect, type Column } from '@/components/common';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import type { PaymentFilterOptions, PaymentRecordRow, PaymentRecordsPageData } from '@/app/[locale]/assets/revenue/payment/actions';
 
@@ -192,23 +192,23 @@ export function PaymentSection({
           <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-600">{t('filters.zone')}</label>
-              <Select options={[{ label: 'All', value: 'all' }, ...filterOptions.zoneOptions]} value={query.zone} onChange={(_e, value) => updateRoute({ ZoneId: value, WardId: 'all', PageNumber: '1' })} placeholder={t('filters.select')} selectSize="sm" className="text-xs" />
+              <SearchSelect name="zone" options={[{ label: 'All', value: 'all' }, ...filterOptions.zoneOptions]} value={query.zone} onChange={(_, value) => updateRoute({ ZoneId: value, WardId: 'all', PageNumber: '1' })} placeholder={t('filters.select')} className="w-full" />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-600">{t('filters.ward')}</label>
-              <Select options={[{ label: 'All', value: 'all' }, ...filterOptions.wardOptions]} value={query.ward} onChange={(_e, value) => updateRoute({ WardId: value, PageNumber: '1' })} placeholder={t('filters.select')} selectSize="sm" className="text-xs" />
+              <SearchSelect name="ward" options={[{ label: 'All', value: 'all' }, ...filterOptions.wardOptions]} value={query.ward} onChange={(_, value) => updateRoute({ WardId: value, PageNumber: '1' })} placeholder={t('filters.select')} className="w-full" />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-600">{t('filters.assetCategory')}</label>
-              <Select options={[{ label: 'All', value: 'all' }, ...filterOptions.assetCategoryOptions]} value={query.assetCategory} onChange={(_e, value) => updateRoute({ AssetCategoryId: value, PageNumber: '1' })} placeholder={t('filters.allCategories')} selectSize="sm" className="text-xs" />
+              <SearchSelect name="assetCategory" options={[{ label: 'All', value: 'all' }, ...filterOptions.assetCategoryOptions]} value={query.assetCategory} onChange={(_, value) => updateRoute({ AssetCategoryId: value, PageNumber: '1' })} placeholder={t('filters.allCategories')} className="w-full" />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-600">{t('filters.leaseRentType')}</label>
-              <Select options={LEASE_RENT_TYPE_OPTIONS} value={query.leaseRentType} onChange={(_e, value) => updateRoute({ LeaseRentType: value, PageNumber: '1' })} placeholder={t('filters.allTypes')} selectSize="sm" className="text-xs" />
+              <SearchSelect name="leaseRentType" options={LEASE_RENT_TYPE_OPTIONS} value={query.leaseRentType} onChange={(_, value) => updateRoute({ LeaseRentType: value, PageNumber: '1' })} placeholder={t('filters.allTypes')} className="w-full" />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-600">{t('filters.paymentStatus')}</label>
-              <Select options={PAYMENT_STATUS_OPTIONS} value={query.status} onChange={(_e, value) => updateRoute({ Status: value, PageNumber: '1' })} placeholder={t('filters.allStatus')} selectSize="sm" className="text-xs" />
+              <SearchSelect name="paymentStatus" options={PAYMENT_STATUS_OPTIONS} value={query.status} onChange={(_, value) => updateRoute({ Status: value, PageNumber: '1' })} placeholder={t('filters.allStatus')} className="w-full" />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-600">{t('filters.smartSearch')}</label>

@@ -35,6 +35,7 @@ export const assetMasterService = {
     assetTypeId?: number | null;
     zoneId?: number | null;
     wardId?: number | null;
+    owningDepartmentId?: number | null;
     searchTerm?: string;
   } = {}): Promise<ApiResponse<PagedAssetMasterResponse>> => {
     const query = new URLSearchParams();
@@ -44,6 +45,7 @@ export const assetMasterService = {
     if (params.assetTypeId) query.set("AssetTypeId", String(params.assetTypeId));
     if (params.zoneId) query.set("ZoneId", String(params.zoneId));
     if (params.wardId) query.set("WardId", String(params.wardId));
+    if (params.owningDepartmentId) query.set("DepartmentId", String(params.owningDepartmentId));
     if (params.searchTerm?.trim()) query.set("SearchTerm", params.searchTerm.trim());
     return apiClient.get<PagedAssetMasterResponse>(`/AssetMaster?${query.toString()}`);
   },

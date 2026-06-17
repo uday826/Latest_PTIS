@@ -4,6 +4,7 @@ import { assetMasterService } from "@/lib/api/asset/asset-master.service";
 import { categoryTypeService } from "@/lib/api/asset/category-type.service";
 import { wardService } from "@/lib/api/asset/ward.service";
 import { zoneService } from "@/lib/api/asset/zone.service";
+import { departmentService } from "@/lib/api/asset/department.service";
 import type { AssetRegisterPageResult } from "@/types/municipal-asset/register.types";
 
 const EMPTY_ASSET_REGISTER_PAGE_RESULT: AssetRegisterPageResult = {
@@ -24,7 +25,8 @@ export async function fetchAssetRegisterPage(
   search: string = "",
   assetTypeId?: number | string | null,
   zoneId?: number | string | null,
-  wardId?: number | string | null
+  wardId?: number | string | null,
+  owningDepartmentId?: number | string | null
 ): Promise<AssetRegisterPageResult> {
   try {
     const response = await assetMasterService.getAllAssetsPaginated({
@@ -34,6 +36,7 @@ export async function fetchAssetRegisterPage(
       assetTypeId: assetTypeId && assetTypeId !== "all" ? Number(assetTypeId) : null,
       zoneId: zoneId && zoneId !== "all" ? Number(zoneId) : null,
       wardId: wardId && wardId !== "all" ? Number(wardId) : null,
+      owningDepartmentId: owningDepartmentId && owningDepartmentId !== "all" ? Number(owningDepartmentId) : null,
       searchTerm: search || undefined,
     });
 
@@ -113,5 +116,22 @@ export async function fetchCategoryNameById(categoryId: number): Promise<string 
   }
   const match = (response.data || []).find((item) => item.id === categoryId);
   return match?.categoryName || null;
+}
+
+export async function fetchDepartments() {
+  try {
+    const response = await departmentService.getDepartments();
+    if (response.success && response.data) {
+      return response.data
+        .filter((dept) => dept && dept.id != null)
+        .map((dept) => ({
+          id: Number(dept.id),
+          label: dept.departmentName || `Department ${dept.id}`,
+        }));
+    }
+  } catch (error) {
+    console.error("Failed to fetch departments:", error);
+  }
+  return [];
 }
 

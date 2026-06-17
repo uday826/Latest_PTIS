@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Plus, Layers, Edit2, Trash2, CheckCircle2, Loader2, Home } from "lucide-react";
+import { Plus, Layers, Trash2, CheckCircle2, Loader2, Home } from "lucide-react";
 import { Input } from "@/components/common";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { SubUnitDetailedConfigurator } from "../sub-units/SubUnitDetailedConfigurator";

@@ -8,7 +8,6 @@ import { useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
   blank,
-  getSubUnitDetailColumns,
   getSubUnitFloorColumns,
   getSubUnitMainColumns,
   getSubUnitRenterColumns,
@@ -57,7 +56,6 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
   const renterColumns = useMemo(() => getSubUnitRenterColumns(), []);
   const roomColumns = useMemo(() => getSubUnitRoomColumns(), []);
   const floorColumns = useMemo(() => getSubUnitFloorColumns(), []);
-  const subUnitDetailColumns = useMemo(() => getSubUnitDetailColumns(), []);
 
   if (asset.childAssetsError) {
     return (

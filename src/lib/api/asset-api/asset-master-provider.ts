@@ -6,6 +6,7 @@ import { getAssetTypesPaged } from '@/lib/api/asset-api/asset-type-crud.service'
 import { mapTypeToMasterRecord } from '@/lib/api/asset-api/asset-type-types-guard';
 import { mapCategoryToMasterRecord } from '@/lib/api/asset-api/asset-category-types-guard';
 
+
 import { inventoryCategoryService } from '@/lib/api/asset-api/inventory-category.service';
 import { inventoryModelService } from '@/lib/api/asset-api/inventory-model.service';
 import { inventoryConditionService } from '@/lib/api/asset-api/inventory-condition.service';

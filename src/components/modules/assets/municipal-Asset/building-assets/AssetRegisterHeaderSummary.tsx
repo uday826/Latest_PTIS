@@ -30,7 +30,6 @@ export function AssetRegisterHeaderSummary({
           value={totalCount}
           icon={<Building2Icon className="h-5 w-5" />}
           iconBg="bg-blue-50 text-blue-600 border-blue-100"
-          accentColor="bg-blue-600"
         />
         <DashboardCard
           label={translate('Capital_Value') || 'Capital Value'}
@@ -38,7 +37,6 @@ export function AssetRegisterHeaderSummary({
           valueColor="text-emerald-600"
           icon={<Coins className="h-5 w-5" />}
           iconBg="bg-emerald-50 text-emerald-600 border-emerald-100"
-          accentColor="bg-emerald-600"
         />
         <DashboardCard
           label={translate('Active_Assets') || 'Active Assets'}
@@ -46,7 +44,6 @@ export function AssetRegisterHeaderSummary({
           valueColor="text-blue-600"
           icon={<CheckCircle2 className="h-5 w-5" />}
           iconBg="bg-sky-50 text-sky-600 border-sky-100"
-          accentColor="bg-sky-500"
         />
       </div>
     </CardContent>

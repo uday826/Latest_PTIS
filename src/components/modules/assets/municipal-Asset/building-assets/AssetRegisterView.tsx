@@ -16,6 +16,7 @@ export async function AssetRegisterView({
   safeAssetTypeId,
   safeZoneId,
   finalWardId,
+  safeOwningDepartmentId,
   safePageSize,
   finalPage,
   totalPages,
@@ -23,6 +24,7 @@ export async function AssetRegisterView({
   typesResult,
   zonesResult,
   wardsResult,
+  departmentsResult,
   updatedDate,
 }: AssetRegisterViewProps) {
   const t = await getTranslations({ locale, namespace: 'assetRegister' });
@@ -46,6 +48,11 @@ export async function AssetRegisterView({
     ...wardsResult
       .filter((ward) => safeZoneId === 'all' || ward.zoneId == null || String(ward.zoneId) === safeZoneId)
       .map((ward) => ({ label: ward.label, value: String(ward.id) })),
+  ];
+
+  const owningDepartmentOptions = [
+    { label: t('All_Departments') || 'All Departments', value: 'all' },
+    ...departmentsResult.map((dept) => ({ label: dept.label, value: String(dept.id) })),
   ];
 
   const resolvedCategoryName = categoryName || (t('Asset_Register') || 'Asset Register');
@@ -92,12 +99,14 @@ export async function AssetRegisterView({
               assetTypeId={safeAssetTypeId}
               zoneId={safeZoneId}
               wardId={finalWardId}
+              owningDepartmentId={safeOwningDepartmentId}
               totalCount={assetsResult.totalCount}
               pageSize={safePageSize}
               assets={assetsResult.items}
               assetTypeOptions={assetTypeOptions}
               zoneOptions={zoneOptions}
               wardOptions={wardOptions}
+              owningDepartmentOptions={owningDepartmentOptions}
             />
           </CardContent>
         </Card>

@@ -1,7 +1,7 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
-import { Label, SearchInput, Select } from '@/components/common';
+import { Label, SearchInput, SearchSelect } from '@/components/common';
 import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
 import type { FilterOption } from '../../../../types/asset/revenue.types';
 
@@ -77,13 +77,13 @@ export function LeaseRentFilters({
 
         <div className="space-y-1">
           <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Asset Category</Label>
-          <Select
+          <SearchSelect
+            name="category"
             value={category}
             onChange={(_, value) =>
               onCategoryChange ? onCategoryChange(normalizeSelectValue(value)) : setCategory(value)
             }
             options={[ALL_CATEGORY_OPTION, ...categoryOptions]}
-            selectSize="sm"
             className="w-full"
             placeholder="All Categories"
           />
@@ -91,11 +91,11 @@ export function LeaseRentFilters({
 
         <div className="space-y-1">
           <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Zone</Label>
-          <Select
+          <SearchSelect
+            name="zone"
             value={zone}
             onChange={(_, value) => (onZoneChange ? onZoneChange(normalizeSelectValue(value)) : setZone(value))}
             options={[ALL_ZONE_OPTION, ...zoneOptions]}
-            selectSize="sm"
             className="w-full"
             placeholder="All Zones"
           />
@@ -103,11 +103,11 @@ export function LeaseRentFilters({
 
         <div className="space-y-1">
           <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ward</Label>
-          <Select
+          <SearchSelect
+            name="ward"
             value={ward}
             onChange={(_, value) => (onWardChange ? onWardChange(normalizeSelectValue(value)) : setWard(value))}
             options={[ALL_WARD_OPTION, ...wardOptions]}
-            selectSize="sm"
             className="w-full"
             placeholder="All Wards"
           />
@@ -115,13 +115,13 @@ export function LeaseRentFilters({
 
         <div className="space-y-1">
           <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Select Asset</Label>
-          <Select
+          <SearchSelect
+            name="assetSelect"
             value={assetSelect}
             onChange={(_, value) =>
               onAssetChange ? onAssetChange(normalizeSelectValue(value)) : setAssetSelect(value)
             }
             options={[ALL_ASSET_OPTION, ...assetOptions]}
-            selectSize="sm"
             className="w-full"
             placeholder="All Assets"
           />

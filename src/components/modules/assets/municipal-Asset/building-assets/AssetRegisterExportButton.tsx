@@ -11,7 +11,7 @@ const EXPORT_BATCH_SIZE = 200;
 
 export function AssetRegisterExportButton({
   categoryId,
-  
+  categoryName,
   search,
   assetTypeId,
   zoneId,

@@ -47,20 +47,10 @@ const QUERY_TO_MODE: Record<string, Exclude<PaymentMode, ''>> = {
   online: 'Online',
 };
 
-const MONTH_OPTIONS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const AMOUNT_REGEX = /^\d+(\.\d{1,2})?$/;
 const PAYMENT_REFERENCE_REGEX = /^[A-Za-z0-9._/-]{6,50}$/;
 const BANK_INSTRUMENT_REGEX = /^[A-Za-z0-9/-]{4,20}$/;
 const DD_MM_YYYY_REGEX = /^(0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-\d{4}$/;
-
-function getFinancialYearOptions(): string[] {
-  const today = new Date();
-  const currentYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
-  return Array.from({ length: 5 }, (_, index) => {
-    const startYear = currentYear - index;
-    return `FY ${startYear}-${String((startYear + 1) % 100).padStart(2, '0')}`;
-  });
-}
 
 function getDateInputValueFromDDMMYYYY(value: string): string {
   const isoDate = formatDDMMYYYYToISO(value);
@@ -123,7 +113,6 @@ export function MakePaymentScreen({
   const customNumericAmount = Number(customAmount);
   const normalizedPaymentFrequency = record.paymentFrequency?.trim().toLowerCase() ?? '';
   const isYearlyPayment = normalizedPaymentFrequency === 'yearly';
-  const periodOptions = isYearlyPayment ? getFinancialYearOptions() : MONTH_OPTIONS;
   const isPendingCustom = pendingSubOption === 'CUSTOM_AMOUNT';
   const isPendingPeriodSelection = pendingSubOption === 'PERIOD_SELECTION';
   const maxCustomAmount = pendingDemandAmount;
@@ -244,12 +233,7 @@ export function MakePaymentScreen({
     return 'Partial';
   }, [pendingSubOption, allPendingDemandIds, selectedDemandIds]);
 
-  const selectedPeriodsLabel = selectedPeriods.join(', ');
-  const periodDrawerButtonLabel = isYearlyPayment ? 'Select Financial Years' : t('selectMonths');
   const periodDrawerTitle = isYearlyPayment ? 'Select Financial Years' : t('drawer.title');
-  const periodSelectionHelpText = isYearlyPayment
-    ? 'Financial year selection is UI-ready. Exact year-wise payable calculation will be added with backend support.'
-    : 'Month selection is UI-ready. Exact month-wise payable calculation will be added with backend support.';
   const instrumentDateInputValue = getDateInputValueFromDDMMYYYY(instrumentDate);
 
   // Toggle a single period in the selectedPeriods list. Case-insensitive.

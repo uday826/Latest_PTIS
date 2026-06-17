@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { X, Save, Building2, UploadCloud, FileText, IndianRupee, ImagePlus, CheckCircle2, Layers, Loader2 } from "lucide-react";
+import { Save, Building2, UploadCloud, FileText, IndianRupee, Layers, Loader2 } from "lucide-react";
 import { Input, Select, Card, CardContent, CardHeader, CardTitle } from "@/components/common";
 import { fetchSubUseTypesAction, fetchUploadedDocumentsAction, fetchFloorsByAsset, fetchFloorDropdownOptions, fetchSubFloorAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { fetchDocumentFileAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
@@ -646,7 +646,7 @@ export function SubUnitDetailedConfigurator({
       label="Department *"
       name="departmentId"
       value={formData.departmentId || ""}
-      onChange={(e, val) => {
+      onChange={(_, val) => {
         const matched = departments.find((d: any) => String(d.value) === String(val));
         setFormData((prev: any) => ({
           ...prev,
@@ -667,7 +667,6 @@ export function SubUnitDetailedConfigurator({
   const isRoom = rawUnitType.includes("room") || rawUnitType.includes("chamber");
   const isDepartment = rawUnitType.includes("department") || rawUnitType.includes("dept") || rawUnitType.includes("wing");
   // Flat is the default (residential)
-  // const sectionColor = "bg-cyan-600";
   const sectionTitle = isShop ? "Shop & Occupant Details" : isOffice ? "Office / Tenant Details" : isRoom ? "Room Details" : isDepartment ? "Department Information" : "Resident / Owner Details";
   // Departments are internal allocations — no rent section needed
   const showRentSection = !isDepartment;
@@ -953,7 +952,7 @@ export function SubUnitDetailedConfigurator({
                     label="Lease / Rent Type"
                     name="rentType"
                     value={formData.rentType || ""}
-                    onChange={(e, val) => setFormData((prev: any) => ({ ...prev, rentType: val }))}
+                    onChange={(_, val) => setFormData((prev: any) => ({ ...prev, rentType: val }))}
                     options={[
                       { label: "Commercial Lease", value: "Commercial Lease" },
                       { label: "Residential Rent", value: "Residential Rent" }
@@ -988,7 +987,7 @@ export function SubUnitDetailedConfigurator({
                     label="Rent Frequency"
                     name="rentFreq"
                     value={formData.rentFreq || ""}
-                    onChange={(e, val) => setFormData((prev: any) => ({ ...prev, rentFreq: val }))}
+                    onChange={(_, val) => setFormData((prev: any) => ({ ...prev, rentFreq: val }))}
                     options={[
                       { label: "Monthly", value: "Monthly" },
                       { label: "Yearly", value: "Yearly" }
@@ -1020,7 +1019,7 @@ export function SubUnitDetailedConfigurator({
                     label="Deposit Type"
                     name="depositType"
                     value={formData.depositType || ""}
-                    onChange={(e, val) => setFormData((prev: any) => ({ ...prev, depositType: val }))}
+                    onChange={(_, val) => setFormData((prev: any) => ({ ...prev, depositType: val }))}
                     options={[
                       { label: "Refundable", value: "Refundable" },
                       { label: "Non-Refundable", value: "Non-Refundable" }
@@ -1050,7 +1049,7 @@ export function SubUnitDetailedConfigurator({
                   <Select
                     label="Assign to Floor *"
                     value={formData.floorId ? String(formData.floorId) : ""}
-                    onChange={(e, val) => {
+                    onChange={(_, val) => {
                       const event = {
                         target: { value: val }
                       } as React.ChangeEvent<HTMLSelectElement>;
@@ -1072,7 +1071,7 @@ export function SubUnitDetailedConfigurator({
                   label="Sub Floor"
                   name="subFloorId"
                   value={formData.subFloorId ? String(formData.subFloorId) : ""}
-                  onChange={(e, val) => setFormData((p: any) => ({ ...p, subFloorId: val }))}
+                  onChange={(_, val) => setFormData((p: any) => ({ ...p, subFloorId: val }))}
                   options={subFloorOptions}
                   placeholder="— Select Sub Floor —"
                   selectSize="sm"
@@ -1090,7 +1089,7 @@ export function SubUnitDetailedConfigurator({
                   label="Construction Type *"
                   name="conType"
                   value={formData.conType || ""}
-                  onChange={(e, val) => setFormData((p: any) => ({ ...p, conType: val }))}
+                  onChange={(_, val) => setFormData((p: any) => ({ ...p, conType: val }))}
                   options={dropdownOptions?.constructionTypes || []}
                   placeholder="Select Con Type…"
                   selectSize="sm"
@@ -1099,7 +1098,7 @@ export function SubUnitDetailedConfigurator({
                   label="Type of Use *"
                   name="useType"
                   value={formData.useType || ""}
-                  onChange={(e, val) => setFormData((p: any) => ({ ...p, useType: val, subUseType: "" }))}
+                  onChange={(_, val) => setFormData((p: any) => ({ ...p, useType: val, subUseType: "" }))}
                   options={dropdownOptions?.useTypes || []}
                   placeholder="Select Use Type…"
                   selectSize="sm"
@@ -1108,7 +1107,7 @@ export function SubUnitDetailedConfigurator({
                   label="Sub-Type of Use"
                   name="subUseType"
                   value={formData.subUseType || ""}
-                  onChange={(e, val) => setFormData((p: any) => ({ ...p, subUseType: val }))}
+                  onChange={(_, val) => setFormData((p: any) => ({ ...p, subUseType: val }))}
                   options={(dynamicSubUseTypes.length > 0 ? dynamicSubUseTypes : (dropdownOptions?.subUseTypes || []).filter((o: any) => String(o.typeOfUseId) === String(formData.useType)))}
                   placeholder="Select Sub-Type…"
                   selectSize="sm"

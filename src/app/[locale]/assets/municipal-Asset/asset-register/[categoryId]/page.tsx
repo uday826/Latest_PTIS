@@ -8,6 +8,7 @@ import {
   fetchZones,
   fetchWards,
   fetchCategoryNameById,
+  fetchDepartments,
 } from './actions';
 
 interface PageProps {
@@ -25,6 +26,8 @@ interface PageProps {
     zoneId?: string;
     WardId?: string;
     wardId?: string;
+    OwningDepartmentId?: string;
+    owningDepartmentId?: string;
   }>;
 }
 
@@ -65,12 +68,14 @@ export default async function Page({ params, searchParams }: PageProps) {
   const rawAssetTypeId = readParam(query, 'assetTypeId', 'AssetTypeId');
   const rawZoneId = readParam(query, 'zoneId', 'ZoneId');
   const rawWardId = readParam(query, 'wardId', 'WardId');
+  const rawOwningDepartmentId = readParam(query, 'owningDepartmentId', 'OwningDepartmentId');
   const safeAssetTypeId = isValidFilterValue(rawAssetTypeId ?? 'all') ? (rawAssetTypeId ?? 'all') : 'all';
   const safeZoneId = isValidFilterValue(rawZoneId ?? 'all') ? (rawZoneId ?? 'all') : 'all';
   const safeWardId = isValidFilterValue(rawWardId ?? 'all') ? (rawWardId ?? 'all') : 'all';
+  const safeOwningDepartmentId = isValidFilterValue(rawOwningDepartmentId ?? 'all') ? (rawOwningDepartmentId ?? 'all') : 'all';
   const updatedDate = new Date().toLocaleDateString('en-GB');
 
-  const [categoryName, assetsResult, typesResult, zonesResult, wardsResult] = await Promise.all([
+  const [categoryName, assetsResult, typesResult, zonesResult, wardsResult, departmentsResult] = await Promise.all([
     fetchCategoryNameById(parsed),
     fetchAssetRegisterPage(
       parsed,
@@ -79,15 +84,20 @@ export default async function Page({ params, searchParams }: PageProps) {
       safeSearch,
       safeAssetTypeId === 'all' ? null : Number(safeAssetTypeId),
       safeZoneId === 'all' ? null : Number(safeZoneId),
-      safeWardId === 'all' ? null : Number(safeWardId)
+      safeWardId === 'all' ? null : Number(safeWardId),
+      safeOwningDepartmentId === 'all' ? null : Number(safeOwningDepartmentId)
     ),
     fetchAssetTypesByCategory(parsed),
-    fetchZones().catch((error) => {
+    fetchZones().catch((error: any) => {
       console.error('Failed to fetch zones for asset register:', error);
       return [];
     }),
-    fetchWards(safeZoneId).catch((error) => {
+    fetchWards(safeZoneId).catch((error: any) => {
       console.error('Failed to fetch wards for asset register:', error);
+      return [];
+    }),
+    fetchDepartments().catch((error: any) => {
+      console.error('Failed to fetch departments for asset register:', error);
       return [];
     }),
   ]);
@@ -102,7 +112,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 
   let finalWardId = safeWardId;
   if (safeZoneId !== 'all' && safeWardId !== 'all') {
-    const ward = wardsResult.find((w) => String(w.id) === safeWardId);
+    const ward = wardsResult.find((w: any) => String(w.id) === safeWardId);
     if (!ward || String(ward.zoneId) !== safeZoneId) {
       finalWardId = 'all';
     }
@@ -121,6 +131,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   if (safeAssetTypeId !== 'all') canonicalQuery.set('assetTypeId', safeAssetTypeId);
   if (safeZoneId !== 'all') canonicalQuery.set('zoneId', safeZoneId);
   if (finalWardId !== 'all') canonicalQuery.set('wardId', finalWardId);
+  if (safeOwningDepartmentId !== 'all') canonicalQuery.set('owningDepartmentId', safeOwningDepartmentId);
 
   const isCanonical =
     (query.page || '1') === String(finalPage) &&
@@ -129,9 +140,11 @@ export default async function Page({ params, searchParams }: PageProps) {
     (query.assetTypeId === safeAssetTypeId || (query.assetTypeId === undefined && safeAssetTypeId === 'all')) &&
     (query.zoneId === safeZoneId || (query.zoneId === undefined && safeZoneId === 'all')) &&
     (query.wardId === finalWardId || (query.wardId === undefined && finalWardId === 'all')) &&
+    (query.owningDepartmentId === safeOwningDepartmentId || (query.owningDepartmentId === undefined && safeOwningDepartmentId === 'all')) &&
     query.AssetTypeId === undefined &&
     query.ZoneId === undefined &&
-    query.WardId === undefined;
+    query.WardId === undefined &&
+    query.OwningDepartmentId === undefined;
   if (!isCanonical) {
     const qStr = canonicalQuery.toString();
     redirect(`/${locale}/assets/municipal-Asset/asset-register/${categoryId}${qStr ? '?' + qStr : ''}`);
@@ -146,6 +159,7 @@ export default async function Page({ params, searchParams }: PageProps) {
       safeAssetTypeId={safeAssetTypeId}
       safeZoneId={safeZoneId}
       finalWardId={finalWardId}
+      safeOwningDepartmentId={safeOwningDepartmentId}
       safePageSize={safePageSize}
       finalPage={finalPage}
       totalPages={totalPages}
@@ -153,6 +167,7 @@ export default async function Page({ params, searchParams }: PageProps) {
       typesResult={typesResult}
       zonesResult={zonesResult}
       wardsResult={wardsResult}
+      departmentsResult={departmentsResult}
       updatedDate={updatedDate}
     />
   );

@@ -12,7 +12,6 @@ import {
   FileText,
   History,
   Home,
-  Map,
   MapPin,
   Navigation,
   Shield,

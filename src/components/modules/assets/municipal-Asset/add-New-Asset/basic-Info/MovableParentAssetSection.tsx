@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, Input, Select } from "@/components/common";
-import { Search, Building, Layers, Loader2, MapPin, X } from "lucide-react";
+import { Search, Building, Loader2, MapPin, X } from "lucide-react";
 import { fetchAssetsByFilter, fetchAssetMasterById } from "@/app/[locale]/assets/actions";
 import { fetchFloorsByAsset, getSubUnitsByAssetAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { toast } from "sonner";
@@ -18,8 +18,6 @@ export function MovableParentAssetSection({
 }: MovableParentAssetSectionProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [selectedParentAsset, setSelectedParentAsset] = useState<any | null>(null);
   
   const [floors, setFloors] = useState<any[]>([]);
@@ -56,12 +54,13 @@ export function MovableParentAssetSection({
     return () => clearTimeout(delayDebounce);
   }, [searchTerm]);
 
+  const [isSearching, setIsSearching] = useState(false);
+
   // Load parent asset details and child floors/subunits on mount or parentBuildingId change (recovery/edit support)
   useEffect(() => {
     const parentId = formData.parentBuildingId;
     if (parentId && (!selectedParentAsset || selectedParentAsset.id !== parentId)) {
       const loadDetails = async () => {
-        setIsLoadingDetails(true);
         try {
           const res = await fetchAssetMasterById(parentId);
           if (res) {
@@ -71,8 +70,6 @@ export function MovableParentAssetSection({
           }
         } catch (err) {
           console.error("Failed to load parent asset details:", err);
-        } finally {
-          setIsLoadingDetails(false);
         }
       };
       loadDetails();
@@ -106,9 +103,6 @@ export function MovableParentAssetSection({
   };
 
   const handleSelectAsset = async (asset: any) => {
-    setIsLoadingDetails(true);
-    setSearchTerm("");
-    setSearchResults([]);
     try {
       const fullDetails = await fetchAssetMasterById(asset.id);
       const parent = fullDetails || asset;
@@ -172,8 +166,6 @@ export function MovableParentAssetSection({
     } catch (err) {
       toast.error("Failed to retrieve full parent details.");
       console.error(err);
-    } finally {
-      setIsLoadingDetails(false);
     }
   };
 

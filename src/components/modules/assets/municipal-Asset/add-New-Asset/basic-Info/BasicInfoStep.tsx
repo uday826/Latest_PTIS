@@ -8,8 +8,8 @@ import { BuildingPropertyDetailsSection } from "./BuildingPropertyDetailsSection
 import { MovableParentAssetSection } from "./MovableParentAssetSection";
 
 import { fetchDocumentFileAction, fetchUploadedDocumentsAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/common";
-import { ImagePlus, UploadCloud, X } from "lucide-react";
+import { Card } from "@/components/common";
+import { UploadCloud } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAssetForm } from "../AssetFormContext";
@@ -112,7 +112,7 @@ function BuildingBasicInfoContent({
       setIsLoadingSubTypes(true);
       try {
         const { fetchSubTypesByTypeAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/basic-Info/actions");
-        const res = await fetchSubTypesByTypeAction(formData.typeOfUseId as string);
+        const res = await fetchSubTypesByTypeAction(formData.typeOfUseId ? Number(formData.typeOfUseId) : 0);
         if (res.success && res.data) {
           setDynamicSubTypes(res.data);
         } else {
@@ -128,7 +128,7 @@ function BuildingBasicInfoContent({
     loadSubTypes();
   }, [formData.typeOfUseId]);
 
-  const handleMoujaChange = (moujaId: string) => {
+  const handleMoujaChange = (_moujaId: string) => {
     // Clear subzone selection in the form state on manual change
     updateFormData({ subzone: "" });
   };
