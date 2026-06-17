@@ -38,17 +38,6 @@ const baseColumns: Column<LeaseRentRecord>[] = [
     ),
   },
   {
-    key: 'rentStatus',
-    label: 'Rent Status',
-    align: 'center',
-    cellClassName: '!px-2 !py-2',
-    render: (value) => (
-      <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700">
-        {String(value)}
-      </span>
-    ),
-  },
-  {
     key: 'workflowStatus',
     label: 'Workflow Status',
     align: 'center',
