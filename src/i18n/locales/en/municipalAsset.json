@@ -262,7 +262,8 @@
     "constructionTypeRequired": "Please select Construction Type",
     "typeOfUseRequired": "Please select Type of Use",
     "subTypeOfUseRequired": "Please select Sub Type of Use",
-    "floorAlreadyExists": "Floor details already exist."
+    "floorAlreadyExists": "Floor details already exist.",
+    "roomRequired": "Please add at least one room before adding the floor"
   },
   "messages": {
     "updateSuccess": "Floor details updated successfully.",

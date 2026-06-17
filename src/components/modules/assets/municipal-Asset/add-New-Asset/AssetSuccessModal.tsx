@@ -16,8 +16,9 @@ export default function AssetSuccessModal({ assetName, assetCode, onGoToDashboar
 
     return () => clearTimeout(timer);
   }, [onGoToDashboard]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all duration-500">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all duration-500 overflow-hidden">
       {/* Custom Styles Injector for premium micro-animations */}
       <style>{`
         @keyframes scaleIn {
@@ -33,9 +34,14 @@ export default function AssetSuccessModal({ assetName, assetCode, onGoToDashboar
           50% { transform: scale(1.15); opacity: 0.2; }
           100% { transform: scale(1.3); opacity: 0; }
         }
-        @keyframes confettiFloat {
-          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        @keyframes emojiPop {
+          0% { transform: scale(0); opacity: 0; }
+          70% { transform: scale(1.3); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes emojiBob {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-10px) rotate(5deg); }
         }
         .animate-modal-card {
           animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
@@ -54,19 +60,11 @@ export default function AssetSuccessModal({ assetName, assetCode, onGoToDashboar
       `}</style>
 
       {/* Stunning Animated Card */}
-      <div className="animate-modal-card relative bg-white/95 border border-emerald-100 rounded-3xl shadow-2xl p-8 max-w-md w-full overflow-hidden text-center backdrop-blur-xl">
+      <div className="animate-modal-card relative z-10 bg-white/95 border border-emerald-100 rounded-3xl shadow-2xl p-8 max-w-md w-full overflow-visible text-center backdrop-blur-xl">
         {/* Floating background decorative details */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 bg-gradient-to-r from-teal-400 via-emerald-500 to-green-400 rounded-b-full shadow-lg" />
         <div className="absolute -top-10 -right-10 size-32 bg-emerald-100/30 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 size-32 bg-teal-100/30 rounded-full blur-2xl pointer-events-none" />
-
-        {/* Premium Confetti Sparkles / Floating particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
-          <div className="absolute bottom-10 left-[15%] size-2.5 bg-yellow-400 rounded-sm" style={{ animation: 'confettiFloat 3s ease-out infinite' }} />
-          <div className="absolute bottom-16 right-[20%] size-2 bg-pink-400 rounded-full" style={{ animation: 'confettiFloat 3.8s ease-out 0.5s infinite' }} />
-          <div className="absolute bottom-8 left-[45%] size-3 bg-blue-400 rotate-45" style={{ animation: 'confettiFloat 4.2s ease-out 1s infinite' }} />
-          <div className="absolute bottom-12 right-[40%] size-2 bg-emerald-400 rounded-sm" style={{ animation: 'confettiFloat 3.5s ease-out 0.2s infinite' }} />
-        </div>
 
         {/* Stunning Animated Success Header (Floating circular badge) */}
         <div className="flex justify-center mb-6">
@@ -78,39 +76,29 @@ export default function AssetSuccessModal({ assetName, assetCode, onGoToDashboar
                 <polyline className="animate-check" points="20 6 9 17 4 12" />
               </svg>
             </div>
+            {/* Single happy smiley floating next to the checkmark */}
+            <span className="absolute -top-2 -right-2 text-4xl select-none pointer-events-none" style={{ animation: 'emojiPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, emojiBob 3s ease-in-out 0.5s infinite' }}>😊</span>
           </div>
         </div>
 
         {/* Title */}
-        <h2 className="text-2xl font-black text-slate-800 tracking-tight mb-2 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-          Asset Activated Successfully!
+        <h2 className="text-2xl font-black text-slate-800 tracking-tight mb-6 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+          Asset Registered Successfully!
         </h2>
-        <p className="text-xs text-slate-500 font-extrabold uppercase tracking-widest mb-6">
-          The asset is now live and queryable
-        </p>
 
         {/* Premium Informational Cards */}
         <div className="space-y-3 mb-8">
           <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl border border-slate-100 p-4 transition-all duration-300 hover:border-slate-200">
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Asset Title</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Asset Name</span>
               <span className="text-base font-extrabold text-slate-800 text-left truncate">{assetName || "Untitled Asset"}</span>
             </div>
           </div>
 
           <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl border border-slate-100 p-4 transition-all duration-300 hover:border-slate-200">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Generated Asset Code</span>
-                <span className="text-sm font-mono font-black text-blue-700 tracking-wider mt-0.5 uppercase bg-blue-50/50 px-2.5 py-1 rounded-lg border border-blue-100">{assetCode || "PENDING"}</span>
-              </div>
-              <div className="flex items-center gap-1 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 text-emerald-700">
-                <span className="relative flex size-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span className="text-[10px] font-black uppercase tracking-wider">Active</span>
-              </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Asset No</span>
+              <span className="text-sm font-mono font-black text-blue-700 tracking-wider mt-0.5 uppercase bg-blue-50/50 px-2.5 py-1 rounded-lg border border-blue-100 w-fit">{assetCode || "PENDING"}</span>
             </div>
           </div>
         </div>

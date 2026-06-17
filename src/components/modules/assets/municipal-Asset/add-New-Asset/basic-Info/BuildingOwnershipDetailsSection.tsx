@@ -7,6 +7,7 @@ import {
   CardTitle,
   Input,
   Select,
+  SearchSelect,
   TextArea,
 } from "@/components/common";
 import type { BuildingOwnershipDetailsSectionProps } from "@/types/asset-types/basic-info/buildBasicInfo.types";
@@ -77,20 +78,20 @@ export function BuildingOwnershipDetailsSection({
           initialLng={formData.longitude}
         />
 
-        <Select
+        <SearchSelect
           label="Owning Department"
           name="department"
           value={formData.department}
-          onChange={(e: any) => handleChange(e)}
+          onChange={(name, value) => handleChange({ target: { name, value } } as any)}
           disabled={formData.isMovableCategory}
           options={
             departments.map((d) => {
               const label = d.departmentName || `Department ${d.id}`;
-              return { label, value: String(d.id), image: d.imageUrl };
+              return { label, value: String(d.id) };
             })
           }
+          placeholder="Select Owning Department"
           className="font-semibold text-sm"
-          selectSize="sm"
           required={!formData.isMovableCategory}
           error={showError("department") ? errors.department : undefined}
         />
@@ -108,14 +109,14 @@ export function BuildingOwnershipDetailsSection({
           />
         </div>
 
-        <Select
+        <SearchSelect
           label="Ownership Type"
           name="ownershipType"
           value={formData.ownershipType}
-          onChange={(e: any) => handleChange(e)}
+          onChange={(name, value) => handleChange({ target: { name, value } } as any)}
           options={resolvedOwnershipOptions}
+          placeholder="Select Ownership Type"
           className="font-semibold text-sm"
-          selectSize="sm"
           required
           error={
             showError("ownershipType") ? errors.ownershipType : undefined
@@ -247,4 +248,3 @@ export function BuildingOwnershipDetailsSection({
     </Card>
   );
 }
-

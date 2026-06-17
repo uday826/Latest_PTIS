@@ -202,11 +202,7 @@ export function AssetFormFooter() {
         // Sequentially upload staged documents in context now that the asset is active
         const filesToUpload = stagedFiles ? Object.entries(stagedFiles) : [];
         if (filesToUpload.length > 0) {
-          let loadingToast: string | number | undefined;
           try {
-            loadingToast = toast.loading("Uploading staged compliance documents...");
-            let uploadFailed = false;
-
             for (const [defId, item] of filesToUpload) {
               let userId = 1;
               try {
@@ -227,30 +223,18 @@ export function AssetFormFooter() {
               formDataPayload.append("DocumentType", item.definition.documentCode);
               formDataPayload.append("UploadedByUserId", userId.toString());
 
-              const uploadRes = await uploadDocumentAction(formDataPayload);
-              if (!uploadRes.success) {
-                uploadFailed = true;
-
-                toast.error(`Failed to upload ${item.definition.documentName}`);
-              }
+              await uploadDocumentAction(formDataPayload);
             }
 
-            if (uploadFailed) {
-              toast.warning("Asset activated, but some documents failed to upload. You can re-upload them in Details.");
-            } else {
-              toast.success("All compliance documents uploaded successfully!");
-              if (setStagedFiles) setStagedFiles({});
-            }
-          } finally {
-            if (loadingToast !== undefined) toast.dismiss(loadingToast);
+            if (setStagedFiles) setStagedFiles({});
+          } catch (e) {
+            console.error("Compliance document upload error:", e);
           }
         }
 
         // Upload basic info files if they exist and haven't been uploaded yet (for new assets)
         if (basicInfoFiles && (basicInfoFiles.frontPhoto || basicInfoFiles.buildingPlan)) {
-          let loadingToast: string | number | undefined;
           try {
-            loadingToast = toast.loading("Uploading asset photos...");
             let userId = 1;
             try {
               const match = document.cookie.match(/(?:^|; )user_id=([^;]*)/);
@@ -314,32 +298,17 @@ export function AssetFormFooter() {
 
             const res = await uploadBulkDocumentsAction(formDataPayload);
             if (res.success && res.data) {
-              const failures = res.data.failureCount || 0;
-              const successes = res.data.successCount || 0;
-              if (failures > 0) {
-                const detailedError = res.data.failedUploads?.[0]?.errorMessage || "Unknown backend error";
-                toast.error(`Photo upload failed: ${successes} successful, ${failures} failed. Reason: ${detailedError}`);
-              } else {
-                toast.success("Asset photos uploaded successfully!");
-                if (setBasicInfoFiles) setBasicInfoFiles({});
-              }
-            } else {
-              const errorMsg = res.error || "Unknown bulk upload error";
-              toast.error(`Photo upload failed: ${errorMsg}`);
+              if (setBasicInfoFiles) setBasicInfoFiles({});
             }
-          } finally {
-            if (loadingToast !== undefined) toast.dismiss(loadingToast);
+          } catch (e) {
+            console.error("Basic info photo upload error:", e);
           }
         }
 
         // Upload subunit files if they exist and haven't been uploaded yet (staged during subunit step)
         const subunitEntries = subunitFiles ? Object.entries(subunitFiles) : [];
         if (subunitEntries.length > 0) {
-          let loadingToast: string | number | undefined;
           try {
-            loadingToast = toast.loading("Uploading subunit photos & plans...");
-            let uploadFailed = false;
-
             let frontPhotoDefId = 0;
             let planDefId = 0;
             try {
@@ -402,22 +371,12 @@ export function AssetFormFooter() {
 
               formDataPayload.append("FileMetadataJson", JSON.stringify(metadata));
 
-              const res = await uploadBulkDocumentsAction(formDataPayload);
-              if (!res.success || (res.data && res.data.failureCount > 0)) {
-                uploadFailed = true;
-                const detailedError = res.data?.failedUploads?.[0]?.errorMessage || res.error || "Unknown error";
-                console.error(`Subunit photo upload failed for ID ${subUnitId}: ${detailedError}`);
-              }
+              await uploadBulkDocumentsAction(formDataPayload);
             }
 
-            if (uploadFailed) {
-              toast.warning("Asset activated, but some subunit documents failed to upload. You can re-upload them in Details.");
-            } else {
-              toast.success("All subunit photos & plans uploaded successfully!");
-              if (setSubunitFiles) setSubunitFiles({});
-            }
-          } finally {
-            if (loadingToast !== undefined) toast.dismiss(loadingToast);
+            if (setSubunitFiles) setSubunitFiles({});
+          } catch (e) {
+            console.error("Subunit document upload error:", e);
           }
         }
 

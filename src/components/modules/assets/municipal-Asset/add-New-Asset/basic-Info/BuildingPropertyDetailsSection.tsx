@@ -7,6 +7,7 @@ import {
   CardTitle,
   Input,
   Select,
+  SearchSelect,
 } from "@/components/common";
 import type { BuildingPropertyDetailsSectionProps } from "@/types/asset-types/basic-info/buildBasicInfo.types";
 import { Building } from "lucide-react";
@@ -78,14 +79,14 @@ export function BuildingPropertyDetailsSection({
           </div>
         </div>
 
-        <Select
+        <SearchSelect
           label="Mouja"
           name="mouja"
           value={formData.mouja}
-          onChange={(e) => {
-            handleChange(e);
+          onChange={(name, value) => {
+            handleChange({ target: { name, value } } as any);
             if (onMoujaChange) {
-              onMoujaChange(e.target.value);
+              onMoujaChange(value);
             }
           }}
           disabled={formData.isMovableCategory}
@@ -97,17 +98,17 @@ export function BuildingPropertyDetailsSection({
               })
               : []
           }
+          placeholder="Select Mouja"
           className="font-semibold text-sm"
-          selectSize="sm"
           required={!formData.isMovableCategory}
           error={showError("mouja" as any) ? (errors as any).mouja : undefined}
         />
 
-        <Select
+        <SearchSelect
           label="Zone"
           name="zone"
           value={formData.zone}
-          onChange={handleChange}
+          onChange={(name, value) => handleChange({ target: { name, value } } as any)}
           disabled={formData.isMovableCategory}
           options={
             zones && zones.length > 0
@@ -127,17 +128,17 @@ export function BuildingPropertyDetailsSection({
                 { label: "Zone 5", value: "5" },
               ]
           }
+          placeholder="Select Zone"
           className="font-semibold text-sm"
-          selectSize="sm"
           required={!formData.isMovableCategory}
           error={showError("zone") ? errors.zone : undefined}
         />
 
-        <Select
+        <SearchSelect
           label="Ward"
           name="ward"
           value={formData.ward}
-          onChange={handleChange}
+          onChange={(name, value) => handleChange({ target: { name, value } } as any)}
           disabled={formData.isMovableCategory || !formData.zone}
           options={
             wards && wards.length > 0
@@ -156,16 +157,17 @@ export function BuildingPropertyDetailsSection({
                 value: String(i + 1),
               }))
           }
+          placeholder="Select Ward"
           className="font-semibold text-sm"
-          selectSize="sm"
           required={!formData.isMovableCategory}
           error={showError("ward") ? errors.ward : undefined}
         />
-        <Select
+
+        <SearchSelect
           label="Subzone"
           name="subzone"
           value={formData.subzone}
-          onChange={handleChange}
+          onChange={(name, value) => handleChange({ target: { name, value } } as any)}
           disabled={formData.isMovableCategory || !formData.mouja || isLoadingSubzones}
           options={
             subzones && subzones.length > 0
@@ -181,8 +183,8 @@ export function BuildingPropertyDetailsSection({
               })
               : []
           }
+          placeholder="Select Subzone"
           className="font-semibold text-sm"
-          selectSize="sm"
           required={!formData.isMovableCategory}
           error={showError("subzone" as any) ? (errors as any).subzone : undefined}
         />
@@ -211,32 +213,19 @@ export function BuildingPropertyDetailsSection({
           />
         </div>
 
-        <Select
+        <SearchSelect
           label="Asset Condition"
           name="condition"
           value={formData.condition || "Good"}
-          onChange={handleChange}
+          onChange={(name, value) => handleChange({ target: { name, value } } as any)}
           options={[
             { label: "Good", value: "Good" },
             { label: "Average", value: "Average" },
             { label: "Poor", value: "Poor" },
           ]}
+          placeholder="Select Condition"
           className="font-semibold text-sm"
-          selectSize="sm"
         />
-
-        {/* <Select
-          label="Is Revenue Generating?"
-          name="isRevenueGenerating"
-          value={formData.isRevenueGenerating || "No"}
-          onChange={handleChange}
-          options={[
-            { label: "Yes", value: "Yes" },
-            { label: "No", value: "No" },
-          ]}
-          className="font-semibold text-sm"
-          selectSize="sm"
-        /> */}
 
         {
           (isLand || isBuilding) && (
@@ -265,17 +254,17 @@ export function BuildingPropertyDetailsSection({
               />
               {isLand && (
                 <>
-                  <Select
+                  <SearchSelect
                     label="Offset Operation"
                     name="offsetOp"
                     value={(formData as any).offsetOp || "Subtract"}
-                    onChange={handleChange}
+                    onChange={(name, value) => handleChange({ target: { name, value } } as any)}
                     options={[
                       { label: "Add", value: "Add" },
                       { label: "Subtract", value: "Subtract" },
                     ]}
+                    placeholder="Select Offset Operation"
                     className="font-semibold text-sm"
-                    selectSize="sm"
                     required
                   />
                   <Input
@@ -320,11 +309,11 @@ export function BuildingPropertyDetailsSection({
                 required
                 error={showError("plotNumber" as any) ? (errors as any).plotNumber : undefined}
               />
-              <Select
+              <SearchSelect
                 label="Type of Use"
                 name="typeOfUseId"
                 value={(formData as any).typeOfUseId || ""}
-                onChange={handleChange}
+                onChange={(name, value) => handleChange({ target: { name, value } } as any)}
                 options={
                   useTypes && useTypes.length > 0
                     ? useTypes.map((ut) => ({
@@ -333,16 +322,16 @@ export function BuildingPropertyDetailsSection({
                     }))
                     : []
                 }
+                placeholder="Select Type of Use"
                 className="font-semibold text-sm"
-                selectSize="sm"
                 required
                 error={showError("typeOfUseId" as any) ? (errors as any).typeOfUseId : undefined}
               />
-              <Select
+              <SearchSelect
                 label="Sub Type of Use"
                 name="subTypeOfUseId"
                 value={(formData as any).subTypeOfUseId || ""}
-                onChange={handleChange}
+                onChange={(name, value) => handleChange({ target: { name, value } } as any)}
                 options={
                   subUseTypes && subUseTypes.length > 0
                     ? subUseTypes.map((sub) => ({
@@ -351,8 +340,8 @@ export function BuildingPropertyDetailsSection({
                     }))
                     : []
                 }
+                placeholder="Select Sub Type of Use"
                 className="font-semibold text-sm"
-                selectSize="sm"
                 disabled={!(formData as any).typeOfUseId || isLoadingSubTypes}
                 required
                 error={showError("subTypeOfUseId" as any) ? (errors as any).subTypeOfUseId : undefined}

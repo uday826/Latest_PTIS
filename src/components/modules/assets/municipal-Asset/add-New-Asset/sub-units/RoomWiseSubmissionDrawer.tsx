@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { X, Plus, Trash2, Edit2, Layers, Scissors, EyeIcon } from "lucide-react";
-import { Input } from "@/components/common";
+import { Input, SearchSelect } from "@/components/common";
+import { toast } from "sonner";
 
 interface OffsetEntry {
   id: string;
@@ -32,16 +33,16 @@ interface Room {
   offsetLength: number; offsetWidth: number; offsetHeight: number;
   offsetBase1: number; offsetBase2: number; offsetRadius: number;
   offsetAreaSqM: number;    // auto-calculated cutout area
-  hasOffset: "No" | "Yes"; // whether this room has a cutout
+  hasOffset: "No" | "Yes" | ""; // whether this room has a cutout
   offsetOp?: "Add" | "Subtract"; // add or subtract offset
   offsets?: OffsetEntry[]; // list of multiple offset cutouts
   // Net area = areaSqM - offsetAreaSqM
   netAreaSqM: number; netAreaSqFt: number;
   count: number;
   // Outer=Yes → counted at 50% towards carpet (e.g. balcony, terrace)
-  outer: "No" | "Yes";
+  outer: "No" | "Yes" | "";
   // Minus=Yes → entire room deducted from building carpet total
-  minus: "No" | "Yes";
+  minus: "No" | "Yes" | "";
 }
 
 const ROOM_TYPES = [
@@ -180,16 +181,16 @@ function makeId() {
 
 function blankRoom(no: number): Room {
   return {
-    id: makeId(), roomNo: String(no), roomType: "Bed Room", shape: "Rectangle",
+    id: makeId(), roomNo: String(no), roomType: "", shape: "",
     length: 0, width: 0, height: 0, base1: 0, base2: 0, radius: 0,
     areaSqM: 0, areaSqFt: 0,
     offsetShape: "Rectangle", offsetLength: 0, offsetWidth: 0, offsetHeight: 0,
     offsetBase1: 0, offsetBase2: 0, offsetRadius: 0,
-    offsetAreaSqM: 0, hasOffset: "No",
+    offsetAreaSqM: 0, hasOffset: "",
     offsetOp: "Subtract",
     offsets: [],
     netAreaSqM: 0, netAreaSqFt: 0,
-    count: 1, outer: "No", minus: "No",
+    count: 1, outer: "", minus: "",
   };
 }
 
@@ -406,7 +407,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
   // Append uncommitted offset to the temporary drawerOffsets list
   const handleAddOffsetToHistory = () => {
     if (tempOffsetAreaSqM <= 0) {
-      alert("Please enter valid dimensions for the offset.");
+      toast.error("Please enter valid dimensions for the offset.");
       return;
     }
     const newEntry: OffsetEntry = {
@@ -467,7 +468,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
 
   // Add/update room
   const handleAdd = () => {
-    if (form.areaSqM <= 0) { alert("Enter valid dimensions (area must be > 0)."); return; }
+    if (form.areaSqM <= 0) { toast.error("Enter valid dimensions (area must be > 0)."); return; }
     const computed = computeRoom(form);
     if (editingId) {
       setRooms((prev) => prev.map((r) => r.id === editingId ? { ...computed, id: editingId } : r));
@@ -574,17 +575,21 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Room Type</label>
-                    <select value={form.roomType} onChange={(e) => setForm((p) => ({ ...p, roomType: e.target.value }))}
-                      className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}>
-                      {ROOM_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                    </select>
+                    <SearchSelect
+                      value={form.roomType}
+                      onChange={(name, value) => setForm((p) => ({ ...p, roomType: value }))}
+                      options={ROOM_TYPES.map((t) => ({ label: t, value: t }))}
+                      placeholder="Select Room Type"
+                    />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Shape</label>
-                    <select value={form.shape} onChange={(e) => setShape(e.target.value)}
-                      className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}>
-                      {SHAPES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                    </select>
+                    <SearchSelect
+                      value={form.shape}
+                      onChange={(name, value) => setShape(value)}
+                      options={SHAPES}
+                      placeholder="Select Shape"
+                    />
                   </div>
 
                   {dimFields.map((df) => (
@@ -599,19 +604,27 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
 
                   <div>
                     <label className="block text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-0.5">Outer (−20%)</label>
-                    <select value={form.outer} onChange={(e) => setForm((p) => ({ ...p, outer: e.target.value as "Yes" | "No" }))}
-                      className={`${inp} w-full rounded-lg border px-2 focus:outline-none focus:ring-2 focus:ring-blue-200 ${form.outer === "Yes" ? "border-blue-300 bg-blue-50 text-blue-700 font-bold" : "border-slate-300 bg-white text-slate-700"}`}>
-                      <option value="No">No</option>
-                      <option value="Yes">Yes</option>
-                    </select>
+                    <SearchSelect
+                      value={form.outer}
+                      onChange={(name, value) => setForm((p) => ({ ...p, outer: value as "Yes" | "No" }))}
+                      options={[
+                        { label: "No", value: "No" },
+                        { label: "Yes", value: "Yes" },
+                      ]}
+                      placeholder="Select..."
+                    />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-amber-600 uppercase tracking-wide mb-0.5">Offset (Cutout)</label>
-                    <select value={form.hasOffset} onChange={(e) => handleFormOffsetToggle(e.target.value as "Yes" | "No")}
-                      className={`${inp} w-full rounded-lg border px-2 focus:outline-none focus:ring-2 focus:ring-amber-200 ${form.hasOffset === "Yes" ? "border-amber-300 bg-amber-50 text-amber-700 font-bold" : "border-slate-300 bg-white text-slate-700"}`}>
-                      <option value="No">No</option>
-                      <option value="Yes">Yes</option>
-                    </select>
+                    <SearchSelect
+                      value={form.hasOffset}
+                      onChange={(name, value) => handleFormOffsetToggle(value as "Yes" | "No")}
+                      options={[
+                        { label: "No", value: "No" },
+                        { label: "Yes", value: "Yes" },
+                      ]}
+                      placeholder="Select..."
+                    />
                     {form.hasOffset === "Yes" && (
                       <button
                         type="button"
@@ -624,11 +637,15 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-red-500 uppercase tracking-wide mb-0.5">Minus (deduct all)</label>
-                    <select value={form.minus} onChange={(e) => setForm((p) => ({ ...p, minus: e.target.value as "Yes" | "No" }))}
-                      className={`${inp} w-full rounded-lg border px-2 focus:outline-none focus:ring-2 focus:ring-red-200 ${form.minus === "Yes" ? "border-red-300 bg-red-50 text-red-700 font-bold" : "border-slate-300 bg-white text-slate-700"}`}>
-                      <option value="No">No</option>
-                      <option value="Yes">Yes</option>
-                    </select>
+                    <SearchSelect
+                      value={form.minus}
+                      onChange={(name, value) => setForm((p) => ({ ...p, minus: value as "Yes" | "No" }))}
+                      options={[
+                        { label: "No", value: "No" },
+                        { label: "Yes", value: "Yes" },
+                      ]}
+                      placeholder="Select..."
+                    />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Total Area (Sq.M)</label>
@@ -964,10 +981,10 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                   {/* Select Shape */}
                   <div className="flex-1 min-w-[120px]">
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Select Shape</label>
-                    <select
+                    <SearchSelect
                       value={tempOffsetShape}
-                      onChange={(e) => {
-                        const newShape = e.target.value;
+                      onChange={(name, value) => {
+                        const newShape = value;
                         setTempOffsetShape(newShape);
                         // reset temp dims
                         setTempOffsetLength(0);
@@ -977,10 +994,9 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                         setTempOffsetBase2(0);
                         setTempOffsetRadius(0);
                       }}
-                      className="h-8 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
-                    >
-                      {SHAPES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                    </select>
+                      options={SHAPES}
+                      placeholder="Select Shape"
+                    />
                   </div>
 
                   {/* Dimensions fields mapped dynamically based on selected shape */}

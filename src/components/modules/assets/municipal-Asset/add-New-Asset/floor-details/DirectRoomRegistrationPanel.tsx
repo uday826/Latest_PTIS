@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Edit2, Layers } from "lucide-react";
 import { useAssetForm } from "../AssetFormContext";
-import { Input, Select, Button } from "@/components/common";
+import { Input, Select, Button, SearchSelect } from "@/components/common";
 import { saveFloorDetail, updateFloorDetail, deleteFloorDetail, fetchSubFloorAction, fetchSubUseTypesAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { RoomWiseSubmissionDrawer } from "../sub-units/RoomWiseSubmissionDrawer";
 import { toast } from "sonner";
@@ -108,6 +108,10 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
 
 
   const handleAddFloor = async () => {
+    if (!roomData || roomData.length === 0) {
+      toast.error(tMunicipal("validation.roomRequired") || "Please add at least one room before adding the floor");
+      return;
+    }
     if (!formState.floor) {
       toast.error(tMunicipal("validation.floorRequired") || "Please select Floor");
       return;
@@ -470,24 +474,31 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
 
 
 
-            <Select
-              label="Floor"
-              required
-              options={dropdownOptions?.floorLevels || []}
-              value={formState.floor}
-              onChange={(_, val) => setFormState((p: any) => ({ ...p, floor: val }))}
-              placeholder="Select floor"
-              selectSize="sm"
-            />
+            <div className="flex flex-col">
+              <label className="mb-1 text-[11px] font-bold text-gray-700">
+                Floor<span className="text-red-500"> *</span>
+              </label>
+              <SearchSelect
+                name="floor"
+                options={(dropdownOptions?.floorLevels || []).map((o: any) => ({ label: o.label, value: String(o.value) }))}
+                value={formState.floor}
+                onChange={(name, val) => setFormState((p: any) => ({ ...p, floor: val }))}
+                placeholder="Select floor"
+              />
+            </div>
 
-            <Select
-              label="Sub Floor"
-              options={subFloorOptions || []}
-              value={formState.subFloor}
-              onChange={(_, val) => setFormState((p: any) => ({ ...p, subFloor: val }))}
-              placeholder="Select sub floor"
-              selectSize="sm"
-            />
+            <div className="flex flex-col">
+              <label className="mb-1 text-[11px] font-bold text-gray-700">
+                Sub Floor
+              </label>
+              <SearchSelect
+                name="subFloor"
+                options={(subFloorOptions || []).map((o: any) => ({ label: o.label, value: String(o.value) }))}
+                value={formState.subFloor}
+                onChange={(name, val) => setFormState((p: any) => ({ ...p, subFloor: val }))}
+                placeholder="Select sub floor"
+              />
+            </div>
 
             <Input
               label="Con Yr"
@@ -503,46 +514,60 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
               className="font-mono"
             />
 
-            <Select
-              label="Con Type"
-              required
-              options={dropdownOptions?.constructionTypes || []}
-              value={formState.conType}
-              onChange={(_, val) => setFormState((p: any) => ({ ...p, conType: val }))}
-              placeholder="Select type"
-              selectSize="sm"
-            />
+            <div className="flex flex-col">
+              <label className="mb-1 text-[11px] font-bold text-gray-700">
+                Con Type<span className="text-red-500"> *</span>
+              </label>
+              <SearchSelect
+                name="conType"
+                options={(dropdownOptions?.constructionTypes || []).map((o: any) => ({ label: o.label, value: String(o.value) }))}
+                value={formState.conType}
+                onChange={(name, val) => setFormState((p: any) => ({ ...p, conType: val }))}
+                placeholder="Select type"
+              />
+            </div>
 
-            <Select
-              label="Type of Use"
-              required
-              options={dropdownOptions?.useTypes || []}
-              value={formState.useType}
-              onChange={(_, val) => setFormState((p: any) => ({ ...p, useType: val }))}
-              placeholder="Select usage"
-              selectSize="sm"
-            />
+            <div className="flex flex-col">
+              <label className="mb-1 text-[11px] font-bold text-gray-700">
+                Type of Use<span className="text-red-500"> *</span>
+              </label>
+              <SearchSelect
+                name="useType"
+                options={(dropdownOptions?.useTypes || []).map((o: any) => ({ label: o.label, value: String(o.value) }))}
+                value={formState.useType}
+                onChange={(name, val) => setFormState((p: any) => ({ ...p, useType: val }))}
+                placeholder="Select usage"
+              />
+            </div>
 
-            <Select
-              label="Sub Type of Use"
-              required
-              options={subUseTypeOptions || []}
-              value={formState.subUseType}
-              onChange={(_, val) => setFormState((p: any) => ({ ...p, subUseType: val }))}
-              placeholder="Select subtype"
-              selectSize="sm"
-            />
+            <div className="flex flex-col">
+              <label className="mb-1 text-[11px] font-bold text-gray-700">
+                Sub Type of Use<span className="text-red-500"> *</span>
+              </label>
+              <SearchSelect
+                name="subUseType"
+                options={(subUseTypeOptions || []).map((o: any) => ({ label: o.label, value: String(o.value) }))}
+                value={formState.subUseType}
+                onChange={(name, val) => setFormState((p: any) => ({ ...p, subUseType: val }))}
+                placeholder="Select subtype"
+              />
+            </div>
 
-            <Select
-              label="Renter"
-              options={[
-                { label: "No", value: "false" },
-                { label: "Yes", value: "true" }
-              ]}
-              value={formState.isRenter ? 'true' : 'false'}
-              onChange={(_, val) => setFormState((p: any) => ({ ...p, isRenter: val === 'true' }))}
-              selectSize="sm"
-            />
+            <div className="flex flex-col">
+              <label className="mb-1 text-[11px] font-bold text-gray-700">
+                Renter
+              </label>
+              <SearchSelect
+                name="isRenter"
+                options={[
+                  { label: "No", value: "false" },
+                  { label: "Yes", value: "true" }
+                ]}
+                value={formState.isRenter ? 'true' : 'false'}
+                onChange={(name, val) => setFormState((p: any) => ({ ...p, isRenter: val === 'true' }))}
+                placeholder="Select renter"
+              />
+            </div>
 
             <div className="flex flex-col">
               <label className="mb-1 text-[11px] font-bold text-gray-700">

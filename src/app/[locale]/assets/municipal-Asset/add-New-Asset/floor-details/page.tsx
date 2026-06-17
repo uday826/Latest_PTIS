@@ -12,10 +12,12 @@ export default async function Page({
   const rawId = resolvedParams.id || resolvedParams.assetId;
   const assetId = rawId ? Number(rawId) : 0;
 
-  const dropdownsRes = await fetchFloorDropdownOptions();
-  const subUnitsRes = assetId > 0 ? await getSubUnitsByAssetAction(assetId) : { success: true, data: [] };
-  const departmentsRes = await fetchDepartmentsAction();
-  const floorsRes = assetId > 0 ? await fetchFloorsByAsset(assetId) : { success: true, data: [] };
+  const [dropdownsRes, subUnitsRes, departmentsRes, floorsRes] = await Promise.all([
+    fetchFloorDropdownOptions(),
+    assetId > 0 ? getSubUnitsByAssetAction(assetId) : Promise.resolve({ success: true, data: [] }),
+    fetchDepartmentsAction(),
+    assetId > 0 ? fetchFloorsByAsset(assetId) : Promise.resolve({ success: true, data: [] }),
+  ]);
 
   const dropdownOptions = dropdownsRes.success ? {
     ...dropdownsRes.data,

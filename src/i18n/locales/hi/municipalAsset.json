@@ -262,7 +262,8 @@
     "constructionTypeRequired": "कृपया निर्माण प्रकार चुनें",
     "typeOfUseRequired": "कृपया उपयोग का प्रकार चुनें",
     "subTypeOfUseRequired": "कृपया उपयोग का उप-प्रकार चुनें",
-    "floorAlreadyExists": "इस मंजिल का विवरण पहले से मौजूद है।"
+    "floorAlreadyExists": "इस मंजिल का विवरण पहले से मौजूद है।",
+    "roomRequired": "कृपया मंजिल जोड़ने से पहले कम से कम एक कमरा जोड़ें"
   },
   "messages": {
     "updateSuccess": "मंजिल का विवरण सफलतापूर्वक अपडेट किया गया।",

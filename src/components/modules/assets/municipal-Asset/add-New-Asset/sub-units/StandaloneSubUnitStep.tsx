@@ -235,8 +235,10 @@ export function StandaloneSubUnitStep({
         }));
 
         setUnits([...units, ...newUnits]);
+        const count = res.data.generatedAssets.length;
+        const unitText = count === 1 ? `unit` : `units`;
         toast.success(
-          `${res.data.generatedAssets.length} unit(s) created in database. Click Detail to configure.`,
+          `${count} ${unitText} generated successfully. Click Details to configure.`,
           { id: loadingToast }
         );
       } else {
@@ -417,7 +419,11 @@ export function StandaloneSubUnitStep({
             isModified: false,
           });
         } else {
-          errors.push(`${unit.unitNumber}: ${res.error || "failed"}`);
+          const rawErr = res.error || "failed";
+          const friendlyErr = rawErr.includes("LeaseRent_Asset_NotFound")
+            ? "Failed to register renter: Asset unit not found in registry"
+            : rawErr;
+          errors.push(`${unit.unitNumber}: ${friendlyErr}`);
         }
       }
 

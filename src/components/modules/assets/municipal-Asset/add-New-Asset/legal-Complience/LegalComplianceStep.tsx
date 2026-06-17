@@ -336,6 +336,15 @@ export default function LegalCompliancePage() {
     return groups;
   }, [definitions]);
 
+  // Sorted definitions by displayOrder, prioritizing required documents first
+  const sortedDefinitions = React.useMemo(() => {
+    return [...definitions].sort((a, b) => {
+      if (a.isRequired && !b.isRequired) return -1;
+      if (!a.isRequired && b.isRequired) return 1;
+      return a.displayOrder - b.displayOrder;
+    });
+  }, [definitions]);
+
   const requiredCount = groupedDefinitions.required.length;
   const uploadedRequiredCount = groupedDefinitions.required.filter(
     d => uploadStates[d.id]?.status === "uploaded"
@@ -393,52 +402,22 @@ export default function LegalCompliancePage() {
         </div>
       </div>
 
-      {/* Required Documents Section */}
-      {groupedDefinitions.required.length > 0 && (
+      {/* Compliance Documents Section */}
+      {definitions.length > 0 && (
         <div className="border border-emerald-200 bg-white rounded-xl overflow-hidden shadow-sm">
           <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 border-b border-emerald-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShieldCheck className="text-emerald-600 size-4" />
-              <h3 className="font-bold text-emerald-800 text-sm">Required Compliance Documents</h3>
-              <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                Mandatory
-              </span>
+              <h3 className="font-bold text-emerald-800 text-sm">Compliance Documents</h3>
             </div>
-            <span className="text-xs text-emerald-600 font-medium">
-              {uploadedRequiredCount} of {requiredCount} uploaded
-            </span>
+            {requiredCount > 0 && (
+              <span className="text-xs text-emerald-600 font-medium">
+                {uploadedRequiredCount} of {requiredCount} required uploaded
+              </span>
+            )}
           </div>
           <div className="p-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {groupedDefinitions.required.map(def => (
-              <DocumentUploadCard
-                key={def.id}
-                definition={def}
-                state={uploadStates[def.id]}
-                onFileSelect={(file) => handleFileSelect(def.id, file)}
-                onDelete={() => handleDelete(def.id)}
-                onView={() => handleView(def.id, uploadStates[def.id])}
-                isViewing={viewingDocId === def.id}
-                fileInputRef={(el) => { fileInputRefs.current[def.id] = el; }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Optional Documents Section */}
-      {groupedDefinitions.optional.length > 0 && (
-        <div className="border border-emerald-200 bg-white rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 border-b border-emerald-100 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileBox className="text-emerald-600 size-4" />
-              <h3 className="font-bold text-emerald-800 text-sm">Optional Documents</h3>
-              <span className="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                Optional
-              </span>
-            </div>
-          </div>
-          <div className="p-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {groupedDefinitions.optional.map(def => (
+            {sortedDefinitions.map(def => (
               <DocumentUploadCard
                 key={def.id}
                 definition={def}
@@ -503,43 +482,42 @@ function DocumentUploadCard({ definition, state, onFileSelect, onDelete, onView,
   const StatusIcon = config.icon;
 
   return (
-    <div className={`${config.bg} ${config.border} border rounded-xl p-3 transition-all hover:shadow-sm max-w-md`}>
-      <div className="flex items-start gap-3">
-        <div className={`p-2 rounded-lg ${status === "uploaded" ? "bg-emerald-100" : status === "error" ? "bg-red-100" : "bg-white"}`}>
+    <div className={`${config.bg} ${config.border} border rounded-xl p-3 transition-all hover:shadow-sm w-full h-full flex flex-col justify-between`}>
+      <div className="flex items-start gap-3 h-full">
+        <div className={`p-2 rounded-lg shrink-0 ${status === "uploaded" ? "bg-emerald-100" : status === "error" ? "bg-red-100" : "bg-white"}`}>
           <StatusIcon className={`size-5 ${config.iconColor} ${status === "uploading" ? "animate-spin" : ""}`} />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <h4 className="text-sm font-semibold text-slate-800 leading-tight">{definition.documentName}</h4>
-              {definition.description && (
-                <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{definition.description}</p>
-              )}
+        <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
+          <div>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h4 className="text-sm font-semibold text-slate-800 leading-tight">
+                  {definition.documentName}
+                  {definition.isRequired && <span className="text-red-500 font-bold ml-1">*</span>}
+                </h4>
+                {definition.description && (
+                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{definition.description}</p>
+                )}
+              </div>
             </div>
-            {definition.isRequired && (
-              <span className="shrink-0 text-[9px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded">
-                REQ
-              </span>
+
+            {/* Status / File Name or File Info */}
+            {status === "uploaded" && (state?.file || state?.uploadedDoc) ? (
+              <div className="mt-2 flex items-center gap-1.5 text-emerald-700">
+                <FileBox className="size-3 shrink-0" />
+                <span className="text-[10px] font-medium truncate">
+                  {state.file ? state.file.name : state.uploadedDoc?.fileName}
+                </span>
+              </div>
+            ) : (
+              <div className="mt-2 text-[10px] text-slate-400 space-y-0.5">
+                <p>Max: {definition.maxFileSizeMB}MB • {definition.allowedExtensions || "All types"}</p>
+              </div>
+            )}
+            {status === "error" && state?.error && (
+              <p className="mt-2 text-[10px] text-red-600 font-medium">{state.error}</p>
             )}
           </div>
-
-          {/* File Info */}
-          <div className="mt-2 text-[10px] text-slate-400 space-y-0.5">
-            <p>Max: {definition.maxFileSizeMB}MB • {definition.allowedExtensions || "All types"}</p>
-          </div>
-
-          {/* Status / File Name */}
-          {status === "uploaded" && (state?.file || state?.uploadedDoc) && (
-            <div className="mt-2 flex items-center gap-1.5 text-emerald-700">
-              <FileBox className="size-3" />
-              <span className="text-[10px] font-medium truncate">
-                {state.file ? state.file.name : state.uploadedDoc?.fileName}
-              </span>
-            </div>
-          )}
-          {status === "error" && state?.error && (
-            <p className="mt-2 text-[10px] text-red-600 font-medium">{state.error}</p>
-          )}
 
           {/* Action Buttons */}
           <div className="mt-3 flex items-center gap-2">
@@ -607,7 +585,7 @@ function DocumentUploadCard({ definition, state, onFileSelect, onDelete, onView,
                   onClick={onDelete}
                   className="p-1.5 border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-all active:scale-95 flex items-center justify-center cursor-pointer"
                   title="Delete Document"
-                >
+                  >
                   <Trash2 className="size-3.5" />
                 </button>
               </>

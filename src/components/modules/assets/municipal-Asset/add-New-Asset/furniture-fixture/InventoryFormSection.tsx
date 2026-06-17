@@ -1,5 +1,5 @@
 import React from "react";
-import { AddButton, Button, Input, Select, UploadButton } from "@/components/common";
+import { AddButton, Button, Input, SearchSelect, UploadButton } from "@/components/common";
 import { Receipt } from "lucide-react";
 import { type InventoryForm } from "./FurnitureFixtureTypes";
 
@@ -74,36 +74,33 @@ export function InventoryFormSection({
   return (
     <div className="rounded-xl border border-[#CFD9E6] bg-[#F7FAFF] p-3">
       <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 items-end text-[11px] [&_label]:text-[11px] [&_label]:mb-1 [&_label]:!font-bold [&_span[id$=-label]]:text-[11px] [&_span[id$=-label]]:!font-bold [&_span.text-gray-700]:!font-bold [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-7 [&_input]:!text-[11px] [&_input]:!rounded-md [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-7 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px] [&_span.text-red-600]:text-[10px] [&_span.text-red-600]:mt-0.5">
-        <Select
+        <SearchSelect
           label="Type"
           value={form.type}
           onChange={(_, val) => handleTypeChange(val)}
           options={dynamicCategoryOptions}
           placeholder="Select type"
           required={true}
-          selectSize="sm"
         />
 
-        <Select
+        <SearchSelect
           label={addLabels.itemName}
           value={form.itemName}
           onChange={(_, val) => handleItemNameChange(val)}
           options={addNameOptions}
-          placeholder={form.type ? "Select item name" : "Select type first"}
+          placeholder={form.type ? `Select ${addLabels.itemName.toLowerCase()}` : "Select type first"}
           disabled={!form.type}
           required={true}
-          selectSize="sm"
         />
 
-        <Select
+        <SearchSelect
           label={addLabels.modelName}
           value={form.modelName}
           onChange={(_, val) => updateForm("modelName", val)}
           options={addModelOptions}
-          placeholder={form.itemName ? "Select model" : "Select item name first"}
+          placeholder={form.itemName ? `Select ${addLabels.modelName.toLowerCase()}` : "Select item name first"}
           disabled={!form.itemName}
           required={true}
-          selectSize="sm"
         />
 
         <Input
@@ -124,24 +121,22 @@ export function InventoryFormSection({
           fullWidth={true}
         />
 
-        <Select
+        <SearchSelect
           label={addLabels.condition}
           value={form.condition}
           onChange={(_, val) => updateForm("condition", val)}
           options={addConditionOptions}
-          placeholder="Select condition"
+          placeholder={`Select ${addLabels.condition.toLowerCase()}`}
           required={true}
-          selectSize="sm"
         />
 
-        <Select
+        <SearchSelect
           label="Owning Department"
           value={form.owningDepartment}
           onChange={(_, val) => updateForm("owningDepartment", val)}
           options={departments}
-          placeholder="-- Select --"
+          placeholder="Select owning department"
           required={true}
-          selectSize="sm"
         />
 
         <Input

@@ -4,7 +4,7 @@ import {
   fetchAssetsByFilter,
   fetchTypesByCategory,
 } from "@/app/[locale]/assets/municipal-Asset/actions";
-import { Select } from "@/components/common";
+import { Select, SearchSelect } from "@/components/common";
 import { Drawer } from "@/components/common/Drawer";
 import { AssetCategory, AssetType } from "@/lib/api/asset/category-type.service";
 import { Ward } from "@/lib/api/asset/ward.service";
@@ -317,32 +317,32 @@ export function AddAssetDrawer({ open, onClose, initialCategories = [], initialZ
               </div>
             ) : (
               <div className="space-y-4">
-                <Select
+                <SearchSelect
                   label="Asset Category"
                   name="category"
                   value={newData.category}
-                  onChange={(e) => {
+                  onChange={(name, value) => {
                     const cat = categories.find((c: any) => {
                       const name = c.categoryName || c.CategoryName || c.assetCategoryName || c.AssetCategoryName;
-                      return name === e.target.value;
+                      return name === value;
                     });
-                    setNewData({ category: e.target.value, assetType: "", categoryId: cat?.id ?? null, typeId: null });
+                    setNewData({ category: value, assetType: "", categoryId: cat?.id ?? null, typeId: null });
                     setTypes([]);
                   }}
                   required
                   options={categoryOptions}
                   placeholder="Select category…"
                 />
-                <Select
+                <SearchSelect
                   label="Asset Type"
                   name="assetType"
                   value={newData.assetType}
-                  onChange={(e) => {
+                  onChange={(name, value) => {
                     const typ = types.find((t) => {
                       const label = t.assetTypeName || (t as any).typeName || "";
-                      return label === e.target.value;
+                      return label === value;
                     });
-                    setNewData((prev) => ({ ...prev, assetType: e.target.value, typeId: typ?.id ?? null }));
+                    setNewData((prev) => ({ ...prev, assetType: value, typeId: typ?.id ?? null }));
                   }}
                   required
                   options={typeOptions}

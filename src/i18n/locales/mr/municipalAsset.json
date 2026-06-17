@@ -262,7 +262,8 @@
     "constructionTypeRequired": "कृपया बांधकामाचा प्रकार निवडा",
     "typeOfUseRequired": "कृपया वापराचा प्रकार निवडा",
     "subTypeOfUseRequired": "कृपया वापराचा उप-प्रकार निवडा",
-    "floorAlreadyExists": "या मजल्याचा तपशील आधीच अस्तित्वात आहे."
+    "floorAlreadyExists": "या मजल्याचा तपशील आधीच अस्तित्वात आहे.",
+    "roomRequired": "कृपया मजला जोडण्यापूर्वी किमान एक खोली जोडा"
   },
   "messages": {
     "updateSuccess": "मजला तपशील यशस्वीरित्या अद्यतनित केले गेले.",

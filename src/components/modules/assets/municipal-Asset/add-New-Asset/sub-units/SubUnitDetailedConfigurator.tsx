@@ -1,8 +1,13 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
+<<<<<<< Updated upstream
 import { Save, Building2, UploadCloud, FileText, IndianRupee, Layers, Loader2 } from "lucide-react";
 import { Input, Select, Card, CardContent, CardHeader, CardTitle } from "@/components/common";
+=======
+import { X, Save, Building2, UploadCloud, FileText, IndianRupee, ImagePlus, CheckCircle2, Layers, Loader2 } from "lucide-react";
+import { Input, Select, SearchSelect, Card, CardContent, CardHeader, CardTitle } from "@/components/common";
+>>>>>>> Stashed changes
 import { fetchSubUseTypesAction, fetchUploadedDocumentsAction, fetchFloorsByAsset, fetchFloorDropdownOptions, fetchSubFloorAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { fetchDocumentFileAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { useAssetForm } from "../AssetFormContext";
@@ -532,7 +537,7 @@ export function SubUnitDetailedConfigurator({
       return;
     }
     if (formData.surveyNo && !alphaNumRegex.test(formData.surveyNo)) {
-      toast.error("Please enter a valid Survey No without special characters.");
+      toast.error("Please enter a valid CSN No. without special characters.");
       return;
     }
     if (formData.shopActNo && !alphaNumRegex.test(formData.shopActNo)) {
@@ -569,7 +574,7 @@ export function SubUnitDetailedConfigurator({
       }
     }
 
-    const loadingToast = toast.loading("Saving configuration locally...");
+    const loadingToast = toast.loading("Saving configuration...");
     try {
       // Create local payload and just pass it to onSave. DB saving will be done in batch via pool's Save All.
       onSave({
@@ -585,9 +590,9 @@ export function SubUnitDetailedConfigurator({
         photoFile,
         planFile,
       });
-      toast.success("Configuration saved locally. Click 'Save All Units' to commit.", { id: loadingToast });
+      toast.success("Unit details updated. Remember to save the form to save all changes.", { id: loadingToast });
     } catch (err: any) {
-      toast.error(err.message || "Failed to save configuration locally.", { id: loadingToast });
+      toast.error(err.message || "Failed to update unit details.", { id: loadingToast });
     }
   };
 
@@ -642,11 +647,15 @@ export function SubUnitDetailedConfigurator({
   const inp = "h-7 text-[11px] !px-2 !py-0.5 !rounded-md";
 
   const renderDepartmentSelect = () => (
-    <Select
+    <SearchSelect
       label="Department *"
       name="departmentId"
       value={formData.departmentId || ""}
+<<<<<<< Updated upstream
       onChange={(_, val) => {
+=======
+      onChange={(name, val) => {
+>>>>>>> Stashed changes
         const matched = departments.find((d: any) => String(d.value) === String(val));
         setFormData((prev: any) => ({
           ...prev,
@@ -656,7 +665,6 @@ export function SubUnitDetailedConfigurator({
       }}
       options={departments}
       placeholder="— Select Department —"
-      selectSize="sm"
     />
   );
 
@@ -727,7 +735,7 @@ export function SubUnitDetailedConfigurator({
                   className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
                 {renderDepartmentSelect()}
                 <Input label="Property No" name="propertyNo" value={formData.propertyNo || ""} onChange={handleChange} className={inp} />
-                <Input label="Survey No" name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
+                <Input label="CSN No." name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
 
                 {/* 6th input depending on type */}
                 {!isShop && !isOffice && !isRoom && !isDepartment && (
@@ -948,17 +956,20 @@ export function SubUnitDetailedConfigurator({
                   <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">Rent Information</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 items-start">
-                  <Select
+                  <SearchSelect
                     label="Lease / Rent Type"
                     name="rentType"
                     value={formData.rentType || ""}
+<<<<<<< Updated upstream
                     onChange={(_, val) => setFormData((prev: any) => ({ ...prev, rentType: val }))}
+=======
+                    onChange={(name, val) => setFormData((prev: any) => ({ ...prev, rentType: val }))}
+>>>>>>> Stashed changes
                     options={[
                       { label: "Commercial Lease", value: "Commercial Lease" },
                       { label: "Residential Rent", value: "Residential Rent" }
                     ]}
                     placeholder="Select..."
-                    selectSize="sm"
                   />
                   <Input
                     label={`Lease Start${formData.rentType ? " *" : ""}`}
@@ -983,17 +994,20 @@ export function SubUnitDetailedConfigurator({
                     readOnly
                     className={`${inp} bg-slate-100 text-slate-500 italic`}
                   />
-                  <Select
+                  <SearchSelect
                     label="Rent Frequency"
                     name="rentFreq"
                     value={formData.rentFreq || ""}
+<<<<<<< Updated upstream
                     onChange={(_, val) => setFormData((prev: any) => ({ ...prev, rentFreq: val }))}
+=======
+                    onChange={(name, val) => setFormData((prev: any) => ({ ...prev, rentFreq: val }))}
+>>>>>>> Stashed changes
                     options={[
                       { label: "Monthly", value: "Monthly" },
                       { label: "Yearly", value: "Yearly" }
                     ]}
                     placeholder="Select..."
-                    selectSize="sm"
                   />
                   <Input
                     label={`Rent Amount (₹)${formData.rentType ? " *" : ""}`}
@@ -1015,17 +1029,20 @@ export function SubUnitDetailedConfigurator({
                     onChange={handleChange}
                     className={`${inp} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                   />
-                  <Select
+                  <SearchSelect
                     label="Deposit Type"
                     name="depositType"
                     value={formData.depositType || ""}
+<<<<<<< Updated upstream
                     onChange={(_, val) => setFormData((prev: any) => ({ ...prev, depositType: val }))}
+=======
+                    onChange={(name, val) => setFormData((prev: any) => ({ ...prev, depositType: val }))}
+>>>>>>> Stashed changes
                     options={[
                       { label: "Refundable", value: "Refundable" },
                       { label: "Non-Refundable", value: "Non-Refundable" }
                     ]}
                     placeholder="Select..."
-                    selectSize="sm"
                   />
                 </CardContent>
               </Card>
@@ -1046,10 +1063,14 @@ export function SubUnitDetailedConfigurator({
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 items-start">
                 {floorSelectOptions.length > 1 ? (
-                  <Select
+                  <SearchSelect
                     label="Assign to Floor *"
                     value={formData.floorId ? String(formData.floorId) : ""}
+<<<<<<< Updated upstream
                     onChange={(_, val) => {
+=======
+                    onChange={(name, val) => {
+>>>>>>> Stashed changes
                       const event = {
                         target: { value: val }
                       } as React.ChangeEvent<HTMLSelectElement>;
@@ -1057,7 +1078,6 @@ export function SubUnitDetailedConfigurator({
                     }}
                     options={floorSelectOptions.slice(1)}
                     placeholder="— Select Floor —"
-                    selectSize="sm"
                   />
                 ) : (
                   <div className="flex flex-col">
@@ -1067,14 +1087,18 @@ export function SubUnitDetailedConfigurator({
                     </div>
                   </div>
                 )}
-                <Select
+                 <SearchSelect
                   label="Sub Floor"
                   name="subFloorId"
                   value={formData.subFloorId ? String(formData.subFloorId) : ""}
+<<<<<<< Updated upstream
                   onChange={(_, val) => setFormData((p: any) => ({ ...p, subFloorId: val }))}
                   options={subFloorOptions}
+=======
+                  onChange={(name, val) => setFormData((p: any) => ({ ...p, subFloorId: val }))}
+                  options={(subFloorOptions || []).map((o: any) => ({ label: o.label, value: String(o.value) }))}
+>>>>>>> Stashed changes
                   placeholder="— Select Sub Floor —"
-                  selectSize="sm"
                 />
                 <Input
                   label="Construction Year *"
@@ -1085,32 +1109,44 @@ export function SubUnitDetailedConfigurator({
                   maxLength={4}
                   className={inp}
                 />
-                <Select
+                <SearchSelect
                   label="Construction Type *"
                   name="conType"
                   value={formData.conType || ""}
+<<<<<<< Updated upstream
                   onChange={(_, val) => setFormData((p: any) => ({ ...p, conType: val }))}
                   options={dropdownOptions?.constructionTypes || []}
+=======
+                  onChange={(name, val) => setFormData((p: any) => ({ ...p, conType: val }))}
+                  options={(dropdownOptions?.constructionTypes || []).map((o: any) => ({ label: o.label, value: String(o.value) }))}
+>>>>>>> Stashed changes
                   placeholder="Select Con Type…"
-                  selectSize="sm"
                 />
-                <Select
+                <SearchSelect
                   label="Type of Use *"
                   name="useType"
                   value={formData.useType || ""}
+<<<<<<< Updated upstream
                   onChange={(_, val) => setFormData((p: any) => ({ ...p, useType: val, subUseType: "" }))}
                   options={dropdownOptions?.useTypes || []}
+=======
+                  onChange={(name, val) => setFormData((p: any) => ({ ...p, useType: val, subUseType: "" }))}
+                  options={(dropdownOptions?.useTypes || []).map((o: any) => ({ label: o.label, value: String(o.value) }))}
+>>>>>>> Stashed changes
                   placeholder="Select Use Type…"
-                  selectSize="sm"
                 />
-                <Select
+                <SearchSelect
                   label="Sub-Type of Use"
                   name="subUseType"
                   value={formData.subUseType || ""}
+<<<<<<< Updated upstream
                   onChange={(_, val) => setFormData((p: any) => ({ ...p, subUseType: val }))}
                   options={(dynamicSubUseTypes.length > 0 ? dynamicSubUseTypes : (dropdownOptions?.subUseTypes || []).filter((o: any) => String(o.typeOfUseId) === String(formData.useType)))}
+=======
+                  onChange={(name, val) => setFormData((p: any) => ({ ...p, subUseType: val }))}
+                  options={(dynamicSubUseTypes.length > 0 ? dynamicSubUseTypes : (dropdownOptions?.subUseTypes || []).filter((o: any) => String(o.typeOfUseId) === String(formData.useType))).map((o: any) => ({ label: o.label, value: String(o.value) }))}
+>>>>>>> Stashed changes
                   placeholder="Select Sub-Type…"
-                  selectSize="sm"
                 />
                 <Input
                   label="Unit Area (SqFt) — from rooms *"

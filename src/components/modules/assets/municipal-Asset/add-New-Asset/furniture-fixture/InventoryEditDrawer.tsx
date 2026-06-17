@@ -1,5 +1,5 @@
 import React from "react";
-import { Drawer, Button, AddButton, Select, UploadButton, Input } from "@/components/common";
+import { Drawer, Button, AddButton, SearchSelect, UploadButton, Input } from "@/components/common";
 import { Package2, Receipt, X } from "lucide-react";
 import { type InventoryForm } from "./FurnitureFixtureTypes";
 
@@ -94,7 +94,7 @@ export function InventoryEditDrawer({
     >
       <div className="px-2 py-5 sm:px-6 sm:py-6">
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-          <Select
+          <SearchSelect
             label="Type"
             value={editForm.type}
             onChange={(_, val) => handleEditTypeChange(val)}
@@ -118,21 +118,21 @@ export function InventoryEditDrawer({
             />
           </div>
 
-          <Select
+          <SearchSelect
             label={editLabels.itemName}
             value={editForm.itemName}
             onChange={(_, val) => handleEditItemNameChange(val)}
             options={editNameOptions}
-            placeholder={editForm.type ? "Select item name" : "Select type first"}
+            placeholder={editForm.type ? `Select ${editLabels.itemName.toLowerCase()}` : "Select type first"}
             disabled={!editForm.type}
           />
 
-          <Select
+          <SearchSelect
             label={editLabels.modelName}
             value={editForm.modelName}
             onChange={(_, val) => updateEditForm("modelName", val)}
             options={editModelOptions}
-            placeholder={editForm.itemName ? "Select model" : "Select item name first"}
+            placeholder={editForm.itemName ? `Select ${editLabels.modelName.toLowerCase()}` : "Select item name first"}
             disabled={!editForm.itemName}
           />
 
@@ -152,20 +152,20 @@ export function InventoryEditDrawer({
             onChange={(event) => updateEditForm("purchaseDate", event.target.value)}
           />
 
-          <Select
+          <SearchSelect
             label={editLabels.condition}
             value={editForm.condition}
             onChange={(_, val) => updateEditForm("condition", val)}
             options={editConditionOptions}
-            placeholder="Select condition"
+            placeholder={`Select ${editLabels.condition.toLowerCase()}`}
           />
 
-          <Select
+          <SearchSelect
             label="Owning Department"
             value={editForm.owningDepartment}
             onChange={(_, val) => updateEditForm("owningDepartment", val)}
             options={departments}
-            placeholder="-- Select --"
+            placeholder="Select owning department"
           />
 
           <Input

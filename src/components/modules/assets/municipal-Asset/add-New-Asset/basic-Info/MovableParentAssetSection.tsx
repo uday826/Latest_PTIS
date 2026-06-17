@@ -1,8 +1,14 @@
 "use client";
 
+<<<<<<< Updated upstream
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, Input, Select } from "@/components/common";
 import { Search, Building, Loader2, MapPin, X } from "lucide-react";
+=======
+import React, { useState, useEffect, useRef } from "react";
+import { Card, CardContent, CardHeader, CardTitle, Input, Select, SearchSelect } from "@/components/common";
+import { Search, Building, Layers, Loader2, MapPin, X } from "lucide-react";
+>>>>>>> Stashed changes
 import { fetchAssetsByFilter, fetchAssetMasterById } from "@/app/[locale]/assets/actions";
 import { fetchFloorsByAsset, getSubUnitsByAssetAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { toast } from "sonner";
@@ -254,36 +260,34 @@ export function MovableParentAssetSection({
 
             {/* Room, Floor, Sub-unit selection */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <Select
+              <SearchSelect
                 label="Floor / Level"
                 name="parentFloorId"
                 value={String(formData.attributes?.parentFloorId ?? "")}
-                onChange={(e) =>
+                onChange={(name, value) =>
                   updateFormData({
-                    attributes: { ...formData.attributes, parentFloorId: e.target.value }
+                    attributes: { ...formData.attributes, parentFloorId: value }
                   })
                 }
                 options={floorOptions}
                 placeholder={isLoadingFloors ? "Loading levels..." : "Select floor..."}
                 disabled={isLoadingFloors || floors.length === 0}
                 className="font-semibold text-sm"
-                selectSize="sm"
               />
 
-              <Select
+              <SearchSelect
                 label="Sub-Unit / Flat / Office"
                 name="subunitId"
                 value={String(formData.attributes?.subunitId ?? "")}
-                onChange={(e) =>
+                onChange={(name, value) =>
                   updateFormData({
-                    attributes: { ...formData.attributes, subunitId: e.target.value }
+                    attributes: { ...formData.attributes, subunitId: value }
                   })
                 }
                 options={subunitOptions}
                 placeholder={isLoadingSubunits ? "Loading units..." : "Select unit..."}
                 disabled={isLoadingSubunits || subunits.length === 0}
                 className="font-semibold text-sm"
-                selectSize="sm"
               />
 
               <Input

@@ -1,7 +1,7 @@
 "use client";
 
 
-import { Input, Select, ToggleSwitch } from "@/components/common";
+import { Input, Select, ToggleSwitch, SearchSelect } from "@/components/common";
 import { ProcessedField } from "@/components/modules/assets/municipal-Asset/add-New-Asset/FieldRenderer";
 import { DynamicAttributesFormData } from "@/types/asset-types/basic-info/basicInfo.types";
 
@@ -24,14 +24,14 @@ export function DynamicFieldInput({
 
   if (Array.isArray(field.options) && field.options.length > 0) {
     return (
-      <Select
+      <SearchSelect
         label={field.fieldLabel}
         name={fieldName}
         value={String(fieldValue ?? "")}
-        onChange={(e) => onAttributeChange(fieldName, e.target.value)}
+        onChange={(name, value) => onAttributeChange(fieldName, value)}
         options={field.options.map((opt: string) => ({ label: opt, value: opt }))}
+        placeholder={`Select ${field.fieldLabel}`}
         className="font-medium text-[11px] h-7"
-        selectSize="sm"
         required={field.isRequired}
       />
     );
