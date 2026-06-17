@@ -190,6 +190,7 @@ export interface LeaseRentDemandItem extends Record<string, unknown> {
   total: number;
   demandStatus?: string | null;
   paidAmount?: number | null;
+  pendingAmount?: number | null;
   balanceAmount?: number | null;
   dueDate?: string | null;
   // Reserved for UI columns (e.g. checkbox) added by the consumer.

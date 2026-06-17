@@ -65,6 +65,16 @@ function formatCurrency(value: number): string {
   })}`;
 }
 
+// The amount actually payable for a demand row is the remaining (pending) amount,
+// not the full demand total \u2014 a partially-paid month should only collect its balance.
+// Falls back to the full total when the pending amount is unavailable.
+function getRowPayableAmount(row: LeaseRentDemandItem): number {
+  if (row.pendingAmount != null && Number.isFinite(Number(row.pendingAmount))) {
+    return Number(row.pendingAmount);
+  }
+  return Number.isFinite(Number(row.total)) ? Number(row.total) : 0;
+}
+
 export function MakePaymentScreen({
   record,
   initialMode = '',
@@ -137,8 +147,8 @@ export function MakePaymentScreen({
     let sum = 0;
     for (const period of selectedPeriods) {
       const row = demandRowByMonth.get(String(period).trim().toLowerCase());
-      if (row && Number.isFinite(row.total)) {
-        sum += Number(row.total);
+      if (row) {
+        sum += getRowPayableAmount(row);
       }
     }
     return sum;
@@ -342,6 +352,20 @@ export function MakePaymentScreen({
         render: (value) => formatCurrency(Number(value ?? 0)),
       },
       {
+        key: 'paidAmount',
+        label: t('drawer.table.paidAmount'),
+        align: 'right',
+        cellClassName: 'font-medium text-green-600',
+        render: (value) => formatCurrency(Number(value ?? 0)),
+      },
+      {
+        key: 'pendingAmount',
+        label: t('drawer.table.pendingAmount'),
+        align: 'right',
+        cellClassName: 'font-medium text-orange-600',
+        render: (value) => formatCurrency(Number(value ?? 0)),
+      },
+      {
         key: 'demandStatus',
         label: t('drawer.table.status'),
         align: 'center',
@@ -524,7 +548,7 @@ export function MakePaymentScreen({
               .map((id) => {
                 const row = leaseDemandRows.find((r) => Number(r.id) === id);
                 if (!row) return null;
-                return { monthWiseDemandId: id, payAmount: row.total };
+                return { monthWiseDemandId: id, payAmount: getRowPayableAmount(row) };
               })
               .filter((a): a is { monthWiseDemandId: number; payAmount: number } => a !== null);
 
@@ -768,7 +792,7 @@ export function MakePaymentScreen({
                   }`}
               >
                 <RadioGroupItem value="CUSTOM_AMOUNT" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                <span className={`text-xs font-semibold ${pendingSubOption === 'CUSTOM_AMOUNT' ? 'text-blue-700' : 'text-slate-700'}`}>Custom Amount</span>
+                <span className={`text-xs font-semibold ${pendingSubOption === 'CUSTOM_AMOUNT' ? 'text-blue-700' : 'text-slate-700'}`}>Partial Payment</span>
               </label>
               <label
                 onClick={() => {
@@ -782,7 +806,7 @@ export function MakePaymentScreen({
               >
                 <RadioGroupItem value="PERIOD_SELECTION" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
                 <span className={`text-xs font-semibold ${pendingSubOption === 'PERIOD_SELECTION' ? 'text-blue-700' : 'text-slate-700'}`}>
-                  {isYearlyPayment ? 'Select Years' : 'Select Months'}
+                  {isYearlyPayment ? 'Yearwise Payment' : 'Monthwise Payment'}
                 </span>
               </label>
             </RadioGroup>
@@ -851,16 +875,11 @@ export function MakePaymentScreen({
                   setSelectedPeriods([]);
                 }}
                 disabled={selectedPeriods.length === 0}
-                className="px-3 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors disabled:opacity-40 disabled:hover:text-slate-500"
+                className="px-3 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors disabled:opacity-40 disabled:hover:text-slate-500"
               >
                 {t('drawer.clear')}
               </button>
-              <button
-                onClick={() => setIsPeriodDrawerOpen(false)}
-                className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors"
-              >
-                {t('drawer.cancel')}
-              </button>
+             
               <button
                 onClick={() => setIsPeriodDrawerOpen(false)}
                 className="px-5 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"

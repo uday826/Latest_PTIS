@@ -79,6 +79,8 @@
         "penalty": "Penalty",
         "gst": "GST",
         "total": "Total",
+        "paidAmount": "Paid",
+        "pendingAmount": "Pending",
         "status": "Status",
         "select": "Select"
       },

@@ -79,6 +79,8 @@
         "penalty": "दंड",
         "gst": "जीएसटी",
         "total": "एकूण",
+        "paidAmount": "भरलेले",
+        "pendingAmount": "थकबाकी",
         "status": "स्थिती",
         "select": "निवडा"
       },
