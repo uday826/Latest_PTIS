@@ -47,7 +47,7 @@ export const owningDepartmentService = {
     if (params?.PageSize) q.set('PageSize', params.PageSize.toString());
     if (params?.SearchTerm) q.set('SearchTerm', params.SearchTerm);
     q.set('MarkedForDeletion', String(params?.MarkedForDeletion ?? false));
-    q.set('IsActive', params?.IsActive ?? 'true');
+    q.set('IsActive', String(params?.IsActive ?? 'true'));
 
     const queryString = q.toString();
     return handleMasterDataApiRequest(

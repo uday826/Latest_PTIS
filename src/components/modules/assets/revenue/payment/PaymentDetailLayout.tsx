@@ -203,3 +203,4 @@ export function PaymentDetailLayout({ record, activeTab, children }: PaymentDeta
   );
 }
 
+

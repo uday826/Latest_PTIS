@@ -113,7 +113,7 @@ export async function fetchFloorsByAsset(assetId: number): Promise<ActionResult<
       return { success: true, data: floors };
     }
     return { success: true, data: [] };
-  } catch (err) {
+  } catch (err: any) {
     logger.error("fetchFloorsByAsset Error:", { error: err });
     return { success: true, data: [] };
   }

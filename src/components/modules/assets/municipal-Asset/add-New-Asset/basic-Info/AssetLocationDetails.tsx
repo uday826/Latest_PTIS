@@ -129,7 +129,7 @@ export function AssetLocationDetails({ formData, onChange }: AssetWizardStepProp
             label="Full Postal Address"
             name="fullAddress"
             value={formData.fullAddress}
-            onChange={onChange}
+            onChange={(e: any) => onChange(e)}
             placeholder="Detailed street address, building name, etc."
             required
             rows={2}

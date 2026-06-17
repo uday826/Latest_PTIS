@@ -72,11 +72,11 @@ export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName
   const safeId = Number.isFinite(parsedId) && parsedId > 0 ? parsedId : null;
   return {
     id: safeId,
-    assetId: record.assetId || record.assetNo || '-',
+    assetId: record.id?.toString() || record.assetNo || '-',
     authorityName: record.authorityName || '-',
     organizationName: record.organizationName || '-',
     departmentName: record.departmentName || record.department || '-',
-    assetCode: record.assetCode || record.assetNo || '-',
+    assetCode: record.assetNo || record.assetNo || '-',
     assetName: record.assetName || record.name || '-',
     categoryName: record.categoryName || record.assetCategoryName || fallbackCategoryName || '-',
     assetTypeName: record.assetTypeName || '-',
@@ -110,15 +110,15 @@ export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName
     marketValue: record.marketValue == null ? '-' : String(record.marketValue),
     depreciation: record.depreciation == null ? '-' : String(record.depreciation),
     netBookValue:
-      record.netBookValue != null
-        ? String(record.netBookValue)
+      record.currentBookValue != null
+        ? String(record.currentBookValue)
         : record.marketValue == null
           ? '-'
           : String(record.marketValue),
     builtUpAreaSqMeter: record.builtUpAreaSqMeter == null ? '-' : String(record.builtUpAreaSqMeter),
     carpetAreaSqMeter: record.carpetAreaSqMeter == null ? '-' : String(record.carpetAreaSqMeter),
     landAreaSqMeter: record.landAreaSqMeter == null ? '-' : String(record.landAreaSqMeter),
-    createdDate: record.createdDate || record.createdAt || '',
+    createdDate: record.createdDate || record.createdDate || '',
     // Edit context — needed to navigate to the edit form with correct category/type
     assetCategoryId: record.assetCategoryId ?? null,
     assetTypeId: record.assetTypeId ?? null,
@@ -163,7 +163,7 @@ export function getRegisterColumns(
     { key: 'purchaseValue', label: 'Acquisition Value', width: '140px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.purchaseValue) },
     { key: 'marketValue', label: 'Current Value', width: '130px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.marketValue) },
     { key: 'depreciation', label: 'Depreciation', width: '130px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.depreciation) },
-    { key: 'netBookValue', label: 'Net Book Value', width: '140px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.netBookValue) },
+    { key: 'netBookValue', label: 'Net Book Value', width: '140px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.currentBookValue) },
     { key: 'hasLift', label: 'Lift', width: '90px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderBadge(typeof value === 'string' ? value : undefined) },
     { key: 'lifeYears', label: 'Life (Yrs)', width: '90px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
     { key: 'assetCondition', label: 'Condition', width: '100px', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderBadge(typeof value === 'string' ? value : undefined) },
@@ -305,7 +305,7 @@ export async function exportToExcel(
 ) {
   const exportRows = items.map((record) => {
     return {
-      'Asset No': record.assetCode || record.assetNo || '',
+      'Asset No': record.assetNo || record.assetNo || '',
       'Asset Name': record.assetName || record.name || '',
       'Category': record.categoryName || categoryName || '',
       'Sub-Category': record.assetTypeName || '',
@@ -336,7 +336,7 @@ export async function exportToExcel(
       'Built-Up Area (Sq.M)': record.builtUpAreaSqMeter == null ? '' : String(record.builtUpAreaSqMeter),
       'Carpet Area (Sq.M)': record.carpetAreaSqMeter == null ? '' : String(record.carpetAreaSqMeter),
       'Land Area (Sq.M)': record.landAreaSqMeter == null ? '' : String(record.landAreaSqMeter),
-      'Created Date': formatDate(record.createdDate || record.createdAt || undefined),
+      'Created Date': formatDate(record.createdDate || record.createdDate || undefined),
     };
   });
 
@@ -345,3 +345,10 @@ export async function exportToExcel(
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Asset Register');
   XLSX.writeFile(workbook, `asset-register-${categoryId}.xlsx`);
 }
+
+
+
+
+
+
+

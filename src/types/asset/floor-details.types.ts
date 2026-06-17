@@ -80,7 +80,6 @@ export interface PoolUnit {
   capitalValue?: number;
   rentInformation?: RentInformationDto | null;
   subFloorId?: number | null;
-  floorDetailsId?: number | null;
 }
 
 /* ── Form state for the "add new floor" row ─────────────────────────────────*/

@@ -81,7 +81,7 @@ export function BuildingOwnershipDetailsSection({
           label="Owning Department"
           name="department"
           value={formData.department}
-          onChange={handleChange}
+          onChange={(e: any) => handleChange(e)}
           disabled={formData.isMovableCategory}
           options={
             departments.map((d) => {
@@ -100,7 +100,7 @@ export function BuildingOwnershipDetailsSection({
             label="Asset Name"
             name="assetName"
             value={formData.assetName}
-            onChange={handleChange}
+            onChange={(e: any) => handleChange(e)}
             placeholder="e.g. Municipal Headquarters"
             className="h-8 text-[13px] font-semibold text-slate-800"
             required
@@ -112,7 +112,7 @@ export function BuildingOwnershipDetailsSection({
           label="Ownership Type"
           name="ownershipType"
           value={formData.ownershipType}
-          onChange={handleChange}
+          onChange={(e: any) => handleChange(e)}
           options={resolvedOwnershipOptions}
           className="font-semibold text-sm"
           selectSize="sm"
@@ -126,7 +126,7 @@ export function BuildingOwnershipDetailsSection({
           label="In-Charge Name"
           name="inChargeName"
           value={formData.inChargeName}
-          onChange={handleChange}
+          onChange={(e: any) => handleChange(e)}
           placeholder="Rajesh Kumar"
           className="h-8 text-[13px]"
           error={
@@ -138,7 +138,7 @@ export function BuildingOwnershipDetailsSection({
           label="Designation"
           name="inChargeDesignation"
           value={formData.inChargeDesignation}
-          onChange={handleChange}
+          onChange={(e: any) => handleChange(e)}
           placeholder="Assistant Engineer"
           className="h-8 text-[13px]"
         />
@@ -147,7 +147,7 @@ export function BuildingOwnershipDetailsSection({
           label="Contact Number"
           name="inChargeMobile"
           value={formData.inChargeMobile}
-          onChange={handleChange}
+          onChange={(e: any) => handleChange(e)}
           placeholder="10-digit mobile number"
           maxLength={10}
           type="tel"
@@ -161,7 +161,7 @@ export function BuildingOwnershipDetailsSection({
           label="Email"
           name="inChargeEmail"
           value={formData.inChargeEmail}
-          onChange={handleChange}
+          onChange={(e: any) => handleChange(e)}
           placeholder="official@municipality.gov.in"
           type="email"
           className="h-8 text-[13px]"
@@ -175,7 +175,7 @@ export function BuildingOwnershipDetailsSection({
             label="Full Address"
             name="fullAddress"
             value={formData.fullAddress}
-            onChange={handleChange}
+            onChange={(e: any) => handleChange(e)}
             placeholder="Shivaji Chowk, Station Road"
             disabled={formData.isMovableCategory}
             rows={1}
@@ -190,7 +190,7 @@ export function BuildingOwnershipDetailsSection({
           label="Landmark"
           name="locality"
           value={formData.locality}
-          onChange={handleChange}
+          onChange={(e: any) => handleChange(e)}
           placeholder="Ramdas Peth"
           disabled={formData.isMovableCategory}
           required={!formData.isMovableCategory}
@@ -201,7 +201,7 @@ export function BuildingOwnershipDetailsSection({
           label="Pin Code"
           name="pinCode"
           value={formData.pinCode}
-          onChange={handleChange}
+          onChange={(e: any) => handleChange(e)}
           placeholder="400001"
           disabled={formData.isMovableCategory}
           maxLength={6}
@@ -215,7 +215,7 @@ export function BuildingOwnershipDetailsSection({
             label="Latitude"
             name="latitude"
             value={formData.latitude}
-            onChange={handleChange}
+            onChange={(e: any) => handleChange(e)}
             placeholder="e.g. 19.0760"
             className="h-8 text-[13px] font-mono"
             error={showError("latitude") ? errors.latitude : undefined}
@@ -225,7 +225,7 @@ export function BuildingOwnershipDetailsSection({
             label="Longitude"
             name="longitude"
             value={formData.longitude}
-            onChange={handleChange}
+            onChange={(e: any) => handleChange(e)}
             placeholder="e.g. 72.8777"
             className="h-8 text-[13px] font-mono"
             error={showError("longitude") ? errors.longitude : undefined}
@@ -247,3 +247,4 @@ export function BuildingOwnershipDetailsSection({
     </Card>
   );
 }
+

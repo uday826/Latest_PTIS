@@ -112,7 +112,7 @@ function BuildingBasicInfoContent({
       setIsLoadingSubTypes(true);
       try {
         const { fetchSubTypesByTypeAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/basic-Info/actions");
-        const res = await fetchSubTypesByTypeAction(formData.typeOfUseId);
+        const res = await fetchSubTypesByTypeAction(formData.typeOfUseId as string);
         if (res.success && res.data) {
           setDynamicSubTypes(res.data);
         } else {
@@ -362,7 +362,7 @@ function BuildingBasicInfoContent({
                           onConfirm: () => {
                             setFrontPhoto(null);
                             if (setBasicInfoFiles) {
-                              setBasicInfoFiles(prev => ({ ...prev, frontPhoto: null }));
+                              setBasicInfoFiles(prev => ({ ...prev, frontPhoto: undefined }));
                             }
                             if (frontPhotoRef.current) frontPhotoRef.current.value = "";
                           }
@@ -433,7 +433,7 @@ function BuildingBasicInfoContent({
                           onConfirm: () => {
                             setBuildingPlan(null);
                             if (setBasicInfoFiles) {
-                              setBasicInfoFiles(prev => ({ ...prev, buildingPlan: null }));
+                              setBasicInfoFiles(prev => ({ ...prev, buildingPlan: undefined }));
                             }
                             if (planRef.current) planRef.current.value = "";
                           }

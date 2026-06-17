@@ -17,3 +17,4 @@ export function DynamicQRCode({ assetId }: { assetId: string }) {
 
   return <QRCodeSVG value={url} size={60} className="h-[60px] w-[60px]" />;
 }
+

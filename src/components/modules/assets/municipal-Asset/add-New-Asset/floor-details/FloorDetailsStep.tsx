@@ -27,7 +27,7 @@ export default function FloorDetailsPage({
   const { formData } = useAssetForm();
 
   // If both flags are undefined, default to true for Unit Registration to maintain backward compatibility
-  const showUnitRegistration = formData.allowUnitRegistration ?? true;
+  // const showUnitRegistration = formData.allowUnitRegistration ?? true;
   const showRoomRegistration = formData.allowRoomRegistration ?? false;
 
   return (
@@ -48,3 +48,4 @@ export default function FloorDetailsPage({
     </div>
   );
 }
+

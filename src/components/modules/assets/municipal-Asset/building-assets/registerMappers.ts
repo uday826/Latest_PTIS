@@ -21,7 +21,7 @@ export function formatBoolean(value?: boolean | string | null) {
   return '-';
 }
 
-export function formatFieldValue(value: unknown) {
+export function formatFieldValue(value: unknown): string {
   if (value == null || value === '') return '-';
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
@@ -97,5 +97,7 @@ export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName
     carpetAreaSqMeter: record.carpetAreaSqMeter == null ? '-' : String(record.carpetAreaSqMeter),
     landAreaSqMeter: record.landAreaSqMeter == null ? '-' : String(record.landAreaSqMeter),
     createdDate: record.createdDate || record.updatedDate || '',
+    assetCategoryId: record.assetCategoryId || null,
+    assetTypeId: record.assetTypeId || null,
   };
 }

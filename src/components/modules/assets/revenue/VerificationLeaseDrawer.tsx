@@ -93,7 +93,7 @@ export function VerificationLeaseModal({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const { confirm } = useConfirm();
+  
   const { success: toastSuccess, error: toastError } = useToast();
   const [historyItems, setHistoryItems] = useState<any[]>([]);
 
@@ -770,3 +770,4 @@ export function VerificationLeaseModal({
     </Drawer>
   );
 }
+

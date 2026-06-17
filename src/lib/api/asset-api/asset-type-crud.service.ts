@@ -83,7 +83,7 @@ export const assetTypeService = {
         e.message = e.message + " | Payload: " + JSON.stringify(payload);
         throw e;
       }
-      throw new ApiError(500, e.message + " | Payload: " + JSON.stringify(payload));
+      throw new ApiError(500, e.message + " | Payload: " + JSON.stringify(payload), "Create asset type failed");
     }
   },
 
@@ -98,7 +98,7 @@ export const assetTypeService = {
         e.message = e.message + " | Payload: " + JSON.stringify(payload);
         throw e;
       }
-      throw new ApiError(500, e.message + " | Payload: " + JSON.stringify(payload));
+      throw new ApiError(500, e.message + " | Payload: " + JSON.stringify(payload), "Update asset type failed");
     }
   },
 

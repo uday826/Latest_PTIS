@@ -1,7 +1,7 @@
 import { logger } from '@/lib/utils/logger';
 import { ActionResult, PagedResponse } from '@/types/common.types';
 import { MasterDataType, MasterDataGroup, MASTER_IDS, MasterDataRecord } from '@/types/asset-type/master-data.types';
-import { getAssetCategoriesPaged } from '@/lib/api/asset-api/asset-category-crud.service';
+import { assetCategoryService } from '@/lib/api/asset-api/asset-category-crud.service';
 import { getAssetTypesPaged } from '@/lib/api/asset-api/asset-type-crud.service';
 import { mapTypeToMasterRecord } from '@/lib/api/asset-api/asset-type-types-guard';
 import { mapCategoryToMasterRecord } from '@/lib/api/asset-api/asset-category-types-guard';
@@ -39,7 +39,7 @@ const MASTER_CONFIG: Record<string, {
       return { ...res, items: activeItems.map(mapTypeToMasterRecord) };
     },
     getGroups: async () => {
-      const res = await getAssetCategoriesPaged(1, 100);
+      const res = await assetCategoryService.getAll({ PageNumber: 1, PageSize: 100 });
       return res.items.map(cat => ({
         id: String(cat.id),
         name: cat.categoryName,
@@ -59,8 +59,8 @@ const MASTER_CONFIG: Record<string, {
   },
   [MASTER_IDS.CATEGORY]: {
     name: 'Asset Category Master',
-    fetch: async (p, s, search, g, sortBy, sortOrder) => {
-      const res = await getAssetCategoriesPaged(p, s, search, sortBy, sortOrder);
+    fetch: async (p, s, search, _g, sortBy, sortOrder) => {
+      const res = await assetCategoryService.getAll({ PageNumber: p, PageSize: s, SearchTerm: search, SortBy: sortBy, SortOrder: sortOrder });
       const activeItems = res.items.filter(i => i.isActive);
       return { ...res, items: activeItems.map(mapCategoryToMasterRecord) };
     }

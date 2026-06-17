@@ -24,6 +24,7 @@ export interface OwnershipTypeParams {
   PageSize?: number;
   SearchTerm?: string;
   MarkedForDeletion?: boolean;
+  IsActive?: boolean | string;
 }
 
 export interface OwningDepartmentApiRecord {
@@ -54,4 +55,5 @@ export interface OwningDepartmentParams {
   PageSize?: number;
   SearchTerm?: string;
   MarkedForDeletion?: boolean;
+  IsActive?: boolean | string;
 }

@@ -23,7 +23,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
   const t = useTranslations("floor");
   const tMunicipal = useTranslations("municipalAsset");
 
-  const getLocalizedError = (err: string) => {
+  const getLocalizedError = (err?: string) => {
     if (!err) return "";
     if (err === "A record with the same details already exists.") {
       try {
@@ -211,9 +211,9 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
             carpetAreaSqFeet: res.data.carpetAreaSqFeet || payload.carpetAreaSqFeet,
             builtUpAreaSqFeet: res.data.builtUpAreaSqFeet || payload.builtUpAreaSqFeet,
             isRented: res.data.isRented !== undefined ? res.data.isRented : payload.isRented,
-            subFloorName: subFloorLabel || res.data.subFloorName,
-            subTypeOfUseName: subUseTypeLabel || res.data.subTypeOfUseName,
-            roomDetails: res.data.roomDetails || roomDetails || [],
+            subFloorName: subFloorLabel || (res.data as any).subFloorName,
+            subTypeOfUseName: subUseTypeLabel || (res.data as any).subTypeOfUseName,
+            roomDetails: (res.data as any).roomDetails || roomDetails || [],
           };
 
           setSavedFloors(prev => prev.map(f => f.id === editingId ? enrichedData : f));
@@ -257,9 +257,9 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
             carpetAreaSqFeet: res.data.carpetAreaSqFeet || payload.carpetAreaSqFeet,
             builtUpAreaSqFeet: res.data.builtUpAreaSqFeet || payload.builtUpAreaSqFeet,
             isRented: res.data.isRented !== undefined ? res.data.isRented : payload.isRented,
-            subFloorName: subFloorLabel || res.data.subFloorName,
-            subTypeOfUseName: subUseTypeLabel || res.data.subTypeOfUseName,
-            roomDetails: res.data.roomDetails || roomDetails || [],
+            subFloorName: subFloorLabel || (res.data as any).subFloorName,
+            subTypeOfUseName: subUseTypeLabel || (res.data as any).subTypeOfUseName,
+            roomDetails: (res.data as any).roomDetails || roomDetails || [],
           };
 
           // We added it successfully
@@ -604,7 +604,7 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
               <>
                 <Button
                   onClick={handleCancelEdit}
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   className="px-6 py-2 text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
                 >
@@ -738,3 +738,5 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
     </div>
   );
 }
+
+

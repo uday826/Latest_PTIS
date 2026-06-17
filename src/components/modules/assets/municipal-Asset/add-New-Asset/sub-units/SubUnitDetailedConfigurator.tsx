@@ -667,7 +667,7 @@ export function SubUnitDetailedConfigurator({
   const isRoom = rawUnitType.includes("room") || rawUnitType.includes("chamber");
   const isDepartment = rawUnitType.includes("department") || rawUnitType.includes("dept") || rawUnitType.includes("wing");
   // Flat is the default (residential)
-  const sectionColor = "bg-cyan-600";
+  // const sectionColor = "bg-cyan-600";
   const sectionTitle = isShop ? "Shop & Occupant Details" : isOffice ? "Office / Tenant Details" : isRoom ? "Room Details" : isDepartment ? "Department Information" : "Resident / Owner Details";
   // Departments are internal allocations — no rent section needed
   const showRentSection = !isDepartment;
@@ -1323,3 +1323,8 @@ export function SubUnitDetailedConfigurator({
     </div>
   );
 }
+
+
+
+
+

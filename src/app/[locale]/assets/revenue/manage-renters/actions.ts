@@ -6,8 +6,6 @@ import { assetMasterService } from '@/lib/api/asset/asset-master.service';
 import { getAssetCategories, getAssetMasters, getWards, getZones } from '@/lib/api/asset/revenue-masters.service';
 import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
 import {
-  createLeaseRentRegistration,
-  type CreateLeaseRentRegistrationPayload,
   type CreateLeaseRentRegistrationResponse,
 } from '@/lib/api/asset/leaseRentRegistration.service';
 import {

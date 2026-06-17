@@ -131,9 +131,6 @@ export interface AssetRegisterApiRecord {
   // Navigation property names for display
   authorityName?: string;
   organizationName?: string;
-  departmentName?: string;
-  assetCategoryName?: string;
-  assetTypeName?: string;
   parentAssetName?: string;
   zoneName?: string;
   wardName?: string;

@@ -212,3 +212,4 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
     </div>
   );
 }
+

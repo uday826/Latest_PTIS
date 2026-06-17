@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAssetForm } from "../AssetFormContext";
 import { Plus, Building2, CheckCircle2, LayoutGrid, Edit2, Loader2 } from "lucide-react";
@@ -20,7 +22,7 @@ export function StandaloneSubUnitStep({
 }) {
   const { formData, updateFormData, setSubunitFiles, registerSubmitHook } = useAssetForm();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  
   const initializedRef = useRef(false);
 
   const parentBuildingId = formData.parentBuildingId;
@@ -276,13 +278,13 @@ export function StandaloneSubUnitStep({
   const handleSaveAll = useCallback(async (): Promise<boolean> => {
     if (units.length === 0) return true;
 
-    setIsSaving(true);
+    
     const loadingToast = toast.loading("Saving all units to database...");
 
     const pId = Number(parentBuildingId || formData.id || formData.assetId || 0);
     if (!pId) {
       toast.error("Parent building ID not resolved.", { id: loadingToast });
-      setIsSaving(false);
+      
       return false;
     }
 
@@ -305,8 +307,8 @@ export function StandaloneSubUnitStep({
       } catch { }
 
       // Create missing floor details
-      const uniqueFloorLevels = new Set(
-        unsaved.map((u: any) => u.floorId).filter((id): id is number => !!id)
+      const uniqueFloorLevels = new Set<number>(
+        unsaved.map((u: any) => u.floorId).filter((id: any): id is number => !!id)
       );
       for (const floorLevelId of uniqueFloorLevels) {
         if (!floorDetailsMap.has(floorLevelId)) {
@@ -440,7 +442,7 @@ export function StandaloneSubUnitStep({
       toast.error(err.message || "Save failed.", { id: loadingToast });
       return false;
     } finally {
-      setIsSaving(false);
+      
     }
   }, [units, parentBuildingId, formData.id]);
 
@@ -652,4 +654,5 @@ export function StandaloneSubUnitStep({
     </div>
   );
 }
+
 

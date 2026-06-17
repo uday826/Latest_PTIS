@@ -227,7 +227,7 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
         const categoryKey = config ? config.categoryKey : categoryStr.toUpperCase();
         const isBuildingCategory = categoryKey === "BUILDING";
         const normalizedCategory = isBuildingCategory ? "Building Assets" : categoryKey;
-        
+
         if (normalizedCategory !== formData.category) {
           updates.category = normalizedCategory;
           changed = true;
@@ -240,7 +240,7 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
 
       // If flags are undefined OR category/type changed, fetch secure config from DB
       if (
-        formData.isMovableCategory === undefined || 
+        formData.isMovableCategory === undefined ||
         formData.hasFloorDetails === undefined ||
         formData.allowRoomRegistration === undefined ||
         (updates.categoryId && updates.categoryId !== formData.categoryId) ||
@@ -251,13 +251,13 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
           if (res.success && res.data) {
             const cat = res.data.find((c: any) => c.id === currentCatId);
             if (cat) {
-              updates.categoryCode         = cat.categoryCode ?? undefined;
-              updates.valuationType        = cat.valuationType ?? "GENERIC";
-              updates.isMovableCategory    = cat.isMovable ?? false;
-              updates.hasFloorDetails      = cat.hasFloorDetails ?? false;
-              updates.hasInventory         = cat.hasInventory ?? false;
+              updates.categoryCode = cat.categoryCode ?? undefined;
+              updates.valuationType = cat.valuationType ?? "GENERIC";
+              updates.isMovableCategory = cat.isMovable ?? false;
+              updates.hasFloorDetails = cat.hasFloorDetails ?? false;
+              updates.hasInventory = cat.hasInventory ?? false;
               updates.isInventoryMandatory = cat.isInventoryMandatory ?? false;
-              updates.hasLegalCompliance   = cat.hasLegalCompliance ?? false;
+              updates.hasLegalCompliance = cat.hasLegalCompliance ?? false;
               changed = true;
             }
           }
@@ -292,7 +292,7 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
     initializeFormState().catch(() => {
       setIsDataLoading(false);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const updateFormData = (data: Partial<AssetFormData>) => {
@@ -304,7 +304,7 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
     const target = e.target as HTMLInputElement;
     const start = target.selectionStart;
     const end = target.selectionEnd;
-    
+
     // Sanitize: 1. No leading spaces. 2. Numeric only for contact/pin fields.
     let sanitizedValue = value.replace(/^\s+/, "");
     const lowerName = name.toLowerCase();
@@ -384,7 +384,7 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
       requestAnimationFrame(() => {
         try {
           target.setSelectionRange(start, end);
-        } catch {}
+        } catch { }
       });
     }
   };

@@ -61,6 +61,7 @@ export interface PagedAssetMasterResponse {
  * Component Props for Asset Register UI
  */
 export interface AssetRegisterViewProps {
+  locale: string;
   categoryId: number;
   categoryName: string | null;
   safeSearch: string;
@@ -133,3 +134,4 @@ export interface AssetRegisterControlsProps {
   zoneOptions: { label: string; value: string }[];
   wardOptions: { label: string; value: string }[];
 }
+
