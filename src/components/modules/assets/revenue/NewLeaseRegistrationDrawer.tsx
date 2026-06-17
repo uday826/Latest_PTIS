@@ -1240,6 +1240,21 @@ export function NewLeaseRegistrationModal({
   const handleDocumentSelect = useCallback(
     (type: LeaseDocumentType, file: File | null) => {
       if (!file) return;
+
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      const allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg'];
+      const isAllowed = allowedExtensions.includes(fileExtension || '') || file.type === 'application/pdf' || file.type.startsWith('image/');
+
+      if (!isAllowed) {
+        toastError(t('drawers.invalidFileType') || 'Invalid file type. Only PDF and image files (PNG, JPG, JPEG) are allowed.');
+        if (type === 'aadhar' && aadharInputRef.current) {
+          aadharInputRef.current.value = '';
+        } else if (type === 'pan' && panInputRef.current) {
+          panInputRef.current.value = '';
+        }
+        return;
+      }
+
       setStagedDocuments((prev) => ({
         ...prev,
         [type]: {
@@ -1248,7 +1263,7 @@ export function NewLeaseRegistrationModal({
         },
       }));
     },
-    [localDocuments]
+    [localDocuments, toastError, t]
   );
 
   const triggerDocumentPicker = useCallback((type: LeaseDocumentType) => {
@@ -1348,11 +1363,14 @@ export function NewLeaseRegistrationModal({
       status: record?.workflowStatus ?? '-',
     },
   ];
+  const monthlyRentNum = Number(String(formState.revisedRent || formState.monthlyRent || formState.previousRent || '0').replace(/,/g, ''));
+  const expectedAnnualRentVal = monthlyRentNum ? monthlyRentNum * 12 : undefined;
+
   const summaryRows = [
     { label: t('rentSummary.currentRent'), value: toCurrencyDisplay(formState.previousRent || formState.monthlyRent) },
     { label: t('rentSummary.revisedRent'), value: toCurrencyDisplay(formState.revisedRent) },
     { label: t('rentSummary.totalMonthlyRent'), value: toCurrencyDisplay(formState.revisedRent || formState.monthlyRent || formState.previousRent) },
-    { label: t('rentSummary.expectedAnnualRent'), value: toCurrencyDisplay(asset.marketValue ?? asset.currentAssetValue ?? formState.revisedRent ?? formState.monthlyRent) },
+    { label: t('rentSummary.expectedAnnualRent'), value: toCurrencyDisplay(expectedAnnualRentVal) },
   ];
   const documentCards = useMemo(() => {
     const seen = new Set<string>();
@@ -1422,6 +1440,13 @@ export function NewLeaseRegistrationModal({
       fallbackText: t('drawers.dpPlan'),
     },
   ] as const;
+
+  const activePanels = leftMediaPanels.filter((panel) => {
+    if (panel.title === t('drawers.opPlan') && panel.doc === null) {
+      return false;
+    }
+    return true;
+  });
 
   useEffect(() => {
     const imageDocuments = [...documentCards, ...mediaCards].filter((doc) => doc.isImage);
@@ -1534,53 +1559,55 @@ export function NewLeaseRegistrationModal({
           />
         </div>
 
-        <div className="grid grid-cols-1 items-stretch lg:grid-cols-[240px_1fr_300px] gap-4 mb-4">
-          <div className="flex h-full flex-col gap-3 self-stretch">
-            {leftMediaPanels.map((panel) => {
-              const doc = panel.doc;
-              const thumbUrl = doc ? thumbnailUrls[String(doc.id)] : null;
+          <div className={`grid grid-cols-1 items-stretch gap-4 mb-4 ${activePanels.length > 0 ? 'lg:grid-cols-[240px_1fr_300px]' : 'lg:grid-cols-[1fr_300px]'}`}>
+            {activePanels.length > 0 && (
+              <div className="flex h-full flex-col justify-center gap-6 self-stretch">
+                {activePanels.map((panel) => {
+                  const doc = panel.doc;
+                  const thumbUrl = doc ? thumbnailUrls[String(doc.id)] : null;
 
-              return (
-                <button
-                  key={panel.title}
-                  type="button"
-                  onClick={() => {
-                    if (doc) openDocument(doc);
-                  }}
-                  className="group relative min-h-[150px] flex-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-b from-slate-900/0 via-slate-900/0 to-slate-900/15" />
-                  <span className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-[#0a869e] px-3 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm text-center whitespace-nowrap">
-                    {panel.title}
-                  </span>
+                  return (
+                    <button
+                      key={panel.title}
+                      type="button"
+                      onClick={() => {
+                        if (doc) openDocument(doc);
+                      }}
+                      className="group relative w-full aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/0 via-slate-900/0 to-slate-900/15" />
+                      <span className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-[#0a869e] px-3 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm text-center whitespace-nowrap">
+                        {panel.title}
+                      </span>
 
-                  {doc && thumbUrl ? (
-                    <img
-                      src={thumbUrl}
-                      alt={panel.title}
-                      className="absolute inset-0 h-full w-full object-contain bg-slate-50 p-2"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-                      <div className="flex flex-col items-center gap-1 text-center">
-                         <panel.fallbackIcon className="h-8 w-8 text-slate-300" />
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                          {panel.fallbackText}
-                        </span>
-                        <span className="text-[9px] text-slate-400">{t('drawers.noPreview')}</span>
-                      </div>
-                    </div>
-                  )}
+                      {doc && thumbUrl ? (
+                        <img
+                          src={thumbUrl}
+                          alt={panel.title}
+                          className="absolute inset-0 h-full w-full object-contain bg-slate-50 p-2"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+                          <div className="flex flex-col items-center gap-1 text-center">
+                            <panel.fallbackIcon className="h-8 w-8 text-slate-300" />
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                              {panel.fallbackText}
+                            </span>
+                            <span className="text-[9px] text-slate-400">{t('drawers.noPreview')}</span>
+                          </div>
+                        </div>
+                      )}
 
-                  {doc ? (
-                    <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-900/65 to-transparent px-2 pb-2 pt-6">
-                      <div className="text-[9px] font-semibold text-white/90">{doc.label}</div>
-                    </div>
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
+                      {doc ? (
+                        <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-900/65 to-transparent px-2 pb-2 pt-6">
+                          <div className="text-[9px] font-semibold text-white/90">{doc.label}</div>
+                        </div>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
           <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex flex-col">
             <div className="flex bg-slate-500 text-white">

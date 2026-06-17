@@ -80,7 +80,7 @@ interface ConstructionTableRow extends Record<string, unknown> {
   shopArea: string;
   renterName: string;
   monthlyRent: string;
-  bharaniKaalavadi: number;
+  bharaniKaalavadi: string;
   status: string;
 }
 
@@ -277,6 +277,13 @@ export function VerificationLeaseModal({
     },
   ] as const;
 
+  const activePanels = leftMediaPanels.filter((panel) => {
+    if (panel.title === t('drawers.opPlan') && panel.doc === null) {
+      return false;
+    }
+    return true;
+  });
+
   useEffect(() => {
     const imageDocuments = [...documentCards, ...mediaCards].filter((doc) => doc.isImage);
     if (imageDocuments.length === 0) {
@@ -352,7 +359,7 @@ export function VerificationLeaseModal({
   const asset = assetDetails as Record<string, any> | null;
 
   const currentTenantFields = [
-    { l: `${t('drawers.srNo')}:`, v: toDisplay(record.id), l2: `${t('tables.cols.duration')}:`, v2: record.duration ?? '0' },
+    { l: `${t('drawers.srNo')}:`, v: toDisplay(record.id), l2: `${t('tables.cols.duration')}:`, v2: record.duration != null ? `${record.duration} ${t('drawers.months')}` : '-' },
     { l: `${t('drawers.form.applicationType')}:`, v: record.applicationTypeName ?? '-', l2: `${t('drawers.leasePeriod')}:`, v2: `${toDateDisplay(record.leaseStartDate)} - ${toDateDisplay(record.leaseEndDate)}` },
     { l: `${t('tables.cols.tenantName')}:`, v: record.tenantName ?? '-', vClass: 'font-bold text-slate-900', l2: `${t('tables.cols.rentAmount')}:`, v2: record.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-', v2Class: 'font-bold text-red-600' },
     { l: `${t('drawers.form.mobileNumber')}:`, v: record.tenantMobile ?? '-', l2: `${t('drawers.form.securityDeposit')}:`, v2: record.securityDeposit != null ? `₹ ${toCurrencyDisplay(record.securityDeposit)}` : '-' },
@@ -398,7 +405,7 @@ export function VerificationLeaseModal({
       shopArea: record.totalAreaSqFt != null ? Number(record.totalAreaSqFt).toFixed(2) : '-',
       renterName: record.tenantName ?? '-',
       monthlyRent: record.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-',
-      bharaniKaalavadi: record.duration ?? 0,
+      bharaniKaalavadi: record.duration != null ? `${record.duration} ${t('drawers.months')}` : '-',
       status: record.workflowStatus ?? '-',
     },
   ];
@@ -613,65 +620,66 @@ export function VerificationLeaseModal({
           </div>
         </div>
 
-        {/* Bottom grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_250px] gap-4 mb-4">
-          {/* Left: media cards from API */}
-          <div className="flex flex-col gap-3">
-            {leftMediaPanels.map((panel) => {
-              const doc = panel.doc;
-              const thumbUrl = doc ? thumbnailUrls[String(doc.id)] : null;
+          <div className={`grid grid-cols-1 gap-4 mb-4 ${activePanels.length > 0 ? 'lg:grid-cols-[240px_1fr_250px]' : 'lg:grid-cols-[1fr_250px]'}`}>
+            {/* Left: media cards from API */}
+            {activePanels.length > 0 && (
+              <div className="flex h-full flex-col justify-center gap-6">
+                {activePanels.map((panel) => {
+                  const doc = panel.doc;
+                  const thumbUrl = doc ? thumbnailUrls[String(doc.id)] : null;
 
-              return (
-                <button
-                  key={panel.title}
-                  type="button"
-                  onClick={() => {
-                    if (doc) openDocument(doc);
-                  }}
-                  className="group relative min-h-[120px] flex-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-b from-slate-900/0 via-slate-900/0 to-slate-900/15" />
-                  <span className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-[#0a869e] px-3 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm text-center whitespace-nowrap">
-                    {panel.title}
-                  </span>
+                  return (
+                    <button
+                      key={panel.title}
+                      type="button"
+                      onClick={() => {
+                        if (doc) openDocument(doc);
+                      }}
+                      className="group relative w-full aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/0 via-slate-900/0 to-slate-900/15" />
+                      <span className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-[#0a869e] px-3 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm text-center whitespace-nowrap">
+                        {panel.title}
+                      </span>
 
-                  {doc && thumbUrl ? (
-                    <img
-                      src={thumbUrl}
-                      alt={panel.title}
-                      className="absolute inset-0 h-full w-full object-contain bg-slate-50 p-2"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-                      <div className="flex flex-col items-center gap-1 text-center">
-                        <panel.fallbackIcon className="h-8 w-8 text-slate-300" />
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                          {panel.fallbackText}
-                        </span>
-                        <span className="text-[9px] text-slate-400">{t('drawers.noPreview')}</span>
-                      </div>
-                    </div>
-                  )}
+                      {doc && thumbUrl ? (
+                        <img
+                          src={thumbUrl}
+                          alt={panel.title}
+                          className="absolute inset-0 h-full w-full object-contain bg-slate-50 p-2"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+                          <div className="flex flex-col items-center gap-1 text-center">
+                            <panel.fallbackIcon className="h-8 w-8 text-slate-300" />
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                              {panel.fallbackText}
+                            </span>
+                            <span className="text-[9px] text-slate-400">{t('drawers.noPreview')}</span>
+                          </div>
+                        </div>
+                      )}
 
-                  {doc ? (
-                    <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-900/65 to-transparent px-2 pb-2 pt-6">
-                      <div className="text-[9px] font-semibold text-white/90">{doc.label}</div>
-                    </div>
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
+                      {doc ? (
+                        <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-900/65 to-transparent px-2 pb-2 pt-6">
+                          <div className="text-[9px] font-semibold text-white/90">{doc.label}</div>
+                        </div>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
           {/* Center: uploaded documents from API */}
-          <div className="space-y-6">
-            <div className="border border-slate-200 rounded-lg relative p-4 flex flex-col bg-white shadow-sm min-h-[380px]">
+          <div className="flex flex-col gap-6 h-full">
+            <div className="border border-slate-200 rounded-lg relative p-4 flex flex-col bg-white shadow-sm flex-1">
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0a869e] text-white text-[9px] font-bold px-3 py-0.5 rounded shadow-sm flex items-center gap-1">
                 <FileText className="w-3 h-3" /> {t('drawers.uploadedDocs')}
               </span>
 
               {documentCards.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3 mt-2 overflow-y-auto max-h-[350px]">
+                <div className="grid grid-cols-2 gap-3 mt-2 overflow-y-auto flex-1 min-h-0 items-start">
                   {documentCards.map((doc, idx) => (
                     <button
                       key={`${doc.id}-${idx}`}
