@@ -93,8 +93,8 @@ const baseColumns: Column<LeaseRentRecord>[] = [
 const revertedColumns: Column<LeaseRentRecord>[] = [
   ...baseColumns,
   {
-    key: 'reason',
-    label: 'Reason',
+    key: 'remarks',
+    label: 'Remarks',
     align: 'center',
     cellClassName: '!px-2 !py-2',
     render: (_value, row) => (

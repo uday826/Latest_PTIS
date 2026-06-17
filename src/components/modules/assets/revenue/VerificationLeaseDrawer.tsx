@@ -392,7 +392,7 @@ export function VerificationLeaseModal({
   const constructionData: ConstructionTableRow[] = [
     {
       shopNo: record.shopNo ?? '-',
-      shopArea: record.totalAreaSqFt != null ? String(record.totalAreaSqFt) : '-',
+      shopArea: record.totalAreaSqFt != null ? Number(record.totalAreaSqFt).toFixed(2) : '-',
       renterName: record.tenantName ?? '-',
       monthlyRent: record.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-',
       bharaniKaalavadi: record.duration ?? 0,
@@ -584,7 +584,7 @@ export function VerificationLeaseModal({
                     <tr>
                       <td className="px-3 py-1.5 bg-slate-50/50">Lease/Rent End:</td>
                       <td className="px-3 py-1.5 border-r border-slate-100">{toDateDisplay(record.leaseEndDate)}</td>
-                      <td className="px-3 py-1.5 bg-slate-50/50">Reason:</td>
+                      <td className="px-3 py-1.5 bg-slate-50/50">Remarks:</td>
                       <td className="px-3 py-1.5">{record.remarks ?? record.reason ?? record.rejectionReason ?? '-'}</td>
                     </tr>
                     {Boolean(record.oldLeaseStartDate || record.oldLeaseEndDate || record.terminationDate) && (

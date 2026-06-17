@@ -191,7 +191,7 @@ function buildInitialFormState(
     pendingDues: firstNonEmpty((record as Record<string, unknown> | null)?.pendingDues),
     securityDepositRefund: '0',
     finalInspectionReport: 'Yes',
-    remarksDescription: firstNonEmpty(record?.reason),
+    remarksDescription: '',
   };
 }
 
@@ -300,7 +300,7 @@ function buildTemplate(
       { key: 'paymentFrequency', label: 'Payment Frequency', icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'] },
       { key: 'pinCode', label: 'Pin Code', icon: MapPinned, type: 'text', placeholder: '6-digit pin code' },
       { key: 'residentialAddress', label: 'Residential Address', icon: MapPin, type: 'textarea', placeholder: 'Full address', colSpan: 2 },
-      { key: 'remarksDescription', label: 'Remarks / Reason', icon: FileText, type: 'textarea', placeholder: 'Purpose of lease / any notes...', colSpan: 2 },
+      { key: 'remarksDescription', label: 'Remarks / Reason', icon: FileText, type: 'textarea', placeholder: 'Purpose of lease / any notes...', colSpan: 2, required: true },
     ],
     secondaryButtons: [
       { label: 'Upload Aadhaar', icon: UploadCloud, variant: 'primary' },
@@ -1338,7 +1338,7 @@ export function NewLeaseRegistrationModal({
   const constructionData: ConstructionTableRow[] = [
     {
       shopNo: record?.shopNo ?? '-',
-      shopArea: record?.totalAreaSqFt != null ? String(record.totalAreaSqFt) : '-',
+      shopArea: record?.totalAreaSqFt != null ? Number(record.totalAreaSqFt).toFixed(2) : '-',
       renterName: record?.tenantName ?? '-',
       monthlyRent: record?.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-',
       bharaniKaalavadi: record?.leaseDurationDisplay ?? '-',
@@ -1695,7 +1695,7 @@ export function NewLeaseRegistrationModal({
             {isRevertedRecord ? (
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 shadow-sm">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
-                  Reason for Revert
+                  Remarks for Revert
                 </div>
                 <div className="mt-1 text-[11px] font-semibold text-slate-700">
                   {record?.reason ?? record?.rejectionReason ?? '-'}
