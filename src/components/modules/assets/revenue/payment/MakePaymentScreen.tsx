@@ -236,9 +236,13 @@ export function MakePaymentScreen({
 
   const backendPaymentType = useMemo(() => {
     if (pendingSubOption === 'FULL_BUCKET') return 'Full';
-    if (pendingSubOption === 'PERIOD_SELECTION') return 'Monthwise';
+    if (pendingSubOption === 'PERIOD_SELECTION') {
+      const selectedAll = allPendingDemandIds.length > 0 && 
+        allPendingDemandIds.every(id => selectedDemandIds.includes(id));
+      return selectedAll ? 'Full' : 'Monthwise';
+    }
     return 'Partial';
-  }, [pendingSubOption]);
+  }, [pendingSubOption, allPendingDemandIds, selectedDemandIds]);
 
   const selectedPeriodsLabel = selectedPeriods.join(', ');
   const periodDrawerButtonLabel = isYearlyPayment ? 'Select Financial Years' : t('selectMonths');
@@ -599,36 +603,78 @@ export function MakePaymentScreen({
       </div>
 
       <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
-        <div className="mb-4">
-          <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded flex items-center justify-center bg-emerald-500 text-white text-xs font-bold">?</div>
-                <span className="text-base font-extrabold text-emerald-800 uppercase tracking-wider">Demand</span>
-              </div>
-              <p className="text-2xl font-black text-emerald-600">{`₹ ${record.currentDemand.toLocaleString('en-IN')}`}</p>
-            </div>
-          </Card>
-        </div>
+        {String(record.paymentStatus ?? '').toLowerCase() === 'partial' ? (
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {/* Left Side: Demand, Penalty, GST, Total Amount */}
+            <div className="space-y-3">
+              <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-3 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Demand</span>
+                  <p className="text-sm font-black text-emerald-600">{`₹ ${record.currentDemand.toLocaleString('en-IN')}`}</p>
+                </div>
+              </Card>
 
-        <div className="space-y-3 mb-6">
-          <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-red-50/50 border-red-100 rounded-lg shadow-none">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded bg-red-500 text-white flex items-center justify-center text-[10px] font-bold">%</div>
-              <span className="text-xs font-bold text-red-700">{t('penalty')}</span>
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-red-50/50 border-red-100 rounded-lg shadow-none">
+                <span className="text-xs font-bold text-red-700">{t('penalty')}</span>
+                <span className="text-sm font-black text-red-600">{`₹ ${penaltyAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+              </Card>
+
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-purple-50/50 border-purple-100 rounded-lg shadow-none">
+                <span className="text-xs font-bold text-purple-700">{t('gst')}</span>
+                <span className="text-sm font-black text-purple-600">{`₹ ${gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+              </Card>
+
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-4 bg-blue-50 border-blue-200 rounded-xl shadow-sm">
+                <span className="text-sm font-bold text-blue-900">{t('totalAmount')}</span>
+                <span className="text-xl font-black text-blue-700">{`₹ ${summaryTotalAmount.toLocaleString('en-IN')}`}</span>
+              </Card>
             </div>
-            <span className="text-sm font-black text-red-600">{`₹ ${penaltyAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-          </Card>
-          <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-purple-50/50 border-purple-100 rounded-lg shadow-none">
-            <span className="text-xs font-bold text-purple-700 ml-7">{t('gst')}</span>
-            <span className="text-sm font-black text-purple-600">{`₹ ${gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-          </Card>
-          <Card variant="bordered" padding="none" className="flex justify-between items-center p-4 bg-blue-50 border-blue-200 rounded-xl shadow-sm">
-            <span className="text-sm font-bold text-blue-900">{t('totalAmount')}</span>
-            <span className="text-xl font-black text-blue-700">{`₹ ${summaryTotalAmount.toLocaleString('en-IN')}`}</span>
-          </Card>
-        </div>
+
+            {/* Right Side: Total Paid and Total Pending Demand */}
+            <div className="space-y-3">
+              <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-3 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">{t('totalPaid')}</span>
+                  <p className="text-sm font-black text-emerald-600">{`₹ ${(record.totalPaid ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</p>
+                </div>
+              </Card>
+
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-4 bg-red-50 border-red-200 rounded-xl shadow-sm">
+                <span className="text-sm font-bold text-red-900">{t('totalPendingDemand')}</span>
+                <span className="text-xl font-black text-red-700">{`₹ ${(record.totalPending ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+              </Card>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="mb-4">
+              <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-base font-extrabold text-emerald-800 uppercase tracking-wider">Demand</span>
+                  <p className="text-2xl font-black text-emerald-600">{`₹ ${record.currentDemand.toLocaleString('en-IN')}`}</p>
+                </div>
+              </Card>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-red-50/50 border-red-100 rounded-lg shadow-none">
+                <span className="text-xs font-bold text-red-700">{t('penalty')}</span>
+                <span className="text-sm font-black text-red-600">{`₹ ${penaltyAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+              </Card>
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-purple-50/50 border-purple-100 rounded-lg shadow-none">
+                <span className="text-xs font-bold text-purple-700">{t('gst')}</span>
+                <span className="text-sm font-black text-purple-600">{`₹ ${gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+              </Card>
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-4 bg-blue-50 border-blue-200 rounded-xl shadow-sm">
+                <span className="text-sm font-bold text-blue-900">{t('totalAmount')}</span>
+                <span className="text-xl font-black text-blue-700">{`₹ ${summaryTotalAmount.toLocaleString('en-IN')}`}</span>
+              </Card>
+            </div>
+          </>
+        )}
 
         <Card variant="bordered" padding="none" className="bg-white border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
           <div className="grid grid-cols-3 gap-4">
@@ -778,7 +824,7 @@ export function MakePaymentScreen({
               size="sm"
               className="px-6 py-2 font-bold text-xs rounded-lg"
               onClick={handlePayNow}
-              disabled={isPending}
+              disabled={isPending || !selectedMode || !pendingSubOption || record.pendingDue <= 0}
             >
               {isPending ? 'Processing...' : t('payNow')}
             </Button>

@@ -55,6 +55,11 @@ export interface LeaseRentPaymentDetail {
   gst: number;
   totalPayable: number;
   financeYear?: number;
+  leaseStartDate?: string | null;
+  leaseEndDate?: string | null;
+  totalPaid?: number;
+  totalPending?: number;
+  paymentStatus?: string | null;
 }
 
 export interface LeaseRentPaymentHistoryItem {

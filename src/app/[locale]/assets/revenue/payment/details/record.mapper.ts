@@ -54,5 +54,8 @@ export function mapAssetLeaseRentDetailsToPaymentDetail(
     penalty: 0,
     gst: 0,
     totalPayable: baseAmount,
+    leaseStartDate: record.leaseStartDate,
+    leaseEndDate: record.leaseEndDate,
+    paymentStatus: record.paymentStatus || (record as any).PaymentStatus || null,
   };
 }

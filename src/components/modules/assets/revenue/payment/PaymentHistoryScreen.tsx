@@ -26,7 +26,7 @@ export function PaymentHistoryScreen({ items }: PaymentHistoryScreenProps) {
     return items.filter((row) =>
       row.receiptNo.toLowerCase().includes(normalizedSearch) ||
       row.paymentMode.toLowerCase().includes(normalizedSearch) ||
-      row.paymentType.toLowerCase().includes(normalizedSearch) ||
+      (row.paymentType ?? '').toLowerCase().includes(normalizedSearch) ||
       row.paymentStatus.toLowerCase().includes(normalizedSearch)
     );
   }, [items, searchTerm]);

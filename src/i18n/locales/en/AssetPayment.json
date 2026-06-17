@@ -38,6 +38,8 @@
     "penalty": "Penalty",
     "gst": "GST",
     "totalAmount": "Total Amount",
+    "totalPaid": "Total Paid",
+    "totalPendingDemand": "Total Pending Demand",
     "mobileNumber": "Mobile Number",
     "emailAddress": "Email Address",
     "paymentMode": "Payment Mode",
@@ -172,6 +174,8 @@
       "type": "Type",
       "amount": "Amount",
       "status": "Status",
+      "leaseStartDate": "Lease Start Date",
+      "leaseEndDate": "Lease End Date",
       "action": "Action",
       "pay": "Pay"
     },
