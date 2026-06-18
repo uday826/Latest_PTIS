@@ -328,8 +328,6 @@
       "upicId": "यूपिक आयडी",
       "propertyNo": "मालमत्ता क्रमांक",
       "assetCondition": "मालमत्तेची स्थिती",
-      "assetWardNo": "मालमत्ता वॉर्ड क्रमांक",
-      "enterAssetWardNo": "उदा. 12A",
       "length": "प्लॉटची लांबी (चौ. मीटर)",
       "width": "प्लॉटची रुंदी (चौ. मीटर)",
       "offsetOperation": "ऑफसेट ऑपरेशन",
@@ -361,6 +359,8 @@
       "owningDepartment": "मालकी हक्क विभाग",
       "selectOwningDepartment": "मालकी हक्क विभाग निवडा",
       "assetName": "मालमत्तेचे नाव",
+      "assetNameLocal": "मालमत्तेचे स्थानिक नाव",
+      "assetNameLocalPlaceholder": "स्थानिक नाव प्रविष्ट करा",
       "ownershipType": "मालकीचा प्रकार",
       "selectOwnershipType": "मालकीचा प्रकार निवडा",
       "inChargeName": "प्रभारी व्यक्तीचे नाव",
@@ -706,6 +706,12 @@
     },
     "grandTotal": "एकूण मालमत्ता मूल्य",
     "inventory": {
+      "categories": {
+        "furniture": "फर्निचर",
+        "it-equipment": "आयटी उपकरणे",
+        "electronic-fixtures": "इलेक्ट्रॉनिक फिक्स्चर",
+        "vehicle": "वाहन"
+      },
       "countLabel": "एकूण {category} संख्या",
       "itemsVal": "{count} {count, plural, =1 {घटक} other {घटक}}",
       "totalQty": "एकूण प्रमाण (युनिट्स)",

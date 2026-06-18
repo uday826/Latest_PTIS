@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect } from "react";
 import { useAssetForm } from "@/components/modules/assets/municipal-Asset/add-New-Asset/AssetFormContext";
-import { useBuildingBasicInfoFormState } from "./useBuildingBasicInfoFormState";
+import { useBuildingBasicInfoFormState, sanitizeBasicInfoField } from "./useBuildingBasicInfoFormState";
 import { useBuildingBasicInfoFormValidation } from "./useBuildingBasicInfoFormValidation";
 import type {
   BuildingBasicInfoFormData,
@@ -64,6 +64,7 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
     length: (contextData as any).length || "",
     width: (contextData as any).width || "",
     assetName: contextData.assetName || "",
+    assetNameLocal: contextData.assetNameLocal || "",
     department: contextData.department || "",
     fullAddress: contextData.fullAddress || "",
     locality: contextData.locality || "",
@@ -137,6 +138,7 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
         length: (contextData as any).length || "",
         width: (contextData as any).width || "",
         assetName: contextData.assetName || "",
+        assetNameLocal: contextData.assetNameLocal || "",
         department: contextData.department || "",
         fullAddress: contextData.fullAddress || "",
         locality: contextData.locality || "",
@@ -195,6 +197,7 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
     (contextData as any).length,
     (contextData as any).width,
     contextData.assetName,
+    contextData.assetNameLocal,
     contextData.department,
     contextData.fullAddress,
     contextData.locality,
@@ -323,37 +326,26 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
   // Keep the shared context in sync so other wizard steps see updated values
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      let val = e.target.value;
       const name = e.target.name;
+      const value = e.target.value;
+      const target = e.target as HTMLInputElement;
+      const start = target.selectionStart;
+      const end = target.selectionEnd;
 
-      if (name === "pinCode") {
-        val = val.replace(/\D/g, ""); // strip non-digits
-        e.target.value = val;
-      } else if (name === "latitude" || name === "longitude") {
-        // Accept only digits, minus, and one decimal point
-        val = val.replace(/[^0-9.-]/g, "");
-        if (val.startsWith("-")) {
-          val = "-" + val.slice(1).replace(/-/g, "");
-        } else {
-          val = val.replace(/-/g, "");
-        }
-        const parts = val.split(".");
-        if (parts.length > 2) {
-          val = parts[0] + "." + parts.slice(1).join("");
-        }
-        e.target.value = val;
-      } else if (name === "length" || name === "width") {
-        // Accept only digits and one decimal point (length/width cannot be negative)
-        val = val.replace(/[^0-9.]/g, "");
-        const parts = val.split(".");
-        if (parts.length > 2) {
-          val = parts[0] + "." + parts.slice(1).join("");
-        }
-        e.target.value = val;
-      }
+      const sanitizedValue = sanitizeBasicInfoField(name, value);
+      e.target.value = sanitizedValue;
 
       baseHandleChange(e);
-      syncContext({ [name]: e.target.value });
+      syncContext({ [name]: sanitizedValue });
+
+      const isTitleCased = name === "assetName" || name === "inChargeName" || name === "inChargeDesignation";
+      if (start !== null && end !== null && isTitleCased) {
+        requestAnimationFrame(() => {
+          try {
+            target.setSelectionRange(start, end);
+          } catch {}
+        });
+      }
     },
     [baseHandleChange, syncContext]
   );

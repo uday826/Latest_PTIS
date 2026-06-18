@@ -267,6 +267,14 @@ export function BuildingValuationSummary({
     return colorPool[styleIndex];
   };
 
+  const getLocalizedCategoryName = (cleanName: string, key: string) => {
+    const knownKeys = ["furniture", "it-equipment", "electronic-fixtures", "vehicle"];
+    if (knownKeys.includes(key)) {
+      return t(`valuation.inventory.categories.${key}`) || cleanName;
+    }
+    return cleanName;
+  };
+
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const dynamicCategoryCards = categories.map((cat, idx) => {
     let key = "furniture";
@@ -287,6 +295,7 @@ export function BuildingValuationSummary({
     }
 
     const style = getCategoryStyle(cleanName, key);
+    const localizedName = getLocalizedCategoryName(cleanName, key);
     
     // Filter raw inventories belonging to this category
     const items = rawInventories.filter(item => {
@@ -304,14 +313,14 @@ export function BuildingValuationSummary({
     const totalVal = items.reduce((s, i) => s + calculateItemCV(i, categories, conditions), 0);
 
     return {
-      title: `${style.icon} ${cleanName}`,
+      title: `${style.icon} ${localizedName}`,
       color: style.color,
       bg: style.bg,
       textColor: style.textColor,
       rows: [
-        { label: t("valuation.inventory.countLabel", { category: cleanName }), value: t("valuation.inventory.itemsVal", { count: totalCount }) },
+        { label: t("valuation.inventory.countLabel", { category: localizedName }), value: t("valuation.inventory.itemsVal", { count: totalCount }) },
         { label: t("valuation.inventory.totalQty"), value: t("floorDetails.unitsCount", { count: totalQty }) },
-        { label: t("valuation.inventory.valueLabel", { category: cleanName }), value: `₹ ${fmt(totalVal)}`, highlight: true, highlightBg: style.highlightBg, highlightBorder: style.highlightBorder, highlightText: style.highlightText },
+        { label: t("valuation.inventory.valueLabel", { category: localizedName }), value: `₹ ${fmt(totalVal)}`, highlight: true, highlightBg: style.highlightBg, highlightBorder: style.highlightBorder, highlightText: style.highlightText },
       ]
     };
   });
@@ -347,6 +356,7 @@ export function BuildingValuationSummary({
     }
 
     const style = getCategoryStyle(cleanName, key);
+    const localizedName = getLocalizedCategoryName(cleanName, key);
 
     // Filter raw inventories belonging to this category
     const items = rawInventories.filter(item => {
@@ -361,13 +371,22 @@ export function BuildingValuationSummary({
 
     const totalVal = items.reduce((s, i) => s + calculateItemCV(i, categories, conditions), 0);
 
-    const title = `${style.icon} ${cleanName}`;
+    const title = `${style.icon} ${localizedName}`;
+
+    const footerKeyMap: Record<string, string> = {
+      "furniture": "subFurniture",
+      "it-equipment": "subIt",
+      "electronic-fixtures": "subElectronic",
+      "vehicle": "subVehicles"
+    };
+    const footerKey = footerKeyMap[key];
+    const localizedFooter = footerKey ? t(`valuation.inventory.${footerKey}`) : `From ${localizedName} Inventory`;
 
     return {
       title,
       value: totalVal,
       icon: style.iconComponent || Package,
-      footer: `From ${cleanName} Inventory`
+      footer: localizedFooter
     };
   });
 

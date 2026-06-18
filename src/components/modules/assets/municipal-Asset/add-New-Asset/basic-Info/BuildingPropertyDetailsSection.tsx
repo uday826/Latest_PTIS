@@ -372,19 +372,7 @@ export function BuildingPropertyDetailsSection({
           className="font-semibold text-sm"
         />
 
-        <Input
-          label={t("basicInfo.propertyDetails.assetWardNo") || "Asset Ward Number"}
-          name="assetWardNo"
-          value={(formData as any).assetWardNo || ""}
-          onChange={(e) => {
-            const cleanVal = e.target.value.replace(/[^a-zA-Z0-9\s]/g, "");
-            e.target.value = cleanVal;
-            handleChange(e);
-          }}
-          placeholder={t("basicInfo.propertyDetails.enterAssetWardNo") || "e.g. 12A"}
-          className="h-8 text-[13px]"
-          error={showError("assetWardNo" as any) ? (errors as any).assetWardNo : undefined}
-        />
+
       </CardContent >
     </Card >
   );

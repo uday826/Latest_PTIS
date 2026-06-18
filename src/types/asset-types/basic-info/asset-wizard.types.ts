@@ -163,6 +163,9 @@ export interface AssetMasterRequest {
   pinCode?: string | null;
   partitionNo?: string | null;
   upicId?: string | null;
+  propertyNo?: string | null;
+  assetLocalName?: string | null;
+  assetWardNo?: string | null;
 
 
   // Optional location

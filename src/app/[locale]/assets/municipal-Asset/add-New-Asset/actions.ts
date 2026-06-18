@@ -333,6 +333,9 @@ export async function submitAssetForm(formData: AssetFormData) {
       pinCode: formData.pinCode || null,
       partitionNo: formData.partitionNo || null,
       upicId: formData.upicId || null,
+      propertyNo: formData.propertyNumber || null,
+      assetLocalName: formData.assetNameLocal || null,
+      assetWardNo: null,
       isActive: false,
       createdBy: 1,
 
@@ -340,7 +343,6 @@ export async function submitAssetForm(formData: AssetFormData) {
       // Related dynamic attribute values (EAV Pattern mapping to AMS.AssetFieldValue)
       fieldValues: Object.entries({
         ...(formData.attributes || {}),
-        propertyNumber: formData.propertyNumber,
         plotNumber: formData.plotNumber,
         surveyNumber: formData.surveyNumber,
         offset: formData.offset,

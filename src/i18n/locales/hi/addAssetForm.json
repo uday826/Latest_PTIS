@@ -328,8 +328,6 @@
       "upicId": "यूपिक आईडी",
       "propertyNo": "संपत्ति नंबर",
       "assetCondition": "संपत्ति की स्थिति",
-      "assetWardNo": "संपत्ति वार्ड नंबर",
-      "enterAssetWardNo": "जैसे 12A",
       "length": "प्लॉट की लंबाई (वर्ग मीटर)",
       "width": "प्लॉट की चौड़ाई (वर्ग मीटर)",
       "offsetOperation": "ऑफसेट ऑपरेशन",
@@ -361,6 +359,8 @@
       "owningDepartment": "स्वामित्व वाला विभाग",
       "selectOwningDepartment": "स्वामित्व वाला विभाग चुनें",
       "assetName": "संपत्ति का नाम",
+      "assetNameLocal": "संपत्ति का स्थानीय नाम",
+      "assetNameLocalPlaceholder": "स्थानीय नाम दर्ज करें",
       "ownershipType": "स्वामित्व का प्रकार",
       "selectOwnershipType": "स्वामित्व का प्रकार चुनें",
       "inChargeName": "प्रभारी का नाम",
@@ -706,6 +706,12 @@
     },
     "grandTotal": "कुल संपत्ति मूल्य",
     "inventory": {
+      "categories": {
+        "furniture": "फर्नीचर",
+        "it-equipment": "आईटी उपकरण",
+        "electronic-fixtures": "इलेक्ट्रॉनिक फिक्स्चर",
+        "vehicle": "वाहन"
+      },
       "countLabel": "कुल {category} संख्या",
       "itemsVal": "{count} {count, plural, =1 {मद} other {मदें}}",
       "totalQty": "कुल मात्रा (इकाइयां)",

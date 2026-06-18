@@ -11,6 +11,7 @@ import {
   TextArea,
   Drawer,
 } from "@/components/common";
+import { useParams } from "next/navigation";
 import type { BuildingOwnershipDetailsSectionProps, BuildingBasicInfoFormData } from "@/types/asset-types/basic-info/buildBasicInfo.types";
 import { Map as MapIcon, UserCheck, ClipboardList, User, Calendar, Upload, X } from "lucide-react";
 import React from "react";
@@ -49,6 +50,90 @@ export function BuildingOwnershipDetailsSection({
   ];
   const hasLeaseErrors = leaseFields.some((field) => showError(field));
 
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
+  const [debouncedAssetName, setDebouncedAssetName] = React.useState(formData.assetName || "");
+  const assetNameLocalRef = React.useRef((formData as any).assetNameLocal || "");
+  assetNameLocalRef.current = (formData as any).assetNameLocal || "";
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedAssetName(formData.assetName || "");
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [formData.assetName]);
+
+  React.useEffect(() => {
+    if (!debouncedAssetName) return;
+
+    let active = true;
+
+    const translateName = async () => {
+      const itc = locale === "hi" ? "hi-t-i0-und" : "mr-t-i0-und";
+      try {
+        const res = await fetch(
+          `https://inputtools.google.com/request?text=${encodeURIComponent(
+            debouncedAssetName
+          )}&itc=${itc}&num=1`
+        );
+        const data = await res.json();
+        if (!active) return;
+
+        if (
+          data &&
+          data[0] === "SUCCESS" &&
+          data[1] &&
+          data[1][0] &&
+          data[1][0][1] &&
+          data[1][0][1][0]
+        ) {
+          const converted = data[1][0][1][0];
+          if (converted !== assetNameLocalRef.current && updateFormData) {
+            updateFormData({ assetNameLocal: converted });
+          }
+        }
+      } catch (error) {
+        console.error("Transliteration error:", error);
+      }
+    };
+
+    translateName();
+
+    return () => {
+      active = false;
+    };
+  }, [debouncedAssetName, locale, updateFormData]);
+
+  const handleLocalNameBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (!val) return;
+
+    if (/[a-zA-Z]/.test(val)) {
+      const itc = locale === "hi" ? "hi-t-i0-und" : "mr-t-i0-und";
+      try {
+        const res = await fetch(
+          `https://inputtools.google.com/request?text=${encodeURIComponent(val)}&itc=${itc}&num=1`
+        );
+        const data = await res.json();
+        if (
+          data &&
+          data[0] === "SUCCESS" &&
+          data[1] &&
+          data[1][0] &&
+          data[1][0][1] &&
+          data[1][0][1][0]
+        ) {
+          const converted = data[1][0][1][0];
+          if (updateFormData) {
+            updateFormData({ assetNameLocal: converted });
+          }
+        }
+      } catch (error) {
+        console.error("Transliteration error:", error);
+      }
+    }
+  };
+
   const handleMapSelect = (lat: string, lng: string) => {
     if (updateFormData) {
       updateFormData({ latitude: lat, longitude: lng });
@@ -85,7 +170,7 @@ export function BuildingOwnershipDetailsSection({
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 items-start text-[11px] [&_label]:text-[11px] [&_label]:mb-1 [&_span[id$=-label]]:text-[11px] [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-7 [&_input]:!text-[11px] [&_input]:!rounded-md [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-7 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px] [&_textarea]:!px-2 [&_textarea]:!py-1 [&_textarea]:!min-h-[28px] [&_textarea]:!text-[11px] [&_textarea]:!rounded-md [&_span.text-red-600]:text-[10px] [&_span.text-red-600]:mt-0.5">
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 items-start text-[11px] [&_label]:text-[11px] [&_label]:mb-1 [&_span[id$=-label]]:text-[11px] [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-7 [&_input]:!text-[11px] [&_input]:!rounded-md [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-7 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px] [&_textarea]:!px-2 [&_textarea]:!py-1 [&_textarea]:!min-h-[28px] [&_textarea]:!text-[11px] [&_textarea]:!rounded-md [&_span.text-red-650]:text-[10px] [&_span.text-red-650]:mt-0.5">
           {/* Map Picker Modal */}
           <MapPicker
             isOpen={isMapOpen}
@@ -113,15 +198,7 @@ export function BuildingOwnershipDetailsSection({
             error={showError("department") ? errors.department : undefined}
           />
 
-          <Input
-            label={t("basicInfo.ownershipDetails.landmark")}
-            name="locality"
-            value={formData.locality}
-            onChange={(e: any) => handleChange(e)}
-            placeholder="Ramdas Peth"
-            disabled={formData.isMovableCategory}
-            className="h-8 text-[13px]"
-          />
+
           <div className="md:col-span-2 lg:col-span-2">
             <Input
               label={t("basicInfo.ownershipDetails.assetName")}
@@ -132,6 +209,19 @@ export function BuildingOwnershipDetailsSection({
               className="h-8 text-[13px] font-semibold text-slate-800"
               required
               error={showError("assetName") ? errors.assetName : undefined}
+            />
+          </div>
+
+          <div className="md:col-span-2 lg:col-span-2">
+            <Input
+              label={t.has("basicInfo.ownershipDetails.assetNameLocal") ? t("basicInfo.ownershipDetails.assetNameLocal") : "Asset Local Name"}
+              name="assetNameLocal"
+              value={(formData as any).assetNameLocal || ""}
+              onChange={(e: any) => handleChange(e)}
+              onBlur={handleLocalNameBlur}
+              placeholder={t.has("basicInfo.ownershipDetails.assetNameLocalPlaceholder") ? t("basicInfo.ownershipDetails.assetNameLocalPlaceholder") : "Enter local name"}
+              className="h-8 text-[13px] font-semibold text-slate-800"
+              error={showError("assetNameLocal" as any) ? (errors as any).assetNameLocal : undefined}
             />
           </div>
 
@@ -213,6 +303,7 @@ export function BuildingOwnershipDetailsSection({
             />
           </div>
 
+
           <Input
             label={t("basicInfo.ownershipDetails.landmark")}
             name="locality"
@@ -220,10 +311,8 @@ export function BuildingOwnershipDetailsSection({
             onChange={(e: any) => handleChange(e)}
             placeholder="Ramdas Peth"
             disabled={formData.isMovableCategory}
-            required={!formData.isMovableCategory}
             className="h-8 text-[13px]"
           />
-
           <Input
             label={t("basicInfo.ownershipDetails.pinCode")}
             name="pinCode"
@@ -367,7 +456,7 @@ export function BuildingOwnershipDetailsSection({
           </div>
         }
       >
-        <div className="p-5 space-y-4 text-[11px] [&_label]:text-[11px] [&_label]:mb-1 [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-8 [&_input]:!text-[11px] [&_input]:!rounded-md [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-8 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px] [&_textarea]:!px-2 [&_textarea]:!py-1 [&_textarea]:!min-h-[60px] [&_textarea]:!text-[11px] [&_textarea]:!rounded-md [&_span.text-red-600]:text-[10px] [&_span.text-red-650]:mt-0.5">
+        <div className="p-5 space-y-4 text-[11px] [&_label]:text-[11px] [&_label]:mb-1 [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-8 [&_input]:!text-[11px] [&_input]:!rounded-md [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-8 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px] [&_textarea]:!px-2 [&_textarea]:!py-1 [&_textarea]:!min-h-[60px] [&_textarea]:!text-[11px] [&_textarea]:!rounded-md [&_span.text-red-600]:text-[10px] [&_span.text-red-655]:mt-0.5">
 
           {/* Section 1: Lessor / Owner Details */}
           <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-sm">

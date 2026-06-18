@@ -78,6 +78,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const headerDetails = t('app.assessmentSystem');
   const isWizardPage = pathname.includes('/add-New-Asset');
   const isEditMode = isWizardPage && (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mode') === 'edit');
+
   const systemTitle = isWizardPage
     ? (isEditMode ? tForm('wizard.editAsset') : tForm('wizard.addNewAsset'))
     : (pathname.includes('/assets') ? t('app.assetManagementSystem') : headerDetails);
@@ -100,6 +101,8 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
 
   const locale = getLocaleFromPathname(pathname);
   const showLocalCouncilName = locale !== 'en' && Boolean(localName);
+
+
 
   const localeLabel = useMemo(() => {
     if (locale === 'en') return t('language.english');
@@ -399,11 +402,10 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
                               size="sm"
                               role="option"
                               aria-selected={locale === code}
-                              className={`h-auto w-full rounded-lg px-3 py-2 text-left text-xs !justify-start hover:bg-white/10 sm:text-sm ${
-                                locale === code
-                                  ? 'bg-white/10 font-medium !text-white'
-                                  : '!text-blue-50/95'
-                              }`}
+                              className={`h-auto w-full rounded-lg px-3 py-2 text-left text-xs !justify-start hover:bg-white/10 sm:text-sm ${locale === code
+                                ? 'bg-white/10 font-medium !text-white'
+                                : '!text-blue-50/95'
+                                }`}
                               onClick={() => pickLocale(code)}
                             >
                               <span className="block w-full truncate">{label}</span>

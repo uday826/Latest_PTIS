@@ -74,6 +74,7 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
       attributes: {},
       documents: [],
       assetName: "",
+      assetNameLocal: "",
       propertyNumber: "",
       upicId: "",
       surveyNumber: "",
@@ -185,7 +186,8 @@ export function AssetFormProvider({ children }: { children: ReactNode }) {
                 mouja: dbAsset.moujaId ? String(dbAsset.moujaId) : prev.mouja,
                 attributes: { ...prev.attributes, ...dynamicAttrs },
                 // Try to map any dynamic attributes back into standard form fields if they match
-                propertyNumber: dynamicAttrs.propertyNumber as string || prev.propertyNumber,
+                propertyNumber: dbAsset.propertyNo || prev.propertyNumber,
+                assetNameLocal: dbAsset.assetLocalName || prev.assetNameLocal,
                 locality: dynamicAttrs.locality as string || prev.locality,
                 pinCode: dynamicAttrs.pinCode as string || prev.pinCode,
                 inChargeName: dynamicAttrs.inChargeName as string || prev.inChargeName,

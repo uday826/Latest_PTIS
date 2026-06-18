@@ -42,6 +42,7 @@ export interface BuildingPropertyDetailsFormData {
 
 export interface BuildingOwnershipDetailsFormData {
   assetName: string;
+  assetNameLocal: string;
   /** Department select value (e.g. "estate") */
   department: string;
   fullAddress: string;
@@ -176,6 +177,7 @@ export const INITIAL_BUILDING_BASIC_INFO: BuildingBasicInfoFormData = {
   offsetOp: "Subtract",
   // Section B
   assetName: "",
+  assetNameLocal: "",
   department: "",
   fullAddress: "",
   locality: "",

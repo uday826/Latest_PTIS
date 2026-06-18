@@ -122,16 +122,7 @@ export function MovableParentAssetSection({
       const lng = parent.longitude ? String(parent.longitude) : "";
       const deptId = parent.departmentId ? String(parent.departmentId) : "";
       const surveyNo = parent.csn || "";
-      const propNo = parent.propertyNumber || parent.assetNo || "";
-
-      // Extract EAV property number if available
-      let eavPropNo = "";
-      if (parent.fieldValues && Array.isArray(parent.fieldValues)) {
-        const found = parent.fieldValues.find(
-          (fv: any) => (fv.fieldName || "").toLowerCase() === "propertynumber"
-        );
-        if (found) eavPropNo = found.textValue || "";
-      }
+      const propNo = parent.propertyNo || parent.propertyNumber || parent.assetNo || "";
 
       // Update Form Context
       updateFormData({
@@ -152,7 +143,7 @@ export function MovableParentAssetSection({
         department: deptId,
         departmentId: deptId,
         surveyNumber: surveyNo,
-        propertyNumber: eavPropNo || propNo,
+        propertyNumber: propNo,
         // Reset sub-location attributes
         attributes: {
           ...formData.attributes,

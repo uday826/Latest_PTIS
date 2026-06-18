@@ -327,8 +327,6 @@
       "upicId": "UPIC ID",
       "propertyNo": "Property No",
       "assetCondition": "Asset Condition",
-      "assetWardNo": "Asset Ward Number",
-      "enterAssetWardNo": "e.g. 12A",
       "length": "Plot Length (Sq. Mtr)",
       "width": "Plot Width (Sq. Mtr)",
       "offsetOperation": "Offset Operation",
@@ -360,6 +358,8 @@
       "owningDepartment": "Owning Department",
       "selectOwningDepartment": "Select Owning Department",
       "assetName": "Asset Name",
+      "assetNameLocal": "Asset Local Name",
+      "assetNameLocalPlaceholder": "Enter local name",
       "ownershipType": "Ownership Type",
       "selectOwnershipType": "Select Ownership Type",
       "inChargeName": "In-Charge Name",
@@ -705,6 +705,12 @@
     },
     "grandTotal": "Grand Total Asset Value",
     "inventory": {
+      "categories": {
+        "furniture": "Furniture",
+        "it-equipment": "IT Equipment",
+        "electronic-fixtures": "Electronic Fixtures",
+        "vehicle": "Vehicle"
+      },
       "countLabel": "Total {category} Count",
       "itemsVal": "{count} {count, plural, =1 {Item} other {Items}}",
       "totalQty": "Total Quantity (Units)",
