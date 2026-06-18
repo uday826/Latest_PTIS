@@ -68,7 +68,7 @@
     "selectedMonths": "चयनित: {months}",
     "payNow": "अभी भुगतान करें",
     "fullPayment": "पूर्ण भुगतान",
-    "customAmount": "कस्टम राशि",
+    "partialAmount": "आंशिक राशि",
     "selectYears": "वर्षवार भुगतान",
     "processing": "प्रसंस्करण...",
     "drawer": {
