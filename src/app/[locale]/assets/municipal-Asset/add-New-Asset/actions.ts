@@ -347,6 +347,16 @@ export async function submitAssetForm(formData: AssetFormData) {
         offsetOp: formData.offsetOp,
         partitionNo: formData.partitionNo,
         upicId: formData.upicId,
+        isRented: formData.isRented,
+        leaseStartDate: formData.leaseStartDate,
+        leaseEndDate: formData.leaseEndDate,
+        leaseAmount: formData.leaseAmount,
+        securityDeposit: formData.securityDeposit,
+        paymentFrequency: formData.paymentFrequency,
+        lessorName: formData.lessorName,
+        lessorMobile: formData.lessorMobile,
+        lessorEmail: formData.lessorEmail,
+        lessorAddress: formData.lessorAddress,
       })
         .filter(([_, value]) => value !== undefined && value !== null && value !== "")
         .map(([key, value]) => {

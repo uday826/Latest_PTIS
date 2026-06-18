@@ -26,6 +26,7 @@ export async function AssetRegisterView({
   wardsResult,
   departmentsResult,
   updatedDate,
+  categoryOptions = [],
 }: AssetRegisterViewProps) {
   const t = await getTranslations({ locale, namespace: 'assetRegister' });
 
@@ -55,6 +56,11 @@ export async function AssetRegisterView({
     ...departmentsResult.map((dept) => ({ label: dept.label, value: String(dept.id) })),
   ];
 
+  const mappedCategoryOptions = categoryOptions.length > 0 ? [
+    { label: t('All_Asset_Categories') || 'All Asset Categories', value: 'all' },
+    ...categoryOptions.map((cat) => ({ label: cat.label, value: String(cat.id) })),
+  ] : [];
+
   const resolvedCategoryName = categoryName || (t('Asset_Register') || 'Asset Register');
   const registerSubtitle = categoryName
     ? `${t('Register_of') || 'Register of'} ${resolvedCategoryName}`
@@ -63,12 +69,17 @@ export async function AssetRegisterView({
   return (
     <div className="min-h-[calc(100vh-120px)] bg-slate-50/80 p-2 font-sans">
       <div className="mx-auto flex w-full max-w-437.5 flex-col gap-2.5">
-        <Card variant="elevated" className="overflow-hidden border-0 bg-white shadow-sm">
-          <div className="bg-[#0e315d] px-4 py-3 text-white">
-            <div className="flex items-center gap-2.5">
+        <Card variant="bordered" padding="none" className="overflow-hidden border-slate-200/80 bg-white shadow-sm rounded-t-xl">
+          <div className="border-b border-slate-200 p-4">
+            <div className="flex items-center gap-4">
               <AssetRegisterBackButton />
-              <div>
-                <h1 className="text-[20px] font-extrabold leading-none">{resolvedCategoryName}</h1>
+              <div className="min-w-0">
+                <h1 className="truncate text-lg font-bold leading-tight text-slate-900">
+                  {t('MUNICIPAL_CORPORATION_ASSET_REGISTER')}
+                </h1>
+                <p className="truncate text-sm font-medium text-blue-500">
+                  {resolvedCategoryName}
+                </p>
               </div>
             </div>
           </div>
@@ -81,17 +92,19 @@ export async function AssetRegisterView({
             totalMarketValue={assetsResult.totalMarketValue ?? 0}
             totalDepreciation={assetsResult.totalDepreciation ?? 0}
             netBookValue={assetsResult.netBookValue ?? 0}
+            totalCapitalValue={assetsResult.totalCapitalValue ?? 0}
             activeAssetsCount={assetsResult.activeAssetsCount ?? 0}
             translate={t}
           />
         </Card>
 
-        <Card
-          variant="bordered"
-          padding="none"
-          className="relative z-30 overflow-visible border-slate-200/80 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
-        >
-          <CardContent className="flex flex-col gap-3 overflow-visible px-4 py-4">
+        <AssetRegisterTable
+          assets={mappedAssets}
+          totalCount={assetsResult.totalCount}
+          pageNumber={finalPage}
+          pageSize={safePageSize}
+          totalPages={totalPages}
+          controls={
             <AssetRegisterControls
               categoryId={categoryId}
               categoryName={resolvedCategoryName}
@@ -107,16 +120,9 @@ export async function AssetRegisterView({
               zoneOptions={zoneOptions}
               wardOptions={wardOptions}
               owningDepartmentOptions={owningDepartmentOptions}
+              categoryOptions={mappedCategoryOptions}
             />
-          </CardContent>
-        </Card>
-
-        <AssetRegisterTable
-          assets={mappedAssets}
-          totalCount={assetsResult.totalCount}
-          pageNumber={finalPage}
-          pageSize={safePageSize}
-          totalPages={totalPages}
+          }
         />
       </div>
     </div>

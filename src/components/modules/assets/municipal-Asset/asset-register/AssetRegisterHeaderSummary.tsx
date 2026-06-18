@@ -4,27 +4,13 @@ import { CardContent, DashboardCard } from '@/components/common';
 import type { AssetRegisterHeaderSummaryProps } from '@/types/municipal-asset-register.types';
 
 export function AssetRegisterHeaderSummary({
-  registerSubtitle,
-  updatedDate,
   totalCount,
-  netBookValue,
+  totalCapitalValue,
   activeAssetsCount,
   translate,
 }: AssetRegisterHeaderSummaryProps) {
   return (
-    <CardContent className="border border-slate-200 p-0">
-      <div className="border-b border-slate-200 px-4 py-3 text-center">
-        <div className="inline-flex items-center gap-2 text-slate-900">
-          <Building2Icon className="h-4 w-4" />
-          <h2 className="text-[15px] font-extrabold uppercase tracking-tight">
-            {translate('MUNICIPAL_CORPORATION_ASSET_REGISTER')}
-          </h2>
-        </div>
-        <p className="mt-1 text-[11px] text-slate-600">
-          {registerSubtitle} | {translate('Generated_On') || 'Generated On'}: {updatedDate}
-        </p>
-      </div>
-
+    <CardContent className="border-t border-slate-200 p-0 bg-slate-50/50">
       <div className="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-2 lg:grid-cols-3">
         <DashboardCard
           label={translate('Total_Assets') || 'Total Assets'}
@@ -34,7 +20,7 @@ export function AssetRegisterHeaderSummary({
         />
         <DashboardCard
           label={translate('Capital_Value') || 'Capital Value'}
-          value={`\u20B9${netBookValue.toLocaleString('en-IN')}`}
+          value={`\u20B9${totalCapitalValue.toLocaleString('en-IN')}`}
           valueColor="text-emerald-600"
           icon={<Coins className="h-5 w-5" />}
           iconBg="bg-emerald-50 text-emerald-600 border-emerald-100"

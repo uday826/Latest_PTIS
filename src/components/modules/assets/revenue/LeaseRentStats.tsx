@@ -22,13 +22,6 @@ export function LeaseRentStats({ stats, onStatClick }: StatsProps) {
       valueColor: 'text-emerald-700',
     },
     {
-      label: t('stats.totalVerified'),
-      value: stats.totalVerified,
-      icon: CheckCircle2,
-      iconBg: 'bg-teal-100 text-teal-700',
-      valueColor: 'text-teal-700',
-    },
-    {
       label: t('stats.verificationPending'),
       value: stats.verificationPending,
       icon: AlertCircle,
@@ -52,18 +45,18 @@ export function LeaseRentStats({ stats, onStatClick }: StatsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 w-full md:grid-cols-5">
+    <div className="flex flex-wrap items-center gap-3 md:flex-nowrap">
       {cards.map((s, idx) => {
         const Icon = s.icon;
         return (
           <div key={idx} onClick={() => onStatClick?.(s.label)} className="cursor-pointer">
             <DashboardCard
-              label={s.label}
-              value={s.value}
-              icon={<Icon className="h-4 w-4" />}
-              iconBg={s.iconBg}
-              valueColor={s.valueColor}
-              className="transition-all hover:-translate-y-0.5 hover:shadow-md"
+               label={s.label}
+               value={s.value}
+               icon={<Icon className="h-3.5 w-3.5" />}
+               iconBg={s.iconBg}
+               valueColor={s.valueColor}
+               className="!py-1 !px-2.5 !gap-2 transition-all hover:-translate-y-0.5 hover:shadow-md w-fit [&_p]:!text-[11px] xl:[&_p]:!text-xs [&_p]:!whitespace-nowrap [&_p.text-xl]:!text-sm xl:[&_p.text-xl]:!text-base [&_p.text-xl]:!mt-0.5 [&_div.h-9]:!h-7 [&_div.h-9]:!w-7"
             />
           </div>
         );

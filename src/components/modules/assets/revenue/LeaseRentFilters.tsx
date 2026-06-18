@@ -63,7 +63,7 @@ export function LeaseRentFilters({
   const ALL_ASSET_OPTION = { label: t('filters.allAssets'), value: 'all' };
 
   return (
-    <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 shadow-inner mb-4">
+    <div className="w-full">
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="space-y-1">
           <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('filters.search')}</Label>

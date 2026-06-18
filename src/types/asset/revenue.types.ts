@@ -127,6 +127,11 @@ export interface LeaseRentRegistrationStats {
   totalRejected: number;
 }
 
+export interface ManageRentersHeaderData {
+  counts: ManageRentersTabCounts;
+  stats: LeaseRentRegistrationStats;
+}
+
 export interface ApplicationTypeItem {
   id: number;
   applicationTypeCode: string;

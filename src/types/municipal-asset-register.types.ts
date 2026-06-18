@@ -51,7 +51,7 @@ export type AssetRegisterRow = {
 
 export interface AssetRegisterViewProps {
   locale: string;
-  categoryId: number;
+  categoryId?: number;
   categoryName: string | null;
   safeSearch: string;
   safeAssetTypeId: string;
@@ -67,6 +67,7 @@ export interface AssetRegisterViewProps {
   wardsResult: AssetRegisterWardOption[];
   departmentsResult: AssetRegisterOption[];
   updatedDate: string;
+  categoryOptions?: AssetRegisterOption[];
 }
 
 export interface AssetRegisterTableProps {
@@ -75,6 +76,7 @@ export interface AssetRegisterTableProps {
   pageNumber: number;
   pageSize: number;
   totalPages: number;
+  controls?: React.ReactNode;
 }
 
 export interface AssetRegisterFiltersProps {
@@ -87,10 +89,12 @@ export interface AssetRegisterFiltersProps {
   zoneOptions: { label: string; value: string }[];
   wardOptions: { label: string; value: string }[];
   owningDepartmentOptions: { label: string; value: string }[];
+  categoryId?: number;
+  categoryOptions?: { label: string; value: string }[];
 }
 
 export interface AssetRegisterExportButtonProps {
-  categoryId: number;
+  categoryId?: number;
   search: string;
   assetTypeId: string;
   zoneId: string;
@@ -108,12 +112,13 @@ export interface AssetRegisterHeaderSummaryProps {
   totalMarketValue: number;
   totalDepreciation: number;
   netBookValue: number;
+  totalCapitalValue: number;
   activeAssetsCount: number;
   translate: (key: string) => string;
 }
 
 export interface AssetRegisterControlsProps {
-  categoryId: number;
+  categoryId?: number;
   categoryName: string;
   search: string;
   assetTypeId: string;
@@ -127,4 +132,5 @@ export interface AssetRegisterControlsProps {
   zoneOptions: { label: string; value: string }[];
   wardOptions: { label: string; value: string }[];
   owningDepartmentOptions: { label: string; value: string }[];
+  categoryOptions?: { label: string; value: string }[];
 }

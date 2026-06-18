@@ -75,6 +75,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const [isLogoutPending, startLogoutTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const headerDetails = t('app.assessmentSystem');
   const isWizardPage = pathname.includes('/add-New-Asset');
   const isEditMode = isWizardPage && (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mode') === 'edit');
   const systemTitle = isWizardPage
@@ -99,8 +100,6 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
 
   const locale = getLocaleFromPathname(pathname);
   const showLocalCouncilName = locale !== 'en' && Boolean(localName);
-
-  const headerDetails = t('app.assessmentSystem');
 
   const localeLabel = useMemo(() => {
     if (locale === 'en') return t('language.english');

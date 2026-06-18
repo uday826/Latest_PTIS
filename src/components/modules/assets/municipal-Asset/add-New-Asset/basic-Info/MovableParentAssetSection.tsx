@@ -266,7 +266,7 @@ export function MovableParentAssetSection({
                   })
                 }
                 options={floorOptions}
-                placeholder={isLoadingFloors ? t("basicInfo.parentSelection.loadingLevels") : t("basicInfo.parentSelection.selectFloor")}
+                placeholder={isLoadingFloors ? "Loading levels..." : floors.length === 0 ? "Not Exist" : "Select floor..."}
                 disabled={isLoadingFloors || floors.length === 0}
                 className="font-semibold text-sm"
               />
@@ -281,7 +281,7 @@ export function MovableParentAssetSection({
                   })
                 }
                 options={subunitOptions}
-                placeholder={isLoadingSubunits ? t("basicInfo.parentSelection.loadingUnits") : t("basicInfo.parentSelection.selectUnit")}
+                placeholder={isLoadingSubunits ? "Loading units..." : subunits.length === 0 ? "Not Exist" : "Select unit..."}
                 disabled={isLoadingSubunits || subunits.length === 0}
                 className="font-semibold text-sm"
               />

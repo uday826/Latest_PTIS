@@ -361,7 +361,7 @@ export function LeaseRentRegistration({
     }
 
     return (
-      <div className="mb-4 rounded-2xl border border-slate-200/60 bg-slate-50 p-4 shadow-sm">
+      <div className="w-full">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-[200px_minmax(0,1fr)_170px_170px]">
           <div className="space-y-1.5">
             <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('filters.category')}</Label>
@@ -429,6 +429,7 @@ export function LeaseRentRegistration({
           onPageSizeChange={(nextSize) => updateQuery({ pageNumber: 1, pageSize: nextSize })}
           onActionClick={handleRegistrationAction}
           onHistoryClick={handleHistoryAction}
+          headerExtra={renderStageFilters()}
         />
       );
     }
@@ -444,6 +445,7 @@ export function LeaseRentRegistration({
           onPageChange={(nextPage) => updateQuery({ pageNumber: nextPage })}
           onPageSizeChange={(nextSize) => updateQuery({ pageNumber: 1, pageSize: nextSize })}
           onActionClick={handleVerificationAction}
+          headerExtra={renderStageFilters()}
         />
       );
     }
@@ -459,13 +461,13 @@ export function LeaseRentRegistration({
         onPageSizeChange={(nextSize) => updateQuery({ pageNumber: 1, pageSize: nextSize })}
         onActionClick={handleApprovalAction}
         onRejectClick={handleRejectAction}
+        headerExtra={renderStageFilters()}
       />
     );
   };
 
   return (
     <>
-      {renderStageFilters()}
       {renderStageTable()}
 
       {drawerAsset && selectedRegistration ? (

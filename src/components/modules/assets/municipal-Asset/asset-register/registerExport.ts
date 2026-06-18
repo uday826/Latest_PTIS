@@ -6,7 +6,7 @@ import { getRegisterColumns } from './registerTableColumns';
 
 export async function exportToExcel(
   items: AssetRegisterApiRecord[],
-  categoryId: number,
+  categoryId?: number | null,
   t?: (key: string) => string
 ) {
   const translate = t || ((key: string) => key);
@@ -49,5 +49,5 @@ export async function exportToExcel(
   const workbook = XLSX.utils.book_new();
   const worksheet = XLSX.utils.json_to_sheet(exportRows);
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Asset Register');
-  XLSX.writeFile(workbook, `asset-register-${categoryId}.xlsx`);
+  XLSX.writeFile(workbook, `asset-register-${categoryId ?? 'all'}.xlsx`);
 }

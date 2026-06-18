@@ -86,7 +86,7 @@ export function LandValuation({
       footer: t("valuation.land.footer"),
     },
     {
-      title: `🪑 A) ${t("valuation.inventory.furnitureValue").replace(" Value", "")}`, color: "#C4B5FD", bg: "#EDE9FE", textColor: "#6B21A8",
+      title: `🪑 ${t("valuation.inventory.furnitureValue").replace(" Value", "")}`, color: "#C4B5FD", bg: "#EDE9FE", textColor: "#6B21A8",
       rows: [
         { label: t("valuation.inventory.totalFurnitureCount"), value: `${furnitureItems.length} ${furnitureItems.length === 1 ? t("valuation.inventory.itemsVal", { count: 1 }).split(" ")[1] : t("valuation.inventory.itemsVal", { count: 2 }).split(" ")[1]}` },
         { label: t("valuation.inventory.totalQty"), value: `${furnitureItems.reduce((s, i) => s + (i.quantity || 0), 0)} ${t("inventory.columns.unitsText")}` },
@@ -95,7 +95,7 @@ export function LandValuation({
       footer: t("valuation.inventory.footerFurniture"),
     },
     {
-      title: `💻 B) ${t("valuation.inventory.itValue").replace(" Value", "")}`, color: "#93C5FD", bg: "#DBEAFE", textColor: "#1E40AF",
+      title: `💻 ${t("valuation.inventory.itValue").replace(" Value", "")}`, color: "#93C5FD", bg: "#DBEAFE", textColor: "#1E40AF",
       rows: [
         { label: t("valuation.inventory.totalItCount"), value: `${itEquipmentItems.length} ${itEquipmentItems.length === 1 ? t("valuation.inventory.itemsVal", { count: 1 }).split(" ")[1] : t("valuation.inventory.itemsVal", { count: 2 }).split(" ")[1]}` },
         { label: t("valuation.inventory.totalQty"), value: `${itEquipmentItems.reduce((s, i) => s + (i.quantity || 0), 0)} ${t("inventory.columns.unitsText")}` },
@@ -104,7 +104,7 @@ export function LandValuation({
       footer: t("valuation.inventory.footerIt"),
     },
     {
-      title: `💡 C) ${t("valuation.inventory.electronicValue").replace(" Value", "")}`, color: "#6EE7B7", bg: "#D1FAE5", textColor: "#065F46",
+      title: `💡 ${t("valuation.inventory.electronicValue").replace(" Value", "")}`, color: "#6EE7B7", bg: "#D1FAE5", textColor: "#065F46",
       rows: [
         { label: t("valuation.inventory.totalElectronicCount"), value: `${electronicFixtures.length} ${electronicFixtures.length === 1 ? t("valuation.inventory.itemsVal", { count: 1 }).split(" ")[1] : t("valuation.inventory.itemsVal", { count: 2 }).split(" ")[1]}` },
         { label: t("valuation.inventory.totalQty"), value: `${electronicFixtures.reduce((s, i) => s + (i.quantity || 0), 0)} ${t("inventory.columns.unitsText")}` },
@@ -113,7 +113,7 @@ export function LandValuation({
       footer: t("valuation.inventory.footerElectronic"),
     },
     {
-      title: `🚗 D) ${t("valuation.inventory.vehiclesValue").replace(" Value", "")}`, color: "#FCD34D", bg: "#FEF3C7", textColor: "#92400E",
+      title: `🚗 ${t("valuation.inventory.vehiclesValue").replace(" Value", "")}`, color: "#FCD34D", bg: "#FEF3C7", textColor: "#92400E",
       rows: [
         { label: t("valuation.inventory.totalVehiclesCount"), value: `${vehicles.length} ${vehicles.length === 1 ? t("valuation.inventory.itemsVal", { count: 1 }).split(" ")[1] : t("valuation.inventory.itemsVal", { count: 2 }).split(" ")[1]}` },
         { label: t("valuation.inventory.totalQty"), value: `${vehicles.reduce((s, i) => s + (i.quantity || 0), 0)} ${t("inventory.columns.unitsText")}` },

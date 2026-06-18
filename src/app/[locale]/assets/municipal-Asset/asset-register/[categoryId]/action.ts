@@ -19,7 +19,7 @@ const EMPTY_ASSET_REGISTER_PAGE_RESULT: AssetRegisterPageResult = {
 };
 
 export async function fetchAssetRegisterPage(
-  categoryId: number,
+  categoryId?: number | null,
   page: number = 1,
   pageSize: number = 10,
   search: string = "",
@@ -32,7 +32,7 @@ export async function fetchAssetRegisterPage(
     const response = await assetMasterService.getAllAssetsPaginated({
       pageNumber: page,
       pageSize,
-      assetCategoryId: categoryId,
+      assetCategoryId: categoryId || null,
       assetTypeId: assetTypeId && assetTypeId !== "all" ? Number(assetTypeId) : null,
       zoneId: zoneId && zoneId !== "all" ? Number(zoneId) : null,
       wardId: wardId && wardId !== "all" ? Number(wardId) : null,
@@ -47,6 +47,29 @@ export async function fetchAssetRegisterPage(
     const data = response.data;
     const items = Array.isArray(data) ? data : (data.items || []);
 
+    // Calculate sum of capitalValue of all assets matching the filters
+    let totalCapitalValue = 0;
+    try {
+      const allMatchingResponse = await assetMasterService.getAllAssetsPaginated({
+        pageNumber: 1,
+        pageSize: -1,
+        assetCategoryId: categoryId || null,
+        assetTypeId: assetTypeId && assetTypeId !== "all" ? Number(assetTypeId) : null,
+        zoneId: zoneId && zoneId !== "all" ? Number(zoneId) : null,
+        wardId: wardId && wardId !== "all" ? Number(wardId) : null,
+        owningDepartmentId: owningDepartmentId && owningDepartmentId !== "all" ? Number(owningDepartmentId) : null,
+        searchTerm: search || undefined,
+      });
+      if (allMatchingResponse.success && allMatchingResponse.data) {
+        const allItems = Array.isArray(allMatchingResponse.data)
+          ? allMatchingResponse.data
+          : (allMatchingResponse.data.items || []);
+        totalCapitalValue = allItems.reduce((sum, item) => sum + (Number(item.capitalValue) || 0), 0);
+      }
+    } catch (calcError) {
+      console.error("Failed to calculate total capital value:", calcError);
+    }
+
     return {
       items,
       totalCount: data.totalCount || items.length,
@@ -54,6 +77,7 @@ export async function fetchAssetRegisterPage(
       totalMarketValue: data.totalMarketValue || 0,
       totalDepreciation: data.totalDepreciation || 0,
       netBookValue: data.netBookValue || 0,
+      totalCapitalValue: totalCapitalValue,
       activeAssetsCount: data.activeAssetsCount || 0,
       error: null,
     };
@@ -63,8 +87,13 @@ export async function fetchAssetRegisterPage(
   }
 }
 
-export async function fetchAssetTypesByCategory(categoryId: number) {
-  const response = await categoryTypeService.getTypesByCategory(categoryId);
+export async function fetchAssetTypesByCategory(categoryId?: number | null) {
+  let response;
+  if (!categoryId) {
+    response = await categoryTypeService.getAllTypes();
+  } else {
+    response = await categoryTypeService.getTypesByCategory(categoryId);
+  }
   if (!response.success) {
     throw new Error("Failed to fetch asset types");
   }
@@ -133,4 +162,17 @@ export async function fetchDepartments() {
     console.error("Failed to fetch departments:", error);
   }
   return [];
+}
+
+export async function fetchCategories() {
+  const response = await categoryTypeService.getCategories();
+  if (!response.success) {
+    throw new Error("Failed to fetch categories");
+  }
+  return (response.data || [])
+    .filter((cat) => cat && cat.id != null)
+    .map((cat) => ({
+      id: cat.id,
+      label: cat.categoryName || `Category ${cat.id}`,
+    }));
 }

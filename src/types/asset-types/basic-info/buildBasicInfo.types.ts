@@ -58,6 +58,16 @@ export interface BuildingOwnershipDetailsFormData {
   isMovableCategory?: boolean;
   parentBuildingId?: number | null;
   hasFloorDetails?: boolean;
+  isRented?: string;
+  leaseStartDate?: string;
+  leaseEndDate?: string;
+  leaseAmount?: string;
+  securityDeposit?: string;
+  paymentFrequency?: string;
+  lessorName?: string;
+  lessorMobile?: string;
+  lessorEmail?: string;
+  lessorAddress?: string;
 }
 
 // ─── Combined form model ──────────────────────────────────────────────────────
@@ -178,6 +188,16 @@ export const INITIAL_BUILDING_BASIC_INFO: BuildingBasicInfoFormData = {
   inChargeEmail: "",
   latitude: "",
   longitude: "",
+  isRented: "No",
+  leaseStartDate: "",
+  leaseEndDate: "",
+  leaseAmount: "",
+  securityDeposit: "",
+  paymentFrequency: "Monthly",
+  lessorName: "",
+  lessorMobile: "",
+  lessorEmail: "",
+  lessorAddress: "",
   // Dynamic attributes
   attributes: {},
   categoryId: 0,

@@ -24,7 +24,7 @@ export function StandaloneSubUnitStep({
   const t = useTranslations("addAssetForm");
   const { formData, updateFormData, setSubunitFiles, registerSubmitHook } = useAssetForm();
   const [isGenerating, setIsGenerating] = useState(false);
-  const initializedRef = useRef(false);
+  const initializedRef = useRef<string | null>(null);
 
   const parentBuildingId = formData.parentBuildingId;
   const parentBuildingData = formData.parentBuildingData;
@@ -47,7 +47,9 @@ export function StandaloneSubUnitStep({
 
   // Load and map initial sub-units from props
   useEffect(() => {
-    if (initializedRef.current) return;
+    const signature = `${initialSubUnits?.length ?? 0}|${(initialSubUnits?.[0] as any)?.assetId ?? (initialSubUnits?.[0] as any)?.id ?? ""}|${parentFloors?.length ?? 0}`;
+    if (initializedRef.current === signature) return;
+    initializedRef.current = signature;
 
     if (!initialSubUnits || initialSubUnits.length === 0) {
       // Only clear if there are no existing units in formData either (prevent clearing on back-nav)
@@ -55,7 +57,6 @@ export function StandaloneSubUnitStep({
       if (existingUnits.length === 0) {
         updateFormData({ unitDetails: [] });
       }
-      initializedRef.current = true;
       return;
     }
 
@@ -140,32 +141,64 @@ export function StandaloneSubUnitStep({
         depositType: rent.depositType || "Refundable",
       } : null;
 
-      const floorDetailsId = u.floorDetailsId ? Number(u.floorDetailsId) : null;
-      let resolvedFloorLevelId: number | null = null;
-      let conYear = "";
-      let conType = "";
-      let useType = "";
-      let subUseType = "";
+      // Resolve floorDetailsId and floor level ID from any of the standard names
+      let floorDetailsId = u.floorDetailsId ?? u.FloorDetailsId ?? null;
+      let resolvedFloorLevelId = u.floorId ?? u.FloorId ?? u.selectedFloorId ?? null;
 
-      if (floorDetailsId) {
-        const floorDetail = parentFloors.find((f: any) => Number(f.id) === floorDetailsId);
-        const floorLevelId = floorDetail?.floorId ? Number(floorDetail.floorId) : null;
-        resolvedFloorLevelId = floorLevelId;
-
+      // If we have floorDetailsId but not resolvedFloorLevelId, try to find it in parentFloors
+      if (floorDetailsId && !resolvedFloorLevelId) {
+        const floorDetail = parentFloors.find((f: any) => Number(f.id ?? f.Id) === Number(floorDetailsId));
         if (floorDetail) {
-          conYear = floorDetail.constructionYear || floorDetail.conYear || "";
-          conType = floorDetail.constructionTypeId ? String(floorDetail.constructionTypeId) : (floorDetail.conType ? String(floorDetail.conType) : "");
-          useType = floorDetail.typeOfUseId ? String(floorDetail.typeOfUseId) : (floorDetail.useType ? String(floorDetail.useType) : "");
-          subUseType = floorDetail.subTypeOfUseId ? String(floorDetail.subTypeOfUseId) : (floorDetail.subUseType ? String(floorDetail.subUseType) : "");
+          resolvedFloorLevelId = (floorDetail.floorId ?? floorDetail.FloorId) ? Number(floorDetail.floorId ?? floorDetail.FloorId) : null;
         }
       }
 
+      // If we have resolvedFloorLevelId but not floorDetailsId, try to find the matching floorDetail from parentFloors
+      if (resolvedFloorLevelId && !floorDetailsId) {
+        const floorDetail = parentFloors.find((f: any) => Number(f.floorId ?? f.FloorId) === Number(resolvedFloorLevelId));
+        if (floorDetail) {
+          floorDetailsId = Number(floorDetail.id ?? floorDetail.Id);
+        }
+      }
+
+      let conYear = u.conYear || "";
+      let conType = u.conType || "";
+      let useType = u.useType || "";
+      let subUseType = u.subUseType || "";
+
+      if (floorDetailsId) {
+        const floorDetail = parentFloors.find((f: any) => Number(f.id ?? f.Id) === Number(floorDetailsId));
+        if (floorDetail) {
+          if (!conYear) conYear = floorDetail.constructionYear || floorDetail.conYear || "";
+          if (!conType) conType = floorDetail.constructionTypeId ? String(floorDetail.constructionTypeId) : (floorDetail.conType ? String(floorDetail.conType) : "");
+          if (!useType) useType = floorDetail.typeOfUseId ? String(floorDetail.typeOfUseId) : (floorDetail.useType ? String(floorDetail.useType) : "");
+          if (!subUseType) subUseType = floorDetail.subTypeOfUseId ? String(floorDetail.subTypeOfUseId) : (floorDetail.subUseType ? String(floorDetail.subUseType) : "");
+        }
+      }
+
+      // Unit type: derive from AssetName or unit number code segment (FLAT, SHOP, OFFICE, ROOM, DEPT)
+      let unitType = "";
+      const numUpper = String(u.unitType || u.unitNo || u.shopUnitName || u.assetNo || u.assetCode || u.assetTypeName || u.assetName || u.name || "").toUpperCase();
+      if (numUpper.includes("FLAT")) unitType = "Flat";
+      else if (numUpper.includes("SHOP")) unitType = "Shop";
+      else if (numUpper.includes("OFFICE")) unitType = "Office";
+      else if (numUpper.includes("ROOM")) unitType = "Room";
+      else if (numUpper.includes("DEPARTMENT") || numUpper.includes("DEPT")) unitType = "Department";
+
+      if (!unitType) {
+        unitType = (u.unitType || "").trim();
+      }
+      if (!unitType && u.shopUnitName) {
+        unitType = (u.shopUnitName as string).split(" ")[0] || "Flat";
+      }
+      if (!unitType) unitType = "Flat";
+
       return {
         id: u.assetId || u.id,
-        subAssetId: u.unitNo || u.shopUnitName || `Unit-${u.id}`,
-        unitNumber: u.unitNo || "",
-        unitName: u.shopUnitName || `${u.unitType || "Unit"} ${u.unitNo || ""}`,
-        unitType: u.unitType || "Flat",
+        subAssetId: u.unitNo || u.shopUnitName || u.assetNo || u.assetCode || `Unit-${u.id}`,
+        unitNumber: u.unitNo || u.assetNo || u.assetCode || "",
+        unitName: u.shopUnitName || u.assetName || u.name || `${unitType} ${u.unitNo || u.assetNo || u.assetCode || ""}`,
+        unitType,
         carpetAreaSqFeet: u.totalAreaSqFt || 0,
         baseValue: u.calculatedCapitalValue || 0,
         status: "Active",
@@ -189,7 +222,7 @@ export function StandaloneSubUnitStep({
     });
 
     updateFormData({ unitDetails: mapped });
-    initializedRef.current = true;
+    initializedRef.current = signature;
   }, [initialSubUnits, parentFloors]);
 
   const handleGenerate = async () => {

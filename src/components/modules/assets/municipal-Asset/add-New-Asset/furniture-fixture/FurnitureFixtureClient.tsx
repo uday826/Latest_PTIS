@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useRef } from "react";
 import { Badge, Card, CardContent, DeleteButton, EditButton, MasterTable, SearchSelect } from "@/components/common";
-import { Package2, Image as ImageIcon, FileText } from "lucide-react";
+import { Package2, Image as ImageIcon, FileText, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { inventoryMeta, PAGE_SIZE, formatCurrency } from "./FurnitureFixtureConstants";
 import { InventoryFormSection } from "./InventoryFormSection";
 import { InventoryEditDrawer } from "./InventoryEditDrawer";
@@ -11,7 +11,6 @@ import { useFurnitureFixtureState } from "./useFurnitureFixtureState";
 import { InventoryCVGroupTable } from "./InventoryCVGroupTable";
 import type { InventoryItemCategory, InventoryItemCondition, InventoryItemName, InventoryItemModel } from "@/lib/api/asset/inventory.service";
 import type { InventoryBatchListResponse } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
-import { Loader2 } from "lucide-react";
 import { useAssetForm } from "../AssetFormContext";
 import { toast } from "sonner";
 import { calculateMovableCVAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
@@ -163,8 +162,49 @@ function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnail
 
 export default function FurnitureFixtureClient({ parentAssetId, categories = [], conditions = [], itemNames = [], itemModels = [], initialBatches = null }: Props): React.ReactElement {
   const t = useTranslations("addAssetForm");
+  const summaryScrollRef = useRef<HTMLDivElement>(null);
+
+  const [showLeftArrow, setShowLeftArrow] = React.useState(false);
+  const [showRightArrow, setShowRightArrow] = React.useState(false);
+
   // Pass parentAssetId to state hook for immediate save operations
   const s = useFurnitureFixtureState(categories, conditions, itemNames, itemModels, initialBatches, parentAssetId);
+
+  const checkScrollState = useCallback(() => {
+    const el = summaryScrollRef.current;
+    if (el) {
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      setShowLeftArrow(scrollLeft > 5);
+      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 5);
+    }
+  }, []);
+
+  useEffect(() => {
+    const el = summaryScrollRef.current;
+    if (el) {
+      // Small timeout to let DOM render
+      const timer = setTimeout(checkScrollState, 150);
+      el.addEventListener("scroll", checkScrollState);
+      window.addEventListener("resize", checkScrollState);
+      return () => {
+        clearTimeout(timer);
+        el.removeEventListener("scroll", checkScrollState);
+        window.removeEventListener("resize", checkScrollState);
+      };
+    }
+  }, [s.summaryCards, checkScrollState]);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (summaryScrollRef.current) {
+      const scrollAmount = 300;
+      summaryScrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+      // Re-check scroll state after scroll animation finishes
+      setTimeout(checkScrollState, 350);
+    }
+  };
   const { registerSubmitHook, formData } = useAssetForm();
 
   // Register the inventory save function so Save & Next can trigger it
@@ -235,30 +275,61 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
     <div>
       <div className="space-y-2 pb-1.5">
         <div className="sticky top-0 z-30 bg-slate-50/90 backdrop-blur-md -mt-3 pt-3 pb-2 space-y-2">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-            {s.summaryCards.map((card, index) => {
-              const normalizedType = card.type.toLowerCase().replace(/\s+/g, "-");
-              let textColorClass = "text-slate-700";
-              if (normalizedType === "furniture") textColorClass = "text-violet-700";
-              else if (normalizedType === "it-equipment") textColorClass = "text-blue-700";
-              else if (normalizedType === "electronic-fixtures") textColorClass = "text-emerald-700";
-              else if (normalizedType === "vehicle") textColorClass = "text-amber-700";
+          <div className="relative group/shelf">
+            <div
+              ref={summaryScrollRef}
+              className="flex flex-row flex-nowrap gap-2 overflow-x-auto scroll-smooth scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1 pr-12"
+            >
+              {s.summaryCards.map((card, index) => {
+                const normalizedType = card.type.toLowerCase().replace(/\s+/g, "-");
+                let textColorClass = "text-slate-700";
+                if (normalizedType === "furniture") textColorClass = "text-violet-700";
+                else if (normalizedType === "it-equipment") textColorClass = "text-blue-700";
+                else if (normalizedType === "electronic-fixtures") textColorClass = "text-emerald-700";
+                else if (normalizedType === "vehicle") textColorClass = "text-amber-700";
 
-              return (
-                <Card key={card.type} variant="bordered" padding="none" className={`rounded-xl border border-[#D8E3F1] bg-white shadow-sm ${card.cardRing}`}>
-                  <div className="px-3.5 py-3 min-w-0 w-full">
-                    <p className={`text-[10px] font-black uppercase tracking-wider truncate sm:text-xs ${textColorClass}`}>
-                      {String.fromCharCode(65 + index)}) {card.label}
-                    </p>
-                    <p className="mt-1.5 truncate text-base font-bold leading-none text-[#1D4ED8] sm:text-lg">
-                      {formatCurrencyCompact(card.totalAmount)}
-                    </p>
-                    <p className="mt-1.5 text-[10px] text-slate-500 leading-none">{t("floorDetails.totalCount", { count: card.totalItems })}</p>
-                  </div>
-                </Card>
-              );
-            })}
+                return (
+                  <Card key={card.type} variant="bordered" padding="none" className={`rounded-xl border border-[#D8E3F1] bg-white shadow-sm w-full sm:w-[calc(50%-8px)] md:w-[calc(33.333%-8px)] lg:w-[calc(20%-8px)] shrink-0 ${card.cardRing}`}>
+                    <div className="px-3.5 py-3 min-w-0 w-full">
+                      <p className={`text-[10px] font-black uppercase tracking-wider truncate sm:text-xs ${textColorClass}`}>
+                        {card.label}
+                      </p>
+                      <p className="mt-1.5 truncate text-base font-bold leading-none text-[#1D4ED8] sm:text-lg">
+                        {formatCurrencyCompact(card.totalAmount)}
+                      </p>
+                      <p className="mt-1.5 text-[11px] font-bold text-slate-600 leading-none">{t("inventory.totalItems", { count: card.totalItems })}</p>
+                    </div>
+                  </Card>
+                );
+              })}
+              <div className="w-16 shrink-0" />
+            </div>
+
+            {/* Floating Left Arrow */}
+            {showLeftArrow && (
+              <button
+                type="button"
+                onClick={() => scroll('left')}
+                className="absolute left-1 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full border border-[#1E40AF] bg-[#1E40AF] text-white hover:bg-[#1D4ED8] shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                title="Scroll Left"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Floating Right Arrow */}
+            {showRightArrow && (
+              <button
+                type="button"
+                onClick={() => scroll('right')}
+                className="absolute right-1 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full border border-[#1E40AF] bg-[#1E40AF] text-white hover:bg-[#1D4ED8] shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                title="Scroll Right"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
+
+            <div className="absolute top-0 right-0 bottom-1 w-16 bg-gradient-to-l from-slate-50/90 via-slate-50/40 to-transparent pointer-events-none z-10" />
           </div>
 
           {/* Add Form Card */}

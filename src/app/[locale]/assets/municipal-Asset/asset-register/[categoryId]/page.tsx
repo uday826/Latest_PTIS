@@ -9,6 +9,7 @@ import {
   fetchWards,
   fetchCategoryNameById,
   fetchDepartments,
+  fetchCategories,
 } from './action';
 
 export const dynamic = 'force-dynamic';
@@ -80,7 +81,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   const safeOwningDepartmentId = isValidFilterValue(rawOwningDepartmentId ?? 'all') ? (rawOwningDepartmentId ?? 'all') : 'all';
   const updatedDate = new Date().toLocaleDateString('en-GB');
 
-  const [categoryName, assetsResult, typesResult, zonesResult, wardsResult, departmentsResult] = await Promise.all([
+  const [categoryName, assetsResult, typesResult, zonesResult, wardsResult, departmentsResult, categoriesResult] = await Promise.all([
     fetchCategoryNameById(parsed),
     fetchAssetRegisterPage(
       parsed,
@@ -96,6 +97,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     fetchZones(),
     fetchWards(safeZoneId),
     fetchDepartments(),
+    fetchCategories(),
   ]);
 
   if (assetsResult.error) {
@@ -165,6 +167,7 @@ export default async function Page({ params, searchParams }: PageProps) {
       wardsResult={wardsResult}
       departmentsResult={departmentsResult}
       updatedDate={updatedDate}
+      categoryOptions={categoriesResult}
     />
   );
 }

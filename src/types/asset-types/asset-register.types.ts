@@ -53,6 +53,7 @@ export interface PagedAssetMasterResponse {
   totalMarketValue?: number;
   totalDepreciation?: number;
   netBookValue?: number;
+  totalCapitalValue?: number;
   activeAssetsCount?: number;
 }
 
@@ -119,6 +120,7 @@ export interface AssetRegisterHeaderSummaryProps {
   totalMarketValue: number;
   totalDepreciation: number;
   netBookValue: number;
+  totalCapitalValue: number;
   activeAssetsCount: number;
   translate: (key: string) => string;
 }

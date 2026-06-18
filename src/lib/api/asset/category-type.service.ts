@@ -13,7 +13,7 @@ export const categoryTypeService = {
    * Get all active Asset Categories
    */
   getCategories: async (): Promise<ApiResponse<AssetCategory[]>> => {
-    const response = await apiClient.get<{ items?: ApiCategoryItem[] } | ApiCategoryItem[]>("/AssetCategory?pageSize=1000", { cacheStrategy: 300 });
+    const response = await apiClient.get<{ items?: ApiCategoryItem[] } | ApiCategoryItem[]>("/AssetCategory?pageSize=-1", { cacheStrategy: 300 });
     if (response.success && response.data) {
       const data = response.data;
       let items = Array.isArray(data) ? data : (data.items || []);
@@ -31,7 +31,7 @@ export const categoryTypeService = {
    * Get all active Asset Types
    */
   getAllTypes: async (): Promise<ApiResponse<AssetType[]>> => {
-    const response = await apiClient.get<{ items?: ApiTypeItem[] } | ApiTypeItem[]>("/AssetType?pageSize=1000", { cacheStrategy: 300 });
+    const response = await apiClient.get<{ items?: ApiTypeItem[] } | ApiTypeItem[]>("/AssetType?pageSize=-1", { cacheStrategy: 300 });
     if (response.success && response.data) {
       const data = response.data;
       let items = Array.isArray(data) ? data : (data.items || []);

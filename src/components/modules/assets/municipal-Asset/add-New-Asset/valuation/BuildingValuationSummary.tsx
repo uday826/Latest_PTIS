@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import {
   DollarSign,
@@ -9,10 +10,15 @@ import {
   Laptop,
   Lightbulb,
   Car,
+  ChevronLeft,
   ChevronRight,
   Building,
   Package,
   Activity,
+  Smartphone,
+  FolderOpen,
+  Settings,
+  Hammer,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/common";
 
@@ -120,6 +126,71 @@ export function BuildingValuationSummary({
 }: BuildingValuationSummaryProps) {
   const t = useTranslations("addAssetForm");
 
+  const summaryScrollRef = useRef<HTMLDivElement>(null);
+  const detailScrollRef = useRef<HTMLDivElement>(null);
+
+  const [showSummaryLeft, setShowSummaryLeft] = useState(false);
+  const [showSummaryRight, setShowSummaryRight] = useState(false);
+  const [showDetailLeft, setShowDetailLeft] = useState(false);
+  const [showDetailRight, setShowDetailRight] = useState(false);
+
+  const checkSummaryScroll = useCallback(() => {
+    const el = summaryScrollRef.current;
+    if (el) {
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      setShowSummaryLeft(scrollLeft > 5);
+      setShowSummaryRight(scrollLeft + clientWidth < scrollWidth - 5);
+    }
+  }, []);
+
+  const checkDetailScroll = useCallback(() => {
+    const el = detailScrollRef.current;
+    if (el) {
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      setShowDetailLeft(scrollLeft > 5);
+      setShowDetailRight(scrollLeft + clientWidth < scrollWidth - 5);
+    }
+  }, []);
+
+  const scroll = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right', type: 'summary' | 'detail') => {
+    if (ref.current) {
+      const scrollAmount = 300;
+      ref.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+      setTimeout(type === 'summary' ? checkSummaryScroll : checkDetailScroll, 350);
+    }
+  };
+
+  useEffect(() => {
+    const el = summaryScrollRef.current;
+    if (el) {
+      const timer = setTimeout(checkSummaryScroll, 150);
+      el.addEventListener("scroll", checkSummaryScroll);
+      window.addEventListener("resize", checkSummaryScroll);
+      return () => {
+        clearTimeout(timer);
+        el.removeEventListener("scroll", checkSummaryScroll);
+        window.removeEventListener("resize", checkSummaryScroll);
+      };
+    }
+  }, [categories, rawInventories, floors, checkSummaryScroll]);
+
+  useEffect(() => {
+    const el = detailScrollRef.current;
+    if (el) {
+      const timer = setTimeout(checkDetailScroll, 150);
+      el.addEventListener("scroll", checkDetailScroll);
+      window.addEventListener("resize", checkDetailScroll);
+      return () => {
+        clearTimeout(timer);
+        el.removeEventListener("scroll", checkDetailScroll);
+        window.removeEventListener("resize", checkDetailScroll);
+      };
+    }
+  }, [categories, rawInventories, floors, checkDetailScroll]);
+
   // Primary source: totalBuildingCapitalValue from the /building/calculate-cv API response
   // This includes: building's own floor CVs + all child asset (flat/shop) CVs
   const cvFromAPI = Number(
@@ -171,12 +242,36 @@ export function BuildingValuationSummary({
     "vehicle": { icon: "🚗", color: "#FCD34D", bg: "#FEF3C7", textColor: "#92400E", highlightBg: "#FEF3C7", highlightBorder: "#FCD34D", highlightText: "#92400E" },
   };
 
-  const fallbackStyle = { icon: "📦", color: "#CBD5E1", bg: "#F1F5F9", textColor: "#475569", highlightBg: "#F8FAFC", highlightBorder: "#E2E8F0", highlightText: "#475569" };
+  const getCategoryStyle = (cleanName: string, key: string) => {
+    if (categoryStyles[key]) {
+      return {
+        ...categoryStyles[key],
+        iconComponent: key === "furniture" ? Armchair
+                     : key === "it-equipment" ? Laptop
+                     : key === "electronic-fixtures" ? Lightbulb
+                     : key === "vehicle" ? Car
+                     : Package
+      };
+    }
+    const colorPool = [
+      { icon: "📱", iconComponent: Smartphone, color: "#22D3EE", bg: "#CFFAFE", textColor: "#0E7490", highlightBg: "#CFFAFE", highlightBorder: "#22D3EE", highlightText: "#0E7490" }, // Cyan
+      { icon: "📁", iconComponent: FolderOpen, color: "#F472B6", bg: "#FCE7F3", textColor: "#BE185D", highlightBg: "#FCE7F3", highlightBorder: "#F472B6", highlightText: "#BE185D" }, // Pink
+      { icon: "⚙️", iconComponent: Settings, color: "#FB923C", bg: "#FFEDD5", textColor: "#C2410C", highlightBg: "#FFEDD5", highlightBorder: "#FB923C", highlightText: "#C2410C" }, // Orange
+      { icon: "🛠️", iconComponent: Hammer, color: "#F87171", bg: "#FEE2E2", textColor: "#B91C1C", highlightBg: "#FEE2E2", highlightBorder: "#F87171", highlightText: "#B91C1C" }, // Red
+    ];
+    let hash = 0;
+    for (let i = 0; i < cleanName.length; i++) {
+      hash = cleanName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const styleIndex = Math.abs(hash) % colorPool.length;
+    return colorPool[styleIndex];
+  };
 
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const dynamicCategoryCards = categories.map((cat, idx) => {
     let key = "furniture";
-    const nameLower = (cat.typeName || "").toLowerCase();
+    const cleanName = (cat.typeName || "").replace(/^[A-Z]\)\s*/i, "");
+    const nameLower = cleanName.toLowerCase();
     const codeLower = (cat.typeCode || "").toLowerCase();
     
     if (nameLower.includes("furniture") || nameLower.includes("furn") || codeLower.includes("fur")) {
@@ -191,7 +286,7 @@ export function BuildingValuationSummary({
       key = (cat.typeCode || cat.typeName || "").toLowerCase().replace(/[\s_]+/g, "-");
     }
 
-    const style = categoryStyles[key] || fallbackStyle;
+    const style = getCategoryStyle(cleanName, key);
     
     // Filter raw inventories belonging to this category
     const items = rawInventories.filter(item => {
@@ -208,17 +303,15 @@ export function BuildingValuationSummary({
     const totalQty = items.reduce((s, i) => s + Number(i.quantity ?? i.Quantity ?? 0), 0);
     const totalVal = items.reduce((s, i) => s + calculateItemCV(i, categories, conditions), 0);
 
-    const prefix = idx < alphabet.length ? alphabet[idx] : String(idx + 1);
-
     return {
-      title: `${style.icon} ${prefix}) ${cat.typeName}`,
+      title: `${style.icon} ${cleanName}`,
       color: style.color,
       bg: style.bg,
       textColor: style.textColor,
       rows: [
-        { label: t("valuation.inventory.countLabel", { category: cat.typeName }), value: t("valuation.inventory.itemsVal", { count: totalCount }) },
+        { label: t("valuation.inventory.countLabel", { category: cleanName }), value: t("valuation.inventory.itemsVal", { count: totalCount }) },
         { label: t("valuation.inventory.totalQty"), value: t("floorDetails.unitsCount", { count: totalQty }) },
-        { label: t("valuation.inventory.valueLabel", { category: cat.typeName }), value: `₹ ${fmt(totalVal)}`, highlight: true, highlightBg: style.highlightBg, highlightBorder: style.highlightBorder, highlightText: style.highlightText },
+        { label: t("valuation.inventory.valueLabel", { category: cleanName }), value: `₹ ${fmt(totalVal)}`, highlight: true, highlightBg: style.highlightBg, highlightBorder: style.highlightBorder, highlightText: style.highlightText },
       ]
     };
   });
@@ -237,7 +330,8 @@ export function BuildingValuationSummary({
 
   const dynamicSummaryCards = categories.map((cat, idx) => {
     let key = "furniture";
-    const nameLower = (cat.typeName || "").toLowerCase();
+    const cleanName = (cat.typeName || "").replace(/^[A-Z]\)\s*/i, "");
+    const nameLower = cleanName.toLowerCase();
     const codeLower = (cat.typeCode || "").toLowerCase();
     
     if (nameLower.includes("furniture") || nameLower.includes("furn") || codeLower.includes("fur")) {
@@ -252,13 +346,7 @@ export function BuildingValuationSummary({
       key = (cat.typeCode || cat.typeName || "").toLowerCase().replace(/[\s_]+/g, "-");
     }
 
-    const iconMap: Record<string, any> = {
-      "furniture": Package,
-      "it-equipment": Activity,
-      "electronic-fixtures": Activity,
-      "vehicle": Package,
-    };
-    const IconComponent = iconMap[key] || Package;
+    const style = getCategoryStyle(cleanName, key);
 
     // Filter raw inventories belonging to this category
     const items = rawInventories.filter(item => {
@@ -272,16 +360,14 @@ export function BuildingValuationSummary({
     });
 
     const totalVal = items.reduce((s, i) => s + calculateItemCV(i, categories, conditions), 0);
-    const prefix = idx < alphabet.length ? alphabet[idx] : String(idx + 1);
 
-    const style = categoryStyles[key] || fallbackStyle;
-    const title = `${style.icon} ${prefix}) ${cat.typeName}`;
+    const title = `${style.icon} ${cleanName}`;
 
     return {
       title,
       value: totalVal,
-      icon: IconComponent,
-      footer: `From ${cat.typeName} Inventory (${prefix})`
+      icon: style.iconComponent || Package,
+      footer: `From ${cleanName} Inventory`
     };
   });
 
@@ -290,7 +376,7 @@ export function BuildingValuationSummary({
       title: t("valuation.building.title"),
       value: buildingCapitalValue,
       icon: Building,
-      footer: "From Construction Details (C)",
+      footer: "From Construction Details",
     },
     ...dynamicSummaryCards
   ];
@@ -308,73 +394,104 @@ export function BuildingValuationSummary({
           <span>Final Asset Valuation Summary</span>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mt-4">
-          {summaryCardsData.map((card) => {
-            const IconComponent = card.icon;
-            return (
-              <Card
-                key={card.title}
-                variant="bordered"
-                padding="none"
-                className="p-2 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:scale-105 group"
-                style={{
-                  background: 'linear-gradient(135deg, #FFFFFF 0%, #F0F9FF 100%)',
-                  borderColor: '#BFDBFE',
-                  boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.15), 0 2px 4px -1px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(59, 130, 246, 0.2), 0 10px 10px -5px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9)';
-                  e.currentTarget.style.borderColor = '#93C5FD';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(59, 130, 246, 0.15), 0 2px 4px -1px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9)';
-                  e.currentTarget.style.borderColor = '#BFDBFE';
-                }}
-              >
-                <CardContent>
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <div
-                      className="p-1 rounded-md transition-all duration-300 group-hover:scale-110"
-                      style={{
-                        background: 'linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)',
-                        border: '1.5px solid #93C5FD',
-                        boxShadow: '0 1px 2px rgba(59, 130, 246, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.8)'
-                      }}
-                    >
-                      <IconComponent className="w-3.5 h-3.5" style={{ color: '#1E40AF' }} />
+        <div className="relative group/shelf">
+          <div 
+            ref={summaryScrollRef}
+            className="flex flex-row flex-nowrap gap-3 mt-4 overflow-x-auto scroll-smooth scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-2 pr-12"
+          >
+            {summaryCardsData.map((card) => {
+              const IconComponent = card.icon;
+              return (
+                <Card
+                  key={card.title}
+                  variant="bordered"
+                  padding="none"
+                  className="p-2 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:scale-105 group w-full sm:w-[calc(50%-9px)] md:w-[calc(33.333%-10px)] lg:w-[calc(20%-10px)] shrink-0"
+                  style={{
+                    background: 'linear-gradient(135deg, #FFFFFF 0%, #F0F9FF 100%)',
+                    borderColor: '#BFDBFE',
+                    boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.15), 0 2px 4px -1px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(59, 130, 246, 0.2), 0 10px 10px -5px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9)';
+                    e.currentTarget.style.borderColor = '#93C5FD';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(59, 130, 246, 0.15), 0 2px 4px -1px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9)';
+                    e.currentTarget.style.borderColor = '#BFDBFE';
+                  }}
+                >
+                  <CardContent>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <div
+                        className="p-1 rounded-md transition-all duration-300 group-hover:scale-110"
+                        style={{
+                          background: 'linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)',
+                          border: '1.5px solid #93C5FD',
+                          boxShadow: '0 1px 2px rgba(59, 130, 246, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.8)'
+                        }}
+                      >
+                        <IconComponent className="w-3.5 h-3.5" style={{ color: '#1E40AF' }} />
+                      </div>
+                      <h5
+                        className="text-xs font-bold truncate"
+                        style={{
+                          color: '#1E3A8A',
+                          textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
+                        }}
+                      >
+                        {card.title}
+                      </h5>
                     </div>
-                    <h5
-                      className="text-xs font-bold"
+                   
+                    <p
+                      className="text-lg font-bold mb-1 transition-all duration-300"
                       style={{
+                        fontFamily: 'monospace',
                         color: '#1E3A8A',
-                        textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
+                        textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)'
                       }}
                     >
-                      {card.title}
-                    </h5>
-                  </div>
-                 
-                  <p
-                    className="text-lg font-bold mb-1 transition-all duration-300"
-                    style={{
-                      fontFamily: 'monospace',
-                      color: '#1E3A8A',
-                      textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)'
-                    }}
-                  >
-                    ₹ {card.value.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </p>
-                 
-                  <div className="flex items-center justify-between pt-1 border-t border-blue-100">
-                    <p className="text-xs font-medium" style={{ color: '#60A5FA' }}>
-                      {card.footer}
+                      ₹ {card.value.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </p>
-                    <ChevronRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" style={{ color: '#60A5FA' }} />
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                   
+                    <div className="flex items-center justify-between pt-1 border-t border-blue-100">
+                      <p className="text-xs font-medium truncate" style={{ color: '#60A5FA' }}>
+                        {card.footer}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+            <div className="w-16 shrink-0" />
+          </div>
+
+          {/* Floating Left Arrow */}
+          {showSummaryLeft && (
+            <button
+              type="button"
+              onClick={() => scroll(summaryScrollRef, 'left', 'summary')}
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full border border-[#1E40AF] bg-[#1E40AF] text-white hover:bg-[#1D4ED8] shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              title="Scroll Left"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Floating Right Arrow */}
+          {showSummaryRight && (
+            <button
+              type="button"
+              onClick={() => scroll(summaryScrollRef, 'right', 'summary')}
+              className="absolute right-1 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full border border-[#1E40AF] bg-[#1E40AF] text-white hover:bg-[#1D4ED8] shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              title="Scroll Right"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
+
+          <div className="absolute top-0 right-0 bottom-2 w-16 bg-gradient-to-l from-slate-50/90 via-slate-50/40 to-transparent pointer-events-none z-10" />
         </div>
       </div>
 
@@ -383,33 +500,66 @@ export function BuildingValuationSummary({
       {/* Detail Cards */}
       <div className="mb-3">
         <h4 className="text-base font-bold mb-3" style={{ color: "#1E40AF" }}>{t("valuation.breakdown.title")}</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
-          {detailCards.map((card) => (
-            <div key={card.title} className="p-3 bg-white rounded-lg border shadow-md hover:shadow-lg transition-shadow duration-300" style={{ borderColor: card.color }}>
-              <div className="rounded-lg py-1.5 px-2.5 mb-3 flex items-center gap-2" style={{ backgroundColor: card.bg, borderLeft: `4px solid ${card.color}` }}>
-                <h4 className="text-xs font-bold" style={{ color: card.textColor }}>{card.title}</h4>
-              </div>
-              <div className="space-y-2">
-                {card.rows.map((row) =>
-                  row.highlight ? (
-                    <div key={row.label} className="p-2 rounded-lg border" style={{ backgroundColor: row.highlightBg, borderColor: row.highlightBorder }}>
-                      <p className="text-xs mb-1 flex items-center gap-1 font-semibold" style={{ color: row.highlightText }}>
-                        <DollarSign className="w-3.5 h-3.5" />{row.label}
-                      </p>
-                      <p className="text-lg font-bold" style={{ fontFamily: "monospace", color: row.highlightText }}>{row.value}</p>
-                    </div>
-                  ) : (
-                    <div key={row.label} className="p-2 rounded-lg bg-gray-50 border border-gray-200">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs text-gray-600">{row.label}</p>
+
+        <div className="relative group/shelf">
+          <div 
+            ref={detailScrollRef}
+            className="flex flex-row flex-nowrap gap-2.5 overflow-x-auto scroll-smooth scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-2 pr-12"
+          >
+            {detailCards.map((card) => (
+              <div key={card.title} className="p-3 bg-white rounded-lg border shadow-md hover:shadow-lg transition-shadow duration-300 w-full md:w-[calc(33.333%-7px)] lg:w-[calc(20%-8px)] shrink-0" style={{ borderColor: card.color }}>
+                <div className="rounded-lg py-1.5 px-2.5 mb-3 flex items-center gap-2" style={{ backgroundColor: card.bg, borderLeft: `4px solid ${card.color}` }}>
+                  <h4 className="text-xs font-bold truncate" style={{ color: card.textColor }}>{card.title}</h4>
+                </div>
+                <div className="space-y-2">
+                  {card.rows.map((row) =>
+                    row.highlight ? (
+                      <div key={row.label} className="p-2 rounded-lg border" style={{ backgroundColor: row.highlightBg, borderColor: row.highlightBorder }}>
+                        <p className="text-xs mb-1 flex items-center gap-1 font-semibold truncate" style={{ color: row.highlightText }}>
+                          <DollarSign className="w-3.5 h-3.5" />{row.label}
+                        </p>
+                        <p className="text-lg font-bold" style={{ fontFamily: "monospace", color: row.highlightText }}>{row.value}</p>
                       </div>
-                      <p className="text-sm font-bold" style={{ color: "#374151" }}>{row.value}</p>
-                    </div>
-                  )
-                )}
+                    ) : (
+                      <div key={row.label} className="p-2 rounded-lg bg-gray-50 border border-gray-200">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-xs text-gray-600 truncate">{row.label}</p>
+                        </div>
+                        <p className="text-sm font-bold" style={{ color: "#374151" }}>{row.value}</p>
+                      </div>
+                    )
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+            <div className="w-16 shrink-0" />
+          </div>
+
+          {/* Floating Left Arrow */}
+          {showDetailLeft && (
+            <button
+              type="button"
+              onClick={() => scroll(detailScrollRef, 'left', 'detail')}
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full border border-[#1E40AF] bg-[#1E40AF] text-white hover:bg-[#1D4ED8] shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              title="Scroll Left"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Floating Right Arrow */}
+          {showDetailRight && (
+            <button
+              type="button"
+              onClick={() => scroll(detailScrollRef, 'right', 'detail')}
+              className="absolute right-1 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full border border-[#1E40AF] bg-[#1E40AF] text-white hover:bg-[#1D4ED8] shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              title="Scroll Right"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
+
+          <div className="absolute top-0 right-0 bottom-2 w-16 bg-gradient-to-l from-slate-50/90 via-slate-50/40 to-transparent pointer-events-none z-10" />
         </div>
       </div>
 
