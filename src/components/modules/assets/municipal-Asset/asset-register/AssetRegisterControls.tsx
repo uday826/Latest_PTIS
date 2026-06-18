@@ -16,6 +16,7 @@ export function AssetRegisterControls({
   zoneOptions,
   wardOptions,
   owningDepartmentOptions,
+  categoryOptions,
 }: AssetRegisterControlsProps) {
   return (
     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -29,6 +30,8 @@ export function AssetRegisterControls({
         zoneOptions={zoneOptions}
         wardOptions={wardOptions}
         owningDepartmentOptions={owningDepartmentOptions}
+        categoryId={categoryId}
+        categoryOptions={categoryOptions}
       />
       <AssetRegisterExportButton
         categoryId={categoryId}

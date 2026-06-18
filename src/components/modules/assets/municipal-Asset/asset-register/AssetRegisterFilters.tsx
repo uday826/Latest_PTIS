@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
 import {
@@ -22,9 +22,14 @@ export function AssetRegisterFilters({
   zoneOptions,
   wardOptions,
   owningDepartmentOptions,
+  categoryId,
+  categoryOptions = [],
 }: AssetRegisterFiltersProps) {
   const t = useTranslations('assetRegister');
   const { updateQueries } = useQueryTransition();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [searchValue, setSearchValue] = useState(search);
   const debouncedSearch = useDebounce(searchValue, 500);
@@ -67,6 +72,25 @@ export function AssetRegisterFilters({
     updateQueries({ owningDepartmentId: newDept === 'all' ? null : newDept, page: '1' });
   };
 
+  const handleAssetCategoryChange = (newCategory: string) => {
+    const segments = pathname.split('/').filter(Boolean);
+    const locale = segments[0] || 'en';
+    
+    let newPath = `/${locale}/assets/municipal-Asset/asset-register`;
+    if (newCategory !== 'all') {
+      newPath += `/${newCategory}`;
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('assetTypeId');
+    params.delete('page');
+
+    const queryString = params.toString();
+    const nextUrl = queryString ? `${newPath}?${queryString}` : newPath;
+
+    router.push(nextUrl, { scroll: false });
+  };
+
   return (
     <div className="flex w-full flex-col gap-3 overflow-visible xl:flex-row xl:items-center xl:justify-between xl:gap-4">
       <div className="w-full xl:max-w-[320px]">
@@ -80,6 +104,20 @@ export function AssetRegisterFilters({
       </div>
 
       <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center xl:w-auto xl:flex-nowrap xl:justify-end">
+        {categoryOptions.length > 0 && (
+          <div className="w-full sm:w-57.5">
+            <SearchSelect
+              name="assetCategory"
+              label=""
+              options={categoryOptions}
+              value={categoryId ? String(categoryId) : 'all'}
+              onChange={(_, value) => handleAssetCategoryChange(value)}
+              placeholder={t('All_Asset_Categories') || 'All Asset Categories'}
+              className="w-full"
+            />
+          </div>
+        )}
+
         <div className="w-full sm:w-57.5">
           <SearchSelect
             name="assetType"
@@ -127,7 +165,6 @@ export function AssetRegisterFilters({
             className="w-full"
           />
         </div>
-
       </div>
     </div>
   );

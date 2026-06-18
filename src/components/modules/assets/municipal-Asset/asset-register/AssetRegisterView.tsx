@@ -26,6 +26,7 @@ export async function AssetRegisterView({
   wardsResult,
   departmentsResult,
   updatedDate,
+  categoryOptions = [],
 }: AssetRegisterViewProps) {
   const t = await getTranslations({ locale, namespace: 'assetRegister' });
 
@@ -54,6 +55,11 @@ export async function AssetRegisterView({
     { label: t('All_Departments') || 'All Departments', value: 'all' },
     ...departmentsResult.map((dept) => ({ label: dept.label, value: String(dept.id) })),
   ];
+
+  const mappedCategoryOptions = categoryOptions.length > 0 ? [
+    { label: t('All_Asset_Categories') || 'All Asset Categories', value: 'all' },
+    ...categoryOptions.map((cat) => ({ label: cat.label, value: String(cat.id) })),
+  ] : [];
 
   const resolvedCategoryName = categoryName || (t('Asset_Register') || 'Asset Register');
   const registerSubtitle = categoryName
@@ -108,6 +114,7 @@ export async function AssetRegisterView({
               zoneOptions={zoneOptions}
               wardOptions={wardOptions}
               owningDepartmentOptions={owningDepartmentOptions}
+              categoryOptions={mappedCategoryOptions}
             />
           </CardContent>
         </Card>
