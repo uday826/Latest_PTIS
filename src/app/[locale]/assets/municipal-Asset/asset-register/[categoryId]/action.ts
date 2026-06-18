@@ -54,6 +54,7 @@ export async function fetchAssetRegisterPage(
       totalMarketValue: data.totalMarketValue || 0,
       totalDepreciation: data.totalDepreciation || 0,
       netBookValue: data.netBookValue || 0,
+      totalCapitalValue: data.totalCapitalValue || 0,
       activeAssetsCount: data.activeAssetsCount || 0,
       error: null,
     };

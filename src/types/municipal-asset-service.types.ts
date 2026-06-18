@@ -163,6 +163,7 @@ export interface AssetRegisterPageResult {
   totalMarketValue?: number;
   totalDepreciation?: number;
   netBookValue?: number;
+  totalCapitalValue?: number;
   activeAssetsCount?: number;
   error?: string | null;
 }

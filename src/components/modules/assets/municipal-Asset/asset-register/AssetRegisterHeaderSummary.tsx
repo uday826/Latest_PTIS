@@ -7,7 +7,7 @@ export function AssetRegisterHeaderSummary({
   registerSubtitle,
   updatedDate,
   totalCount,
-  netBookValue,
+  totalCapitalValue,
   activeAssetsCount,
   translate,
 }: AssetRegisterHeaderSummaryProps) {
@@ -34,7 +34,7 @@ export function AssetRegisterHeaderSummary({
         />
         <DashboardCard
           label={translate('Capital_Value') || 'Capital Value'}
-          value={`\u20B9${netBookValue.toLocaleString('en-IN')}`}
+          value={`\u20B9${totalCapitalValue.toLocaleString('en-IN')}`}
           valueColor="text-emerald-600"
           icon={<Coins className="h-5 w-5" />}
           iconBg="bg-emerald-50 text-emerald-600 border-emerald-100"

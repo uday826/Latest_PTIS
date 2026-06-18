@@ -81,6 +81,7 @@ export async function AssetRegisterView({
             totalMarketValue={assetsResult.totalMarketValue ?? 0}
             totalDepreciation={assetsResult.totalDepreciation ?? 0}
             netBookValue={assetsResult.netBookValue ?? 0}
+            totalCapitalValue={assetsResult.totalCapitalValue ?? 0}
             activeAssetsCount={assetsResult.activeAssetsCount ?? 0}
             translate={t}
           />
