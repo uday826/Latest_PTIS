@@ -69,12 +69,17 @@ export async function AssetRegisterView({
   return (
     <div className="min-h-[calc(100vh-120px)] bg-slate-50/80 p-2 font-sans">
       <div className="mx-auto flex w-full max-w-437.5 flex-col gap-2.5">
-        <Card variant="elevated" className="overflow-hidden border-0 bg-white shadow-sm">
-          <div className="bg-[#0e315d] px-4 py-3 text-white">
-            <div className="flex items-center gap-2.5">
+        <Card variant="bordered" padding="none" className="overflow-hidden border-slate-200/80 bg-white shadow-sm rounded-t-xl">
+          <div className="border-b border-slate-200 p-4">
+            <div className="flex items-center gap-4">
               <AssetRegisterBackButton />
-              <div>
-                <h1 className="text-[20px] font-extrabold leading-none">{resolvedCategoryName}</h1>
+              <div className="min-w-0">
+                <h1 className="truncate text-lg font-bold leading-tight text-slate-900">
+                  {t('MUNICIPAL_CORPORATION_ASSET_REGISTER')}
+                </h1>
+                <p className="truncate text-sm font-medium text-blue-500">
+                  {resolvedCategoryName}
+                </p>
               </div>
             </div>
           </div>

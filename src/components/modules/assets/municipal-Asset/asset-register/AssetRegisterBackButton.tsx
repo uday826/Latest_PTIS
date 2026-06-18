@@ -14,9 +14,8 @@ export function AssetRegisterBackButton() {
       onClick={() => router.back()}
       variant="ghost"
       size="sm"
-      className="h-8 w-8 border border-white/15 bg-transparent px-0 text-white hover:bg-white/10"
     >
-      <ArrowLeft className="h-4 w-4" />
+      <ArrowLeft className="h-5 w-5" />
     </Button>
   );
 }
