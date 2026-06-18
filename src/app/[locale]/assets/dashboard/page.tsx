@@ -1,53 +1,12 @@
+import { redirect } from 'next/navigation';
 
+interface PageProps {
+    params: Promise<{
+        locale: string;
+    }>;
+}
 
-/**
- * Asset Dashboard Page
- * 
- * IMPORTANT: This page displays AssetIntroVideo component before the dashboard.
- * - Video plays once per session (tracked via sessionStorage: 'ntis_asset_management_intro_played')
- * - To test video again: Open browser console and run: sessionStorage.removeItem('ntis_asset_management_intro_played')
- * - Check browser console for video debugging logs
- * - Video ONLY plays when navigating to Asset Management from home page
- */
-
-import { fetchDashboardDataAction } from '@/app/[locale]/assets/dashboard/master-dashboard/actions';
-import { AssetMasterDashboard } from '@/components/modules/assets/dashboard/master-dashboard/AssetMasterDashboard';
-import { authService } from '@/lib/api/auth.service';
-import { cookies } from 'next/headers';
-
-export default async function AssetDashboardPage() {
-    const cookieStore = await cookies();
-    let districtName = cookieStore.get('ulb_name')?.value || '';
-
-    // Fetch initial data concurrently on the server
-    const [dashboardRes, ulbRes] = await Promise.all([
-        fetchDashboardDataAction(),
-        districtName ? Promise.resolve(null) : authService.getUlbConfig().catch(() => null),
-    ]);
-
-    if (!districtName && ulbRes && ulbRes.success && ulbRes.data?.ulbName) {
-        districtName = ulbRes.data.ulbName;
-    }
-
-    // Dynamic clean-up (e.g. "Akola Municipal Corporation" -> "Akola")
-    if (districtName) {
-        districtName = districtName.replace(/\s+(Municipal\s+Corporation|Council|ULB|Corporation)$/i, '').trim();
-    } else {
-        districtName = ''; // ULB name unavailable; let the component render a generic label
-    }
-
-    const initialDashboardData = dashboardRes.success ? dashboardRes.data : undefined;
-
-    return (
-        <>
-            <div className="p-2 bg-slate-50/50 overflow-y-auto custom-scrollbar">
-                <div className="mx-auto w-full max-w-[99%]">
-                    <AssetMasterDashboard
-                        initialDashboardData={initialDashboardData}
-                        selectedDistrict={districtName}
-                    />
-                </div>
-            </div>
-        </>
-    );
+export default async function AssetRevenueDashboardRootPage({ params }: PageProps) {
+    const { locale } = await params;
+    redirect(`/${locale}/assets/dashboard/master-dashboard`);
 }
