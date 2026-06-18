@@ -31,12 +31,14 @@ export default async function FurnitureFixturesInventoryPage({ searchParams }: P
             ? getInventoryBatchesAction(parentAssetId)
             : Promise.resolve(null);
 
-        // Fetch sequentially to prevent overloading the backend with 5 simultaneous requests
-        const catRes = await inventoryService.getCategories();
-        const condRes = await inventoryService.getConditions();
-        const namesRes = await inventoryService.getItemNames();
-        const modelsRes = await inventoryService.getItemModels();
-        const batchesRes = await batchesPromise;
+        // Fetch concurrently to minimize SSR TTFB (Time to First Byte)
+        const [catRes, condRes, namesRes, modelsRes, batchesRes] = await Promise.all([
+            inventoryService.getCategories(),
+            inventoryService.getConditions(),
+            inventoryService.getItemNames(),
+            inventoryService.getItemModels(),
+            batchesPromise
+        ]);
 
         const filterActive = (data: any) => Array.isArray(data) ? data.filter((item: any) => 
             item.isActive !== false && item.isActive !== 0 && 

@@ -58,6 +58,18 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
     router.push(`/${locale}/assets/municipal-Asset`);
   };
 
+  const isRootDrawer = pathname.endsWith('/add-New-Asset') || pathname.endsWith('/add-New-Asset/');
+
+  if (isRootDrawer) {
+    return (
+      <div className="flex flex-col h-full bg-slate-50/50 overflow-hidden">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {children}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full bg-slate-50/50 overflow-hidden">
       {/* Stepper container */}

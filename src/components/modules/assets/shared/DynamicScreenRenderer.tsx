@@ -12,12 +12,35 @@ import {
 } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { toast } from 'sonner';
-import { ConfigurationService } from '@/services/asset/configuration.service';
+import { submitAssetForm } from '@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions';
 import { ScreenConfig, ScreenField } from '@/types/asset.types';
 
 interface DynamicScreenRendererProps {
   config: ScreenConfig;
 }
+
+// Optimization: Decouple typing state from main component to prevent deep re-renders on every keystroke
+const DebouncedInput = React.memo(({ value, onChange, ...props }: any) => {
+  const [localVal, setLocalVal] = useState(value);
+  
+  React.useEffect(() => { setLocalVal(value); }, [value]);
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setLocalVal(e.target.value);
+  const handleBlur = () => { if (localVal !== value) onChange(localVal); };
+  
+  return <Input {...props} value={localVal} onChange={handleChange} onBlur={handleBlur} />;
+});
+
+const DebouncedTextArea = React.memo(({ value, onChange, ...props }: any) => {
+  const [localVal, setLocalVal] = useState(value);
+  
+  React.useEffect(() => { setLocalVal(value); }, [value]);
+  
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setLocalVal(e.target.value);
+  const handleBlur = () => { if (localVal !== value) onChange(localVal); };
+  
+  return <TextArea {...props} value={localVal} onChange={handleChange} onBlur={handleBlur} />;
+});
 
 export function DynamicScreenRenderer({ config }: DynamicScreenRendererProps) {
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -47,8 +70,12 @@ export function DynamicScreenRenderer({ config }: DynamicScreenRendererProps) {
     // ── Submit to backend ──────────────────────────────────────────────────
     setIsSaving(true);
     try {
-      const result = await ConfigurationService.saveAssetMaster(formData);
-      const action = result?.updated ? 'updated' : 'saved';
+      const result = await submitAssetForm(formData as any);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save asset');
+      }
+      
+      const action = formData.id ? 'updated' : 'saved';
       toast.success(`${config.screenName} ${action} successfully!`);
       // Reset form after successful save
       setFormData({});
@@ -59,14 +86,12 @@ export function DynamicScreenRenderer({ config }: DynamicScreenRendererProps) {
     }
   }, [formData, config]);
 
-  const renderField = (field: ScreenField) => {
+  const renderField = useCallback((field: ScreenField) => {
     if (!field.isActive) return null;
 
     const commonProps = {
       id: field.id,
       placeholder: field.placeholder,
-      value: formData[field.fieldName] || '',
-      onChange: (e: any) => handleInputChange(field.fieldName, e.target?.value ?? e),
       required: field.required,
       className: "w-full"
     };
@@ -75,16 +100,44 @@ export function DynamicScreenRenderer({ config }: DynamicScreenRendererProps) {
       case 'text':
       case 'email':
       case 'phone':
-        return <Input {...commonProps} type={field.fieldType} />;
+        return (
+          <DebouncedInput 
+            {...commonProps} 
+            type={field.fieldType} 
+            value={formData[field.fieldName] || ''}
+            onChange={(val: string) => handleInputChange(field.fieldName, val)}
+          />
+        );
 
       case 'number':
-        return <Input {...commonProps} type="number" />;
+        return (
+          <DebouncedInput 
+            {...commonProps} 
+            type="number" 
+            value={formData[field.fieldName] || ''}
+            onChange={(val: string) => handleInputChange(field.fieldName, val)}
+          />
+        );
 
       case 'date':
-        return <Input {...commonProps} type="date" />;
+        return (
+          <DebouncedInput 
+            {...commonProps} 
+            type="date" 
+            value={formData[field.fieldName] || ''}
+            onChange={(val: string) => handleInputChange(field.fieldName, val)}
+          />
+        );
 
       case 'textarea':
-        return <TextArea {...commonProps} rows={3} />;
+        return (
+          <DebouncedTextArea 
+            {...commonProps} 
+            rows={3} 
+            value={formData[field.fieldName] || ''}
+            onChange={(val: string) => handleInputChange(field.fieldName, val)}
+          />
+        );
 
       case 'select':
       case 'dropdown':
@@ -110,9 +163,15 @@ export function DynamicScreenRenderer({ config }: DynamicScreenRendererProps) {
         );
 
       default:
-        return <Input {...commonProps} />;
+        return (
+          <DebouncedInput 
+            {...commonProps} 
+            value={formData[field.fieldName] || ''}
+            onChange={(val: string) => handleInputChange(field.fieldName, val)}
+          />
+        );
     }
-  };
+  }, [formData, handleInputChange]);
 
   // Count filled fields for progress indication
   const allActiveFields = config.sections

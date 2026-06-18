@@ -22,4 +22,11 @@ export const assetFieldValueService = {
   saveFieldValue: async (data: AssetFieldValueSaveRequest): Promise<ApiResponse<any>> => {
     return apiClient.post<any>("/AssetFieldValue", data);
   },
+
+  /**
+   * Bulk save dynamic field values for an asset, eliminating N+1 API calls.
+   */
+  saveBulkFieldValues: async (assetId: number, data: AssetFieldValueSaveRequest[]): Promise<ApiResponse<any>> => {
+    return apiClient.post<any>(`/AssetMaster/${assetId}/field-values/bulk`, data);
+  },
 };

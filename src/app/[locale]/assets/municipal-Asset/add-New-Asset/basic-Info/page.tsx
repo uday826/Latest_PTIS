@@ -37,16 +37,19 @@ export default async function BuildingBasicInfoPage({
   let useTypes: any[] = [];
 
   try {
-    // Fetch sequentially to prevent overloading the backend with 7 simultaneous requests
-    const wardsRes = await getCachedWards();
-    const zonesRes = await getCachedZones();
-    const departmentsRes = await getCachedDepartments();
-    const moujasRes = await getCachedMoujas();
+    // Fetch CONCURRENTLY to prevent overloading the backend latency-wise
+    const [wardsRes, zonesRes, departmentsRes, moujasRes, subzonesRes, ownershipRes] = await Promise.all([
+      getCachedWards(),
+      getCachedZones(),
+      getCachedDepartments(),
+      getCachedMoujas(),
+      zoneService.getSubZones(),
+      getCachedOwnershipTypes()
+    ]);
+
     const fieldsRes = categoryId > 0 && typeId > 0
         ? await fetchBuildingFieldDefinitions(categoryId, typeId)
         : { success: false as const, error: "Missing ids", data: [] };
-    const subzonesRes = await zoneService.getSubZones();
-    const ownershipRes = await getCachedOwnershipTypes();
     
     let useTypesRes: any = null;
     try {
@@ -55,10 +58,10 @@ export default async function BuildingBasicInfoPage({
       console.error("Failed to fetch use types in server component:", utErr);
     }
 
-    if (wardsRes.success && Array.isArray(wardsRes.data)) {
+    if (wardsRes?.success && Array.isArray(wardsRes.data)) {
       wards = wardsRes.data;
     }
-    if (zonesRes.success && Array.isArray(zonesRes.data)) {
+    if (zonesRes?.success && Array.isArray(zonesRes.data)) {
       zones = zonesRes.data;
     }
     if (departmentsRes.success && Array.isArray(departmentsRes.data)) {

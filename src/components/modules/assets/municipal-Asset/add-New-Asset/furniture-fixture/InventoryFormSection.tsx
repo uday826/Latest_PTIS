@@ -23,6 +23,20 @@ interface InventoryFormSectionProps {
   isSaving: boolean;
 }
 
+const DebouncedInput = React.memo(({ value, onChange, ...props }: any) => {
+  const [localVal, setLocalVal] = React.useState(value);
+  
+  React.useEffect(() => { setLocalVal(value); }, [value]);
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setLocalVal(e.target.value);
+  const handleBlur = () => { if (localVal !== value) onChange({ target: { value: localVal } } as any); };
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (props.onKeyDown) props.onKeyDown(e);
+  };
+  
+  return <Input {...props} value={localVal} onChange={handleChange} onBlur={handleBlur} onKeyDown={handleKeyDown} />;
+});
+
 export function InventoryFormSection({
   form,
   updateForm,
@@ -107,11 +121,11 @@ export function InventoryFormSection({
           required={true}
         />
 
-        <Input
+        <DebouncedInput
           label={addLabels.specifications}
           placeholder={addSpecsPlaceholder}
           value={form.specifications}
-          onChange={(event) => updateForm("specifications", event.target.value)}
+          onChange={(event: any) => updateForm("specifications", event.target.value)}
           fullWidth={true}
         />
 
@@ -142,13 +156,13 @@ export function InventoryFormSection({
           required={true}
         />
 
-        <Input
+        <DebouncedInput
           label={t("inventory.columns.quantity")}
           type="number"
           min={1}
           value={form.quantity}
-          onChange={(event) => updateForm("quantity", event.target.value)}
-          onKeyDown={(e) => {
+          onChange={(event: any) => updateForm("quantity", event.target.value)}
+          onKeyDown={(e: any) => {
             if (["e", "E", "+", "-", "."].includes(e.key)) {
               e.preventDefault();
             }
@@ -157,13 +171,13 @@ export function InventoryFormSection({
           fullWidth={true}
         />
 
-        <Input
+        <DebouncedInput
           label={t("inventory.columns.unitValue")}
           type="number"
           min={0}
           value={form.unitValue}
-          onChange={(event) => updateForm("unitValue", event.target.value)}
-          onKeyDown={(e) => {
+          onChange={(event: any) => updateForm("unitValue", event.target.value)}
+          onKeyDown={(e: any) => {
             if (["e", "E", "+", "-"].includes(e.key)) {
               e.preventDefault();
             }
