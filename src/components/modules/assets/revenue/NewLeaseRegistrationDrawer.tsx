@@ -559,7 +559,8 @@ function RenderField({
     }
 
     if (field.key === 'tenantName' || field.key === 'existingTenantName' || field.key === 'newTenantDetails') {
-      setValue(nextValue.replace(/[^a-zA-Z\s]/g, ''));
+      const compressed = nextValue.replace(/\s+/g, ' ');
+      setValue(compressed.replace(/[^\p{L}\p{M}\s]/gu, ''));
       return;
     }
 
@@ -568,7 +569,22 @@ function RenderField({
       return;
     }
 
-    if (field.key === 'residentialAddress' || field.key === 'shopNo' || field.key === 'shopName' || field.key === 'remarksDescription' || field.key === 'reasonForRenewal' || field.key === 'reasonForTransfer' || field.key === 'reasonForTermination') {
+    if (
+      field.key === 'residentialAddress' ||
+      field.key === 'remarksDescription' ||
+      field.key === 'reasonForRenewal' ||
+      field.key === 'reasonForTransfer' ||
+      field.key === 'reasonForTermination'
+    ) {
+      let compressed = nextValue.replace(/\s+/g, ' ');
+      compressed = compressed.replace(/-+/g, '-');
+      compressed = compressed.replace(/\s+-/g, '-');
+      compressed = compressed.replace(/-\s+/g, '-');
+      setValue(compressed.replace(/[<>]/g, ''));
+      return;
+    }
+
+    if (field.key === 'shopNo' || field.key === 'shopName') {
       setValue(nextValue.replace(/[<>]/g, ''));
       return;
     }
