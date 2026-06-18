@@ -16,6 +16,7 @@ interface Props {
   onPageSizeChange: (size: number) => void;
   onActionClick?: (record: ApprovalRecord) => void;
   onRejectClick?: (record: ApprovalRecord) => void;
+  headerExtra?: React.ReactNode;
 }
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
@@ -31,6 +32,7 @@ export function LeaseRentApprovalTable({
   onPageSizeChange,
   onActionClick,
   onRejectClick,
+  headerExtra,
 }: Props) {
   const t = useTranslations('revenueManagement');
 
@@ -94,12 +96,11 @@ export function LeaseRentApprovalTable({
       loading={false}
       getRowKey={(row, idx) => `${row.id}-${idx}`}
       emptyText={t('tables.emptyApproval')}
-      headerTitle={t('tables.titleApproval')}
-      headerSubtitle={t('tables.subtitleApproval')}
-      tableClassName="min-w-full table-auto text-[11px]"
+      headerExtra={headerExtra}
+      tableClassName="min-w-full table-auto text-sm"
       maxBodyHeightClassName="max-h-[calc(100vh-440px)]"
       containerClassName="overflow-hidden"
-      theadClassName="[&_th]:!px-2 [&_th]:!py-2 [&_th]:!text-[11px]"
+      theadClassName="[&_th]:!px-2 [&_th]:!py-2 [&_th]:!text-sm"
       pageNumber={pageNumber}
       pageSize={pageSize}
       totalCount={totalCount}

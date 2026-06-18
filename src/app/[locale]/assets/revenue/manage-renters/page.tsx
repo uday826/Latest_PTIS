@@ -1,5 +1,4 @@
 import { LeaseRentRegistration } from '@/components/modules/assets/revenue/LeaseRentRegistration';
-import { LeaseRentStats } from '@/components/modules/assets/revenue/LeaseRentStats';
 import {
   getManageRentersAssetDetailsAction,
   getManageRentersPageDataAction,
@@ -59,7 +58,6 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
 
   return (
     <div className="space-y-4">
-      <LeaseRentStats stats={data.stats} />
       <LeaseRentRegistration
         key={[
           data.pageNumber,

@@ -15,6 +15,7 @@ interface Props {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   onActionClick?: (record: VerificationRecord) => void;
+  headerExtra?: React.ReactNode;
 }
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
@@ -29,6 +30,7 @@ export function LeaseRentVerificationTable({
   onPageChange,
   onPageSizeChange,
   onActionClick,
+  headerExtra,
 }: Props) {
   const t = useTranslations('revenueManagement');
 
@@ -86,12 +88,11 @@ export function LeaseRentVerificationTable({
       loading={false}
       getRowKey={(row, idx) => `${row.id}-${idx}`}
       emptyText={t('tables.emptyVerification')}
-      headerTitle={t('tables.titleVerification')}
-      headerSubtitle={t('tables.subtitleVerification')}
-      tableClassName="min-w-full table-auto text-[11px]"
+      headerExtra={headerExtra}
+      tableClassName="min-w-full table-auto text-sm"
       maxBodyHeightClassName="max-h-[calc(100vh-440px)]"
       containerClassName="overflow-hidden"
-      theadClassName="[&_th]:!px-2 [&_th]:!py-2 [&_th]:!text-[11px]"
+      theadClassName="[&_th]:!px-2 [&_th]:!py-2 [&_th]:!text-sm"
       pageNumber={pageNumber}
       pageSize={pageSize}
       totalCount={totalCount}

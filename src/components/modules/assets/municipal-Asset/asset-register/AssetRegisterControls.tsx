@@ -19,30 +19,34 @@ export function AssetRegisterControls({
   categoryOptions,
 }: AssetRegisterControlsProps) {
   return (
-    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <AssetRegisterFilters
-        search={search}
-        assetTypeId={assetTypeId}
-        zoneId={zoneId}
-        wardId={wardId}
-        owningDepartmentId={owningDepartmentId}
-        assetTypeOptions={assetTypeOptions}
-        zoneOptions={zoneOptions}
-        wardOptions={wardOptions}
-        owningDepartmentOptions={owningDepartmentOptions}
-        categoryId={categoryId}
-        categoryOptions={categoryOptions}
-      />
-      <AssetRegisterExportButton
-        categoryId={categoryId}
-        search={search}
-        assetTypeId={assetTypeId}
-        zoneId={zoneId}
-        wardId={wardId}
-        totalCount={totalCount}
-        pageSize={pageSize}
-        assets={assets}
-      />
+    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between w-full">
+      <div className="flex-1 w-full">
+        <AssetRegisterFilters
+          search={search}
+          assetTypeId={assetTypeId}
+          zoneId={zoneId}
+          wardId={wardId}
+          owningDepartmentId={owningDepartmentId}
+          assetTypeOptions={assetTypeOptions}
+          zoneOptions={zoneOptions}
+          wardOptions={wardOptions}
+          owningDepartmentOptions={owningDepartmentOptions}
+          categoryId={categoryId}
+          categoryOptions={categoryOptions}
+        />
+      </div>
+      <div className="flex-shrink-0">
+        <AssetRegisterExportButton
+          categoryId={categoryId}
+          search={search}
+          assetTypeId={assetTypeId}
+          zoneId={zoneId}
+          wardId={wardId}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          assets={assets}
+        />
+      </div>
     </div>
   );
 }

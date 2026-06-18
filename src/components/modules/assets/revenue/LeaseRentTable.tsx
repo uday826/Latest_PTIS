@@ -17,6 +17,7 @@ interface TableProps {
   onPageSizeChange: (size: number) => void;
   onActionClick?: (record: LeaseRentRecord) => void;
   onHistoryClick?: (record: LeaseRentRecord) => void;
+  headerExtra?: React.ReactNode;
 }
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
@@ -33,6 +34,7 @@ export function LeaseRentTable({
   onPageSizeChange,
   onActionClick,
   onHistoryClick,
+  headerExtra,
 }: TableProps) {
   const t = useTranslations('revenueManagement');
 
@@ -123,12 +125,11 @@ export function LeaseRentTable({
       loading={false}
       emptyText={t('tables.emptyRegistration')}
       getRowKey={(row, idx) => `${row.id}-${idx}`}
-      headerTitle={stage === 'reverted' ? t('tables.titleReverted') : t('tables.titleRegistration')}
-      headerSubtitle={t('tables.subtitleRegistration')}
-      tableClassName="min-w-full table-auto text-[11px]"
+      headerExtra={headerExtra}
+      tableClassName="min-w-full table-auto text-sm"
       maxBodyHeightClassName="max-h-[calc(100vh-440px)]"
       containerClassName="overflow-hidden"
-      theadClassName="[&_th]:!px-2 [&_th]:!py-2 [&_th]:!text-[11px]"
+      theadClassName="[&_th]:!px-2 [&_th]:!py-2 [&_th]:!text-sm"
       pageNumber={pageNumber}
       pageSize={pageSize}
       totalCount={totalCount}

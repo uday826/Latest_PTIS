@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, Eye, FileText, Undo2 } from 'lucide-react';
+import { cn } from '@/lib/utils/cn';
 import { Tabs } from '@/components/common';
 import type { ManageRentersTabKey, ManageRentersTabsProps } from '../../../../types/asset/revenue.types';
 
@@ -42,23 +43,49 @@ export function ManageRentersTabs({ locale, counts }: ManageRentersTabsProps) {
           ? 'approval'
           : 'reverted';
 
+  const tabColors: Record<ManageRentersTabKey, { active: string; icon: string; countActive: string; countInactive: string }> = {
+    registration: {
+      active: '!bg-blue-100/90 !text-blue-700 border !border-blue-200 shadow-sm',
+      icon: 'text-blue-600',
+      countActive: 'bg-blue-200 text-blue-800',
+      countInactive: 'bg-slate-200 text-slate-500',
+    },
+    verification: {
+      active: '!bg-purple-100/90 !text-purple-700 border !border-purple-200 shadow-sm',
+      icon: 'text-purple-600',
+      countActive: 'bg-purple-200 text-purple-800',
+      countInactive: 'bg-slate-200 text-slate-500',
+    },
+    approval: {
+      active: '!bg-emerald-100/90 !text-emerald-700 border !border-emerald-200 shadow-sm',
+      icon: 'text-emerald-600',
+      countActive: 'bg-emerald-200 text-emerald-800',
+      countInactive: 'bg-slate-200 text-slate-500',
+    },
+    reverted: {
+      active: '!bg-amber-100/90 !text-amber-700 border !border-amber-200 shadow-sm',
+      icon: 'text-amber-600',
+      countActive: 'bg-amber-200 text-amber-800',
+      countInactive: 'bg-slate-200 text-slate-500',
+    },
+  };
+
   const items = tabs.map((tab) => {
     const Icon = tab.icon;
     const count = counts?.[tab.countKey] ?? 0;
     const isActive = activeKey === tab.key;
+    const colors = tabColors[tab.key];
 
     return {
       value: tab.key,
       label: (
-        <span className="flex items-center gap-2">
-          <Icon className="h-3.5 w-3.5 text-slate-400" />
+        <span className="flex items-center gap-1.5">
+          <Icon className={`h-3.5 w-3.5 ${isActive ? colors.icon : 'text-slate-400'}`} />
           <span>{t(tab.labelKey)}</span>
           {tab.key !== 'registration' && count > 0 && (
             <span
-              className={`inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none ${
-                isActive
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'bg-slate-100 text-slate-500'
+              className={`inline-flex min-w-[16px] items-center justify-center rounded-full px-1 py-0.5 text-[10px] font-semibold leading-none ${
+                isActive ? colors.countActive : colors.countInactive
               }`}
             >
               {count}
@@ -67,13 +94,17 @@ export function ManageRentersTabs({ locale, counts }: ManageRentersTabsProps) {
         </span>
       ),
       content: null,
-      className:
-        'rounded-lg px-4 py-2 text-xs font-bold min-h-[40px] text-slate-500 hover:bg-white/70 hover:text-slate-700',
+      className: cn(
+        'rounded-lg px-2.5 py-1 text-xs xl:text-sm min-h-[32px] transition-all whitespace-nowrap',
+        isActive
+          ? colors.active
+          : 'text-slate-500 hover:bg-white/70 hover:text-slate-700'
+      ),
     };
   });
 
   return (
-    <div className="flex w-full justify-start md:justify-end">
+    <div className="flex w-fit justify-start">
       <Tabs
         value={activeKey}
         onChange={(value) => {
@@ -88,11 +119,11 @@ export function ManageRentersTabs({ locale, counts }: ManageRentersTabsProps) {
           router.push(nextPath);
         }}
         variant="pills"
-        size="md"
-        activeTabClassName="border border-slate-200/50 bg-white text-slate-800 shadow-sm"
+        size="sm"
+        activeTabClassName="!bg-transparent"
         className="w-full md:w-fit"
       >
-        <Tabs.TabList className="flex w-full flex-wrap items-center gap-1 rounded-xl border border-slate-200/60 bg-slate-50 p-1 shadow-inner md:w-fit">
+        <Tabs.TabList className="flex w-full flex-nowrap items-center gap-1 rounded-xl border border-indigo-100 bg-indigo-50/30 p-1 shadow-inner md:w-fit overflow-x-auto custom-scrollbar">
           {items.map((item) => (
             <Tabs.Tab key={String(item.value)} value={item.value} className={item.className}>
               {item.label}

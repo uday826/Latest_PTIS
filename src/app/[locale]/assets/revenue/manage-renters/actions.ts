@@ -36,6 +36,7 @@ import type {
   ManageRentersTabCounts,
   ManageRentersVerificationPageData,
   VerificationRecord,
+  ManageRentersHeaderData,
 } from '@/types/asset/revenue.types';
 
 function firstQueryValue(value: string | string[] | undefined): string {
@@ -205,20 +206,29 @@ function baseLeaseRentQuery(
   };
 }
 
-export async function getManageRentersTabCountsAction(): Promise<ManageRentersTabCounts> {
+export async function getManageRentersTabCountsAction(): Promise<ManageRentersHeaderData> {
   const [list, registeredList, revertedList] = await Promise.all([
     getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1 }),
     getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1, workflowStatus: 'registered' }),
     getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1, workflowStatus: 'reverted' }),
   ]);
 
-  const stats = (list as unknown as { stats?: any }).stats;
+  const stats = (list as unknown as { stats?: any }).stats || {
+    totalApproved: 0,
+    totalVerified: 0,
+    verificationPending: 0,
+    approvalPending: 0,
+    totalRejected: 0,
+  };
 
   return {
-    registrationCount: registeredList.totalCount,
-    verificationCount: stats?.verificationPending ?? 0,
-    approvalCount: stats?.approvalPending ?? 0,
-    revertedCount: revertedList.totalCount,
+    counts: {
+      registrationCount: registeredList.totalCount,
+      verificationCount: stats?.verificationPending ?? 0,
+      approvalCount: stats?.approvalPending ?? 0,
+      revertedCount: revertedList.totalCount,
+    },
+    stats,
   };
 }
 

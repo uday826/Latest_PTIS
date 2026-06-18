@@ -75,7 +75,7 @@ export function AssetRegisterFilters({
   const handleAssetCategoryChange = (newCategory: string) => {
     const segments = pathname.split('/').filter(Boolean);
     const locale = segments[0] || 'en';
-    
+
     let newPath = `/${locale}/assets/municipal-Asset/asset-register`;
     if (newCategory !== 'all') {
       newPath += `/${newCategory}`;

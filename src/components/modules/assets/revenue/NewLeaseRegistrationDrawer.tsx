@@ -21,7 +21,7 @@ import {
   Image as ImageIcon,
   Loader2,
 } from 'lucide-react';
-import { Button, Drawer, Label, MasterTable, type Column, useToast, Select, type Option } from '@/components/common';
+import { Button, Drawer, Label, MasterTable, type Column, useToast, Select, type Option, Input, TextArea } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { EMAIL_REGEX } from '@/lib/utils/validation-rules';
 import { kycValidators } from '@/lib/utils/kyc-validation.constants';
@@ -611,14 +611,14 @@ function RenderField({
           className="w-full"
         />
       ) : field.type === 'textarea' ? (
-        <textarea
+        <TextArea
           className="w-full min-h-[60px] px-2 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
           placeholder={field.placeholder}
           value={value}
           onChange={(e) => setValue(e.target.value)}
         />
       ) : (
-        <input
+        <Input
           type={field.type === 'number' ? 'number' : field.type}
           className={sharedInputClass}
           placeholder={field.placeholder}
@@ -629,6 +629,7 @@ function RenderField({
           maxLength={field.type !== 'number' ? maxLength : undefined}
           min={field.type === 'number' ? 0 : undefined}
           step={field.type === 'number' ? 'any' : undefined}
+          naked
         />
       )}
     </div>
@@ -1323,12 +1324,13 @@ export function NewLeaseRegistrationModal({
           {t('drawers.chooseFile')}
         </Button>
       </div>
-      <input
+      <Input
         ref={type === 'aadhar' ? aadharInputRef : panInputRef}
         type="file"
         accept=".pdf,.png,.jpg,.jpeg"
         className="hidden"
         onChange={(e) => handleDocumentSelect(type, e.target.files?.[0] ?? null)}
+        naked
       />
     </div>
   );

@@ -1,6 +1,8 @@
+import { Card, CardContent } from '@/components/common';
 import { PaymentSection } from '@/components/modules/assets/revenue/payment/PaymentSection';
 import { getPaymentFilterOptionsAction, getPaymentRecordsPageDataAction } from './actions';
 import type { PaymentRecordRow, PaymentRecordsQuery } from './actions';
+import { RevenueHeader } from '@/components/modules/assets/revenue/RevenueHeader';
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -78,10 +80,27 @@ export default async function PaymentPage({ searchParams }: PageProps) {
   ]);
 
   return (
-      <div className="flex h-[calc(100vh-140px)] overflow-hidden">
-        <div className="flex-1 p-6 bg-slate-50/50 overflow-y-auto custom-scrollbar">
-          <PaymentSection pageData={pageData} filterOptions={filterOptions} />
-        </div>
+    <div className="flex h-full min-h-[calc(100vh-120px)] w-full overflow-y-auto bg-slate-50/50 p-4 custom-scrollbar">
+      <div className="flex w-full flex-col gap-3">
+        <Card variant="bordered" padding="none" className="overflow-hidden border-slate-100 bg-white shadow-sm">
+          <CardContent className="space-y-3 p-4">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+              <div className="w-full flex-shrink-0">
+                <RevenueHeader
+                  title="Lease Rent Payment Details"
+                  subtitle="Manage & track lease rent collections, invoices & transaction history"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card variant="bordered" padding="none" className="overflow-hidden border-slate-100 bg-white shadow-sm">
+          <CardContent className="p-3">
+            <PaymentSection pageData={pageData} filterOptions={filterOptions} />
+          </CardContent>
+        </Card>
       </div>
+    </div>
   );
 }
