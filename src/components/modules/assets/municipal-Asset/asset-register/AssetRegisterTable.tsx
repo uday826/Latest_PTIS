@@ -16,6 +16,7 @@ export function AssetRegisterTable({
   pageNumber,
   pageSize,
   totalPages,
+  controls,
 }: AssetRegisterTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -46,6 +47,7 @@ export function AssetRegisterTable({
       onPageSizeChange={handlePageSizeChange}
       pageSizeOptions={PAGE_SIZE_OPTIONS}
       paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+      headerExtra={controls}
       containerClassName="rounded-lg"
       tableClassName="min-w-full table-fixed"
       rowClassName={(_, index) => (index % 2 === 0 ? 'bg-white' : 'bg-slate-50')}

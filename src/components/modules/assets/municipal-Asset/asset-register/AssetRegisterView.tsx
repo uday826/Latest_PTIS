@@ -98,12 +98,13 @@ export async function AssetRegisterView({
           />
         </Card>
 
-        <Card
-          variant="bordered"
-          padding="none"
-          className="relative z-30 overflow-visible border-slate-200/80 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
-        >
-          <CardContent className="flex flex-col gap-3 overflow-visible px-4 py-4">
+        <AssetRegisterTable
+          assets={mappedAssets}
+          totalCount={assetsResult.totalCount}
+          pageNumber={finalPage}
+          pageSize={safePageSize}
+          totalPages={totalPages}
+          controls={
             <AssetRegisterControls
               categoryId={categoryId}
               categoryName={resolvedCategoryName}
@@ -121,15 +122,7 @@ export async function AssetRegisterView({
               owningDepartmentOptions={owningDepartmentOptions}
               categoryOptions={mappedCategoryOptions}
             />
-          </CardContent>
-        </Card>
-
-        <AssetRegisterTable
-          assets={mappedAssets}
-          totalCount={assetsResult.totalCount}
-          pageNumber={finalPage}
-          pageSize={safePageSize}
-          totalPages={totalPages}
+          }
         />
       </div>
     </div>

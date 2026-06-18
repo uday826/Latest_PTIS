@@ -76,6 +76,7 @@ export interface AssetRegisterTableProps {
   pageNumber: number;
   pageSize: number;
   totalPages: number;
+  controls?: React.ReactNode;
 }
 
 export interface AssetRegisterFiltersProps {
