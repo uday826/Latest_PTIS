@@ -320,11 +320,12 @@ export function useFurnitureFixtureState(
     if (categories.length > 0) {
       return categories.map((cat) => {
         // Normalize cat.typeName to match row.type format (lowercase with dashes)
-        const normalizedCatType = cat.typeName.toLowerCase().replace(/\s+/g, "-");
+        const cleanName = cat.typeName.replace(/^[A-Z]\)\s*/i, "");
+        const normalizedCatType = cleanName.toLowerCase().replace(/\s+/g, "-");
         const typeRows = rows.filter((r) => r.type === normalizedCatType);
         return {
           type: cat.typeName,
-          label: cat.typeName,
+          label: cleanName,
           totalAmount: typeRows.reduce((sum, r) => sum + r.total, 0),
           totalItems: typeRows.reduce((sum, r) => sum + r.quantity, 0),
           cardRing: inventoryMeta[normalizedCatType as InventoryType]?.cardRing || "border-l-4 border-l-blue-500",

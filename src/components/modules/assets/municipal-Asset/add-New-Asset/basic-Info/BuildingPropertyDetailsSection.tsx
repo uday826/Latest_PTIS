@@ -202,6 +202,15 @@ export function BuildingPropertyDetailsSection({
           className="h-8 text-[13px]"
           error={showError("surveyNumber") ? errors.surveyNumber : undefined}
         />
+        <Input
+          label={t("basicInfo.propertyDetails.propertyNo")}
+          name="propertyNumber"
+          value={formData.propertyNumber}
+          onChange={handleChange}
+          placeholder="e.g. MC/WD15/2024/001"
+          className="h-8 text-[13px]"
+          error={showError("propertyNumber") ? errors.propertyNumber : undefined}
+        />
 
         <Input
           label={t("basicInfo.propertyDetails.partitionNo")}
@@ -223,16 +232,6 @@ export function BuildingPropertyDetailsSection({
           disabled={formData.isMovableCategory}
           className="h-8 text-[13px]"
           error={showError("upicId" as any) ? (errors as any).upicId : undefined}
-        />
-
-        <Input
-          label={t("basicInfo.propertyDetails.propertyNo")}
-          name="propertyNumber"
-          value={formData.propertyNumber}
-          onChange={handleChange}
-          placeholder="e.g. MC/WD15/2024/001"
-          className="h-8 text-[13px]"
-          error={showError("propertyNumber") ? errors.propertyNumber : undefined}
         />
 
         <Input
@@ -371,6 +370,20 @@ export function BuildingPropertyDetailsSection({
           ]}
           placeholder={t("basicInfo.propertyDetails.selectCondition")}
           className="font-semibold text-sm"
+        />
+
+        <Input
+          label={t("basicInfo.propertyDetails.assetWardNo") || "Asset Ward Number"}
+          name="assetWardNo"
+          value={(formData as any).assetWardNo || ""}
+          onChange={(e) => {
+            const cleanVal = e.target.value.replace(/[^a-zA-Z0-9\s]/g, "");
+            e.target.value = cleanVal;
+            handleChange(e);
+          }}
+          placeholder={t("basicInfo.propertyDetails.enterAssetWardNo") || "e.g. 12A"}
+          className="h-8 text-[13px]"
+          error={showError("assetWardNo" as any) ? (errors as any).assetWardNo : undefined}
         />
       </CardContent >
     </Card >
