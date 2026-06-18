@@ -1,7 +1,7 @@
 'use client';
 
 import { Label, SearchInput, SearchSelect } from '@/components/common';
-import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
+import { ASSET_SEARCH_REGEX } from '@/lib/utils/validation-rules';
 import type { FilterOption } from '../../../../types/asset/revenue.types';
 import { useTranslations } from 'next-intl';
 
@@ -49,13 +49,18 @@ export function LeaseRentFilters({
   const t = useTranslations('revenueManagement');
   const normalizeSelectValue = (value: string) => (value === 'all' ? null : value);
   const handleSearchChange = (nextValue: string) => {
-    const sanitizedValue = nextValue
-      .split('')
-      .filter((char) => SEARCH_KEY_REGEX.test(char))
-      .join('');
+    let sanitized = nextValue.replace(/\s+-/g, '-');
+    sanitized = sanitized.replace(/-\s+/g, '-');
+    sanitized = sanitized.replace(/-+/g, '-');
+    sanitized = sanitized.replace(/\s+/g, ' ');
 
-    setSearchQuery(sanitizedValue);
-  };
+    const sanitizedValue = sanitized
+      .split('')
+      .filter((char) => ASSET_SEARCH_REGEX.test(char))
+      .join('');
+ 
+     setSearchQuery(sanitizedValue);
+   };
 
   const ALL_CATEGORY_OPTION = { label: t('filters.allCategories'), value: 'all' };
   const ALL_ZONE_OPTION = { label: t('filters.allZones'), value: 'all' };

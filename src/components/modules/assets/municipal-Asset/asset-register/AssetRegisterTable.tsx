@@ -48,6 +48,7 @@ export function AssetRegisterTable({
       pageSizeOptions={PAGE_SIZE_OPTIONS}
       paginationConfig={{ enabled: true, showPageSizeSelector: true }}
       headerExtra={controls}
+      maxBodyHeightClassName="max-h-[calc(100vh-420px)] min-h-[300px]"
       containerClassName="rounded-lg"
       tableClassName="min-w-full table-fixed"
       rowClassName={(_, index) => (index % 2 === 0 ? 'bg-white' : 'bg-slate-50')}
