@@ -583,7 +583,7 @@ function DocumentUploadCard({ definition, state, onFileSelect, onDelete, onView,
                   onClick={onDelete}
                   className="p-1.5 border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-all active:scale-95 flex items-center justify-center cursor-pointer"
                   title={t("compliance.card.delete")}
-                  >
+                >
                   <Trash2 className="size-3.5" />
                 </button>
               </>

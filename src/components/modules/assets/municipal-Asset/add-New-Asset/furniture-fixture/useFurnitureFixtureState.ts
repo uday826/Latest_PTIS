@@ -521,56 +521,50 @@ export function useFurnitureFixtureState(
             } catch (e) { }
           }
 
-          for (const unit of batchData.units) {
-            if (!unit.assetId) continue;
+          const fd = new FormData();
+          fd.append("AssetId", String(parentAssetId));
+          fd.append("ModuleId", String(finalModuleId || 1004));
+          fd.append("UploadedByUserId", "1");
+          fd.append("IsAdHoc", "true");
 
-            const fd = new FormData();
-            fd.append("AssetId", String(unit.assetId));
-            fd.append("ModuleId", String(finalModuleId || 1004));
-            fd.append("UploadedByUserId", "1");
-            fd.append("IsAdHoc", "true");
+          const metadata: any[] = [];
 
-            const metadata: any[] = [];
+          if (photoFile) {
+            const uniqueName = `photo_${photoFile.name}`;
+            const renamedFile = new File([photoFile], uniqueName, { type: photoFile.type });
+            fd.append("Files", renamedFile);
+            metadata.push({
+              fileName: uniqueName,
+              documentType: "photo",
+              documentTitle: "Inventory Batch Photo",
+              documentDefinitionId: 0
+            });
+          }
 
-            if (photoFile) {
-              const uniqueName = `photo_${photoFile.name}`;
-              const renamedFile = new File([photoFile], uniqueName, { type: photoFile.type });
-              fd.append("Files", renamedFile);
-              metadata.push({
-                fileName: uniqueName,
-                documentType: "photo",
-                documentTitle: "Asset Photo",
-                documentDefinitionId: 0
-              });
+          if (invoiceFile) {
+            const uniqueName = `invoice_${invoiceFile.name}`;
+            const renamedFile = new File([invoiceFile], uniqueName, { type: invoiceFile.type });
+            fd.append("Files", renamedFile);
+            metadata.push({
+              fileName: uniqueName,
+              documentType: "invoice",
+              documentTitle: "Inventory Batch Invoice",
+              documentDefinitionId: 0
+            });
+          }
+
+          fd.append("FileMetadataJson", JSON.stringify(metadata));
+
+          try {
+            const uploadResult = await uploadBulkDocumentsAction(fd);
+            if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
+              const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
+              toast.error(`Document upload failed for batch: ${detailedError}`);
+            } else {
+              toast.success(`Batch documents uploaded successfully!`);
             }
-
-            if (invoiceFile) {
-              const uniqueName = `invoice_${invoiceFile.name}`;
-              const renamedFile = new File([invoiceFile], uniqueName, { type: invoiceFile.type });
-              fd.append("Files", renamedFile);
-              metadata.push({
-                fileName: uniqueName,
-                documentType: "invoice",
-                documentTitle: "Asset Invoice",
-                documentDefinitionId: 0
-              });
-            }
-
-            fd.append("FileMetadataJson", JSON.stringify(metadata));
-
-            try {
-              const uploadResult = await uploadBulkDocumentsAction(fd);
-              if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
-                const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
-
-                toast.error(`Document upload failed for Unit ${unit.unitNumber}: ${detailedError}`);
-              } else {
-                toast.success(`Documents uploaded successfully for Unit ${unit.unitNumber}!`);
-              }
-            } catch (e: any) {
-
-              toast.error(`Document upload exception for Unit ${unit.unitNumber}: ${e.message}`);
-            }
+          } catch (e: any) {
+            toast.error(`Document upload exception: ${e.message}`);
           }
         }
       }
@@ -693,52 +687,47 @@ export function useFurnitureFixtureState(
               } catch (e) { }
             }
 
-            for (const unit of existingRow.registeredUnits) {
-              if (!unit.assetId) continue;
-              const fd = new FormData();
-              fd.append("AssetId", String(unit.assetId));
-              fd.append("ModuleId", String(finalModuleId || 1004));
-              fd.append("UploadedByUserId", "1");
-              fd.append("IsAdHoc", "true");
+            const fd = new FormData();
+            fd.append("AssetId", String(parentAssetId));
+            fd.append("ModuleId", String(finalModuleId || 1004));
+            fd.append("UploadedByUserId", "1");
+            fd.append("IsAdHoc", "true");
 
-              const metadata: any[] = [];
+            const metadata: any[] = [];
 
-              if (photoFile) {
-                const uniqueName = `photo_${photoFile.name}`;
-                const renamedFile = new File([photoFile], uniqueName, { type: photoFile.type });
-                fd.append("Files", renamedFile);
-                metadata.push({
-                  fileName: uniqueName,
-                  documentType: "photo",
-                  documentTitle: "Asset Photo",
-                  documentDefinitionId: 0
-                });
+            if (photoFile) {
+              const uniqueName = `photo_${photoFile.name}`;
+              const renamedFile = new File([photoFile], uniqueName, { type: photoFile.type });
+              fd.append("Files", renamedFile);
+              metadata.push({
+                fileName: uniqueName,
+                documentType: "photo",
+                documentTitle: "Inventory Batch Photo",
+                documentDefinitionId: 0
+              });
+            }
+            if (invoiceFile) {
+              const uniqueName = `invoice_${invoiceFile.name}`;
+              const renamedFile = new File([invoiceFile], uniqueName, { type: invoiceFile.type });
+              fd.append("Files", renamedFile);
+              metadata.push({
+                fileName: uniqueName,
+                documentType: "invoice",
+                documentTitle: "Inventory Batch Invoice",
+                documentDefinitionId: 0
+              });
+            }
+            fd.append("FileMetadataJson", JSON.stringify(metadata));
+            try {
+              const uploadResult = await uploadBulkDocumentsAction(fd);
+              if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
+                const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
+                toast.error(`Document upload failed for batch: ${detailedError}`);
+              } else {
+                toast.success(`Batch documents updated successfully!`);
               }
-              if (invoiceFile) {
-                const uniqueName = `invoice_${invoiceFile.name}`;
-                const renamedFile = new File([invoiceFile], uniqueName, { type: invoiceFile.type });
-                fd.append("Files", renamedFile);
-                metadata.push({
-                  fileName: uniqueName,
-                  documentType: "invoice",
-                  documentTitle: "Asset Invoice",
-                  documentDefinitionId: 0
-                });
-              }
-              fd.append("FileMetadataJson", JSON.stringify(metadata));
-              try {
-                const uploadResult = await uploadBulkDocumentsAction(fd);
-                if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
-                  const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
-
-                  toast.error(`Document upload failed for Unit ${unit.unitNumber}: ${detailedError}`);
-                } else {
-                  toast.success(`Documents updated successfully for Unit ${unit.unitNumber}!`);
-                }
-              } catch (e: any) {
-
-                toast.error(`Document upload exception for Unit ${unit.unitNumber}: ${e.message}`);
-              }
+            } catch (e: any) {
+              toast.error(`Document upload exception: ${e.message}`);
             }
           }
         }

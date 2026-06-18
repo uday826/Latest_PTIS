@@ -210,7 +210,7 @@ export function AssetFormFooter() {
         const filesToUpload = stagedFiles ? Object.entries(stagedFiles) : [];
         if (filesToUpload.length > 0) {
           try {
-            for (const [defId, item] of filesToUpload) {
+            const uploadPromises = filesToUpload.map(([defId, item]) => {
               let userId = 1;
               try {
                 const match = document.cookie.match(/(?:^|; )user_id=([^;]*)/);
@@ -230,8 +230,10 @@ export function AssetFormFooter() {
               formDataPayload.append("DocumentType", item.definition.documentCode);
               formDataPayload.append("UploadedByUserId", userId.toString());
 
-              await uploadDocumentAction(formDataPayload);
-            }
+              return uploadDocumentAction(formDataPayload);
+            });
+
+            await Promise.allSettled(uploadPromises);
 
             if (setStagedFiles) setStagedFiles({});
           } catch (e) {
@@ -331,8 +333,8 @@ export function AssetFormFooter() {
               console.error("Failed to fetch definitions for subunit upload", e);
             }
 
-            for (const [subUnitId, files] of subunitEntries) {
-              if (!files.photoFile && !files.planFile) continue;
+            const subunitUploadPromises = subunitEntries.map(([subUnitId, files]) => {
+              if (!files.photoFile && !files.planFile) return Promise.resolve();
 
               let userId = 1;
               try {
@@ -378,8 +380,10 @@ export function AssetFormFooter() {
 
               formDataPayload.append("FileMetadataJson", JSON.stringify(metadata));
 
-              await uploadBulkDocumentsAction(formDataPayload);
-            }
+              return uploadBulkDocumentsAction(formDataPayload);
+            });
+
+            await Promise.allSettled(subunitUploadPromises);
 
             if (setSubunitFiles) setSubunitFiles({});
           } catch (e) {
