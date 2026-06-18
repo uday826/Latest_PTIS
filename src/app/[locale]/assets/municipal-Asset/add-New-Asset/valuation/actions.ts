@@ -24,7 +24,7 @@ export async function getAssetValuationDataAction(assetId: number, isBuildingCli
     // Determine category
     const assetCategoryId = Number(assetObj?.assetCategoryId ?? assetObj?.categoryId ?? 0);
     const category = String(assetObj?.categoryName ?? assetObj?.category ?? assetObj?.assetCategoryName ?? assetObj?.assetCategory ?? "").toLowerCase().trim();
-    
+
     const isBuilding =
       isBuildingClient === true ||
       assetCategoryId === 1 ||
@@ -50,7 +50,7 @@ export async function getAssetValuationDataAction(assetId: number, isBuildingCli
 
       const cvRes = await valuationApiService.calculateBuildingCV(assetId);
 
-      
+
       if (cvRes.success && cvRes.data) {
         buildingCVData = cvRes.data;
 
@@ -75,7 +75,7 @@ export async function getAssetValuationDataAction(assetId: number, isBuildingCli
 
       const cvRes = await valuationApiService.calculatePlotCV(assetId);
 
-      
+
       if (cvRes.success && cvRes.data) {
         plotCVData = cvRes.data;
 

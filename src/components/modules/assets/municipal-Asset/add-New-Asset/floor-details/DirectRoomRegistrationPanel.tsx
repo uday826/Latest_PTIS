@@ -6,6 +6,7 @@ import { useAssetForm } from "../AssetFormContext";
 import { Input, Select, Button, SearchSelect } from "@/components/common";
 import { saveFloorDetail, updateFloorDetail, deleteFloorDetail, fetchSubFloorAction, fetchSubUseTypesAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { RoomWiseSubmissionDrawer } from "../sub-units/RoomWiseSubmissionDrawer";
+import { RenterDetailsDrawer } from "./RenterDetailsDrawer";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { useTranslations } from "next-intl";
@@ -66,6 +67,14 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
     rooms: 0,
     carpetAreaSqFt: 0,
     builtUpAreaSqFt: 0,
+    renterNameEnglish: "",
+    renterNameLocal: "",
+    agreementDate: "",
+    agreementFromDate: "",
+    agreementToDate: "",
+    rentMonthly: "",
+    rentYearly: "",
+    taxLiability: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -74,6 +83,9 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
   // RoomWiseSubmissionDrawer state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [roomData, setRoomData] = useState<any[]>([]);
+
+  // RenterDetailsDrawer state
+  const [isRenterDrawerOpen, setIsRenterDrawerOpen] = useState(false);
 
   // Refresh saved floors when mounted
   useEffect(() => {
@@ -186,6 +198,14 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
         isRented: formState.isRenter,
         isActive: true,
         roomDetails,
+        renterNameEnglish: formState.isRenter ? (formState.renterNameEnglish || null) : null,
+        renterNameLocal: formState.isRenter ? (formState.renterNameLocal || null) : null,
+        agreementDate: formState.isRenter ? (formState.agreementDate || null) : null,
+        agreementFromDate: formState.isRenter ? (formState.agreementFromDate || null) : null,
+        agreementToDate: formState.isRenter ? (formState.agreementToDate || null) : null,
+        rentMonthly: formState.isRenter ? (formState.rentMonthly ? Number(formState.rentMonthly) : null) : null,
+        rentYearly: formState.isRenter ? (formState.rentYearly ? Number(formState.rentYearly) : null) : null,
+        taxLiability: formState.isRenter ? (formState.taxLiability || null) : null,
       };
 
       if (editingId) {
@@ -209,6 +229,14 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
             subFloorName: subFloorLabel || (res.data as any).subFloorName,
             subTypeOfUseName: subUseTypeLabel || (res.data as any).subTypeOfUseName,
             roomDetails: (res.data as any).roomDetails || roomDetails || [],
+            renterNameEnglish: res.data.renterNameEnglish !== undefined ? res.data.renterNameEnglish : payload.renterNameEnglish,
+            renterNameLocal: res.data.renterNameLocal !== undefined ? res.data.renterNameLocal : payload.renterNameLocal,
+            agreementDate: res.data.agreementDate !== undefined ? res.data.agreementDate : payload.agreementDate,
+            agreementFromDate: res.data.agreementFromDate !== undefined ? res.data.agreementFromDate : payload.agreementFromDate,
+            agreementToDate: res.data.agreementToDate !== undefined ? res.data.agreementToDate : payload.agreementToDate,
+            rentMonthly: res.data.rentMonthly !== undefined ? res.data.rentMonthly : payload.rentMonthly,
+            rentYearly: res.data.rentYearly !== undefined ? res.data.rentYearly : payload.rentYearly,
+            taxLiability: res.data.taxLiability !== undefined ? res.data.taxLiability : payload.taxLiability,
           };
 
           setSavedFloors(prev => prev.map(f => f.id === editingId ? enrichedData : f));
@@ -228,6 +256,14 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
             rooms: 0,
             carpetAreaSqFt: 0,
             builtUpAreaSqFt: 0,
+            renterNameEnglish: "",
+            renterNameLocal: "",
+            agreementDate: "",
+            agreementFromDate: "",
+            agreementToDate: "",
+            rentMonthly: "",
+            rentYearly: "",
+            taxLiability: "",
           });
           setRoomData([]);
         } else {
@@ -255,6 +291,14 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
             subFloorName: subFloorLabel || (res.data as any).subFloorName,
             subTypeOfUseName: subUseTypeLabel || (res.data as any).subTypeOfUseName,
             roomDetails: (res.data as any).roomDetails || roomDetails || [],
+            renterNameEnglish: res.data.renterNameEnglish !== undefined ? res.data.renterNameEnglish : payload.renterNameEnglish,
+            renterNameLocal: res.data.renterNameLocal !== undefined ? res.data.renterNameLocal : payload.renterNameLocal,
+            agreementDate: res.data.agreementDate !== undefined ? res.data.agreementDate : payload.agreementDate,
+            agreementFromDate: res.data.agreementFromDate !== undefined ? res.data.agreementFromDate : payload.agreementFromDate,
+            agreementToDate: res.data.agreementToDate !== undefined ? res.data.agreementToDate : payload.agreementToDate,
+            rentMonthly: res.data.rentMonthly !== undefined ? res.data.rentMonthly : payload.rentMonthly,
+            rentYearly: res.data.rentYearly !== undefined ? res.data.rentYearly : payload.rentYearly,
+            taxLiability: res.data.taxLiability !== undefined ? res.data.taxLiability : payload.taxLiability,
           };
 
           // We added it successfully
@@ -274,6 +318,14 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
             rooms: 0,
             carpetAreaSqFt: 0,
             builtUpAreaSqFt: 0,
+            renterNameEnglish: "",
+            renterNameLocal: "",
+            agreementDate: "",
+            agreementFromDate: "",
+            agreementToDate: "",
+            rentMonthly: "",
+            rentYearly: "",
+            taxLiability: "",
           });
           setRoomData([]);
         } else {
@@ -390,6 +442,14 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
       rooms: Number(f.noOfRooms || 0),
       carpetAreaSqFt: Number(f.carpetAreaSqFeet || 0),
       builtUpAreaSqFt: Number(f.builtUpAreaSqFeet || 0),
+      renterNameEnglish: f.renterNameEnglish || "",
+      renterNameLocal: f.renterNameLocal || "",
+      agreementDate: f.agreementDate || "",
+      agreementFromDate: f.agreementFromDate || "",
+      agreementToDate: f.agreementToDate || "",
+      rentMonthly: f.rentMonthly !== undefined && f.rentMonthly !== null ? String(f.rentMonthly) : "",
+      rentYearly: f.rentYearly !== undefined && f.rentYearly !== null ? String(f.rentYearly) : "",
+      taxLiability: f.taxLiability || "",
     });
   };
 
@@ -407,6 +467,14 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
       rooms: 0,
       carpetAreaSqFt: 0,
       builtUpAreaSqFt: 0,
+      renterNameEnglish: "",
+      renterNameLocal: "",
+      agreementDate: "",
+      agreementFromDate: "",
+      agreementToDate: "",
+      rentMonthly: "",
+      rentYearly: "",
+      taxLiability: "",
     });
     setRoomData([]);
   };
@@ -556,16 +624,36 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
               <label className="mb-1 text-[11px] font-bold text-gray-700">
                 {t("floorDetails.renter")}
               </label>
-              <SearchSelect
-                name="isRenter"
-                options={[
-                  { label: t("floorDetails.no") || "No", value: "false" },
-                  { label: t("floorDetails.yes") || "Yes", value: "true" }
-                ]}
-                value={formState.isRenter ? 'true' : 'false'}
-                onChange={(name, val) => setFormState((p: any) => ({ ...p, isRenter: val === 'true' }))}
-                placeholder={t("placeholders.selectField", { field: t("floorDetails.renter") }) || "Select renter"}
-              />
+              <div className="flex items-center gap-1">
+                <div className="flex-1">
+                  <SearchSelect
+                    name="isRenter"
+                    options={[
+                      { label: t("floorDetails.no") || "No", value: "false" },
+                      { label: t("floorDetails.yes") || "Yes", value: "true" }
+                    ]}
+                    value={formState.isRenter ? 'true' : 'false'}
+                    onChange={(name, val) => {
+                      const isTrue = val === 'true';
+                      setFormState((p: any) => ({ ...p, isRenter: isTrue }));
+                      if (isTrue) {
+                        setIsRenterDrawerOpen(true);
+                      }
+                    }}
+                    placeholder={t("placeholders.selectField", { field: t("floorDetails.renter") }) || "Select renter"}
+                  />
+                </div>
+                {formState.isRenter && (
+                  <button
+                    type="button"
+                    onClick={() => setIsRenterDrawerOpen(true)}
+                    className="h-7 px-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-md text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-0.5 shadow-sm transition-all shrink-0"
+                    title="Add/Edit Renter Details"
+                  >
+                    <Plus className="size-3" strokeWidth={3} /> {t("floorDetails.addDetails") || "Details"}
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-col">
@@ -700,9 +788,16 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
                       <td className="py-2.5 px-4 font-semibold text-slate-800">{f.useTypeName || useTypeName}</td>
                       <td className="py-2.5 px-4 font-semibold text-slate-800">{f.subTypeOfUseName || f.subTypeOfUseId || '-'}</td>
                       <td className="py-2.5 px-4 text-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${f.isRented ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
-                          {f.isRented ? t("floorDetails.yes") : t("floorDetails.no")}
-                        </span>
+                        <div className="flex flex-col items-center">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${f.isRented ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+                            {f.isRented ? t("floorDetails.yes") : t("floorDetails.no")}
+                          </span>
+                          {f.isRented && f.renterNameEnglish && (
+                            <span className="text-[9px] text-slate-500 font-bold mt-0.5 uppercase tracking-tight max-w-[120px] truncate" title={f.renterNameEnglish}>
+                              {f.renterNameEnglish}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-2.5 px-4 text-center font-bold text-slate-800">{f.noOfRooms}</td>
                       <td className="py-2.5 px-4 text-center font-mono font-bold text-blue-700">{f.carpetAreaSqFeet?.toFixed(2)} / {((f.carpetAreaSqFeet || 0) / 10.7639).toFixed(2)}</td>
@@ -738,6 +833,27 @@ export function DirectRoomRegistrationPanel({ dropdownOptions, initialFloors = [
         onClose={() => setIsDrawerOpen(false)}
         unit={{ unitNumber: `New Floor`, rooms: roomData }}
         onSaveRooms={handleSaveRooms}
+      />
+
+      <RenterDetailsDrawer
+        isOpen={isRenterDrawerOpen}
+        onClose={() => setIsRenterDrawerOpen(false)}
+        renterData={{
+          renterNameEnglish: formState.renterNameEnglish,
+          renterNameLocal: formState.renterNameLocal,
+          agreementDate: formState.agreementDate,
+          agreementFromDate: formState.agreementFromDate,
+          agreementToDate: formState.agreementToDate,
+          rentMonthly: formState.rentMonthly,
+          rentYearly: formState.rentYearly,
+          taxLiability: formState.taxLiability,
+        }}
+        onSave={(data) => {
+          setFormState((prev: any) => ({
+            ...prev,
+            ...data,
+          }));
+        }}
       />
 
       {selectedFloorForView && (

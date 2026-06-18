@@ -91,6 +91,16 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
     isMovableCategory: contextData.isMovableCategory,
     parentBuildingId: contextData.parentBuildingId,
     hasFloorDetails: contextData.hasFloorDetails,
+    isRented: contextData.isRented || "No",
+    leaseStartDate: contextData.leaseStartDate || "",
+    leaseEndDate: contextData.leaseEndDate || "",
+    leaseAmount: contextData.leaseAmount || "",
+    securityDeposit: contextData.securityDeposit || "",
+    paymentFrequency: contextData.paymentFrequency || "Monthly",
+    lessorName: contextData.lessorName || "",
+    lessorMobile: contextData.lessorMobile || "",
+    lessorEmail: contextData.lessorEmail || "",
+    lessorAddress: contextData.lessorAddress || "",
     plotNumber: contextData.plotNumber || "",
     typeOfUseId: contextData.typeOfUseId || "",
     subTypeOfUseId: contextData.subTypeOfUseId || "",
@@ -154,6 +164,16 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
         isMovableCategory: contextData.isMovableCategory,
         parentBuildingId: contextData.parentBuildingId,
         hasFloorDetails: contextData.hasFloorDetails,
+        isRented: contextData.isRented || "No",
+        leaseStartDate: contextData.leaseStartDate || "",
+        leaseEndDate: contextData.leaseEndDate || "",
+        leaseAmount: contextData.leaseAmount || "",
+        securityDeposit: contextData.securityDeposit || "",
+        paymentFrequency: contextData.paymentFrequency || "Monthly",
+        lessorName: contextData.lessorName || "",
+        lessorMobile: contextData.lessorMobile || "",
+        lessorEmail: contextData.lessorEmail || "",
+        lessorAddress: contextData.lessorAddress || "",
         plotNumber: contextData.plotNumber || "",
         typeOfUseId: contextData.typeOfUseId || "",
         subTypeOfUseId: contextData.subTypeOfUseId || "",
@@ -199,6 +219,16 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
     contextData.isMovableCategory,
     contextData.parentBuildingId,
     contextData.hasFloorDetails,
+    contextData.isRented,
+    contextData.leaseStartDate,
+    contextData.leaseEndDate,
+    contextData.leaseAmount,
+    contextData.securityDeposit,
+    contextData.paymentFrequency,
+    contextData.lessorName,
+    contextData.lessorMobile,
+    contextData.lessorEmail,
+    contextData.lessorAddress,
     contextData.plotNumber,
     contextData.typeOfUseId,
     contextData.subTypeOfUseId,
@@ -276,7 +306,7 @@ export function useBuildingBasicInfoForm(): UseBuildingBasicInfoFormReturn {
       const offsetVal = isLand ? parseFloat((formData as any).offset || "0") : 0;
       const isAdd = (formData as any).offsetOp === "Add";
       if (lenVal > 0 && widthVal > 0) {
-        const calculatedArea = isAdd 
+        const calculatedArea = isAdd
           ? ((lenVal * widthVal) + offsetVal).toFixed(2)
           : Math.max(0, (lenVal * widthVal) - offsetVal).toFixed(2);
         if (formData.landArea !== calculatedArea) {

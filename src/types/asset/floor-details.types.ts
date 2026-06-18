@@ -80,6 +80,13 @@ export interface PoolUnit {
   capitalValue?: number;
   rentInformation?: RentInformationDto | null;
   subFloorId?: number | null;
+  // Property registration numbers
+  propertyNo?: string | null;
+  surveyNo?: string | null;
+  shopActNo?: string | null;
+  partitionNo?: string | null;
+  // Unit name (for shop/office/department)
+  unitName?: string | null;
 }
 
 /* ── Form state for the "add new floor" row ─────────────────────────────────*/

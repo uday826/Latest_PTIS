@@ -15,8 +15,8 @@ import type {
 
 const BASE_URL =
   typeof window !== 'undefined'
-    ? (window.__RUNTIME_CONFIG__?.apiBaseUrl || appConfig.api.baseUrl || 'https://localhost:7293/api')
-    : (process.env.NEXT_PUBLIC_API_BASE_URL || appConfig.api.baseUrl || 'https://localhost:7293/api');
+    ? (window.__RUNTIME_CONFIG__?.apiBaseUrl || appConfig.api.baseUrl)
+    : (process.env.NEXT_PUBLIC_API_BASE_URL || appConfig.api.baseUrl);
 const DEFAULT_PAGE_SIZE = 50;
 
 type ZoneApiRecord = {

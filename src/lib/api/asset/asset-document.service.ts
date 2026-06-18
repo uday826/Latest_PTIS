@@ -123,8 +123,8 @@ export interface AssetDocumentBulkUploadResponseDto {
 
 const BASE_URL =
   typeof window !== 'undefined'
-    ? (window.__RUNTIME_CONFIG__?.apiBaseUrl || appConfig.api.baseUrl || 'https://localhost:7293/api')
-    : (process.env.NEXT_PUBLIC_API_BASE_URL || appConfig.api.baseUrl || 'https://localhost:7293/api');
+    ? (window.__RUNTIME_CONFIG__?.apiBaseUrl || appConfig.api.baseUrl)
+    : (process.env.NEXT_PUBLIC_API_BASE_URL || appConfig.api.baseUrl);
 
 async function apiRequest<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
   try {
