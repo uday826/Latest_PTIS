@@ -335,7 +335,6 @@ export async function submitAssetForm(formData: AssetFormData) {
       upicId: formData.upicId || null,
       propertyNo: formData.propertyNumber || null,
       assetLocalName: formData.assetNameLocal || null,
-      assetWardNo: null,
       isActive: false,
       createdBy: 1,
 

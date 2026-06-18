@@ -165,7 +165,6 @@ export interface AssetMasterRequest {
   upicId?: string | null;
   propertyNo?: string | null;
   assetLocalName?: string | null;
-  assetWardNo?: string | null;
 
 
   // Optional location
