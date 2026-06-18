@@ -12,6 +12,7 @@ import {
 import type { BuildingPropertyDetailsSectionProps } from "@/types/asset-types/basic-info/buildBasicInfo.types";
 import { Building } from "lucide-react";
 import React from "react";
+import { useTranslations } from "next-intl";
 
 /**
  * Section A — Property Number Details
@@ -35,6 +36,8 @@ export function BuildingPropertyDetailsSection({
   subUseTypes = [],
   isLoadingSubTypes = false,
 }: BuildingPropertyDetailsSectionProps): React.JSX.Element {
+  const t = useTranslations("addAssetForm");
+
   const isLand = formData.valuationType
     ? formData.valuationType === "LAND"
     : formData.category?.toLowerCase().includes("land");
@@ -54,7 +57,7 @@ export function BuildingPropertyDetailsSection({
           <Building className="size-3.5 text-white" />
         </div>
         <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">
-          Asset Details
+          {t("basicInfo.propertyDetails.title")}
         </CardTitle>
       </CardHeader>
 
@@ -62,7 +65,7 @@ export function BuildingPropertyDetailsSection({
         {/* Asset Category — read-only */}
         <div className="flex flex-col">
           <span className="mb-1 text-[11px] font-medium text-gray-700">
-            Asset Category
+            {t("basicInfo.propertyDetails.assetCategory")}
           </span>
           <div className="h-7 px-2 bg-slate-100 border border-slate-200 rounded-md text-[11px] text-slate-700 font-bold flex items-center">
             {formData.category}
@@ -72,7 +75,7 @@ export function BuildingPropertyDetailsSection({
         {/* Asset Type — read-only */}
         <div className="flex flex-col">
           <span className="mb-1 text-[11px] font-medium text-gray-700">
-            Asset Type
+            {t("basicInfo.propertyDetails.assetType")}
           </span>
           <div className="h-7 px-2 bg-slate-100 border border-slate-200 rounded-md text-[11px] text-slate-700 font-bold flex items-center truncate">
             {formData.assetType || "—"}
@@ -80,7 +83,7 @@ export function BuildingPropertyDetailsSection({
         </div>
 
         <SearchSelect
-          label="Mouja"
+          label={t("basicInfo.propertyDetails.mouja")}
           name="mouja"
           value={formData.mouja}
           onChange={(name, value) => {
@@ -98,14 +101,14 @@ export function BuildingPropertyDetailsSection({
               })
               : []
           }
-          placeholder="Select Mouja"
+          placeholder={t("basicInfo.propertyDetails.selectMouja")}
           className="font-semibold text-sm"
           required={!formData.isMovableCategory}
           error={showError("mouja" as any) ? (errors as any).mouja : undefined}
         />
 
         <SearchSelect
-          label="Zone"
+          label={t("basicInfo.propertyDetails.zone")}
           name="zone"
           value={formData.zone}
           onChange={(name, value) => handleChange({ target: { name, value } } as any)}
@@ -121,21 +124,21 @@ export function BuildingPropertyDetailsSection({
                 return { label, value: String(z.id) };
               })
               : [
-                { label: "Zone 1", value: "1" },
-                { label: "Zone 2", value: "2" },
-                { label: "Zone 3", value: "3" },
-                { label: "Zone 4", value: "4" },
-                { label: "Zone 5", value: "5" },
+                { label: `${t("basicInfo.propertyDetails.zone")} 1`, value: "1" },
+                { label: `${t("basicInfo.propertyDetails.zone")} 2`, value: "2" },
+                { label: `${t("basicInfo.propertyDetails.zone")} 3`, value: "3" },
+                { label: `${t("basicInfo.propertyDetails.zone")} 4`, value: "4" },
+                { label: `${t("basicInfo.propertyDetails.zone")} 5`, value: "5" },
               ]
           }
-          placeholder="Select Zone"
+          placeholder={t("basicInfo.propertyDetails.selectZone")}
           className="font-semibold text-sm"
           required={!formData.isMovableCategory}
           error={showError("zone") ? errors.zone : undefined}
         />
 
         <SearchSelect
-          label="Ward"
+          label={t("basicInfo.propertyDetails.ward")}
           name="ward"
           value={formData.ward}
           onChange={(name, value) => handleChange({ target: { name, value } } as any)}
@@ -157,14 +160,14 @@ export function BuildingPropertyDetailsSection({
                 value: String(i + 1),
               }))
           }
-          placeholder="Select Ward"
+          placeholder={t("basicInfo.propertyDetails.selectWard")}
           className="font-semibold text-sm"
           required={!formData.isMovableCategory}
           error={showError("ward") ? errors.ward : undefined}
         />
 
         <SearchSelect
-          label="Subzone"
+          label={t("basicInfo.propertyDetails.subzone")}
           name="subzone"
           value={formData.subzone}
           onChange={(name, value) => handleChange({ target: { name, value } } as any)}
@@ -183,14 +186,14 @@ export function BuildingPropertyDetailsSection({
               })
               : []
           }
-          placeholder="Select Subzone"
+          placeholder={t("basicInfo.propertyDetails.selectSubzone")}
           className="font-semibold text-sm"
           required={!formData.isMovableCategory}
           error={showError("subzone" as any) ? (errors as any).subzone : undefined}
         />
 
         <Input
-          label={isLand ? "CSN No. / Survey Number" : "CSN No."}
+          label={isLand ? t("basicInfo.propertyDetails.csnNoSurvey") : t("basicInfo.propertyDetails.csnNo")}
           name="surveyNumber"
           value={formData.surveyNumber}
           onChange={handleChange}
@@ -202,7 +205,7 @@ export function BuildingPropertyDetailsSection({
 
         <div className="hidden">
           <Input
-            label="Property No"
+            label={t("basicInfo.propertyDetails.propertyNo")}
             name="propertyNumber"
             value={formData.propertyNumber}
             onChange={handleChange}
@@ -214,16 +217,16 @@ export function BuildingPropertyDetailsSection({
         </div>
 
         <SearchSelect
-          label="Asset Condition"
+          label={t("basicInfo.propertyDetails.assetCondition")}
           name="condition"
           value={formData.condition || "Good"}
           onChange={(name, value) => handleChange({ target: { name, value } } as any)}
           options={[
-            { label: "Good", value: "Good" },
-            { label: "Average", value: "Average" },
-            { label: "Poor", value: "Poor" },
+            { label: t("basicInfo.propertyDetails.conditions.good"), value: "Good" },
+            { label: t("basicInfo.propertyDetails.conditions.average"), value: "Average" },
+            { label: t("basicInfo.propertyDetails.conditions.poor"), value: "Poor" },
           ]}
-          placeholder="Select Condition"
+          placeholder={t("basicInfo.propertyDetails.selectCondition")}
           className="font-semibold text-sm"
         />
 
@@ -231,7 +234,7 @@ export function BuildingPropertyDetailsSection({
           (isLand || isBuilding) && (
             <>
               <Input
-                label="Length (Sq. Mtr)"
+                label={t("basicInfo.propertyDetails.length")}
                 name="length"
                 value={(formData as any).length || ""}
                 onChange={handleChange}
@@ -242,7 +245,7 @@ export function BuildingPropertyDetailsSection({
                 error={showError("length" as any) ? (errors as any).length : undefined}
               />
               <Input
-                label="Width (Sq. Mtr)"
+                label={t("basicInfo.propertyDetails.width")}
                 name="width"
                 value={(formData as any).width || ""}
                 onChange={handleChange}
@@ -255,20 +258,20 @@ export function BuildingPropertyDetailsSection({
               {isLand && (
                 <>
                   <SearchSelect
-                    label="Offset Operation"
+                    label={t("basicInfo.propertyDetails.offsetOperation")}
                     name="offsetOp"
                     value={(formData as any).offsetOp || "Subtract"}
                     onChange={(name, value) => handleChange({ target: { name, value } } as any)}
                     options={[
-                      { label: "Add", value: "Add" },
-                      { label: "Subtract", value: "Subtract" },
+                      { label: t("basicInfo.propertyDetails.offsetOps.add"), value: "Add" },
+                      { label: t("basicInfo.propertyDetails.offsetOps.subtract"), value: "Subtract" },
                     ]}
-                    placeholder="Select Offset Operation"
+                    placeholder={t("basicInfo.propertyDetails.selectOffsetOp")}
                     className="font-semibold text-sm"
                     required
                   />
                   <Input
-                    label="Offset (Sq. Mtr)"
+                    label={t("basicInfo.propertyDetails.offset")}
                     name="offset"
                     value={(formData as any).offset || ""}
                     onChange={handleChange}
@@ -281,7 +284,7 @@ export function BuildingPropertyDetailsSection({
                 </>
               )}
               <Input
-                label="Total Area (Sq. Mtr)"
+                label={t("basicInfo.propertyDetails.totalArea")}
                 name="landArea"
                 value={formData.landArea || ""}
                 onChange={handleChange}
@@ -300,7 +303,7 @@ export function BuildingPropertyDetailsSection({
           isLand && (
             <>
               <Input
-                label="Plot Number"
+                label={t("basicInfo.propertyDetails.plotNumber")}
                 name="plotNumber"
                 value={(formData as any).plotNumber || ""}
                 onChange={handleChange}
@@ -310,7 +313,7 @@ export function BuildingPropertyDetailsSection({
                 error={showError("plotNumber" as any) ? (errors as any).plotNumber : undefined}
               />
               <SearchSelect
-                label="Type of Use"
+                label={t("basicInfo.propertyDetails.typeOfUse")}
                 name="typeOfUseId"
                 value={(formData as any).typeOfUseId || ""}
                 onChange={(name, value) => handleChange({ target: { name, value } } as any)}
@@ -322,13 +325,13 @@ export function BuildingPropertyDetailsSection({
                     }))
                     : []
                 }
-                placeholder="Select Type of Use"
+                placeholder={t("basicInfo.propertyDetails.selectTypeOfUse")}
                 className="font-semibold text-sm"
                 required
                 error={showError("typeOfUseId" as any) ? (errors as any).typeOfUseId : undefined}
               />
               <SearchSelect
-                label="Sub Type of Use"
+                label={t("basicInfo.propertyDetails.subTypeOfUse")}
                 name="subTypeOfUseId"
                 value={(formData as any).subTypeOfUseId || ""}
                 onChange={(name, value) => handleChange({ target: { name, value } } as any)}
@@ -340,7 +343,7 @@ export function BuildingPropertyDetailsSection({
                     }))
                     : []
                 }
-                placeholder="Select Sub Type of Use"
+                placeholder={t("basicInfo.propertyDetails.selectSubTypeOfUse")}
                 className="font-semibold text-sm"
                 disabled={!(formData as any).typeOfUseId || isLoadingSubTypes}
                 required

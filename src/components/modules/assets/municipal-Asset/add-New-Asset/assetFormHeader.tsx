@@ -13,6 +13,8 @@ import { Home, PencilLine } from "lucide-react";
 
 import { AssetFormProvider, useAssetForm } from "@/components/modules/assets/municipal-Asset/add-New-Asset/AssetFormContext";
 
+import { useTranslations } from "next-intl";
+
 interface AssetFormHeaderProps {
   children: React.ReactNode;
 }
@@ -30,6 +32,7 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { formData } = useAssetForm();
+  const t = useTranslations("addAssetForm");
 
   const isEditMode = searchParams.get('mode') === 'edit';
   const assetCode = searchParams.get('assetCode') || formData.assetCode || '';
@@ -72,16 +75,20 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-extrabold tracking-tight text-white leading-none">
-                {isEditMode ? 'Edit Municipal Asset' : 'Add New Municipal Asset'}
+                {isEditMode ? t("wizard.editAsset") : t("wizard.addNewAsset")}
               </h1>
               {isEditMode && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-amber-400">
-                  Edit Mode
+                  {t("wizard.editMode")}
                 </span>
               )}
             </div>
             <p className="text-[10px] text-yellow-300 font-extrabold uppercase tracking-wider mt-1.5">
-              Step {currentStep?.id ?? 1} of {steps.length} | {currentStep?.label ?? 'Basic Info'}
+              {t("wizard.stepOf", {
+                current: currentStep?.id ?? 1,
+                total: steps.length,
+                label: currentStep ? t(`wizard.steps.${currentStep.key}`) : t("wizard.steps.basic-info")
+              })}
               {isEditMode && assetCode && (
                 <span className="ml-2 text-white/70">• {assetCode}</span>
               )}
@@ -92,9 +99,9 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
           <button
             onClick={handleBackToDashboard}
             className="px-3 py-1.5 border border-slate-500 hover:border-slate-300 hover:bg-slate-800 rounded-lg text-[10px] font-bold text-slate-300 uppercase transition-colors"
-            title="Close Wizard"
+            title={t("wizard.closeWizard")}
           >
-            Close
+            {t("wizard.close")}
           </button>
         </div>
       </div>

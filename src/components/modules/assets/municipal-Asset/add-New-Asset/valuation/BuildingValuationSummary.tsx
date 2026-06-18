@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   DollarSign,
 } from "lucide-react";
@@ -106,6 +107,8 @@ export function BuildingValuationSummary({
   conditions = [],
   buildingCV,
 }: BuildingValuationSummaryProps) {
+  const t = useTranslations("addAssetForm");
+
   // Primary source: totalBuildingCapitalValue from the /building/calculate-cv API response
   // This includes: building's own floor CVs + all child asset (flat/shop) CVs
   const cvFromAPI = Number(
@@ -202,20 +205,20 @@ export function BuildingValuationSummary({
       bg: style.bg,
       textColor: style.textColor,
       rows: [
-        { label: `Total ${cat.typeName} Count`, value: `${totalCount} ${totalCount === 1 ? "Item" : "Items"}` },
-        { label: "Total Quantity (Units)", value: `${totalQty} Units` },
-        { label: `Total ${cat.typeName} Value`, value: `₹ ${fmt(totalVal)}`, highlight: true, highlightBg: style.highlightBg, highlightBorder: style.highlightBorder, highlightText: style.highlightText },
+        { label: t("valuation.inventory.countLabel", { category: cat.typeName }), value: t("valuation.inventory.itemsVal", { count: totalCount }) },
+        { label: t("valuation.inventory.totalQty"), value: t("floorDetails.unitsCount", { count: totalQty }) },
+        { label: t("valuation.inventory.valueLabel", { category: cat.typeName }), value: `₹ ${fmt(totalVal)}`, highlight: true, highlightBg: style.highlightBg, highlightBorder: style.highlightBorder, highlightText: style.highlightText },
       ]
     };
   });
 
   const detailCards = [
     {
-      title: "Building Valuation", color: "#93C5FD", bg: "#DBEAFE", textColor: "#1E40AF",
+      title: t("valuation.building.title"), color: "#93C5FD", bg: "#DBEAFE", textColor: "#1E40AF",
       rows: [
-        { label: "Total Floors Count", value: `${floors.length} ${floors.length === 1 ? "Floor" : "Floors"}` },
-        { label: "Total Built-up Area", value: totalBuiltUpArea > 0 ? `${fmt(totalBuiltUpArea)} sq.ft` : "Not Available" },
-        { label: "Total Capital Value (CV)", value: `₹ ${buildingCapitalValue > 0 ? fmt(buildingCapitalValue) : "0.00"}`, highlight: true, highlightBg: "#D1FAE5", highlightBorder: "#6EE7B7", highlightText: "#065F46" },
+        { label: t("valuation.building.floorsCount"), value: t("valuation.building.floorsCountVal", { count: floors.length }) },
+        { label: t("valuation.building.builtUpArea"), value: totalBuiltUpArea > 0 ? `${fmt(totalBuiltUpArea)} sq.ft` : t("valuation.building.notAvailable") },
+        { label: t("valuation.building.capitalValue"), value: `₹ ${buildingCapitalValue > 0 ? fmt(buildingCapitalValue) : "0.00"}`, highlight: true, highlightBg: "#D1FAE5", highlightBorder: "#6EE7B7", highlightText: "#065F46" },
       ],
     },
     ...dynamicCategoryCards
@@ -225,7 +228,7 @@ export function BuildingValuationSummary({
     <div className="space-y-6 p-4 rounded-lg">
       {/* Detail Cards */}
       <div className="mb-3">
-        <h4 className="text-base font-bold mb-3" style={{ color: "#1E40AF" }}>Detailed Valuation Breakdown</h4>
+        <h4 className="text-base font-bold mb-3" style={{ color: "#1E40AF" }}>{t("valuation.breakdown.title")}</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
           {detailCards.map((card) => (
             <div key={card.title} className="p-3 bg-white rounded-lg border shadow-md hover:shadow-lg transition-shadow duration-300" style={{ borderColor: card.color }}>
@@ -260,7 +263,7 @@ export function BuildingValuationSummary({
 
       {/* Grand Total */}
       <div className="mt-4 p-2.5 rounded-lg flex justify-between items-center border-2" style={{ background: "linear-gradient(135deg,#EFF6FF,#DBEAFE,#BFDBFE)", borderColor: "#93C5FD" }}>
-        <span className="font-bold text-sm" style={{ color: "#1E40AF" }}>Grand Total Asset Value</span>
+        <span className="font-bold text-sm" style={{ color: "#1E40AF" }}>{t("valuation.grandTotal")}</span>
         <div className="px-3 py-1.5 rounded-md" style={{ background: "linear-gradient(135deg,#1E40AF,#1E3A8A)", border: "1.5px solid #1D4ED8" }}>
           <span className="text-lg font-bold" style={{ fontFamily: "monospace", color: "#FFFFFF" }}>₹ {fmt(grandTotalValue)}</span>
         </div>

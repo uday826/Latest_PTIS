@@ -16,6 +16,7 @@ import { useAssetForm } from "../AssetFormContext";
 import { toast } from "sonner";
 import { calculateMovableCVAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
 import { fetchUploadedDocumentsAction, fetchDocumentFileAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
+import { useTranslations } from "next-intl";
 
 interface Props {
   parentAssetId?: number | null;
@@ -161,6 +162,7 @@ function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnail
 }
 
 export default function FurnitureFixtureClient({ parentAssetId, categories = [], conditions = [], itemNames = [], itemModels = [], initialBatches = null }: Props): React.ReactElement {
+  const t = useTranslations("addAssetForm");
   // Pass parentAssetId to state hook for immediate save operations
   const s = useFurnitureFixtureState(categories, conditions, itemNames, itemModels, initialBatches, parentAssetId);
   const { registerSubmitHook, formData } = useAssetForm();
@@ -176,7 +178,7 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
 
     // 1. Block if mandatory and no items added
     if (isInventoryMandatory && (!s.rows || s.rows.length === 0)) {
-      toast.error('At least one inventory item is required before proceeding.');
+      toast.error(t("inventory.toasts.atLeastOneItemRequired") || 'At least one inventory item is required before proceeding.');
       return false;
     }
 
@@ -188,7 +190,7 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
     // 3. Warn if form has unadded inputs (unchanged)
     const hasUnaddedInputs = s.form.type || s.form.itemName || s.form.modelName;
     if (hasUnaddedInputs) {
-      toast.warning('You have configured inventory details that haven\'t been added...');
+      toast.warning(t("inventory.toasts.unaddedInputs") || 'You have configured inventory details that haven\'t been added...');
       return false;
     }
 
@@ -202,7 +204,7 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
     }
 
     return true;
-  }, [s.rows, s.form, formData.isInventoryMandatory, formData.isMovableCategory, parentAssetId]);
+  }, [s.rows, s.form, formData.isInventoryMandatory, formData.isMovableCategory, parentAssetId, t]);
 
   useEffect(() => {
     if (registerSubmitHook) {
@@ -244,7 +246,7 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
                   <p className="mt-1.5 truncate text-base font-bold leading-none text-[#1D4ED8] sm:text-lg">
                     {formatCurrencyCompact(card.totalAmount)}
                   </p>
-                  <p className="mt-1.5 text-[10px] text-slate-500 leading-none">{card.totalItems} items</p>
+                  <p className="mt-1.5 text-[10px] text-slate-500 leading-none">{t("floorDetails.totalCount", { count: card.totalItems })}</p>
                 </div>
               </Card>
             );
@@ -254,8 +256,8 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
         <Card variant="bordered" padding="sm" className="rounded-xl border border-[#BFD0E6] bg-white shadow-md">
           <CardContent className="space-y-2">
             <div className="mb-1 flex flex-col gap-2 border-b border-[#D7E1EE] pb-1.5 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-lg font-semibold text-[#1E40AF] sm:text-xl">Furniture & Fixtures Inventory</h2>
-              <p className="text-sm font-medium text-[#1D4ED8]">Total {s.filteredRows.length} items</p>
+              <h2 className="text-lg font-semibold text-[#1E40AF] sm:text-xl">{t("inventory.title")}</h2>
+              <p className="text-sm font-medium text-[#1D4ED8]">{t("inventory.totalItems", { count: s.filteredRows.length })}</p>
             </div>
             <InventoryFormSection
               form={s.form}
@@ -274,7 +276,7 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
               addPhotoInputRef={s.addPhotoInputRef}
               handleAddPhotoUpload={s.handleAddPhotoUpload}
               openInvoiceDrawer={() => s.openInvoiceDrawer(false)}
-              addInvoicePreviewLabel={s.draftInvoice?.invoiceNumber || "Add Invoice"}
+              addInvoicePreviewLabel={s.draftInvoice?.invoiceNumber || t("inventory.addInvoice")}
               handleAddRow={s.handleAddRow}
               formError={s.formError}
               dynamicCategoryOptions={s.dynamicCategoryOptions}
@@ -289,11 +291,11 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
         <Card variant="bordered" padding="none" className="overflow-hidden rounded-xl border border-[#BFD0E6] bg-white shadow-md">
           <div className="w-full overflow-x-auto">
             <div className="flex items-center justify-between gap-3 border-b border-[#D7E1EE] bg-[#F7FAFF] px-3 py-2">
-              <div className="text-sm font-semibold text-slate-700">Inventory</div>
+              <div className="text-sm font-semibold text-slate-700">{t("inventory.heading")}</div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-slate-600">Type</span>
+                <span className="text-xs font-medium text-slate-600">{t("inventory.type")}</span>
                 <select value={s.filterType} onChange={(e) => { s.setFilterType(e.target.value); s.setCurrentPage(1); }} className="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-700 focus:ring-1 focus:ring-blue-500">
-                  <option value="all">All</option>
+                  <option value="all">{t("inventory.all")}</option>
                   <option value="furniture">Furniture</option>
                   <option value="it-equipment">IT Equipment</option>
                   <option value="electronic-fixtures">Electronic Fixtures</option>
@@ -304,25 +306,25 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
             <MasterTable
               data={tableData}
               columns={[
-                { key: "srNo", label: "No.", align: "center" },
+                { key: "srNo", label: t("inventory.columns.no"), align: "center" },
                 {
-                  key: "type", label: "Type", align: "center", render: (_, row) => {
+                  key: "type", label: t("inventory.columns.type"), align: "center", render: (_, row) => {
                     const meta = inventoryMeta[row.type];
                     return <Badge variant="outline" size="sm" className={meta?.badgeClassName || "bg-gray-50 text-gray-700 border-gray-200"}>{meta?.label || row.type}</Badge>;
                   }
                 },
-                { key: "itemName", label: "Item / Equipment Name" },
-                { key: "modelName", label: "Type / Model / Brand", render: (val) => <span className="font-medium text-blue-700">{String(val ?? "-")}</span> },
-                { key: "specifications", label: "Specs / Reg No." },
-                { key: "purchaseDate", label: "Purchase Date", align: "center" },
-                { key: "owningDepartment", label: "Owning Department", render: (val) => <span className="text-slate-600">{String(val ?? "-")}</span> },
-                { key: "condition", label: "Cond. / Status", align: "center", render: (val) => <Badge variant="default" size="sm" className="border-sky-200 bg-sky-50 text-sky-700">{String(val ?? "-")}</Badge> },
-                { key: "quantity", label: "Quantity", align: "center" },
-                { key: "unitValue", label: "Unit Value (₹)", align: "center", render: (val) => formatCurrency(Number(val ?? 0)) },
-                { key: "total", label: "Total (₹)", align: "center", render: (val) => <span className="font-semibold text-blue-700">{formatCurrency(Number(val ?? 0))}</span> },
-                { key: "totalCV", label: "CV (₹)", align: "center", render: (val) => <span className="font-bold text-emerald-600">{formatCurrency(Number(val ?? 0))}</span> },
+                { key: "itemName", label: t("inventory.columns.itemName") },
+                { key: "modelName", label: t("inventory.columns.modelName"), render: (val) => <span className="font-medium text-blue-700">{String(val ?? "-")}</span> },
+                { key: "specifications", label: t("inventory.columns.specs") },
+                { key: "purchaseDate", label: t("inventory.columns.purchaseDate"), align: "center" },
+                { key: "owningDepartment", label: t("inventory.columns.owningDept"), render: (val) => <span className="text-slate-600">{String(val ?? "-")}</span> },
+                { key: "condition", label: t("inventory.columns.condition"), align: "center", render: (val) => <Badge variant="default" size="sm" className="border-sky-200 bg-sky-50 text-sky-700">{String(val ?? "-")}</Badge> },
+                { key: "quantity", label: t("inventory.columns.quantity"), align: "center" },
+                { key: "unitValue", label: t("inventory.columns.unitValue"), align: "center", render: (val) => formatCurrency(Number(val ?? 0)) },
+                { key: "total", label: t("inventory.columns.total"), align: "center", render: (val) => <span className="font-semibold text-blue-700">{formatCurrency(Number(val ?? 0))}</span> },
+                { key: "totalCV", label: t("inventory.columns.cv"), align: "center", render: (val) => <span className="font-bold text-emerald-600">{formatCurrency(Number(val ?? 0))}</span> },
                 {
-                  key: "photoUrl", label: "Photo", align: "center", render: (_, row) => (
+                  key: "photoUrl", label: t("inventory.columns.photo"), align: "center", render: (_, row) => (
                     <RowDocumentThumbnail
                       row={row}
                       type="photo"
@@ -331,7 +333,7 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
                   )
                 },
                 {
-                  key: "invoice", label: "Invoice", align: "center", render: (_, row) => (
+                  key: "invoice", label: t("inventory.columns.invoice"), align: "center", render: (_, row) => (
                     <RowDocumentThumbnail
                       row={row}
                       type="invoice"
@@ -340,14 +342,14 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
                   )
                 },
               ]}
-              emptyText="No inventory rows added yet."
+              emptyText={t("inventory.emptyText")}
               renderActions={(row) => (
                 <>
                   <EditButton onClick={() => s.handleStartEdit(row)} />
                   <DeleteButton onClick={() => s.handleDeleteRow(row.id)} />
                 </>
               )}
-              actionLabel="Actions" pageNumber={s.currentPage} pageSize={PAGE_SIZE} totalCount={s.filteredRows.length} totalPages={Math.max(1, Math.ceil(s.filteredRows.length / PAGE_SIZE))} onPageChange={s.setCurrentPage} paginationConfig={{ enabled: true }} maxBodyHeightClassName="max-h-none" tableClassName="min-w-[1160px] text-xs [&_th]:text-[11px] [&_td]:text-xs [&_th]:py-2 [&_td]:py-1.5" containerClassName="overflow-hidden rounded-xl border border-[#CBD8EA]"
+              actionLabel={t("inventory.columns.actions")} pageNumber={s.currentPage} pageSize={PAGE_SIZE} totalCount={s.filteredRows.length} totalPages={Math.max(1, Math.ceil(s.filteredRows.length / PAGE_SIZE))} onPageChange={s.setCurrentPage} paginationConfig={{ enabled: true }} maxBodyHeightClassName="max-h-none" tableClassName="min-w-[1160px] text-xs [&_th]:text-[11px] [&_td]:text-xs [&_th]:py-2 [&_td]:py-1.5" containerClassName="overflow-hidden rounded-xl border border-[#CBD8EA]"
             />
           </div>
         </Card>
@@ -356,17 +358,17 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
           <div className="mt-4 pt-4 border-t border-slate-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-800">Category-wise CV </h3>
+                <h3 className="text-lg font-bold text-slate-800">{t("inventory.categoryWiseCv")}</h3>
               </div>
               <div className="mt-3 sm:mt-0 flex flex-col items-end gap-2">
                 {s.isSaving && (
                   <div className="flex items-center gap-2 text-blue-600">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm font-medium">Saving inventory...</span>
+                    <span className="text-sm font-medium">{t("inventory.saving")}</span>
                   </div>
                 )}
                 {s.saveError && <p className="text-xs text-red-500 max-w-[200px] text-right">{s.saveError}</p>}
-                {s.saveSuccess && <p className="text-xs text-emerald-600 font-semibold">✓ Inventory saved successfully!</p>}
+                {s.saveSuccess && <p className="text-xs text-emerald-600 font-semibold">{t("inventory.saveSuccess")}</p>}
               </div>
             </div>
 
@@ -389,7 +391,7 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
         editPhotoInputRef={s.editPhotoInputRef}
         handleEditPhotoUpload={s.handleEditPhotoUpload}
         openInvoiceDrawer={() => s.openInvoiceDrawer(true)}
-        editInvoicePreviewLabel={s.editDraftInvoice?.invoiceNumber || "Add Invoice"}
+        editInvoicePreviewLabel={s.editDraftInvoice?.invoiceNumber || t("inventory.addInvoice")}
         handleUpdateRow={s.handleUpdateRow}
         formError={s.formError}
         dynamicCategoryOptions={s.dynamicCategoryOptions}

@@ -3,6 +3,7 @@ import { Drawer, Button, Select, UploadButton, Input } from "@/components/common
 import { FileText, Receipt, X } from "lucide-react";
 import { type InvoiceForm } from "./FurnitureFixtureTypes";
 import { invoiceModeOptions } from "./FurnitureFixtureConstants";
+import { useTranslations } from "next-intl";
 
 interface InvoiceDrawerProps {
   open: boolean;
@@ -27,6 +28,7 @@ export function InvoiceDrawer({
   saveInvoiceDetails,
   invoiceError,
 }: InvoiceDrawerProps) {
+  const t = useTranslations("addAssetForm");
   return (
     <Drawer
       open={open}
@@ -39,10 +41,10 @@ export function InvoiceDrawer({
           </div>
           <div>
             <h3 id="drawer-title" className="text-lg font-semibold text-slate-900">
-              Add Invoice Details
+              {t("inventory.invoiceDrawer.title")}
             </h3>
             <p className="text-sm text-slate-500">
-              Invoice details can be reused for multiple items.
+              {t("inventory.invoiceDrawer.subtitle")}
             </p>
           </div>
         </div>
@@ -50,10 +52,10 @@ export function InvoiceDrawer({
       footer={
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
           <Button variant="secondary" icon={X} onClick={onClose}>
-            Close
+            {t("buttons.close")}
           </Button>
           <Button variant="primary" icon={Receipt} onClick={saveInvoiceDetails}>
-            Save Invoice Details
+            {t("inventory.invoiceDrawer.saveBtn")}
           </Button>
         </div>
       }
@@ -62,7 +64,7 @@ export function InvoiceDrawer({
         <div className="rounded-2xl bg-white p-1">
           <div className="space-y-5 rounded-2xl border border-slate-200 bg-slate-50 p-2 sm:p-2">
             <Select
-              label="Invoice Mode"
+              label={t("inventory.invoiceDrawer.modeLabel")}
               value={invoiceForm.invoiceMode}
               onChange={(_, value) => {
                 updateInvoiceForm("invoiceMode", value);
@@ -78,7 +80,7 @@ export function InvoiceDrawer({
 
             {invoiceForm.invoiceMode === "reuse" ? (
               <Select
-                label="Select Existing Invoice"
+                label={t("inventory.invoiceDrawer.selectExistingLabel")}
                 value={invoiceForm.existingInvoiceKey}
                 onChange={(_, key) => {
                   updateInvoiceForm("existingInvoiceKey", key);
@@ -91,13 +93,13 @@ export function InvoiceDrawer({
                   updateInvoiceForm("invoiceFileName", "");
                 }}
                 options={existingInvoiceOptions}
-                placeholder="-- Select Invoice --"
+                placeholder={t("inventory.invoiceDrawer.selectExistingPlaceholder")}
                 disabled={existingInvoiceOptions.length === 1 && existingInvoiceOptions[0]?.value === ""}
               />
             ) : (
               <>
                 <div className="space-y-1">
-                  <span className="text-sm font-medium text-gray-700">Upload Invoice File</span>
+                  <span className="text-sm font-medium text-gray-700">{t("inventory.invoiceDrawer.uploadLabel")}</span>
                   <input
                     ref={invoiceInputRef}
                     type="file"
@@ -106,21 +108,21 @@ export function InvoiceDrawer({
                     onChange={handleInvoiceUpload}
                   />
                   <UploadButton
-                    label={invoiceForm.invoiceFileName || "Choose Invoice File (PDF, JPG, PNG)"}
+                    label={invoiceForm.invoiceFileName || t("inventory.invoiceDrawer.chooseFilePlaceholder")}
                     className="w-full justify-start"
                     onClick={() => invoiceInputRef.current?.click()}
                   />
                 </div>
 
                 <Input
-                  label="Invoice Number"
+                  label={t("inventory.columns.invoice")}
                   placeholder="e.g. INV-2024-001"
                   value={invoiceForm.invoiceNumber}
                   onChange={(event) => updateInvoiceForm("invoiceNumber", event.target.value)}
                 />
 
                 <Input
-                  label="Invoice Date"
+                  label={t("inventory.invoiceDrawer.invoiceDateLabel")}
                   type="date"
                   value={invoiceForm.invoiceDate}
                   onChange={(event) => updateInvoiceForm("invoiceDate", event.target.value)}
@@ -131,15 +133,15 @@ export function InvoiceDrawer({
             {invoiceForm.invoiceMode === "reuse" ? (
               <div className="rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-700">
                 {invoiceForm.existingInvoiceKey
-                  ? `Selected: ${invoiceForm.invoiceNumber}${invoiceForm.invoiceDate ? ` (${invoiceForm.invoiceDate})` : ""}`
+                  ? `${t("inventory.invoiceDrawer.selected")}: ${invoiceForm.invoiceNumber}${invoiceForm.invoiceDate ? ` (${invoiceForm.invoiceDate})` : ""}`
                   : existingInvoiceOptions.length === 1 && existingInvoiceOptions[0]?.value === ""
-                    ? "No invoice is available."
-                    : "Select an invoice to reuse."}
+                    ? t("inventory.invoiceDrawer.noInvoiceAvailable")
+                    : t("inventory.invoiceDrawer.selectToReuse")}
               </div>
             ) : null}
 
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-2 py-1.5 text-sm text-amber-800">
-              This invoice can be reused for multiple items.
+              {t("inventory.invoiceDrawer.reusedMessage")}
             </div>
 
             {invoiceError ? (

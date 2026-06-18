@@ -12,6 +12,7 @@ import {
   fetchFloorsByAsset,
 } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 export function StandaloneSubUnitStep({
   dropdownOptions,
@@ -20,6 +21,7 @@ export function StandaloneSubUnitStep({
   dropdownOptions?: any;
   initialSubUnits?: any[];
 }) {
+  const t = useTranslations("addAssetForm");
   const { formData, updateFormData, setSubunitFiles, registerSubmitHook } = useAssetForm();
   const [isGenerating, setIsGenerating] = useState(false);
   const initializedRef = useRef(false);
@@ -193,20 +195,20 @@ export function StandaloneSubUnitStep({
   const handleGenerate = async () => {
     const pId = Number(parentBuildingId || formData.id || formData.assetId || 0);
     if (!pId) {
-      toast.error("Parent building not saved yet. Save Basic Info first.");
+      toast.error(t("standaloneSubUnit.toasts.parentNotSaved"));
       return;
     }
 
     const count = toNo - fromNo + 1;
     if (count < 1) {
-      toast.error("Count must be at least 1.");
+      toast.error(t("standaloneSubUnit.toasts.countMin"));
       return;
     }
 
     const typeLabel = formData.assetType?.split(" ")[0] || "Unit";
 
     setIsGenerating(true);
-    const loadingToast = toast.loading(`Generating ${count} ${typeLabel} unit(s) in database…`);
+    const loadingToast = toast.loading(t("standaloneSubUnit.toasts.generating", { count, typeLabel }));
 
     try {
       const res = await bulkGenerateSubUnitsAction({
@@ -238,14 +240,14 @@ export function StandaloneSubUnitStep({
         const count = res.data.generatedAssets.length;
         const unitText = count === 1 ? `unit` : `units`;
         toast.success(
-          `${count} ${unitText} generated successfully. Click Details to configure.`,
+          t("standaloneSubUnit.toasts.generatedSuccess", { count, unitText }),
           { id: loadingToast }
         );
       } else {
-        toast.error(res.error || "Generation failed.", { id: loadingToast });
+        toast.error(res.error || t("standaloneSubUnit.toasts.generationFailed"), { id: loadingToast });
       }
     } catch (err: any) {
-      toast.error(err.message || "Generation failed.", { id: loadingToast });
+      toast.error(err.message || t("standaloneSubUnit.toasts.generationFailed"), { id: loadingToast });
     } finally {
       setIsGenerating(false);
     }
@@ -279,11 +281,11 @@ export function StandaloneSubUnitStep({
   const handleSaveAll = useCallback(async (): Promise<boolean> => {
     if (units.length === 0) return true;
 
-    const loadingToast = toast.loading("Saving all units to database...");
+    const loadingToast = toast.loading(t("standaloneSubUnit.toasts.savingUnits"));
 
     const pId = Number(parentBuildingId || formData.id || formData.assetId || 0);
     if (!pId) {
-      toast.error("Parent building ID not resolved.", { id: loadingToast });
+      toast.error(t("standaloneSubUnit.toasts.parentIdNotResolved"), { id: loadingToast });
       return false;
     }
 
@@ -435,13 +437,13 @@ export function StandaloneSubUnitStep({
       setUnits(updatedUnits);
 
       if (errors.length > 0) {
-        toast.warning(`Saved ${saved.length} units. ${errors.length} failed: ${errors.join(", ")}`, { id: loadingToast });
+        toast.warning(t("standaloneSubUnit.toasts.partialSave", { saved: saved.length, failed: errors.length, errors: errors.join(", ") }), { id: loadingToast });
         return false;
       }
-      toast.success(`All ${saved.length} unit(s) saved. Proceeding…`, { id: loadingToast });
+      toast.success(t("standaloneSubUnit.toasts.allSaved", { count: saved.length }), { id: loadingToast });
       return true;
     } catch (err: any) {
-      toast.error(err.message || "Save failed.", { id: loadingToast });
+      toast.error(err.message || t("standaloneSubUnit.toasts.saveFailed"), { id: loadingToast });
       return false;
     }
   }, [units, parentBuildingId, formData.id]);
@@ -475,12 +477,12 @@ export function StandaloneSubUnitStep({
             <Building2 className="size-6 text-blue-200" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-blue-100 uppercase tracking-widest">Generating Sub-Units For</h2>
+            <h2 className="text-sm font-bold text-blue-100 uppercase tracking-widest">{t("standaloneSubUnit.generatingFor")}</h2>
             <p className="text-xl font-black">{parentBuildingName}</p>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs text-blue-200 uppercase tracking-widest font-bold">Asset Type</p>
+          <p className="text-xs text-blue-200 uppercase tracking-widest font-bold">{t("standaloneSubUnit.assetType")}</p>
           <p className="text-lg font-black text-amber-400">{formData.assetType}</p>
         </div>
       </div>
@@ -492,27 +494,27 @@ export function StandaloneSubUnitStep({
             <details className="group">
               <summary className="flex items-center justify-between cursor-pointer list-none">
                 <div className="flex items-center gap-2 text-xs font-black text-slate-700 uppercase tracking-wider">
-                  <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded font-black">Registered Info</span>
-                  <span>View Registered Parent Building details & dynamic fields</span>
+                  <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded font-black">{t("standaloneSubUnit.registeredInfo")}</span>
+                  <span>{t("standaloneSubUnit.viewDetails")}</span>
                 </div>
-                <span className="text-xs font-bold text-blue-600 group-open:hidden">Show details ▼</span>
-                <span className="text-xs font-bold text-blue-600 hidden group-open:inline">Hide details ▲</span>
+                <span className="text-xs font-bold text-blue-600 group-open:hidden">{t("standaloneSubUnit.showDetails")}</span>
+                <span className="text-xs font-bold text-blue-600 hidden group-open:inline">{t("standaloneSubUnit.hideDetails")}</span>
               </summary>
               <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs animate-in fade-in duration-300">
                 <div>
-                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Asset Name / Code</span>
+                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">{t("standaloneSubUnit.assetNameCode")}</span>
                   <span className="font-bold text-slate-700">{parentBuildingData.assetName} ({parentBuildingData.assetCode})</span>
                 </div>
                 <div>
-                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Property Tax / Survey No</span>
+                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">{t("standaloneSubUnit.propertyTaxSurveyNo")}</span>
                   <span className="font-bold text-slate-700">{parentBuildingData.propertyNumber || "—"} / {parentBuildingData.surveyNumber || "—"}</span>
                 </div>
                 <div>
-                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Ward / Zone</span>
+                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">{t("standaloneSubUnit.wardZone")}</span>
                   <span className="font-bold text-slate-700">{parentBuildingData.ward || "—"} / {parentBuildingData.zone || "—"}</span>
                 </div>
                 <div>
-                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Address / Pin Code</span>
+                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">{t("standaloneSubUnit.addressPinCode")}</span>
                   <span className="font-bold text-slate-700">{parentBuildingData.fullAddress || "—"} - {parentBuildingData.pinCode || "—"}</span>
                 </div>
 
@@ -542,7 +544,7 @@ export function StandaloneSubUnitStep({
         <CardContent className="p-4 flex flex-wrap items-end gap-4">
           <div className="w-32">
             <Input
-              label="From Unit No"
+              label={t("standaloneSubUnit.fromUnitNo")}
               type="number"
               value={fromNo}
               onChange={e => setFromNo(Number(e.target.value))}
@@ -551,7 +553,7 @@ export function StandaloneSubUnitStep({
           </div>
           <div className="w-32">
             <Input
-              label="To Unit No"
+              label={t("standaloneSubUnit.toUnitNo")}
               type="number"
               value={toNo}
               onChange={e => setToNo(Number(e.target.value))}
@@ -562,7 +564,7 @@ export function StandaloneSubUnitStep({
           {parentFloors.length > 0 && (
             <div className="w-48">
               <Select
-                label="Target Floor"
+                label={t("standaloneSubUnit.targetFloor")}
                 name="selectedFloorId"
                 value={selectedFloorId.toString()}
                 onChange={e => setSelectedFloorId(Number(e.target.value))}
@@ -585,13 +587,13 @@ export function StandaloneSubUnitStep({
             ) : (
               <Plus className="size-4" />
             )}
-            Add / Generate
+            {t("standaloneSubUnit.addGenerate")}
           </button>
 
           {units.length > 0 && (
             <div className="ml-auto h-10 px-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg flex items-center gap-2 font-bold text-xs uppercase">
               <CheckCircle2 className="size-4 text-emerald-500" />
-              {units.length} Unit(s) Generated
+              {t("standaloneSubUnit.unitsGenerated", { count: units.length })}
             </div>
           )}
         </CardContent>
@@ -602,28 +604,28 @@ export function StandaloneSubUnitStep({
         <div className="bg-blue-600 px-4 py-2 flex items-center gap-2 shrink-0">
           <LayoutGrid className="size-4 text-blue-200" />
           <h3 className="text-xs font-black text-white uppercase tracking-widest">
-            Generated {formData.assetType} - {parentBuildingName} ({units.length})
+            {t("standaloneSubUnit.generatedHeader", { assetType: formData.assetType, buildingName: parentBuildingName, count: units.length })}
           </h3>
         </div>
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-100 sticky top-0 border-b border-slate-200 z-10 shadow-sm">
               <tr className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="px-3 py-2.5">Asset No.</th>
-                <th className="px-3 py-2.5">Unit No.</th>
-                <th className="px-3 py-2.5">Unit Name</th>
-                <th className="px-3 py-2.5 text-center">Rooms</th>
-                <th className="px-3 py-2.5 text-right">Rent (₹)</th>
-                <th className="px-3 py-2.5">Rent Type</th>
-                <th className="px-3 py-2.5 text-right">Sec. Deposit (₹)</th>
-                <th className="px-3 py-2.5 text-center">Config</th>
+                <th className="px-3 py-2.5">{t("standaloneSubUnit.assetNo")}</th>
+                <th className="px-3 py-2.5">{t("standaloneSubUnit.unitNo")}</th>
+                <th className="px-3 py-2.5">{t("standaloneSubUnit.unitName")}</th>
+                <th className="px-3 py-2.5 text-center">{t("standaloneSubUnit.rooms")}</th>
+                <th className="px-3 py-2.5 text-right">{t("standaloneSubUnit.rent")}</th>
+                <th className="px-3 py-2.5">{t("standaloneSubUnit.rentType")}</th>
+                <th className="px-3 py-2.5 text-right">{t("standaloneSubUnit.secDeposit")}</th>
+                <th className="px-3 py-2.5 text-center">{t("standaloneSubUnit.config")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
               {units.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-3 py-12 text-center text-slate-400 font-bold uppercase tracking-wider">
-                    No units generated yet. Use the tool above.
+                    {t("standaloneSubUnit.noUnitsYet")}
                   </td>
                 </tr>
               ) : (
@@ -641,7 +643,7 @@ export function StandaloneSubUnitStep({
                         onClick={() => setActiveUnit(u)}
                         className="px-3 py-1 bg-white border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 rounded shadow-sm text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 transition-all mx-auto opacity-80 group-hover:opacity-100 cursor-pointer"
                       >
-                        <Edit2 className="size-3" /> Detail
+                        <Edit2 className="size-3" /> {t("standaloneSubUnit.detail")}
                       </button>
                     </td>
                   </tr>

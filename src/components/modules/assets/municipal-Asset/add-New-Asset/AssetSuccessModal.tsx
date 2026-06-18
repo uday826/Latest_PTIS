@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 interface SuccessModalProps {
   assetName: string;
@@ -9,6 +10,8 @@ interface SuccessModalProps {
 }
 
 export default function AssetSuccessModal({ assetName, assetCode, onGoToDashboard }: SuccessModalProps) {
+  const t = useTranslations("addAssetForm");
+
   useEffect(() => {
     const timer = setTimeout(() => {
       onGoToDashboard();
@@ -83,21 +86,21 @@ export default function AssetSuccessModal({ assetName, assetCode, onGoToDashboar
 
         {/* Title */}
         <h2 className="text-2xl font-black text-slate-800 tracking-tight mb-6 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-          Asset Registered Successfully!
+          {t("wizard.assetRegisteredSuccess")}
         </h2>
 
         {/* Premium Informational Cards */}
         <div className="space-y-3 mb-8">
           <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl border border-slate-100 p-4 transition-all duration-300 hover:border-slate-200">
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Asset Name</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">{t("wizard.assetNameLabel")}</span>
               <span className="text-base font-extrabold text-slate-800 text-left truncate">{assetName || "Untitled Asset"}</span>
             </div>
           </div>
 
           <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl border border-slate-100 p-4 transition-all duration-300 hover:border-slate-200">
             <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Asset No</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">{t("wizard.assetNoLabel")}</span>
               <span className="text-sm font-mono font-black text-blue-700 tracking-wider mt-0.5 uppercase bg-blue-50/50 px-2.5 py-1 rounded-lg border border-blue-100 w-fit">{assetCode || "PENDING"}</span>
             </div>
           </div>
@@ -110,7 +113,7 @@ export default function AssetSuccessModal({ assetName, assetCode, onGoToDashboar
           className="w-full relative group rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 active:scale-[0.98] text-white text-xs font-black uppercase tracking-widest py-4 transition-all shadow-md hover:shadow-xl hover:shadow-emerald-500/10 cursor-pointer overflow-hidden"
         >
           <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
-          Go to Dashboard
+          {t("wizard.dashboardRedirect")}
         </button>
       </div>
     </div>

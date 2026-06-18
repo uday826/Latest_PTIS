@@ -15,6 +15,7 @@ import {
 } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { useAssetForm } from "../AssetFormContext";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 interface UnitPoolPanelProps {
   dropdownOptions: any | null;
@@ -23,12 +24,6 @@ interface UnitPoolPanelProps {
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────
-
-const TYPE_OPTIONS = [
-  { label: "Flat", value: "Flat" },
-  { label: "Shop", value: "Shop" },
-  { label: "Office", value: "Office" },
-];
 
 const typeBadge: Record<string, string> = {
   Flat: "bg-blue-100 text-blue-700",
@@ -43,6 +38,13 @@ const typeBadge: Record<string, string> = {
 export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFloors = [] }: UnitPoolPanelProps) {
   const { formData, registerSubmitHook, setSubunitFiles } = useAssetForm();
   const { confirm } = useConfirm();
+  const t = useTranslations("addAssetForm");
+
+  const TYPE_OPTIONS = [
+    { label: t("floorDetails.flat") || "Flat", value: "Flat" },
+    { label: t("floorDetails.shop") || "Shop", value: "Shop" },
+    { label: t("floorDetails.office") || "Office", value: "Office" },
+  ];
 
   // ── Pool state ────────────────────────────────────────────────────────────
   const [pool, setPool] = useState<PoolUnit[]>([]);
@@ -285,21 +287,21 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
 
   // ── Generate units — immediately saves to DB, returns real asset IDs ─────────
   const handleGenerate = useCallback(async () => {
-    if (!genType) { toast.error("Select a unit type first."); return; }
+    if (!genType) { toast.error(t("floorDetails.selectUnitTypeMsg") || "Select a unit type first."); return; }
     const count = Number(genCount);
-    if (isNaN(count) || count < 1) { toast.error("Count must be at least 1."); return; }
+    if (isNaN(count) || count < 1) { toast.error(t("floorDetails.countMinMsg") || "Count must be at least 1."); return; }
 
     const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
     const rawId = Number(formData.id || urlParams.get("id") || urlParams.get("assetId"));
     const parentAssetId = isNaN(rawId) || rawId <= 0 ? 0 : rawId;
 
     if (!parentAssetId) {
-      toast.error("Building not saved yet. Complete Basic Info step first.");
+      toast.error(t("floorDetails.buildingNotSavedMsg") || "Building not saved yet. Complete Basic Info step first.");
       return;
     }
 
     setIsGenerating(true);
-    const loadingToast = toast.loading(`Generating ${count} ${genType} unit(s) in database…`);
+    const loadingToast = toast.loading(t("floorDetails.generatingUnitsMsg", { count, genType }) || `Generating ${count} ${genType} unit(s) in database…`);
 
     try {
       const res = await bulkGenerateSubUnitsAction({
@@ -328,7 +330,7 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
         const count = res.data.generatedAssets.length;
         const unitText = count === 1 ? `${genType} unit` : `${genType} units`;
         toast.success(
-          `${count} ${unitText} generated successfully. Click Details to configure.`,
+          t("floorDetails.generateSuccessMsg", { count, unitText }) || `${count} ${unitText} generated successfully. Click Details to configure.`,
           { id: loadingToast }
         );
       } else {
@@ -340,7 +342,7 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
     } finally {
       setIsGenerating(false);
     }
-  }, [genType, genCount, formData.id]);
+  }, [genType, genCount, formData.id, t]);
 
   // ── Remove from pool ──────────────────────────────────────────────────────
   const handleRemove = useCallback((tempId: string) => {
@@ -387,7 +389,7 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
     if (pool.length === 0) return true; // nothing to save — proceed to next step
 
     setIsSaving(true);
-    const loadingToast = toast.loading("Saving all units to database...");
+    const loadingToast = toast.loading(t("floorDetails.savingUnitsMsg") || "Saving all units to database...");
 
     // Resolve parent asset ID from context or URL (inline — avoids hoisting issue)
     const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
@@ -395,7 +397,7 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
     const parentAssetId = isNaN(rawAssetId) || rawAssetId <= 0 ? 0 : rawAssetId;
 
     if (!parentAssetId) {
-      toast.error("Building not saved yet. Complete Basic Info first.", { id: loadingToast });
+      toast.error(t("floorDetails.buildingNotSavedMsg") || "Building not saved yet. Complete Basic Info first.", { id: loadingToast });
       setIsSaving(false);
       return false;
     }
@@ -587,25 +589,25 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
       // POST /api/AssetCapitalValue/building/calculate-cv
       // Calculates: floor CVs → sub-unit CVs → building total CV in AssetMaster
       if (parentAssetId > 0) {
-        toast.loading("Calculating Capital Values…", { id: loadingToast });
+        toast.loading(t("floorDetails.calculatingCvMsg") || "Calculating Capital Values…", { id: loadingToast });
         try {
           await calculateBuildingCVAction(parentAssetId, true);
         } catch { /* non-fatal — CV visible on next step */ }
       }
 
       if (errors.length > 0) {
-        toast.warning(`Saved ${saved.length} units. ${errors.length} failed: ${errors.join(", ")}`, { id: loadingToast });
+        toast.warning(t("floorDetails.partialSaveMsg", { saved: saved.length, failed: errors.length, errors: errors.join(", ") }) || `Saved ${saved.length} units. ${errors.length} failed: ${errors.join(", ")}`, { id: loadingToast });
         return false;   // partial failure — stay on page so user can retry
       }
-      toast.success(`All ${saved.length} unit(s) saved. Proceeding…`, { id: loadingToast });
+      toast.success(t("floorDetails.allUnitsSavedMsg", { count: saved.length }) || `All ${saved.length} unit(s) saved. Proceeding…`, { id: loadingToast });
       return true;      // all saved — footer will navigate to next step
     } catch (err: any) {
-      toast.error(err.message || "Save failed.", { id: loadingToast });
+      toast.error(err.message || t("floorDetails.saveFailedMsg") || "Save failed.", { id: loadingToast });
       return false;
     } finally {
       setIsSaving(false);
     }
-  }, [pool, formData.id]);
+  }, [pool, formData.id, t]);
 
   // ── Register handleSaveAll as the SAVE & NEXT submit hook ─────────────────
   useEffect(() => {
@@ -669,36 +671,36 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
             <Home className="size-3.5 text-white" />
           </div>
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-widest text-[#1d4ed8]">Unit Management Pool</h3>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[#1d4ed8]">{t("floorDetails.unitManagementPool")}</h3>
             <p className="text-[9px] text-[#000000]/75 font-semibold uppercase tracking-widest mt-0.5">
-              Generate units directly against the building
+              {t("floorDetails.generateUnitsSubtitle")}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest">
-          <span className="px-2 py-0.5 bg-blue-100/80 text-blue-700 border border-blue-200/50 rounded">{pool.length} total</span>
-          {savedCount > 0 && <span className="px-2 py-0.5 bg-emerald-100/80 text-emerald-700 border border-emerald-200/50 rounded">{savedCount} saved</span>}
+          <span className="px-2 py-0.5 bg-blue-100/80 text-blue-700 border border-blue-200/50 rounded">{t("floorDetails.totalCount", { count: pool.length })}</span>
+          {savedCount > 0 && <span className="px-2 py-0.5 bg-emerald-100/80 text-emerald-700 border border-emerald-200/50 rounded">{t("floorDetails.savedCount", { count: savedCount })}</span>}
         </div>
       </div>
 
       <div className="p-3 space-y-3">
         <div className="bg-slate-50 rounded-xl border border-slate-200 p-3 space-y-2">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Generate Units</span>
+            <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">{t("floorDetails.generateUnits")}</span>
           </div>
           {/* Only Type + Count — asset numbers generated same way as main asset (Akola01-BLDG-MUNI-FLAT-0001) */}
           <div className="flex flex-wrap items-end gap-3">
             <div className="w-56">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Type</label>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">{t("floorDetails.type")}</label>
               <SearchSelect
                 value={genType}
                 onChange={(name, value) => setGenType(value)}
                 options={TYPE_OPTIONS}
-                placeholder="Select Type"
+                placeholder={t("floorDetails.selectType") || "Select Type"}
               />
             </div>
             <div className="w-32">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Count</label>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">{t("floorDetails.count")}</label>
               <Input
                 type="number"
                 min={1}
@@ -724,8 +726,8 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
                   : "bg-blue-600 hover:bg-blue-700 text-white"
                   }`}>
                 {isGenerating
-                  ? <><Loader2 className="size-3.5 animate-spin" /> Generating...</>
-                  : <><Plus className="size-3.5" strokeWidth={3} /> Generate {genCount || ""}</>
+                  ? <><Loader2 className="size-3.5 animate-spin" /> {t("floorDetails.generating")}</>
+                  : <><Plus className="size-3.5" strokeWidth={3} /> {t("floorDetails.generateUnitsCount", { count: genCount || "" })}</>
                 }
               </button>
             </div>
@@ -734,26 +736,26 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
 
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Configure Unit Details</span>
+            <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">{t("floorDetails.configureUnitDetails")}</span>
           </div>
 
           {pool.length === 0 ? (
             <div className="py-8 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
               <Layers className="size-6 text-slate-300 mx-auto mb-1.5" />
-              <p className="text-xs font-bold text-slate-400">No units generated yet</p>
+              <p className="text-xs font-bold text-slate-400">{t("floorDetails.noUnitsYet")}</p>
             </div>
           ) : (
             <div className="rounded-xl border border-slate-200 overflow-hidden">
               <table className="w-full text-xs text-left">
                 <thead>
                   <tr className="bg-gradient-to-r from-[#C8E1FC] via-[#DBEAFF] to-[#EDF5FF] border-b border-[#A3CBFA] text-[#1d4ed8] text-xs font-black uppercase tracking-widest">
-                    <th className="px-3 py-2">Unit Number</th>
-                    <th className="px-3 py-2">Type</th>
-                    <th className="px-3 py-2">Floor</th>
-                    <th className="px-3 py-2">Department</th>
-                    <th className="px-3 py-2 text-center">Area (SqFt)</th>
-                    <th className="px-3 py-2 text-center">Status</th>
-                    <th className="px-3 py-2 text-center">Actions</th>
+                    <th className="px-3 py-2">{t("floorDetails.unitNumber")}</th>
+                    <th className="px-3 py-2">{t("floorDetails.type")}</th>
+                    <th className="px-3 py-2">{t("floorDetails.floor")}</th>
+                    <th className="px-3 py-2">{t("floorDetails.departmentName") || "Department"}</th>
+                    <th className="px-3 py-2 text-center">{t("floorDetails.areaSqFt")}</th>
+                    <th className="px-3 py-2 text-center">{t("floorDetails.status")}</th>
+                    <th className="px-3 py-2 text-center">{t("floorDetails.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -774,15 +776,15 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
                       <td className="px-3 py-2 text-center font-mono text-xs">
                         {unit.carpetAreaSqFt > 0
                           ? <span className="font-bold text-slate-700">{unit.carpetAreaSqFt.toFixed(2)}</span>
-                          : <span className="text-slate-400 italic text-[9px]">pending</span>
+                          : <span className="text-slate-400 italic text-[9px]">{t("floorDetails.pending") || "pending"}</span>
                         }
                       </td>
                       <td className="px-3 py-2 text-center">
                         {unit.isSaved && !unit.isModified
                           ? <span title="Saved to database"><CheckCircle2 className="size-4 text-emerald-500 mx-auto" /></span>
                           : unit.isModified
-                            ? <span className="text-xs font-bold text-amber-600 uppercase">Modified</span>
-                            : <span className="text-xs font-bold text-slate-400 uppercase">Pending</span>
+                            ? <span className="text-xs font-bold text-amber-600 uppercase">{t("floorDetails.modified")}</span>
+                            : <span className="text-xs font-bold text-slate-400 uppercase">{t("floorDetails.pending")}</span>
                         }
                       </td>
                       <td className="px-3 py-1.5 text-center">
@@ -791,23 +793,23 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
                             type="button"
                             onClick={() => setActiveUnit(unit)}
                             className="px-2.5 py-1 rounded-lg text-[10px] font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-1 shadow-sm"
-                            title="Configure Unit Details">
-                            <Plus className="size-3.5" strokeWidth={3} /> Add Details
+                            title={t("floorDetails.addDetails") || "Configure Unit Details"}>
+                            <Plus className="size-3.5" strokeWidth={3} /> {t("floorDetails.addDetails")}
                           </button>
                           <button
                             type="button"
                             onClick={() => {
                               confirm({
                                 variant: "delete",
-                                title: "Delete Unit",
-                                description: `Are you sure you want to delete unit ${unit.unitNumber}?`,
+                                title: t("floorDetails.deleteUnit") || "Delete Unit",
+                                description: t("floorDetails.deleteUnitConfirm", { unitNumber: unit.unitNumber }) || `Are you sure you want to delete unit ${unit.unitNumber}?`,
                                 onConfirm: () => {
                                   handleRemove(unit.tempId);
                                 }
                               });
                             }}
                             className="p-1 rounded-lg text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors"
-                            title="Delete Unit">
+                            title={t("floorDetails.deleteUnit") || "Delete Unit"}>
                             <Trash2 className="size-3.5" />
                           </button>
                         </div>
@@ -823,9 +825,9 @@ export function UnitPoolPanel({ dropdownOptions, initialSubUnits = [], initialFl
         {/* Status hint — saving is triggered by the SAVE & NEXT button in the footer */}
         {pool.length > 0 && (
           <div className="flex items-center gap-2 pt-1 border-t border-slate-100 text-[10px]">
-            {isSaving && <><Loader2 className="size-3.5 animate-spin text-blue-500" /><span className="text-blue-600 font-bold">Saving…</span></>}
-            {!isSaving && unsavedCount > 0 && <span className="text-amber-600 font-semibold">{unsavedCount} unit(s) will be saved when you click SAVE & NEXT</span>}
-            {!isSaving && unsavedCount === 0 && <><CheckCircle2 className="size-3.5 text-emerald-500" /><span className="text-emerald-600 font-bold">All units saved ✓</span></>}
+            {isSaving && <><Loader2 className="size-3.5 animate-spin text-blue-500" /><span className="text-blue-600 font-bold">{t("floorDetails.savingProgress")}</span></>}
+            {!isSaving && unsavedCount > 0 && <span className="text-amber-600 font-semibold">{t("floorDetails.willBeSaved", { count: unsavedCount })}</span>}
+            {!isSaving && unsavedCount === 0 && <><CheckCircle2 className="size-3.5 text-emerald-500" /><span className="text-emerald-600 font-bold">{t("floorDetails.allUnitsSaved")}</span></>}
           </div>
         )}
       </div>

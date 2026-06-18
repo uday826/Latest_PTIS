@@ -14,6 +14,7 @@ import type { BuildingOwnershipDetailsSectionProps } from "@/types/asset-types/b
 import { Map as MapIcon, UserCheck } from "lucide-react";
 import React from "react";
 import { MapPicker } from "./MapPicker";
+import { useTranslations } from "next-intl";
 
 /**
  * Section B — Ownership Details & Address Details
@@ -32,6 +33,7 @@ export function BuildingOwnershipDetailsSection({
   updateFormData,
 }: BuildingOwnershipDetailsSectionProps): React.JSX.Element {
   const [isMapOpen, setIsMapOpen] = React.useState(false);
+  const t = useTranslations("addAssetForm");
 
   const handleMapSelect = (lat: string, lng: string) => {
     if (updateFormData) {
@@ -47,9 +49,9 @@ export function BuildingOwnershipDetailsSection({
       return { label, value };
     })
     : [
-      { label: "Municipal", value: "municipal" },
-      { label: "Leased", value: "leased" },
-      { label: "Private/Rented", value: "private" },
+      { label: t("basicInfo.ownershipDetails.ownershipTypeOptions.municipal"), value: "municipal" },
+      { label: t("basicInfo.ownershipDetails.ownershipTypeOptions.leased"), value: "leased" },
+      { label: t("basicInfo.ownershipDetails.ownershipTypeOptions.private"), value: "private" },
     ];
 
 
@@ -64,7 +66,7 @@ export function BuildingOwnershipDetailsSection({
           <UserCheck className="size-3.5 text-white" />
         </div>
         <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">
-          Ownership Details &amp; Address Details
+          {t("basicInfo.ownershipDetails.title")}
         </CardTitle>
       </CardHeader>
 
@@ -79,7 +81,7 @@ export function BuildingOwnershipDetailsSection({
         />
 
         <SearchSelect
-          label="Owning Department"
+          label={t("basicInfo.ownershipDetails.owningDepartment")}
           name="department"
           value={formData.department}
           onChange={(name, value) => handleChange({ target: { name, value } } as any)}
@@ -90,7 +92,7 @@ export function BuildingOwnershipDetailsSection({
               return { label, value: String(d.id) };
             })
           }
-          placeholder="Select Owning Department"
+          placeholder={t("basicInfo.ownershipDetails.selectOwningDepartment")}
           className="font-semibold text-sm"
           required={!formData.isMovableCategory}
           error={showError("department") ? errors.department : undefined}
@@ -98,7 +100,7 @@ export function BuildingOwnershipDetailsSection({
 
         <div className="md:col-span-2 lg:col-span-2">
           <Input
-            label="Asset Name"
+            label={t("basicInfo.ownershipDetails.assetName")}
             name="assetName"
             value={formData.assetName}
             onChange={(e: any) => handleChange(e)}
@@ -110,12 +112,12 @@ export function BuildingOwnershipDetailsSection({
         </div>
 
         <SearchSelect
-          label="Ownership Type"
+          label={t("basicInfo.ownershipDetails.ownershipType")}
           name="ownershipType"
           value={formData.ownershipType}
           onChange={(name, value) => handleChange({ target: { name, value } } as any)}
           options={resolvedOwnershipOptions}
-          placeholder="Select Ownership Type"
+          placeholder={t("basicInfo.ownershipDetails.selectOwnershipType")}
           className="font-semibold text-sm"
           required
           error={
@@ -124,7 +126,7 @@ export function BuildingOwnershipDetailsSection({
         />
 
         <Input
-          label="In-Charge Name"
+          label={t("basicInfo.ownershipDetails.inChargeName")}
           name="inChargeName"
           value={formData.inChargeName}
           onChange={(e: any) => handleChange(e)}
@@ -136,7 +138,7 @@ export function BuildingOwnershipDetailsSection({
         />
 
         <Input
-          label="Designation"
+          label={t("basicInfo.ownershipDetails.designation")}
           name="inChargeDesignation"
           value={formData.inChargeDesignation}
           onChange={(e: any) => handleChange(e)}
@@ -145,7 +147,7 @@ export function BuildingOwnershipDetailsSection({
         />
 
         <Input
-          label="Contact Number"
+          label={t("basicInfo.ownershipDetails.contactNumber")}
           name="inChargeMobile"
           value={formData.inChargeMobile}
           onChange={(e: any) => handleChange(e)}
@@ -159,7 +161,7 @@ export function BuildingOwnershipDetailsSection({
         />
 
         <Input
-          label="Email"
+          label={t("basicInfo.ownershipDetails.email")}
           name="inChargeEmail"
           value={formData.inChargeEmail}
           onChange={(e: any) => handleChange(e)}
@@ -173,7 +175,7 @@ export function BuildingOwnershipDetailsSection({
 
         <div className="md:col-span-2 lg:col-span-2">
           <TextArea
-            label="Full Address"
+            label={t("basicInfo.ownershipDetails.fullAddress")}
             name="fullAddress"
             value={formData.fullAddress}
             onChange={(e: any) => handleChange(e)}
@@ -188,7 +190,7 @@ export function BuildingOwnershipDetailsSection({
         </div>
 
         <Input
-          label="Landmark"
+          label={t("basicInfo.ownershipDetails.landmark")}
           name="locality"
           value={formData.locality}
           onChange={(e: any) => handleChange(e)}
@@ -199,7 +201,7 @@ export function BuildingOwnershipDetailsSection({
         />
 
         <Input
-          label="Pin Code"
+          label={t("basicInfo.ownershipDetails.pinCode")}
           name="pinCode"
           value={formData.pinCode}
           onChange={(e: any) => handleChange(e)}
@@ -213,7 +215,7 @@ export function BuildingOwnershipDetailsSection({
 
         <div className="hidden">
           <Input
-            label="Latitude"
+            label={t("basicInfo.ownershipDetails.latitude")}
             name="latitude"
             value={formData.latitude}
             onChange={(e: any) => handleChange(e)}
@@ -223,7 +225,7 @@ export function BuildingOwnershipDetailsSection({
           />
 
           <Input
-            label="Longitude"
+            label={t("basicInfo.ownershipDetails.longitude")}
             name="longitude"
             value={formData.longitude}
             onChange={(e: any) => handleChange(e)}
@@ -239,7 +241,7 @@ export function BuildingOwnershipDetailsSection({
             className="h-7 w-full flex items-center justify-center gap-1 border bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 rounded-md transition-all font-black text-[9px] uppercase tracking-widest shadow-sm cursor-pointer active:scale-98"
           >
             <MapIcon className="size-3.5 shrink-0" />
-            <span className="truncate">Pick on Map</span>
+            <span className="truncate">{t("basicInfo.ownershipDetails.pickOnMap")}</span>
           </button>
         </div>
 

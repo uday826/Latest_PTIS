@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X, Plus, Trash2, Edit2, Layers, Scissors, EyeIcon } from "lucide-react";
 import { Input, SearchSelect } from "@/components/common";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 interface OffsetEntry {
   id: string;
@@ -259,6 +260,7 @@ interface RoomWiseSubmissionDrawerProps {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }: RoomWiseSubmissionDrawerProps) {
+  const t = useTranslations("addAssetForm");
   const [rooms, setRooms] = useState<Room[]>([]);
   const [form, setForm] = useState<Room>(blankRoom(1));
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -407,7 +409,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
   // Append uncommitted offset to the temporary drawerOffsets list
   const handleAddOffsetToHistory = () => {
     if (tempOffsetAreaSqM <= 0) {
-      toast.error("Please enter valid dimensions for the offset.");
+      toast.error(t("subunit.toasts.failed") || "Please enter valid dimensions for the offset.");
       return;
     }
     const newEntry: OffsetEntry = {
@@ -468,7 +470,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
 
   // Add/update room
   const handleAdd = () => {
-    if (form.areaSqM <= 0) { toast.error("Enter valid dimensions (area must be > 0)."); return; }
+    if (form.areaSqM <= 0) { toast.error(t("subunit.toasts.failed") || "Enter valid dimensions (area must be > 0)."); return; }
     const computed = computeRoom(form);
     if (editingId) {
       setRooms((prev) => prev.map((r) => r.id === editingId ? { ...computed, id: editingId } : r));
@@ -539,8 +541,6 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
   const dimFields = getDimFields(form.shape);
   const inp = "h-7 text-[11px] font-semibold text-slate-700 border-slate-300 rounded-md";
 
-
-
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
@@ -552,7 +552,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
           <div className="flex items-center gap-3">
             <div className="p-1.5 bg-white/20 rounded-lg"><Layers className="size-4 text-white" /></div>
             <div>
-              <h2 className="text-sm font-black text-white uppercase tracking-wider">Room Submission</h2>
+              <h2 className="text-sm font-black text-white uppercase tracking-wider">{t("floorDetails.roomWiseSubmission")}</h2>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 hover:bg-blue-700 rounded-lg text-blue-100 hover:text-white"><X className="size-4" /></button>
@@ -570,25 +570,25 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                 {/* Row-wise inputs structured in a single 3-column grid */}
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Room No</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">{t("subunit.labels.roomNo")}</label>
                     <Input type="text" value={form.roomNo} onChange={(e) => setForm((p) => ({ ...p, roomNo: e.target.value }))} className={inp} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Room Type</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">{t("subunit.fields.roomType")}</label>
                     <SearchSelect
                       value={form.roomType}
                       onChange={(name, value) => setForm((p) => ({ ...p, roomType: value }))}
                       options={ROOM_TYPES.map((t) => ({ label: t, value: t }))}
-                      placeholder="Select Room Type"
+                      placeholder={t("subunit.placeholders.selectRoomType")}
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Shape</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">{t("subunit.labels.shape")}</label>
                     <SearchSelect
                       value={form.shape}
                       onChange={(name, value) => setShape(value)}
                       options={SHAPES}
-                      placeholder="Select Shape"
+                      placeholder={t("subunit.placeholders.selectShape")}
                     />
                   </div>
 
@@ -603,27 +603,27 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                   ))}
 
                   <div>
-                    <label className="block text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-0.5">Outer (−20%)</label>
+                    <label className="block text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-0.5">{t("subunit.labels.outerDeduction")}</label>
                     <SearchSelect
                       value={form.outer}
                       onChange={(name, value) => setForm((p) => ({ ...p, outer: value as "Yes" | "No" }))}
                       options={[
-                        { label: "No", value: "No" },
-                        { label: "Yes", value: "Yes" },
+                        { label: t("floorDetails.no"), value: "No" },
+                        { label: t("floorDetails.yes"), value: "Yes" },
                       ]}
-                      placeholder="Select..."
+                      placeholder={t("buttons.select")}
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-amber-600 uppercase tracking-wide mb-0.5">Offset (Cutout)</label>
+                    <label className="block text-[10px] font-bold text-amber-600 uppercase tracking-wide mb-0.5">{t("subunit.labels.offsetCutout")}</label>
                     <SearchSelect
                       value={form.hasOffset}
                       onChange={(name, value) => handleFormOffsetToggle(value as "Yes" | "No")}
                       options={[
-                        { label: "No", value: "No" },
-                        { label: "Yes", value: "Yes" },
+                        { label: t("floorDetails.no"), value: "No" },
+                        { label: t("floorDetails.yes"), value: "Yes" },
                       ]}
-                      placeholder="Select..."
+                      placeholder={t("buttons.select")}
                     />
                     {form.hasOffset === "Yes" && (
                       <button
@@ -631,32 +631,32 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                         onClick={() => setIsFormOffsetOpen(true)}
                         className="text-[9px] text-amber-600 hover:text-amber-700 font-black uppercase flex items-center gap-0.5 mt-1 transition-colors mx-auto"
                       >
-                        <EyeIcon className="size-7.5" /> See Offset
+                        <EyeIcon className="size-7.5" /> {t("subunit.labels.seeOffset")}
                       </button>
                     )}
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-red-500 uppercase tracking-wide mb-0.5">Minus (deduct all)</label>
+                    <label className="block text-[10px] font-bold text-red-500 uppercase tracking-wide mb-0.5">{t("subunit.labels.minusDeduct")}</label>
                     <SearchSelect
                       value={form.minus}
                       onChange={(name, value) => setForm((p) => ({ ...p, minus: value as "Yes" | "No" }))}
                       options={[
-                        { label: "No", value: "No" },
-                        { label: "Yes", value: "Yes" },
+                        { label: t("floorDetails.no"), value: "No" },
+                        { label: t("floorDetails.yes"), value: "Yes" },
                       ]}
-                      placeholder="Select..."
+                      placeholder={t("buttons.select")}
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Total Area (Sq.M)</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">{t("subunit.labels.totalAreaSqM")}</label>
                     <Input type="text" readOnly
                       value={(() => {
                         const baseArea = form.netAreaSqM * form.count;
                         if (form.minus === "Yes") {
-                          return (-baseArea).toFixed(4);
+                           return (-baseArea).toFixed(4);
                         }
                         if (form.outer === "Yes") {
-                          return (baseArea * 0.8).toFixed(4);
+                           return (baseArea * 0.8).toFixed(4);
                         }
                         return baseArea.toFixed(4);
                       })()}
@@ -667,11 +667,11 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                 <div className="flex justify-end gap-2 pt-1 border-t border-slate-100">
                   {editingId && (
                     <button type="button" onClick={() => { setEditingId(null); setForm(blankRoom(rooms.length + 1)); }}
-                      className="h-8 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-[10px] font-bold uppercase">Cancel</button>
+                      className="h-8 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-[10px] font-bold uppercase">{t("floorDetails.cancel")}</button>
                   )}
                   <button type="button" onClick={handleAdd}
                     className="h-8 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-1.5 text-[10px] font-black uppercase shadow-sm">
-                    <Plus className="size-3.5" />{editingId ? "Update Room" : "Add Room"}
+                    <Plus className="size-3.5" />{editingId ? t("subunit.labels.updateRoom") : t("subunit.labels.addRoom")}
                   </button>
                 </div>
               </div>
@@ -679,25 +679,25 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
               {/* Room Table */}
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                  <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Added Rooms</span>
+                  <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">{t("subunit.labels.addedRooms")}</span>
                 </div>
                 <div className="overflow-x-auto max-h-[260px] overflow-y-auto">
                   <table className="w-full text-xs text-left">
                     <thead className="bg-slate-100 sticky top-0 border-b border-slate-200">
                       <tr className="text-[10px] font-black text-slate-900 uppercase tracking-wider">
-                        <th className="px-2 py-2">No</th>
-                        <th className="px-2 py-2">Type</th>
-                        <th className="px-2 py-2">Shape</th>
-                        <th className="px-2 py-2 text-center">Offset Cutout</th>
-                        <th className="px-2 py-2 text-center">Outer</th>
-                        <th className="px-2 py-2 text-center">Minus</th>
-                        <th className="px-2 py-2 text-right">Total Area(m²)</th>
-                        <th className="px-2 py-2 text-center">Action</th>
+                        <th className="px-2 py-2">{t("inventory.columns.no")}</th>
+                        <th className="px-2 py-2">{t("inventory.columns.type")}</th>
+                        <th className="px-2 py-2">{t("subunit.labels.shape")}</th>
+                        <th className="px-2 py-2 text-center">{t("subunit.labels.offsetCutout")}</th>
+                        <th className="px-2 py-2 text-center">{t("subunit.labels.outer")}</th>
+                        <th className="px-2 py-2 text-center">{t("subunit.labels.minus")}</th>
+                        <th className="px-2 py-2 text-right">{t("subunit.labels.totalAreaSqM")}</th>
+                        <th className="px-2 py-2 text-center">{t("inventory.columns.actions")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {rooms.length === 0 ? (
-                        <tr><td colSpan={8} className="px-3 py-6 text-center text-slate-400">No rooms added yet</td></tr>
+                        <tr><td colSpan={8} className="px-3 py-6 text-center text-slate-400">{t("subunit.labels.noRoomsAdded")}</td></tr>
                       ) : rooms.flatMap((r) => Array.from({ length: Math.max(1, r.count) }).map((_, idx) => {
                         const isGroup = r.count > 1;
                         const displayNo = isGroup ? `${r.roomNo}.${idx + 1}` : r.roomNo;
@@ -715,17 +715,17 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                               type="button"
                               onClick={() => toggleOffset(r.id, r.hasOffset === "Yes" ? "No" : "Yes")}
                               className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border flex items-center gap-1 mx-auto transition-colors ${r.hasOffset === "Yes"
-                                ? "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
-                                : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+                                 ? "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
+                                 : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
                                 }`}
                             >
                               <Scissors className="size-2.5" />
-                              {r.hasOffset === "Yes" ? `${r.offsetOp === "Add" ? "+" : "−"}${r.offsetAreaSqM.toFixed(2)}m²` : "No"}
+                              {r.hasOffset === "Yes" ? `${r.offsetOp === "Add" ? "+" : "−"}${r.offsetAreaSqM.toFixed(2)}m²` : t("floorDetails.no")}
                             </button>
                           </td>
                           <td className="px-2 py-1.5 text-center">
                             <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${r.outer === "Yes" ? "bg-blue-50 text-blue-700 border border-blue-200" : "bg-slate-50 text-slate-500"}`}>
-                              {r.outer === "Yes" ? "−20%" : "No"}
+                              {r.outer === "Yes" ? "−20%" : t("floorDetails.no")}
                             </span>
                           </td>
                           <td className="px-2 py-1.5 text-center">
@@ -754,10 +754,10 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                   </table>
                 </div>
                 <div className="px-3 py-2 bg-slate-100 border-t border-slate-200 flex justify-between items-center text-xs font-bold text-slate-700">
-                  <span>TOTAL ROOMS: {rooms.reduce((s, r) => s + r.count, 0)}</span>
+                  <span>{t("subunit.labels.totalRooms")}: {rooms.reduce((s, r) => s + r.count, 0)}</span>
                   <div className="flex gap-4">
-                    <span>CARPET: <span className="text-blue-700">{carpetSqM.toFixed(2)} m² ({carpetSqFt.toFixed(2)} SqFt)</span></span>
-                    <span>BUILT-UP: <span className="text-emerald-700">{builtUpSqM.toFixed(2)} m² ({builtUpSqFt.toFixed(2)} SqFt)</span></span>
+                    <span>{t("subunit.labels.carpet")}: <span className="text-blue-700">{carpetSqM.toFixed(2)} m² ({carpetSqFt.toFixed(2)} SqFt)</span></span>
+                    <span>{t("subunit.labels.builtup")}: <span className="text-emerald-700">{builtUpSqM.toFixed(2)} m² ({builtUpSqFt.toFixed(2)} SqFt)</span></span>
                   </div>
                 </div>
               </div>
@@ -773,12 +773,12 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                       <Layers className="size-4 text-white" />
                     </div>
                     <span className="text-[11px] font-bold bg-blue-800/40 px-2 py-0.5 rounded-full border border-white/20">
-                      Area = {form.areaSqM.toFixed(2)} sq.m
+                      {t("subunit.labels.areaEquals", { area: form.areaSqM.toFixed(2) })}
                     </span>
                   </div>
                   <span className="px-2 py-0.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
                     <span className="size-1.5 rounded-full bg-emerald-400 animate-ping" />
-                    Room #{form.roomNo || "1"}
+                    {t("subunit.labels.roomNumberText", { no: form.roomNo || "1" })}
                   </span>
                 </div>
 
@@ -796,14 +796,14 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                     <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                       {(() => {
                         switch (form.shape) {
-                          case "Rectangle": return "Main Area = Length × Width";
-                          case "Square": return "Main Area = Side²";
-                          case "Triangle": return "Main Area = ½ × Base × Height";
-                          case "Trapezoid": return "Main Area = ½ × (Base 1 + Base 2) × Height";
-                          case "Circle": return "Main Area = π × Radius²";
-                          case "Semi Circle": return "Main Area = ½ × π × Radius²";
-                          case "Quarter": return "Main Area = ¼ × π × Radius²";
-                          default: return "Main Area = Length × Width";
+                          case "Rectangle": return t("subunit.formulas.rectangle");
+                          case "Square": return t("subunit.formulas.square");
+                          case "Triangle": return t("subunit.formulas.triangle");
+                          case "Trapezoid": return t("subunit.formulas.trapezoid");
+                          case "Circle": return t("subunit.formulas.circle");
+                          case "Semi Circle": return t("subunit.formulas.semiCircle");
+                          case "Quarter": return t("subunit.formulas.quarter");
+                          default: return t("subunit.formulas.rectangle");
                         }
                       })()}
                     </div>
@@ -832,22 +832,22 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                   {/* Calculation Breakdown Card */}
                   <div className="space-y-1.5 mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center mb-1">
-                      Calculation Breakdown
+                      {t("subunit.labels.calcBreakdown")}
                     </p>
                     <div className="text-[11px] text-slate-700 space-y-1 font-bold">
                       <div className="flex justify-between px-1">
-                        <span className="text-slate-500 uppercase text-[9px] tracking-wider">Base Area ({form.shape}):</span>
+                        <span className="text-slate-500 uppercase text-[9px] tracking-wider">{t("subunit.labels.baseArea", { shape: form.shape })}:</span>
                         <span className="font-mono">{form.areaSqM.toFixed(2)} m² / {form.areaSqFt.toFixed(2)} SqFt</span>
                       </div>
                       
                       {form.hasOffset === "Yes" && (
                         <>
                           <div className="flex justify-between px-1 text-amber-700">
-                            <span className="uppercase text-[9px] tracking-wider">Offset Cutout ({(form.offsetOp || "Subtract") === "Add" ? "Added" : "Subtracted"}):</span>
+                            <span className="uppercase text-[9px] tracking-wider">{t("subunit.labels.offsetCutoutText", { op: (form.offsetOp || "Subtract") === "Add" ? t("subunit.labels.added") : t("subunit.labels.subtracted") })}:</span>
                             <span className="font-mono">{(form.offsetOp || "Subtract") === "Add" ? "+" : "-"}{form.offsetAreaSqM.toFixed(2)} m²</span>
                           </div>
                           <div className="flex justify-between px-1 border-t border-slate-100 pt-1 text-slate-800">
-                            <span className="uppercase text-[9px] tracking-wider">Net Room Area:</span>
+                            <span className="uppercase text-[9px] tracking-wider">{t("subunit.labels.netRoomArea")}:</span>
                             <span className="font-mono">{form.netAreaSqM.toFixed(2)} m²</span>
                           </div>
                         </>
@@ -855,20 +855,20 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                       
                       {form.outer === "Yes" && (
                         <div className="flex justify-between px-1 text-blue-600">
-                          <span className="uppercase text-[9px] tracking-wider">Outer Balcony/Terrace (-20%):</span>
+                          <span className="uppercase text-[9px] tracking-wider">{t("subunit.labels.outerBalconyTerrace")}:</span>
                           <span className="font-mono">counts 80% (-{(form.netAreaSqM * 0.2).toFixed(2)} m²)</span>
                         </div>
                       )}
                       
                       {form.minus === "Yes" && (
                         <div className="flex justify-between px-1 text-red-600">
-                          <span className="uppercase text-[9px] tracking-wider">Minus (Deduct Room):</span>
+                          <span className="uppercase text-[9px] tracking-wider">{t("subunit.labels.minusDeductRoom")}:</span>
                           <span className="font-mono">-{form.netAreaSqM.toFixed(2)} m²</span>
                         </div>
                       )}
                       
                       <div className="flex justify-between px-2.5 py-1 border-t-2 border-double border-blue-200 text-xs font-black text-blue-700 bg-blue-50/50 rounded-lg mt-1.5 shadow-sm">
-                        <span className="uppercase tracking-wide">Final Contribution:</span>
+                        <span className="uppercase tracking-wide">{t("subunit.labels.finalContribution")}:</span>
                         <span className="font-mono">
                           {(() => {
                             const base = form.netAreaSqM;
@@ -889,9 +889,9 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
         {/* Footer */}
         <div className="px-4 py-3 bg-white border-t border-slate-200 shrink-0 flex items-center justify-end">
           <div className="flex gap-2">
-            <button onClick={onClose} className="px-4 py-1.5 border border-slate-300 hover:bg-slate-50 rounded-lg text-[10px] font-bold text-slate-700 uppercase">Close</button>
+            <button onClick={onClose} className="px-4 py-1.5 border border-slate-300 hover:bg-slate-50 rounded-lg text-[10px] font-bold text-slate-700 uppercase">{t("buttons.close")}</button>
             <button onClick={() => { onSaveRooms(rooms, carpetSqFt); onClose(); }}
-              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-[10px] font-bold text-white uppercase shadow-md">Save Data</button>
+              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-[10px] font-bold text-white uppercase shadow-md">{t("subunit.labels.saveData")}</button>
           </div>
         </div>
       </div>
@@ -907,9 +907,9 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
               <div className="flex items-center gap-2">
                 <div className="p-1.5 bg-white/20 rounded-lg"><Scissors className="size-4 text-white" /></div>
                 <div>
-                  <h3 className="text-sm font-black text-white uppercase tracking-wide">Offset Details</h3>
+                  <h3 className="text-sm font-black text-white uppercase tracking-wide">{t("subunit.labels.offsetDetails")}</h3>
                   <p className="text-[9px] text-amber-100 font-bold uppercase tracking-widest mt-0.5">
-                    Room No: {offsetRoom.roomNo} — enter cutout shape &amp; dimensions
+                    {t("subunit.labels.offsetSubtitle", { no: offsetRoom.roomNo })}
                   </p>
                 </div>
               </div>
@@ -923,7 +923,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
               {/* Total & Operation Toggles Row */}
               <div className="flex items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm shrink-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-700">Total:</span>
+                  <span className="text-xs font-bold text-slate-700">{t("subunit.labels.total")}:</span>
                   <div className="relative">
                     <input
                       type="text"
@@ -980,7 +980,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
 
                   {/* Select Shape */}
                   <div className="flex-1 min-w-[120px]">
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Select Shape</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">{t("subunit.labels.selectShape")}</label>
                     <SearchSelect
                       value={tempOffsetShape}
                       onChange={(name, value) => {
@@ -995,7 +995,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                         setTempOffsetRadius(0);
                       }}
                       options={SHAPES}
-                      placeholder="Select Shape"
+                      placeholder={t("subunit.placeholders.selectShape")}
                     />
                   </div>
 
@@ -1039,7 +1039,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
 
                   {/* Calculated Area */}
                   <div className="flex-1 min-w-[120px]">
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1 text-center">Calculated Area</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1 text-center">{t("subunit.labels.calcArea")}</label>
                     <div className="h-8 w-full rounded-lg border border-purple-300 bg-purple-50/50 flex items-center justify-center text-xs font-bold text-purple-700">
                       {tempOffsetAreaSqM.toFixed(2)} sq.m
                     </div>
@@ -1068,24 +1068,24 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                   onClick={handleAddOffsetToHistory}
                   className="h-8 px-6 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-lg flex items-center justify-center gap-1.5 text-xs font-bold uppercase shadow-md transition-all duration-200 active:scale-95 cursor-pointer"
                 >
-                  Add
+                  {t("subunit.labels.add")}
                 </button>
               </div>
 
               {/* Operation History Table */}
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mt-4">
                 <div className="px-3 py-2 bg-teal-600 text-white text-center font-bold text-xs uppercase tracking-wider">
-                  Operation History
+                  {t("subunit.labels.opHistory")}
                 </div>
                 <table className="w-full text-xs text-left">
                   <thead className="bg-slate-100 border-b border-slate-200">
                     <tr className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                      <th className="px-3 py-2">No</th>
-                      <th className="px-3 py-2">Status</th>
-                      <th className="px-3 py-2">Shape</th>
-                      <th className="px-3 py-2">Dim.</th>
-                      <th className="px-3 py-2 text-right">Area (sq.m)</th>
-                      <th className="px-3 py-2 text-center">Del</th>
+                      <th className="px-3 py-2">{t("inventory.columns.no")}</th>
+                      <th className="px-3 py-2">{t("inventory.columns.condition")}</th>
+                      <th className="px-3 py-2">{t("subunit.labels.shape")}</th>
+                      <th className="px-3 py-2">{t("subunit.labels.dim")}</th>
+                      <th className="px-3 py-2 text-right">{t("subunit.labels.areaSqM")}</th>
+                      <th className="px-3 py-2 text-center">{t("subunit.labels.del")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1098,7 +1098,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                               ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                               : "bg-orange-50 text-orange-700 border border-orange-200"
                               }`}>
-                              {off.op === "Add" ? "+ Add" : "- Sub"}
+                              {off.op === "Add" ? `+ ${t("subunit.labels.add")}` : `- ${t("subunit.labels.sub")}`}
                             </span>
                           </td>
                           <td className="px-3 py-2 font-semibold text-slate-700">{off.shape}</td>
@@ -1127,7 +1127,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                     ) : (
                       <tr>
                         <td colSpan={6} className="px-3 py-6 text-center text-slate-400">
-                          No operations added yet. Enter details above and click Add.
+                          {t("subunit.labels.noOpsAdded")}
                         </td>
                       </tr>
                     )}
@@ -1135,7 +1135,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                 </table>
                 {drawerOffsets.length > 0 && (
                   <div className="px-3 py-2 bg-blue-50 border-t border-slate-200 text-xs font-bold text-slate-700 flex justify-between">
-                    <span>Net Adjustment:</span>
+                    <span>{t("subunit.labels.netAdjustment")}:</span>
                     <span className={drawerNetAdjustmentSqM >= 0 ? "text-emerald-700" : "text-orange-700"}>
                       {drawerNetAdjustmentSqM >= 0 ? "+" : "−"}{Math.abs(drawerNetAdjustmentSqM).toFixed(2)} sq.m
                     </span>
@@ -1148,11 +1148,11 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
             <div className="px-4 py-3 bg-white border-t border-slate-200 shrink-0 flex items-center justify-center gap-3">
               <button onClick={handleOkSave}
                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold uppercase shadow-sm transition-all active:scale-95 cursor-pointer">
-                OK
+                {t("subunit.labels.ok")}
               </button>
               <button onClick={handleDrawerClose}
                 className="px-6 py-2 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 uppercase transition-all active:scale-95 cursor-pointer">
-                Close
+                {t("buttons.close")}
               </button>
             </div>
           </div>

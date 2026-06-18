@@ -10,10 +10,12 @@ import { useAssetForm } from "../AssetFormContext";
 import { useSearchParams } from "next/navigation";
 import { getAssetValuationDataAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/valuation/actions";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 // Fallback infrastructure type-name list — only used when categoryCode is absent (legacy URLs)
 const INFRASTRUCTURE_TYPES = ["Road", "Bridge", "Subway", "Bridge/Subway", "Water Tank", "Water Tank/Reservoir"];
 
 export default function ValuationPage({ initialCategories = [], initialConditions = [] }: { initialCategories?: any[]; initialConditions?: any[] }) {
+  const t = useTranslations("addAssetForm");
   const { formData, handleInputChange, updateFormData, registerSubmitHook, setIsDataLoading } = useAssetForm();
   const searchParams = useSearchParams();
 
@@ -291,7 +293,7 @@ export default function ValuationPage({ initialCategories = [], initialCondition
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-3">
         <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-        <p className="text-sm font-semibold text-slate-500">Loading dynamic valuation data...</p>
+        <p className="text-sm font-semibold text-slate-500">{t("valuation.loading")}</p>
       </div>
     );
   }

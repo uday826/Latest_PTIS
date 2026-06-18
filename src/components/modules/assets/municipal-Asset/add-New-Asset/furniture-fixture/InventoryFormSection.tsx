@@ -2,6 +2,7 @@ import React from "react";
 import { AddButton, Button, Input, SearchSelect, UploadButton } from "@/components/common";
 import { Receipt } from "lucide-react";
 import { type InventoryForm } from "./FurnitureFixtureTypes";
+import { useTranslations } from "next-intl";
 
 interface InventoryFormSectionProps {
   form: InventoryForm;
@@ -38,6 +39,7 @@ export function InventoryFormSection({
   dynamicModelOptions,
   departments,
 }: InventoryFormSectionProps) {
+  const t = useTranslations("addAssetForm");
   const addNameOptions = dynamicItemNameOptions;
   const addModelOptions = dynamicModelOptions;
   const addConditionOptions = dynamicConditionOptions;
@@ -48,26 +50,26 @@ export function InventoryFormSection({
     const isVehicle = form.type === "vehicle";
     return {
       itemName: isItEquipment
-        ? "Equipment Name"
+        ? t("inventory.labels.equipmentName")
         : isElectronicFixtures
-          ? "Fixture Name"
+          ? t("inventory.labels.fixtureName")
           : isVehicle
-            ? "Vehicle Type"
-            : "Item Name",
-      modelName: isItEquipment ? "Brand / Model" : "Type / Model",
-      condition: isItEquipment || isElectronicFixtures ? "Status" : "Condition",
-      date: isElectronicFixtures ? "Install Date" : "Purchase Date",
-      specifications: isVehicle ? "Reg. Number" : "Specifications",
+            ? t("inventory.labels.vehicleType")
+            : t("inventory.labels.itemName"),
+      modelName: isItEquipment ? t("inventory.labels.brandModel") : t("inventory.labels.typeModel"),
+      condition: isItEquipment || isElectronicFixtures ? t("inventory.labels.status") : t("inventory.labels.condition"),
+      date: isElectronicFixtures ? t("inventory.labels.installDate") : t("inventory.labels.purchaseDate"),
+      specifications: isVehicle ? t("inventory.labels.regNumber") : t("inventory.labels.specifications"),
     };
-  }, [form.type]);
+  }, [form.type, t]);
 
   const addSpecsPlaceholder = React.useMemo(() => {
     if (form.type === "vehicle") return "MH-01-AB-1234";
     if (form.type === "it-equipment" || form.type === "electronic-fixtures") {
       return "e.g. i5, 8GB RAM";
     }
-    return "Specs / Reg No.";
-  }, [form.type]);
+    return t("inventory.placeholders.specsPlaceholder");
+  }, [form.type, t]);
 
 
 
@@ -75,11 +77,11 @@ export function InventoryFormSection({
     <div className="rounded-xl border border-[#CFD9E6] bg-[#F7FAFF] p-3">
       <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 items-end text-[11px] [&_label]:text-[11px] [&_label]:mb-1 [&_label]:!font-bold [&_span[id$=-label]]:text-[11px] [&_span[id$=-label]]:!font-bold [&_span.text-gray-700]:!font-bold [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-7 [&_input]:!text-[11px] [&_input]:!rounded-md [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-7 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px] [&_span.text-red-600]:text-[10px] [&_span.text-red-600]:mt-0.5">
         <SearchSelect
-          label="Type"
+          label={t("inventory.columns.type")}
           value={form.type}
           onChange={(_, val) => handleTypeChange(val)}
           options={dynamicCategoryOptions}
-          placeholder="Select type"
+          placeholder={t("inventory.placeholders.selectType")}
           required={true}
         />
 
@@ -88,7 +90,7 @@ export function InventoryFormSection({
           value={form.itemName}
           onChange={(_, val) => handleItemNameChange(val)}
           options={addNameOptions}
-          placeholder={form.type ? `Select ${addLabels.itemName.toLowerCase()}` : "Select type first"}
+          placeholder={form.type ? t("placeholders.selectField", { field: addLabels.itemName.toLowerCase() }) : t("inventory.placeholders.selectTypeFirst")}
           disabled={!form.type}
           required={true}
         />
@@ -98,7 +100,7 @@ export function InventoryFormSection({
           value={form.modelName}
           onChange={(_, val) => updateForm("modelName", val)}
           options={addModelOptions}
-          placeholder={form.itemName ? `Select ${addLabels.modelName.toLowerCase()}` : "Select item name first"}
+          placeholder={form.itemName ? t("placeholders.selectField", { field: addLabels.modelName.toLowerCase() }) : t("inventory.placeholders.selectItemFirst")}
           disabled={!form.itemName}
           required={true}
         />
@@ -126,21 +128,21 @@ export function InventoryFormSection({
           value={form.condition}
           onChange={(_, val) => updateForm("condition", val)}
           options={addConditionOptions}
-          placeholder={`Select ${addLabels.condition.toLowerCase()}`}
+          placeholder={t("placeholders.selectField", { field: addLabels.condition.toLowerCase() })}
           required={true}
         />
 
         <SearchSelect
-          label="Owning Department"
+          label={t("inventory.columns.owningDept")}
           value={form.owningDepartment}
           onChange={(_, val) => updateForm("owningDepartment", val)}
           options={departments}
-          placeholder="Select owning department"
+          placeholder={t("inventory.placeholders.selectOwningDept")}
           required={true}
         />
 
         <Input
-          label="Quantity"
+          label={t("inventory.columns.quantity")}
           type="number"
           min={1}
           value={form.quantity}
@@ -150,7 +152,7 @@ export function InventoryFormSection({
         />
 
         <Input
-          label="Unit Value (₹)"
+          label={t("inventory.columns.unitValue")}
           type="number"
           min={0}
           value={form.unitValue}
@@ -161,7 +163,7 @@ export function InventoryFormSection({
 
         <div className="flex items-end gap-3 lg:col-span-5 w-full">
           <div className="flex flex-col gap-1 min-w-0">
-            <span className="text-[11px] font-bold text-gray-700">Photo</span>
+            <span className="text-[11px] font-bold text-gray-700">{t("inventory.columns.photo")}</span>
             <input
               ref={addPhotoInputRef}
               type="file"
@@ -170,15 +172,15 @@ export function InventoryFormSection({
               onChange={handleAddPhotoUpload}
             />
             <UploadButton
-              label={form.photoName || "Upload"}
-              title={form.photoName || "Upload"}
+              label={form.photoName || t("compliance.card.upload")}
+              title={form.photoName || t("compliance.card.upload")}
               className="justify-center h-[26px] w-[100px] bg-blue-600 hover:bg-blue-700 text-white border-none text-[9px] font-black uppercase tracking-wider rounded-md overflow-hidden [&>span]:truncate [&>span]:min-w-0"
               onClick={() => addPhotoInputRef.current?.click()}
             />
           </div>
 
           <div className="flex flex-col gap-1 min-w-0">
-            <span className="text-[11px] font-bold text-gray-700">Invoice</span>
+            <span className="text-[11px] font-bold text-gray-700">{t("inventory.columns.invoice")}</span>
             <Button
               variant="primary"
               icon={Receipt}
@@ -191,7 +193,7 @@ export function InventoryFormSection({
           </div>
 
           <AddButton
-            label="Add Row"
+            label={t("inventory.buttons.addRow")}
             className="h-[26px] w-[100px] whitespace-nowrap text-[9px] font-black uppercase tracking-wider rounded-md bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all"
             onClick={handleAddRow}
           />

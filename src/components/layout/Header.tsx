@@ -211,9 +211,11 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
               ) : null}
 
               <p className="mt-1 flex flex-wrap gap-1 text-[10px] sm:text-xs md:text-sm text-gray-200">
-                <span>{t('app.departmentName')}</span>
+                <span>{pathname.includes('/assets') ? t('app.assetDepartmentName') : t('app.departmentName')}</span>
                 <span className="hidden sm:inline-block text-yellow-400">|</span>
-                <span className="font-medium text-yellow-300">{headerDetails}</span>
+                <span className="font-medium text-yellow-300">
+                  {pathname.includes('/assets') ? t('app.assetManagementSystem') : headerDetails}
+                </span>
               </p>
             </div>
           </div>

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { InventoryCategoryGroup } from "./FurnitureFixtureTypes";
 import { inventoryMeta, formatCurrency } from "./FurnitureFixtureConstants";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface Props {
   groups: InventoryCategoryGroup[];
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props) {
+  const t = useTranslations("addAssetForm");
   const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({});
 
   const toggleCat = (t: string) => setExpandedCats(p => ({ ...p, [t]: !p[t] }));
@@ -25,13 +27,13 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
         <table className="min-w-full text-sm">
           <thead>
             <tr className="border-b border-[#D7E1EE] bg-[#F7FAFF] text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <th className="px-4 py-2.5 text-left w-[260px]">Asset / Category</th>
-              <th className="px-4 py-2.5 text-center">Units</th>
-              <th className="px-4 py-2.5 text-center">Unit Value</th>
-              <th className="px-4 py-2.5 text-center">Purchase Value</th>
-              <th className="px-4 py-2.5 text-center">Depreciation</th>
-              <th className="px-4 py-2.5 text-center text-blue-700 font-bold">Total CV</th>
-              <th className="px-4 py-2.5 text-center">Assets</th>
+              <th className="px-4 py-2.5 text-left w-[260px]">{t("inventory.columns.assetCategory")}</th>
+              <th className="px-4 py-2.5 text-center">{t("inventory.columns.units")}</th>
+              <th className="px-4 py-2.5 text-center">{t("inventory.columns.unitValue")}</th>
+              <th className="px-4 py-2.5 text-center">{t("inventory.columns.purchaseValue")}</th>
+              <th className="px-4 py-2.5 text-center">{t("inventory.columns.depreciation")}</th>
+              <th className="px-4 py-2.5 text-center text-blue-700 font-bold">{t("inventory.columns.totalCv")}</th>
+              <th className="px-4 py-2.5 text-center">{t("inventory.columns.assets")}</th>
             </tr>
           </thead>
 
@@ -53,7 +55,7 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
                           {Icon && <Icon className="h-3.5 w-3.5" />}
                         </div>
                         <span className="font-bold text-slate-800">{group.label}</span>
-                        <span className="text-xs text-slate-500">({group.totalBatches} {group.totalBatches === 1 ? "entry" : "entries"})</span>
+                        <span className="text-xs text-slate-500">({group.totalBatches} {group.totalBatches === 1 ? t("inventory.columns.entry") : t("inventory.columns.entries")})</span>
                         {catOpen ? <ChevronDown className="h-3.5 w-3.5 text-blue-600 ml-auto" /> : <ChevronRight className="h-3.5 w-3.5 text-slate-400 ml-auto" />}
                       </div>
                     </td>
@@ -66,14 +68,14 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
                     </td>
                     <td className="px-4 py-3 text-center text-red-600 font-medium">
                       −{formatCurrency(group.totalDepreciation)}
-                      <div className="text-[10px] text-red-400">{group.depreciationPercent.toFixed(1)}% dep.</div>
+                      <div className="text-[10px] text-red-400">{t("inventory.columns.depPercent", { percent: group.depreciationPercent.toFixed(1) })}</div>
                     </td>
                     <td className="px-4 py-3 text-center font-bold text-blue-700 text-base">
                       {formatCurrency(group.totalCapitalValue)}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className="inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700">
-                        {group.totalUnits} assets
+                        {t("inventory.columns.assetsCount", { count: group.totalUnits })}
                       </span>
                     </td>
                   </tr>
@@ -97,14 +99,14 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
                               )}
                             </div>
                             <div className="mt-0.5 pl-5 text-[11px] text-slate-500">
-                              {batch.condition} · Age {batch.ageInYears ?? 0}yr ·{" "}
+                              {batch.condition} · {t("inventory.columns.ageYrs", { age: batch.ageInYears ?? 0 })} ·{" "}
                               {batch.depreciationRate !== undefined
-                                ? `${(batch.depreciationRate * 100).toFixed(0)}%/yr dep.`
+                                ? t("inventory.columns.depRatePercent", { percent: (batch.depreciationRate * 100).toFixed(0) })
                                 : ""}
                             </div>
                           </td>
                           <td className="px-4 py-2.5 text-center text-slate-600">
-                            <span className="font-semibold">{batch.quantity}</span> units
+                            <span className="font-semibold">{batch.quantity}</span> {t("inventory.columns.unitsText")}
                           </td>
                           <td className="px-4 py-2.5 text-center text-slate-600">
                             {formatCurrency(batch.unitValue)}
@@ -124,10 +126,10 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
                           <td className="px-4 py-2.5 text-center">
                             {batch.isRegistered ? (
                               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
-                                ✓ Saved
+                                ✓ {t("inventory.columns.saved")}
                               </span>
                             ) : (
-                              <span className="text-[10px] text-slate-400">Pending</span>
+                              <span className="text-[10px] text-slate-400">{t("inventory.columns.pending")}</span>
                             )}
                           </td>
                         </tr>
@@ -141,9 +143,9 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
 
           <tfoot>
             <tr className="border-t-2 border-[#1E40AF] bg-[#0F172A] text-white">
-              <td className="px-4 py-3 font-bold">GRAND TOTAL</td>
+              <td className="px-4 py-3 font-bold">{t("inventory.columns.grandTotal")}</td>
               <td className="px-4 py-3 text-center font-semibold text-slate-300">
-                {groups.reduce((s, g) => s + g.totalUnits, 0).toLocaleString("en-IN")} assets
+                {t("inventory.columns.assetsCount", { count: groups.reduce((s, g) => s + g.totalUnits, 0) })}
               </td>
               <td className="px-4 py-3 text-center text-slate-400">—</td>
               <td className="px-4 py-3 text-center font-semibold text-slate-300">

@@ -9,6 +9,7 @@ import { useAssetForm } from "../AssetFormContext";
 import { toast } from "sonner";
 import { RoomWiseSubmissionDrawer } from "./RoomWiseSubmissionDrawer";
 import { useConfirm } from "@/components/common/ConfirmProvider";
+import { useTranslations } from "next-intl";
 
 interface CustomDigitInputProps {
   value: string;
@@ -122,7 +123,7 @@ interface SubUnitDetailedConfiguratorProps {
 
 
 /** Helper to calculate duration between start and end dates */
-function calculateDuration(startStr: string, endStr: string): string {
+function calculateDuration(startStr: string, endStr: string, t: any): string {
   if (!startStr || !endStr) return "";
   const start = new Date(startStr);
   const end = new Date(endStr);
@@ -143,11 +144,11 @@ function calculateDuration(startStr: string, endStr: string): string {
   }
 
   const parts = [];
-  if (years > 0) parts.push(`${years} Yr${years > 1 ? "s" : ""}`);
-  if (months > 0) parts.push(`${months} Month${months > 1 ? "s" : ""}`);
-  if (days > 0) parts.push(`${days} Day${days > 1 ? "s" : ""}`);
+  if (years > 0) parts.push(`${years} ${years > 1 ? t("subunit.duration.years", "Yrs") : t("subunit.duration.year", "Yr")}`);
+  if (months > 0) parts.push(`${months} ${months > 1 ? t("subunit.duration.months", "Months") : t("subunit.duration.month", "Month")}`);
+  if (days > 0) parts.push(`${days} ${days > 1 ? t("subunit.duration.days", "Days") : t("subunit.duration.day", "Day")}`);
 
-  return parts.join(", ") || "0 Days";
+  return parts.join(", ") || t("subunit.duration.zeroDays", "0 Days");
 }
 
 export function SubUnitDetailedConfigurator({
@@ -158,6 +159,7 @@ export function SubUnitDetailedConfigurator({
   floors: propFloors = [],
   dropdownOptions: propDropdownOptions = null,
 }: SubUnitDetailedConfiguratorProps) {
+  const t = useTranslations("addAssetForm");
   const { confirm } = useConfirm();
   const { formData: globalFormData, subunitFiles } = useAssetForm();
   const assetId = unit.id || unit.dbId;
@@ -357,7 +359,7 @@ export function SubUnitDetailedConfigurator({
 
   useEffect(() => {
     if (formData.leaseStart && formData.leaseEnd) {
-      const computed = calculateDuration(formData.leaseStart, formData.leaseEnd);
+      const computed = calculateDuration(formData.leaseStart, formData.leaseEnd, t);
       if (computed && formData.duration !== computed) {
         setFormData((prev: any) => ({ ...prev, duration: computed }));
       }
@@ -471,37 +473,37 @@ export function SubUnitDetailedConfigurator({
   const handleSaveClick = async () => {
     // 1. Validation Checks
     if (!area || Number(area) <= 0) {
-      toast.error("Total Area (SqFt) must be greater than 0. Please configure rooms first to calculate the area.");
+      toast.error(t("subunit.validation.areaRequired"));
       return;
     }
 
     if (formData.mobileNo && formData.mobileNo.length !== 10) {
-      toast.error("Mobile number must be exactly 10 digits.");
+      toast.error(t("subunit.validation.mobileLength"));
       return;
     }
 
     if (formData.emailId) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.emailId)) {
-        toast.error("Please enter a valid Email ID.");
+        toast.error(t("subunit.validation.emailInvalid"));
         return;
       }
     }
 
     if (formData.renterName) {
       if (formData.renterName.startsWith(" ")) {
-        toast.error("Renter Name cannot start with a space.");
+        toast.error(t("subunit.validation.renterSpace"));
         return;
       }
       if (!/^[A-Za-z][A-Za-z\s]*$/.test(formData.renterName)) {
-        toast.error("Renter Name must only contain letters and spaces (no numbers or special characters allowed).");
+        toast.error(t("subunit.validation.renterInvalid"));
         return;
       }
     }
 
     if (formData.aadhaar) {
       if (!/^[0-9]{12}$/.test(formData.aadhaar)) {
-        toast.error("Aadhaar Card number must be exactly 12 digits.");
+        toast.error(t("subunit.validation.aadhaarLength"));
         return;
       }
     }
@@ -509,7 +511,7 @@ export function SubUnitDetailedConfigurator({
     if (formData.pan) {
       const panUpper = formData.pan.toUpperCase();
       if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panUpper)) {
-        toast.error("PAN must be a valid 10-character Indian PAN format.");
+        toast.error(t("subunit.validation.panInvalid"));
         return;
       }
     }
@@ -517,59 +519,59 @@ export function SubUnitDetailedConfigurator({
     if (formData.gstNo) {
       const gstUpper = formData.gstNo.toUpperCase();
       if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gstUpper)) {
-        toast.error("GST number must be a valid 15-character Indian GSTIN.");
+        toast.error(t("subunit.validation.gstInvalid"));
         return;
       }
     }
 
     const alphaNumRegex = /^[A-Za-z0-9\s/-]+$/;
     if (formData.propertyNo && !alphaNumRegex.test(formData.propertyNo)) {
-      toast.error("Please enter a valid Property No without special characters.");
+      toast.error(t("subunit.validation.propertyNoInvalid"));
       return;
     }
     if (formData.partitionNo && !alphaNumRegex.test(formData.partitionNo)) {
-      toast.error("Please enter a valid Partition No without special characters.");
+      toast.error(t("subunit.validation.partitionNoInvalid"));
       return;
     }
     if (formData.surveyNo && !alphaNumRegex.test(formData.surveyNo)) {
-      toast.error("Please enter a valid CSN No. without special characters.");
+      toast.error(t("subunit.validation.csnInvalid"));
       return;
     }
     if (formData.shopActNo && !alphaNumRegex.test(formData.shopActNo)) {
-      toast.error("Please enter a valid Shop Act No without special characters.");
+      toast.error(t("subunit.validation.shopActNoInvalid"));
       return;
     }
 
     if (formData.rentType) {
       if (!formData.renterName || !formData.renterName.trim()) {
-        toast.error("Renter Name is required when Lease/Rent Type is selected.");
+        toast.error(t("subunit.validation.renterRequired"));
         return;
       }
       if (!formData.mobileNo || !formData.mobileNo.trim()) {
-        toast.error("Mobile Number is required when Lease/Rent Type is selected.");
+        toast.error(t("subunit.validation.mobileRequired"));
         return;
       }
       if (!formData.leaseStart) {
-        toast.error("Lease Start date is required.");
+        toast.error(t("subunit.validation.leaseStartRequired"));
         return;
       }
       if (!formData.leaseEnd) {
-        toast.error("Lease End date is required.");
+        toast.error(t("subunit.validation.leaseEndRequired"));
         return;
       }
       const start = new Date(formData.leaseStart);
       const end = new Date(formData.leaseEnd);
       if (start >= end) {
-        toast.error("Lease End date must be after Lease Start date.");
+        toast.error(t("subunit.validation.leaseEndAfterStart"));
         return;
       }
       if (!formData.rentAmount || Number(formData.rentAmount) <= 0) {
-        toast.error("Rent Amount (₹) must be greater than 0.");
+        toast.error(t("subunit.validation.rentAmountMin"));
         return;
       }
     }
 
-    const loadingToast = toast.loading("Saving configuration...");
+    const loadingToast = toast.loading(t("subunit.toasts.saving"));
     try {
       // Create local payload and just pass it to onSave. DB saving will be done in batch via pool's Save All.
       onSave({
@@ -585,9 +587,9 @@ export function SubUnitDetailedConfigurator({
         photoFile,
         planFile,
       });
-      toast.success("Unit details updated. Remember to save the form to save all changes.", { id: loadingToast });
+      toast.success(t("subunit.toasts.success"), { id: loadingToast });
     } catch (err: any) {
-      toast.error(err.message || "Failed to update unit details.", { id: loadingToast });
+      toast.error(err.message || t("subunit.toasts.failed"), { id: loadingToast });
     }
   };
 
@@ -597,7 +599,7 @@ export function SubUnitDetailedConfigurator({
       const allowedExtensions = ['.bmp', '.doc', '.docx', '.gif', '.jpeg', '.jpg', '.pdf', '.png', '.ppt', '.pptx', '.tif', '.tiff', '.txt', '.webp', '.xls', '.xlsx'];
       const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
       if (!allowedExtensions.includes(fileExt)) {
-        toast.error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`);
+        toast.error(t("subunit.validation.fileTypeInvalid", { extensions: allowedExtensions.join(', ') }));
         e.target.value = "";
         return;
       }
@@ -612,7 +614,7 @@ export function SubUnitDetailedConfigurator({
       const allowedExtensions = ['.bmp', '.doc', '.docx', '.gif', '.jpeg', '.jpg', '.pdf', '.png', '.ppt', '.pptx', '.tif', '.tiff', '.txt', '.webp', '.xls', '.xlsx'];
       const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
       if (!allowedExtensions.includes(fileExt)) {
-        toast.error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`);
+        toast.error(t("subunit.validation.fileTypeInvalid", { extensions: allowedExtensions.join(', ') }));
         e.target.value = "";
         return;
       }
@@ -643,7 +645,7 @@ export function SubUnitDetailedConfigurator({
 
   const renderDepartmentSelect = () => (
     <SearchSelect
-      label="Department *"
+      label={`${t("subunit.fields.departmentName")} *`}
       name="departmentId"
       value={formData.departmentId || ""}
       onChange={(name, val) => {
@@ -655,7 +657,7 @@ export function SubUnitDetailedConfigurator({
         }));
       }}
       options={departments}
-      placeholder="— Select Department —"
+      placeholder={`— ${t("subunit.fields.departmentName")} —`}
     />
   );
 
@@ -666,7 +668,7 @@ export function SubUnitDetailedConfigurator({
   const isRoom = rawUnitType.includes("room") || rawUnitType.includes("chamber");
   const isDepartment = rawUnitType.includes("department") || rawUnitType.includes("dept") || rawUnitType.includes("wing");
   // Flat is the default (residential)
-  const sectionTitle = isShop ? "Shop & Occupant Details" : isOffice ? "Office / Tenant Details" : isRoom ? "Room Details" : isDepartment ? "Department Information" : "Resident / Owner Details";
+  const sectionTitle = isShop ? t("subunit.sections.shopDetails") : isOffice ? t("subunit.sections.officeDetails") : isRoom ? t("subunit.sections.roomDetails") : isDepartment ? t("subunit.sections.departmentInfo") : t("subunit.sections.residentDetails");
   // Departments are internal allocations — no rent section needed
   const showRentSection = !isDepartment;
 
@@ -681,12 +683,12 @@ export function SubUnitDetailedConfigurator({
             <Building2 className="size-4 text-blue-400" />
           </div>
           <div>
-            <h2 className="text-sm font-black text-white tracking-wide">Add Unit Details - {formData.unitNumber || "New Unit"}</h2>
+            <h2 className="text-sm font-black text-white tracking-wide">{t("subunit.title", { unit: formData.unitNumber || t("subunit.fields.newUnit") })}</h2>
             <p className="text-[10px] text-blue-400 font-semibold tracking-widest uppercase">{parentBuildingName}</p>
           </div>
         </div>
         <button onClick={onCancel} className="px-3 py-1.5 border border-slate-500 hover:border-slate-300 hover:bg-slate-800 rounded-lg text-[10px] font-bold text-slate-300 uppercase transition-colors">
-          Close
+          {t("buttons.close")}
         </button>
       </div>
 
@@ -696,7 +698,7 @@ export function SubUnitDetailedConfigurator({
           <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-50 flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">
               <Loader2 className="size-8 text-blue-500 animate-spin" />
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Loading details...</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t("loading.details")}</p>
             </div>
           </div>
         )}
@@ -720,36 +722,36 @@ export function SubUnitDetailedConfigurator({
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 items-start">
                 {/* Always visible: type badge */}
-                <Input label="Type" name="unitType" value={formData.unitType || ""} readOnly
+                <Input label={t("subunit.fields.type")} name="unitType" value={formData.unitType || ""} readOnly
                   className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
-                <Input label="Building" value={parentBuildingName} readOnly
+                <Input label={t("subunit.fields.building")} value={parentBuildingName} readOnly
                   className={`${inp} bg-slate-100 text-slate-500 cursor-not-allowed`} />
                 {renderDepartmentSelect()}
-                <Input label="Property No" name="propertyNo" value={formData.propertyNo || ""} onChange={handleChange} className={inp} />
-                <Input label="CSN No." name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
+                <Input label={t("subunit.fields.propertyNo")} name="propertyNo" value={formData.propertyNo || ""} onChange={handleChange} className={inp} />
+                <Input label={t("subunit.fields.csnNo")} name="surveyNo" value={formData.surveyNo || ""} onChange={handleChange} className={inp} />
 
                 {/* 6th input depending on type */}
                 {!isShop && !isOffice && !isRoom && !isDepartment && (
-                  <Input label={`Owner / Resident Name${formData.rentType ? " *" : ""}`} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Full name" />
+                  <Input label={`${t("subunit.fields.ownerResidentName")}${formData.rentType ? " *" : ""}`} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} />
                 )}
                 {isShop && (
-                  <Input label="Shop Name" name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} placeholder="e.g. Sharma Grocery" />
+                  <Input label={t("subunit.fields.shopName")} name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} />
                 )}
                 {isOffice && (
-                  <Input label="Office / Unit Name" name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} placeholder="e.g. North Wing Office" />
+                  <Input label={t("subunit.fields.officeUnitName")} name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} />
                 )}
                 {isRoom && (
-                  <Input label="Room Type" name="roomTypeDesc" value={formData.roomTypeDesc || ""} onChange={handleChange} className={inp} placeholder="e.g. Conference Room" />
+                  <Input label={t("subunit.fields.roomType")} name="roomTypeDesc" value={formData.roomTypeDesc || ""} onChange={handleChange} className={inp} />
                 )}
                 {isDepartment && (
-                  <Input label="Department Name" name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} placeholder="e.g. Finance Department" />
+                  <Input label={t("subunit.fields.departmentName")} name="unitName" value={formData.unitName || ""} onChange={handleChange} className={inp} />
                 )}
 
                 {/* ── FLAT fields ─────────────────────────────────────── */}
                 {!isShop && !isOffice && !isRoom && !isDepartment && (<>
-                  <Input label="Email ID" name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} placeholder="Optional" />
+                  <Input label={t("subunit.fields.emailId")} name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Mobile No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.mobileNo")}</span>
                     <CustomBoxedInput
                       value={formData.mobileNo || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
@@ -759,7 +761,7 @@ export function SubUnitDetailedConfigurator({
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Aadhaar Card No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.aadhaarNo")}</span>
                     <CustomBoxedInput
                       value={formData.aadhaar || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
@@ -769,7 +771,7 @@ export function SubUnitDetailedConfigurator({
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">PAN Card No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.panNo")}</span>
                     <CustomBoxedInput
                       value={formData.pan || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
@@ -781,12 +783,12 @@ export function SubUnitDetailedConfigurator({
 
                 {/* ── SHOP fields ─────────────────────────────────────── */}
                 {isShop && (<>
-                  <Input label={`Shopkeeper / Renter Name${formData.rentType ? " *" : ""}`} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} />
-                  <Input label="Email ID" name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} placeholder="Optional" />
-                  <Input label="GST No" name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
-                  <Input label="Shop Act No" name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                  <Input label={`${t("subunit.fields.shopkeeperRenterName")}${formData.rentType ? " *" : ""}`} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.emailId")} name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.gstNo")} name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.shopActNo")} name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Mobile No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.mobileNo")}</span>
                     <CustomBoxedInput
                       value={formData.mobileNo || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
@@ -796,7 +798,7 @@ export function SubUnitDetailedConfigurator({
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Aadhaar Card No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.aadhaarNo")}</span>
                     <CustomBoxedInput
                       value={formData.aadhaar || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
@@ -806,7 +808,7 @@ export function SubUnitDetailedConfigurator({
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">PAN Card No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.panNo")}</span>
                     <CustomBoxedInput
                       value={formData.pan || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
@@ -818,12 +820,12 @@ export function SubUnitDetailedConfigurator({
 
                 {/* ── OFFICE fields ────────────────────────────────────── */}
                 {isOffice && (<>
-                  <Input label={`Company / Tenant Name${formData.rentType ? " *" : ""}`} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Company name" />
-                  <Input label="Email ID" name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} placeholder="Optional" />
-                  <Input label="GST No" name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
-                  <Input label="Shop Act No" name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                  <Input label={`${t("subunit.fields.companyTenantName")}${formData.rentType ? " *" : ""}`} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.emailId")} name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.gstNo")} name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.shopActNo")} name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Mobile No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.mobileNo")}</span>
                     <CustomBoxedInput
                       value={formData.mobileNo || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
@@ -833,7 +835,7 @@ export function SubUnitDetailedConfigurator({
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Aadhaar Card No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.aadhaarNo")}</span>
                     <CustomBoxedInput
                       value={formData.aadhaar || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
@@ -843,7 +845,7 @@ export function SubUnitDetailedConfigurator({
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">PAN Card No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.panNo")}</span>
                     <CustomBoxedInput
                       value={formData.pan || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
@@ -855,13 +857,13 @@ export function SubUnitDetailedConfigurator({
 
                 {/* ── ROOM fields ──────────────────────────────────────── */}
                 {isRoom && (<>
-                  <Input label={`Occupant Name${formData.rentType ? " *" : ""}`} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Who uses this room" />
-                  <Input label="Email ID" name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} placeholder="Optional" />
-                  <Input label="Usage / Purpose" name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} placeholder="e.g. Storage, Meeting" />
-                  <Input label="GST No" name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
-                  <Input label="Shop Act No" name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                  <Input label={`${t("subunit.fields.occupantName")}${formData.rentType ? " *" : ""}`} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.emailId")} name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.usagePurpose")} name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.gstNo")} name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.shopActNo")} name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Mobile No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.mobileNo")}</span>
                     <CustomBoxedInput
                       value={formData.mobileNo || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
@@ -871,7 +873,7 @@ export function SubUnitDetailedConfigurator({
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Aadhaar Card No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.aadhaarNo")}</span>
                     <CustomBoxedInput
                       value={formData.aadhaar || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
@@ -881,7 +883,7 @@ export function SubUnitDetailedConfigurator({
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">PAN Card No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.panNo")}</span>
                     <CustomBoxedInput
                       value={formData.pan || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
@@ -893,14 +895,14 @@ export function SubUnitDetailedConfigurator({
 
                 {/* ── DEPARTMENT fields ────────────────────────────────── */}
                 {isDepartment && (<>
-                  <Input label="Department Head / In-Charge" name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} placeholder="Officer name" />
-                  <Input label="Email ID" name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} placeholder="Optional" />
-                  <Input label="No. of Staff" name="noOfStaff" type="number" onFocus={selectOnFocus} min={0} value={formData.noOfStaff || ""} onChange={handleChange} className={inp} placeholder="Head count" />
-                  <Input label="Remarks" name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} placeholder="Optional notes" />
-                  <Input label="GST No" name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} placeholder="15-char GSTIN" />
-                  <Input label="Shop Act No" name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.departmentHead")} name="renterName" value={formData.renterName || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.emailId")} name="emailId" value={formData.emailId || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.noOfStaff")} name="noOfStaff" type="number" onFocus={selectOnFocus} min={0} value={formData.noOfStaff || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.remarks")} name="propertyDescription" value={formData.propertyDescription || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.gstNo")} name="gstNo" value={formData.gstNo || ""} onChange={handleChange} className={inp} />
+                  <Input label={t("subunit.fields.shopActNo")} name="shopActNo" value={formData.shopActNo || ""} onChange={handleChange} className={inp} />
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Mobile No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.mobileNo")}</span>
                     <CustomBoxedInput
                       value={formData.mobileNo || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, mobileNo: val }))}
@@ -910,7 +912,7 @@ export function SubUnitDetailedConfigurator({
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Aadhaar Card No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.aadhaarNo")}</span>
                     <CustomBoxedInput
                       value={formData.aadhaar || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, aadhaar: val }))}
@@ -920,7 +922,7 @@ export function SubUnitDetailedConfigurator({
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">PAN Card No</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.panNo")}</span>
                     <CustomBoxedInput
                       value={formData.pan || ""}
                       onChange={(val) => setFormData((prev: any) => ({ ...prev, pan: val }))}
@@ -944,22 +946,22 @@ export function SubUnitDetailedConfigurator({
                   <div className="bg-[#1d4ed8] p-1 rounded-lg text-white shadow-sm flex items-center justify-center shrink-0">
                     <IndianRupee className="size-3.5 text-white" />
                   </div>
-                  <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">Rent Information</CardTitle>
+                  <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">{t("subunit.sections.rentInfo")}</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 items-start">
                   <SearchSelect
-                    label="Lease / Rent Type"
+                    label={t("subunit.fields.rentType")}
                     name="rentType"
                     value={formData.rentType || ""}
                     onChange={(name, val) => setFormData((prev: any) => ({ ...prev, rentType: val }))}
                     options={[
-                      { label: "Commercial Lease", value: "Commercial Lease" },
-                      { label: "Residential Rent", value: "Residential Rent" }
+                      { label: t("subunit.fields.rentTypeOptions.commercial"), value: "Commercial Lease" },
+                      { label: t("subunit.fields.rentTypeOptions.residential"), value: "Residential Rent" }
                     ]}
-                    placeholder="Select..."
+                    placeholder={t("buttons.select")}
                   />
                   <Input
-                    label={`Lease Start${formData.rentType ? " *" : ""}`}
+                    label={`${t("subunit.fields.leaseStart")}${formData.rentType ? " *" : ""}`}
                     type="date"
                     name="leaseStart"
                     value={formData.leaseStart || ""}
@@ -967,7 +969,7 @@ export function SubUnitDetailedConfigurator({
                     className={inp}
                   />
                   <Input
-                    label={`Lease End${formData.rentType ? " *" : ""}`}
+                    label={`${t("subunit.fields.leaseEnd")}${formData.rentType ? " *" : ""}`}
                     type="date"
                     name="leaseEnd"
                     value={formData.leaseEnd || ""}
@@ -975,25 +977,25 @@ export function SubUnitDetailedConfigurator({
                     className={inp}
                   />
                   <Input
-                    label="Duration"
+                    label={t("subunit.fields.duration")}
                     name="duration"
-                    value={formData.duration || "Auto-calculated"}
+                    value={formData.duration || t("subunit.fields.durationAuto")}
                     readOnly
                     className={`${inp} bg-slate-100 text-slate-500 italic`}
                   />
                   <SearchSelect
-                    label="Rent Frequency"
+                    label={t("subunit.fields.rentFrequency")}
                     name="rentFreq"
                     value={formData.rentFreq || ""}
                     onChange={(name, val) => setFormData((prev: any) => ({ ...prev, rentFreq: val }))}
                     options={[
-                      { label: "Monthly", value: "Monthly" },
-                      { label: "Yearly", value: "Yearly" }
+                      { label: t("subunit.fields.rentFreqOptions.monthly"), value: "Monthly" },
+                      { label: t("subunit.fields.rentFreqOptions.yearly"), value: "Yearly" }
                     ]}
-                    placeholder="Select..."
+                    placeholder={t("buttons.select")}
                   />
                   <Input
-                    label={`Rent Amount (₹)${formData.rentType ? " *" : ""}`}
+                    label={`${t("subunit.fields.rentAmount")}${formData.rentType ? " *" : ""}`}
                     name="rentAmount"
                     type="number"
                     onFocus={selectOnFocus}
@@ -1003,7 +1005,7 @@ export function SubUnitDetailedConfigurator({
                     className={`${inp} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                   />
                   <Input
-                    label="Security Deposit (₹)"
+                    label={t("subunit.fields.securityDeposit")}
                     name="securityDeposit"
                     type="number"
                     onFocus={selectOnFocus}
@@ -1013,15 +1015,15 @@ export function SubUnitDetailedConfigurator({
                     className={`${inp} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                   />
                   <SearchSelect
-                    label="Deposit Type"
+                    label={t("subunit.fields.depositType")}
                     name="depositType"
                     value={formData.depositType || ""}
                     onChange={(name, val) => setFormData((prev: any) => ({ ...prev, depositType: val }))}
                     options={[
-                      { label: "Refundable", value: "Refundable" },
-                      { label: "Non-Refundable", value: "Non-Refundable" }
+                      { label: t("subunit.fields.depositTypeOptions.refundable"), value: "Refundable" },
+                      { label: t("subunit.fields.depositTypeOptions.nonRefundable"), value: "Non-Refundable" }
                     ]}
-                    placeholder="Select..."
+                    placeholder={t("buttons.select")}
                   />
                 </CardContent>
               </Card>
@@ -1038,12 +1040,12 @@ export function SubUnitDetailedConfigurator({
                 <div className="bg-[#1d4ed8] p-1 rounded-lg text-white shadow-sm flex items-center justify-center shrink-0">
                   <Building2 className="size-3.5 text-white" />
                 </div>
-                <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">Floor & Construction Details</CardTitle>
+                <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">{t("subunit.sections.floorDetails")}</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 items-start">
                 {floorSelectOptions.length > 1 ? (
                   <SearchSelect
-                    label="Assign to Floor *"
+                    label={t("subunit.fields.assignToFloor")}
                     value={formData.floorId ? String(formData.floorId) : ""}
                     onChange={(name, val) => {
                       const event = {
@@ -1052,26 +1054,26 @@ export function SubUnitDetailedConfigurator({
                       handleFloorSelect(event);
                     }}
                     options={floorSelectOptions.slice(1)}
-                    placeholder="— Select Floor —"
+                    placeholder={t("subunit.fields.floorSelectPlaceholder")}
                   />
                 ) : (
                   <div className="flex flex-col">
-                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">Assign to Floor *</span>
+                    <span className="block text-[11px] font-medium text-gray-700 mb-1 truncate">{t("subunit.fields.assignToFloor")}</span>
                     <div className={`${inp} flex items-center px-2 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-[10px] font-semibold`}>
-                      No floors available in master data.
+                      {t("notifications.noFloors")}
                     </div>
                   </div>
                 )}
                  <SearchSelect
-                  label="Sub Floor"
+                  label={t("subunit.fields.subFloor")}
                   name="subFloorId"
                   value={formData.subFloorId ? String(formData.subFloorId) : ""}
                   onChange={(name, val) => setFormData((p: any) => ({ ...p, subFloorId: val }))}
                   options={(subFloorOptions || []).map((o: any) => ({ label: o.label, value: String(o.value) }))}
-                  placeholder="— Select Sub Floor —"
+                  placeholder={t("subunit.fields.subFloorPlaceholder")}
                 />
                 <Input
-                  label="Construction Year *"
+                  label={t("subunit.fields.constructionYear")}
                   name="conYear"
                   value={formData.conYear || ""}
                   onChange={handleChange}
@@ -1080,31 +1082,31 @@ export function SubUnitDetailedConfigurator({
                   className={inp}
                 />
                 <SearchSelect
-                  label="Construction Type *"
+                  label={t("subunit.fields.constructionType")}
                   name="conType"
                   value={formData.conType || ""}
                   onChange={(name, val) => setFormData((p: any) => ({ ...p, conType: val }))}
                   options={(dropdownOptions?.constructionTypes || []).map((o: any) => ({ label: o.label, value: String(o.value) }))}
-                  placeholder="Select Con Type…"
+                  placeholder={t("subunit.fields.constructionTypePlaceholder")}
                 />
                 <SearchSelect
-                  label="Type of Use *"
+                  label={t("subunit.fields.typeOfUse")}
                   name="useType"
                   value={formData.useType || ""}
                   onChange={(name, val) => setFormData((p: any) => ({ ...p, useType: val, subUseType: "" }))}
                   options={(dropdownOptions?.useTypes || []).map((o: any) => ({ label: o.label, value: String(o.value) }))}
-                  placeholder="Select Use Type…"
+                  placeholder={t("subunit.fields.typeOfUsePlaceholder")}
                 />
                 <SearchSelect
-                  label="Sub-Type of Use"
+                  label={t("subunit.fields.subTypeOfUse")}
                   name="subUseType"
                   value={formData.subUseType || ""}
                   onChange={(name, val) => setFormData((p: any) => ({ ...p, subUseType: val }))}
                   options={(dynamicSubUseTypes.length > 0 ? dynamicSubUseTypes : (dropdownOptions?.subUseTypes || []).filter((o: any) => String(o.typeOfUseId) === String(formData.useType))).map((o: any) => ({ label: o.label, value: String(o.value) }))}
-                  placeholder="Select Sub-Type…"
+                  placeholder={t("subunit.fields.subTypeOfUsePlaceholder")}
                 />
                 <Input
-                  label="Unit Area (SqFt) — from rooms *"
+                  label={t("subunit.fields.unitArea")}
                   value={area}
                   readOnly
                   className={`${inp} bg-slate-50 text-slate-600 font-mono font-semibold cursor-default`}
@@ -1120,7 +1122,7 @@ export function SubUnitDetailedConfigurator({
                 <div className="bg-[#1d4ed8] p-1 rounded-lg text-white shadow-sm flex items-center justify-center shrink-0">
                   <Layers className="size-3.5 text-white" />
                 </div>
-                <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">Room-Wise Configuration</CardTitle>
+                <CardTitle className="text-xs font-bold text-[#1d4ed8] uppercase tracking-widest">{t("subunit.sections.roomWiseConfig")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-end">
@@ -1130,24 +1132,24 @@ export function SubUnitDetailedConfigurator({
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-md shadow-blue-100 flex items-center gap-1.5 shrink-0 cursor-pointer"
                   >
                     <Layers className="size-3.5" />
-                    Add Rooms
+                    {t("buttons.addRooms")}
                   </button>
                 </div>
 
                 {roomsList.length > 0 && (
                   <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200/60">
                     <div>
-                      <span className="block text-[10px] font-black text-slate-700 uppercase tracking-wider mb-1">Total Rooms</span>
-                      <span className="font-mono text-xs font-black text-slate-700">{roomsList.reduce((acc, r) => acc + Number(r.count || 0), 0)} Rooms</span>
+                      <span className="block text-[10px] font-black text-slate-700 uppercase tracking-wider mb-1">{t("subunit.labels.totalRooms")}</span>
+                      <span className="font-mono text-xs font-black text-slate-700">{roomsList.reduce((acc, r) => acc + Number(r.count || 0), 0)} {t("subunit.labels.rooms")}</span>
                     </div>
                     <div>
-                      <span className="block text-[10px] font-black text-slate-700 uppercase tracking-wider mb-1">Carpet Area</span>
+                      <span className="block text-[10px] font-black text-slate-700 uppercase tracking-wider mb-1">{t("subunit.labels.carpetArea")}</span>
                       <span className="font-mono text-xs font-black text-emerald-700">
-                        {Number(area).toFixed(2)} SqFt ({(Number(area) / 10.7639).toFixed(2)} m²)
+                        {t("subunit.labels.carpetAreaSqFtM2", { sqFt: Number(area).toFixed(2), m2: (Number(area) / 10.7639).toFixed(2) })}
                       </span>
                     </div>
                     <div className="col-span-2 md:col-span-2">
-                      <span className="block text-[10px] font-black text-slate-700 uppercase tracking-wider mb-1">Room Types Added</span>
+                      <span className="block text-[10px] font-black text-slate-700 uppercase tracking-wider mb-1">{t("subunit.labels.roomTypesAdded")}</span>
                       <span className="text-[10px] font-bold text-slate-600 truncate block">
                         {Array.from(new Set(roomsList.map(r => r.roomType))).join(", ")}
                       </span>
@@ -1164,7 +1166,7 @@ export function SubUnitDetailedConfigurator({
             <Card variant="bordered" className="bg-white border-slate-200/80 rounded-2xl shadow-sm p-3 space-y-3.5" padding="none">
               {/* Asset Image */}
               <div className="space-y-2">
-                <span className="inline-block text-[10px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">Asset Image</span>
+                <span className="inline-block text-[10px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">{t("subunit.labels.assetImage")}</span>
                 <div
                   onClick={() => !photoPreview && photoRef.current?.click()}
                   className={`relative h-64 rounded-xl border flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all group ${photoPreview ? 'border-slate-200' : 'border-slate-200 bg-[#e2ebf5]/30 hover:bg-[#e2ebf5]/60 hover:border-slate-300 shadow-sm'}`}
@@ -1183,7 +1185,7 @@ export function SubUnitDetailedConfigurator({
                           className="px-2.5 py-1 bg-white hover:bg-slate-50 text-blue-600 rounded-full shadow-md transition-colors flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
                           title="Replace Image"
                         >
-                          Replace
+                          {t("buttons.replace")}
                         </button>
                         <button
                           type="button"
@@ -1191,8 +1193,8 @@ export function SubUnitDetailedConfigurator({
                             e.stopPropagation();
                             confirm({
                               variant: "delete",
-                              title: "Delete Image",
-                              description: "Are you sure you want to delete this image?",
+                              title: t("subunit.confirm.deleteImageTitle"),
+                              description: t("subunit.confirm.deleteImageDesc"),
                               onConfirm: () => {
                                 setPhotoPreview(null);
                                 setPhotoFile(null);
@@ -1203,7 +1205,7 @@ export function SubUnitDetailedConfigurator({
                           className="px-2.5 py-1 bg-white hover:bg-red-50 text-red-600 rounded-full shadow-md transition-colors flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
                           title="Delete Image"
                         >
-                          Delete
+                          {t("buttons.delete")}
                         </button>
                       </div>
                     </>
@@ -1212,15 +1214,15 @@ export function SubUnitDetailedConfigurator({
                       <div className="p-2.5 bg-blue-50 border border-blue-100 rounded-full text-blue-500 mb-2 group-hover:scale-110 transition-transform">
                         <UploadCloud className="size-5" />
                       </div>
-                      <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Upload Asset Image</span>
-                      <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tight mt-1 text-center">Click to browse file</span>
+                      <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">{t("subunit.labels.uploadImage")}</span>
+                      <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tight mt-1 text-center">{t("subunit.labels.browseFile")}</span>
                     </div>
                   )}
 
                   {/* Badge */}
                   {photoPreview && (
                     <div className="absolute top-2.5 left-2.5 bg-[#4c8bf5] text-white text-[9px] font-black px-2 py-0.5 rounded-full tracking-wider shadow-sm select-none z-10">
-                      +1 More
+                      {t("subunit.labels.plusMore", { count: 1 })}
                     </div>
                   )}
                 </div>
@@ -1229,7 +1231,7 @@ export function SubUnitDetailedConfigurator({
 
               {/* Photo Plan */}
               <div className="space-y-2">
-                <span className="inline-block text-[10px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">Asset Photo Plan</span>
+                <span className="inline-block text-[10px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">{t("subunit.labels.assetPhotoPlan")}</span>
                 <div
                   onClick={() => !planPreview && planRef.current?.click()}
                   className={`relative h-64 rounded-xl border flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all group ${planPreview ? 'border-slate-200' : 'border-slate-200 bg-[#e2ebf5]/30 hover:bg-[#e2ebf5]/60 hover:border-slate-300 shadow-sm'}`}
@@ -1248,7 +1250,7 @@ export function SubUnitDetailedConfigurator({
                           className="px-2.5 py-1 bg-white hover:bg-slate-50 text-blue-600 rounded-full shadow-md transition-colors flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
                           title="Replace Image"
                         >
-                          Replace
+                          {t("buttons.replace")}
                         </button>
                         <button
                           type="button"
@@ -1256,8 +1258,8 @@ export function SubUnitDetailedConfigurator({
                             e.stopPropagation();
                             confirm({
                               variant: "delete",
-                              title: "Delete Photo Plan",
-                              description: "Are you sure you want to delete this photo plan?",
+                              title: t("subunit.confirm.deletePlanTitle"),
+                              description: t("subunit.confirm.deletePlanDesc"),
                               onConfirm: () => {
                                 setPlanPreview(null);
                                 setPlanFile(null);
@@ -1268,7 +1270,7 @@ export function SubUnitDetailedConfigurator({
                           className="px-2.5 py-1 bg-white hover:bg-red-50 text-red-600 rounded-full shadow-md transition-colors flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
                           title="Delete Image"
                         >
-                          Delete
+                          {t("buttons.delete")}
                         </button>
                       </div>
                     </>
@@ -1277,8 +1279,8 @@ export function SubUnitDetailedConfigurator({
                       <div className="p-2.5 bg-blue-50 border border-blue-100 rounded-full text-blue-500 mb-2 group-hover:scale-110 transition-transform">
                         <UploadCloud className="size-5" />
                       </div>
-                      <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Upload Asset Photo Plan</span>
-                      <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tight mt-1 text-center">Click to browse file</span>
+                      <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">{t("subunit.labels.uploadPhotoPlan")}</span>
+                      <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tight mt-1 text-center">{t("subunit.labels.browseFile")}</span>
                     </div>
                   )}
                 </div>
@@ -1294,11 +1296,11 @@ export function SubUnitDetailedConfigurator({
       <div className="px-4 py-2.5 bg-white border-t border-slate-200 flex justify-end gap-2.5 shrink-0">
         <button onClick={onCancel}
           className="px-5 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 uppercase tracking-widest transition-colors">
-          Cancel
+          {t("buttons.cancel")}
         </button>
         <button onClick={handleSaveClick}
           className="px-5 py-1.5 bg-emerald-600 rounded-lg text-xs font-bold text-white hover:bg-emerald-700 uppercase tracking-widest flex items-center gap-2 shadow-md transition-colors">
-          <Save className="size-3.5" /> Save Unit
+          <Save className="size-3.5" /> {t("buttons.saveUnit")}
         </button>
       </div>
       <RoomWiseSubmissionDrawer

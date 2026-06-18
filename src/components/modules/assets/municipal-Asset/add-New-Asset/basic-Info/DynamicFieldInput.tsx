@@ -4,6 +4,7 @@
 import { Input, Select, ToggleSwitch, SearchSelect } from "@/components/common";
 import { ProcessedField } from "@/components/modules/assets/municipal-Asset/add-New-Asset/FieldRenderer";
 import { DynamicAttributesFormData } from "@/types/asset-types/basic-info/basicInfo.types";
+import { useTranslations } from "next-intl";
 
 interface DynamicFieldInputProps {
   field: ProcessedField;
@@ -19,6 +20,7 @@ export function DynamicFieldInput({
   formData,
   onAttributeChange
 }: DynamicFieldInputProps) {
+  const t = useTranslations("addAssetForm");
   const fieldName = field.fieldName;
   const fieldValue = formData.attributes?.[fieldName];
 
@@ -30,7 +32,7 @@ export function DynamicFieldInput({
         value={String(fieldValue ?? "")}
         onChange={(name, value) => onAttributeChange(fieldName, value)}
         options={field.options.map((opt: string) => ({ label: opt, value: opt }))}
-        placeholder={`Select ${field.fieldLabel}`}
+        placeholder={t("placeholders.selectField", { field: field.fieldLabel })}
         className="font-medium text-[11px] h-7"
         required={field.isRequired}
       />
@@ -134,7 +136,7 @@ export function DynamicFieldInput({
         onAttributeChange(fieldName, val);
       }}
       className="h-7 text-[11px] font-medium text-slate-700"
-      placeholder={`Enter ${field.fieldLabel.toLowerCase()}`}
+      placeholder={t("placeholders.enterField", { field: field.fieldLabel })}
       required={field.isRequired}
     />
   );

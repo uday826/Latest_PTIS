@@ -75,6 +75,7 @@ export default getRequestConfig(async ({ locale }) => {
     owningDepartmentMessages,
     assetDetailMessages,
     revenueManagementMessages,
+    addAssetFormMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -171,6 +172,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/owning-department.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetDetail.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/revenueManagement.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/addAssetForm.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
 
@@ -238,6 +240,7 @@ export default getRequestConfig(async ({ locale }) => {
       owningDepartment: owningDepartmentMessages,
       assetDetail: assetDetailMessages,
       revenueManagement: revenueManagementMessages,
+      addAssetForm: addAssetFormMessages,
     },
   };
 });
