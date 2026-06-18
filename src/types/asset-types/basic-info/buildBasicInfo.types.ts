@@ -20,6 +20,8 @@ export interface BuildingPropertyDetailsFormData {
   mouja: string;
   propertyNumber: string;
   surveyNumber: string;
+  partitionNo?: string;
+  upicId?: string;
   condition?: string;
   isRevenueGenerating?: string;
   landArea?: string;
@@ -153,6 +155,8 @@ export const INITIAL_BUILDING_BASIC_INFO: BuildingBasicInfoFormData = {
   mouja: "",
   propertyNumber: "",
   surveyNumber: "",
+  partitionNo: "",
+  upicId: "",
   length: "",
   width: "",
   plotNumber: "",

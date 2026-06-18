@@ -3,7 +3,18 @@
 import { useTranslations } from "next-intl";
 import {
   DollarSign,
+  TrendingUp,
+  Home,
+  Armchair,
+  Laptop,
+  Lightbulb,
+  Car,
+  ChevronRight,
+  Building,
+  Package,
+  Activity,
 } from "lucide-react";
+import { Card, CardContent } from "@/components/common";
 
 const COND_FACTORS: Record<string, number> = {
   "New":         1.00,
@@ -224,8 +235,151 @@ export function BuildingValuationSummary({
     ...dynamicCategoryCards
   ];
 
+  const dynamicSummaryCards = categories.map((cat, idx) => {
+    let key = "furniture";
+    const nameLower = (cat.typeName || "").toLowerCase();
+    const codeLower = (cat.typeCode || "").toLowerCase();
+    
+    if (nameLower.includes("furniture") || nameLower.includes("furn") || codeLower.includes("fur")) {
+      key = "furniture";
+    } else if (nameLower.includes("it-equipment") || nameLower.includes("it_equipment") || nameLower.includes("it-equip") || nameLower === "it" || codeLower.includes("it") || nameLower.includes("computer")) {
+      key = "it-equipment";
+    } else if (nameLower.includes("electronic") || nameLower.includes("elect") || nameLower.includes("fixture") || codeLower.includes("elc")) {
+      key = "electronic-fixtures";
+    } else if (nameLower.includes("vehicle") || nameLower.includes("veh") || nameLower.includes("car") || codeLower.includes("veh")) {
+      key = "vehicle";
+    } else {
+      key = (cat.typeCode || cat.typeName || "").toLowerCase().replace(/[\s_]+/g, "-");
+    }
+
+    const iconMap: Record<string, any> = {
+      "furniture": Package,
+      "it-equipment": Activity,
+      "electronic-fixtures": Activity,
+      "vehicle": Package,
+    };
+    const IconComponent = iconMap[key] || Package;
+
+    // Filter raw inventories belonging to this category
+    const items = rawInventories.filter(item => {
+      const itemType = (item.inventoryType ?? item.InventoryType ?? "").toLowerCase().replace(/[\s_]+/g, "-");
+      const itemKey = itemType.includes("furniture") || itemType.includes("furn") ? "furniture"
+                    : itemType.includes("it-equipment") || itemType.includes("it_equipment") || itemType.includes("it-equip") || itemType === "it" || itemType.includes("computer") ? "it-equipment"
+                    : itemType.includes("electronic") || itemType.includes("elect") || itemType.includes("fixture") ? "electronic-fixtures"
+                    : itemType.includes("vehicle") || itemType.includes("veh") || itemType.includes("car") ? "vehicle"
+                    : itemType;
+      return itemKey === key;
+    });
+
+    const totalVal = items.reduce((s, i) => s + calculateItemCV(i, categories, conditions), 0);
+    const prefix = idx < alphabet.length ? alphabet[idx] : String(idx + 1);
+
+    const style = categoryStyles[key] || fallbackStyle;
+    const title = `${style.icon} ${prefix}) ${cat.typeName}`;
+
+    return {
+      title,
+      value: totalVal,
+      icon: IconComponent,
+      footer: `From ${cat.typeName} Inventory (${prefix})`
+    };
+  });
+
+  const summaryCardsData = [
+    {
+      title: t("valuation.building.title"),
+      value: buildingCapitalValue,
+      icon: Building,
+      footer: "From Construction Details (C)",
+    },
+    ...dynamicSummaryCards
+  ];
+
   return (
     <div className="space-y-6 p-4 rounded-lg">
+      {/* Asset Valuation Summary */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 text-[#1E40AF]">
+          <DollarSign className="w-5 h-5 text-[#1E40AF]" />
+          <h3 className="text-lg font-bold text-[#1E40AF]">{t("valuation.assetSummary.title") || "Asset Valuation Summary"}</h3>
+        </div>
+        <div className="flex items-center gap-1.5 mt-1 text-slate-500 text-xs font-semibold">
+          <TrendingUp className="w-3.5 h-3.5 text-slate-500" />
+          <span>Final Asset Valuation Summary</span>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mt-4">
+          {summaryCardsData.map((card) => {
+            const IconComponent = card.icon;
+            return (
+              <Card
+                key={card.title}
+                variant="bordered"
+                padding="none"
+                className="p-2 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:scale-105 group"
+                style={{
+                  background: 'linear-gradient(135deg, #FFFFFF 0%, #F0F9FF 100%)',
+                  borderColor: '#BFDBFE',
+                  boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.15), 0 2px 4px -1px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(59, 130, 246, 0.2), 0 10px 10px -5px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9)';
+                  e.currentTarget.style.borderColor = '#93C5FD';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(59, 130, 246, 0.15), 0 2px 4px -1px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9)';
+                  e.currentTarget.style.borderColor = '#BFDBFE';
+                }}
+              >
+                <CardContent>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <div
+                      className="p-1 rounded-md transition-all duration-300 group-hover:scale-110"
+                      style={{
+                        background: 'linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)',
+                        border: '1.5px solid #93C5FD',
+                        boxShadow: '0 1px 2px rgba(59, 130, 246, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.8)'
+                      }}
+                    >
+                      <IconComponent className="w-3.5 h-3.5" style={{ color: '#1E40AF' }} />
+                    </div>
+                    <h5
+                      className="text-xs font-bold"
+                      style={{
+                        color: '#1E3A8A',
+                        textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
+                      }}
+                    >
+                      {card.title}
+                    </h5>
+                  </div>
+                 
+                  <p
+                    className="text-lg font-bold mb-1 transition-all duration-300"
+                    style={{
+                      fontFamily: 'monospace',
+                      color: '#1E3A8A',
+                      textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)'
+                    }}
+                  >
+                    ₹ {card.value.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </p>
+                 
+                  <div className="flex items-center justify-between pt-1 border-t border-blue-100">
+                    <p className="text-xs font-medium" style={{ color: '#60A5FA' }}>
+                      {card.footer}
+                    </p>
+                    <ChevronRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" style={{ color: '#60A5FA' }} />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="h-px my-4 bg-gray-200" />
+
       {/* Detail Cards */}
       <div className="mb-3">
         <h4 className="text-base font-bold mb-3" style={{ color: "#1E40AF" }}>{t("valuation.breakdown.title")}</h4>

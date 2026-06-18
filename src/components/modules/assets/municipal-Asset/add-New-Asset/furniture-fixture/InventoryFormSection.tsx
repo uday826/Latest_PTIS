@@ -20,6 +20,7 @@ interface InventoryFormSectionProps {
   dynamicItemNameOptions: { label: string; value: string }[];
   dynamicModelOptions: { label: string; value: string }[];
   departments: { label: string; value: string }[];
+  isSaving: boolean;
 }
 
 export function InventoryFormSection({
@@ -38,6 +39,7 @@ export function InventoryFormSection({
   dynamicItemNameOptions,
   dynamicModelOptions,
   departments,
+  isSaving,
 }: InventoryFormSectionProps) {
   const t = useTranslations("addAssetForm");
   const addNameOptions = dynamicItemNameOptions;
@@ -75,7 +77,7 @@ export function InventoryFormSection({
 
   return (
     <div className="rounded-xl border border-[#CFD9E6] bg-[#F7FAFF] p-3">
-      <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 items-end text-[11px] [&_label]:text-[11px] [&_label]:mb-1 [&_label]:!font-bold [&_span[id$=-label]]:text-[11px] [&_span[id$=-label]]:!font-bold [&_span.text-gray-700]:!font-bold [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-7 [&_input]:!text-[11px] [&_input]:!rounded-md [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-7 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px] [&_span.text-red-600]:text-[10px] [&_span.text-red-600]:mt-0.5">
+      <div className="flex flex-wrap gap-3 items-end text-[11px] [&_label]:text-[11px] [&_label]:mb-1 [&_label]:!font-bold [&_span[id$=-label]]:text-[11px] [&_span[id$=-label]]:!font-bold [&_span.text-gray-700]:!font-bold [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-7 [&_input]:!text-[11px] [&_input]:!rounded-md [&>div:not(.action-container)]:flex-1 [&>div:not(.action-container)]:min-w-[140px] [&>div:not(.action-container)]:max-w-[200px] [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-7 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px] [&_span.text-red-600]:text-[10px] [&_span.text-red-600]:mt-0.5">
         <SearchSelect
           label={t("inventory.columns.type")}
           value={form.type}
@@ -110,7 +112,6 @@ export function InventoryFormSection({
           placeholder={addSpecsPlaceholder}
           value={form.specifications}
           onChange={(event) => updateForm("specifications", event.target.value)}
-          required={true}
           fullWidth={true}
         />
 
@@ -147,6 +148,11 @@ export function InventoryFormSection({
           min={1}
           value={form.quantity}
           onChange={(event) => updateForm("quantity", event.target.value)}
+          onKeyDown={(e) => {
+            if (["e", "E", "+", "-", "."].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
           required={true}
           fullWidth={true}
         />
@@ -157,11 +163,16 @@ export function InventoryFormSection({
           min={0}
           value={form.unitValue}
           onChange={(event) => updateForm("unitValue", event.target.value)}
+          onKeyDown={(e) => {
+            if (["e", "E", "+", "-"].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
           required={true}
           fullWidth={true}
         />
 
-        <div className="flex items-end gap-3 lg:col-span-5 w-full">
+        <div className="flex items-end gap-3 w-auto action-container">
           <div className="flex flex-col gap-1 min-w-0">
             <span className="text-[11px] font-bold text-gray-700">{t("inventory.columns.photo")}</span>
             <input
@@ -196,6 +207,7 @@ export function InventoryFormSection({
             label={t("inventory.buttons.addRow")}
             className="h-[26px] w-[100px] whitespace-nowrap text-[9px] font-black uppercase tracking-wider rounded-md bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all"
             onClick={handleAddRow}
+            disabled={isSaving}
           />
         </div>
       </div>

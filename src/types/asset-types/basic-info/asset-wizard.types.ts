@@ -161,6 +161,8 @@ export interface AssetMasterRequest {
   inChargeEmail?: string | null;
   locality?: string | null;
   pinCode?: string | null;
+  partitionNo?: string | null;
+  upicId?: string | null;
 
 
   // Optional location

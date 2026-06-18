@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useCallback } from "react";
-import { Badge, Card, CardContent, DeleteButton, EditButton, MasterTable } from "@/components/common";
+import { Badge, Card, CardContent, DeleteButton, EditButton, MasterTable, SearchSelect } from "@/components/common";
 import { Package2, Image as ImageIcon, FileText } from "lucide-react";
 import { inventoryMeta, PAGE_SIZE, formatCurrency } from "./FurnitureFixtureConstants";
 import { InventoryFormSection } from "./InventoryFormSection";
@@ -99,8 +99,8 @@ function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnail
 
   if (loading) {
     return (
-      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400">
-        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400">
+        <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
       </div>
     );
   }
@@ -111,7 +111,7 @@ function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnail
         <img
           src={src}
           alt={row.itemName}
-          className="h-12 w-12 rounded-lg border object-cover cursor-pointer hover:opacity-80 transition-opacity"
+          className="h-8 w-8 rounded-lg border object-cover cursor-pointer hover:opacity-80 transition-opacity"
           onClick={handlePreview}
           title="Click to preview photo"
         />
@@ -120,17 +120,17 @@ function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnail
     if (row.photoName) {
       return (
         <div
-          className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-blue-500 cursor-pointer hover:bg-slate-100 transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-blue-500 cursor-pointer hover:bg-slate-100 transition-colors"
           onClick={handlePreview}
           title={`Click to preview: ${row.photoName}`}
         >
-          <ImageIcon className="h-5 w-5" />
+          <ImageIcon className="h-4 w-4" />
         </div>
       );
     }
     return (
-      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400" title="No photo uploaded">
-        <Package2 className="h-4 w-4" />
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400" title="No photo uploaded">
+        <Package2 className="h-3 w-3" />
       </div>
     );
   } else {
@@ -138,7 +138,7 @@ function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnail
     if (invoiceNumber) {
       return (
         <div
-          className="flex flex-col h-12 w-12 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-600 cursor-pointer hover:bg-amber-100 transition-colors overflow-hidden"
+          className="flex flex-col h-8 w-8 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-600 cursor-pointer hover:bg-amber-100 transition-colors overflow-hidden"
           onClick={handlePreview}
           title={`Click to preview Invoice: ${invoiceNumber}`}
         >
@@ -146,16 +146,16 @@ function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnail
             <img src={src} alt="Invoice" className="h-full w-full object-cover" />
           ) : (
             <>
-              <FileText className="h-4 w-4 mb-1" />
-              <span className="text-[9px] font-bold leading-none truncate w-10 text-center">{invoiceNumber}</span>
+              <FileText className="h-3 w-3 mb-0.5" />
+              <span className="text-[7px] font-bold leading-none truncate w-7 text-center">{invoiceNumber}</span>
             </>
           )}
         </div>
       );
     }
     return (
-      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400" title="No invoice uploaded">
-        <FileText className="h-4 w-4 opacity-50" />
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-slate-400" title="No invoice uploaded">
+        <FileText className="h-3.5 w-3.5 opacity-50" />
       </div>
     );
   }
@@ -224,69 +224,80 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
     }));
   }, [s.paginatedRows, s.currentPage]);
 
+  const filterOptions = React.useMemo(() => {
+    return [
+      { label: t("inventory.all") || "All", value: "all" },
+      ...s.dynamicCategoryOptions,
+    ];
+  }, [s.dynamicCategoryOptions, t]);
+
   return (
     <div>
       <div className="space-y-2 pb-1.5">
-        {/* <TableHeader title="Furniture & Fixtures Inventory" subtitle="" icon={Package2} className="rounded-xl border border-[#CBD8EA] bg-[#F5F8FD] shadow-sm" /> */}
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-          {s.summaryCards.map((card, index) => {
-            const normalizedType = card.type.toLowerCase().replace(/\s+/g, "-");
-            let textColorClass = "text-slate-700";
-            if (normalizedType === "furniture") textColorClass = "text-violet-700";
-            else if (normalizedType === "it-equipment") textColorClass = "text-blue-700";
-            else if (normalizedType === "electronic-fixtures") textColorClass = "text-emerald-700";
-            else if (normalizedType === "vehicle") textColorClass = "text-amber-700";
+        <div className="sticky top-0 z-30 bg-slate-50/90 backdrop-blur-md -mt-3 pt-3 pb-2 space-y-2">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            {s.summaryCards.map((card, index) => {
+              const normalizedType = card.type.toLowerCase().replace(/\s+/g, "-");
+              let textColorClass = "text-slate-700";
+              if (normalizedType === "furniture") textColorClass = "text-violet-700";
+              else if (normalizedType === "it-equipment") textColorClass = "text-blue-700";
+              else if (normalizedType === "electronic-fixtures") textColorClass = "text-emerald-700";
+              else if (normalizedType === "vehicle") textColorClass = "text-amber-700";
 
-            return (
-              <Card key={card.type} variant="bordered" padding="none" className={`rounded-xl border border-[#D8E3F1] bg-white shadow-sm ${card.cardRing}`}>
-                <div className="px-3.5 py-3 min-w-0 w-full">
-                  <p className={`text-[10px] font-black uppercase tracking-wider truncate sm:text-xs ${textColorClass}`}>
-                    {String.fromCharCode(65 + index)}) {card.label}
-                  </p>
-                  <p className="mt-1.5 truncate text-base font-bold leading-none text-[#1D4ED8] sm:text-lg">
-                    {formatCurrencyCompact(card.totalAmount)}
-                  </p>
-                  <p className="mt-1.5 text-[10px] text-slate-500 leading-none">{t("floorDetails.totalCount", { count: card.totalItems })}</p>
-                </div>
-              </Card>
-            );
-          })}
+              return (
+                <Card key={card.type} variant="bordered" padding="none" className={`rounded-xl border border-[#D8E3F1] bg-white shadow-sm ${card.cardRing}`}>
+                  <div className="px-3.5 py-3 min-w-0 w-full">
+                    <p className={`text-[10px] font-black uppercase tracking-wider truncate sm:text-xs ${textColorClass}`}>
+                      {String.fromCharCode(65 + index)}) {card.label}
+                    </p>
+                    <p className="mt-1.5 truncate text-base font-bold leading-none text-[#1D4ED8] sm:text-lg">
+                      {formatCurrencyCompact(card.totalAmount)}
+                    </p>
+                    <p className="mt-1.5 text-[10px] text-slate-500 leading-none">{t("floorDetails.totalCount", { count: card.totalItems })}</p>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Add Form Card */}
+          <Card variant="bordered" padding="sm" className="rounded-xl border border-[#BFD0E6] bg-white shadow-md">
+            <CardContent className="space-y-2">
+              <div className="mb-1 flex flex-col gap-2 border-b border-[#D7E1EE] pb-1.5 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-sm font-bold text-[#1E40AF] sm:text-base">{t("inventory.title")}</h2>
+                <p className="text-sm font-medium text-[#1D4ED8]">{t("inventory.totalItems", { count: s.filteredRows.length })}</p>
+              </div>
+              <InventoryFormSection
+                form={s.form}
+                updateForm={(k, v) => s.setForm(prev => ({ ...prev, [k]: v }))}
+                handleTypeChange={(val) => s.setForm(prev => ({
+                  ...prev,
+                  type: val as any,
+                  itemName: "",
+                  modelName: ""
+                }))}
+                handleItemNameChange={(val) => s.setForm(prev => ({
+                  ...prev,
+                  itemName: val,
+                  modelName: ""
+                }))}
+                addPhotoInputRef={s.addPhotoInputRef}
+                handleAddPhotoUpload={s.handleAddPhotoUpload}
+                openInvoiceDrawer={() => s.openInvoiceDrawer(false)}
+                addInvoicePreviewLabel={s.draftInvoice?.invoiceNumber || t("inventory.addInvoice")}
+                handleAddRow={s.handleAddRow}
+                formError={s.formError}
+                dynamicCategoryOptions={s.dynamicCategoryOptions}
+                dynamicConditionOptions={s.dynamicConditionOptions}
+                dynamicItemNameOptions={s.dynamicItemNameOptions}
+                dynamicModelOptions={s.dynamicModelOptions}
+                departments={s.departments}
+                isSaving={s.isSaving}
+              />
+            </CardContent>
+          </Card>
         </div>
-
-        <Card variant="bordered" padding="sm" className="rounded-xl border border-[#BFD0E6] bg-white shadow-md">
-          <CardContent className="space-y-2">
-            <div className="mb-1 flex flex-col gap-2 border-b border-[#D7E1EE] pb-1.5 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-lg font-semibold text-[#1E40AF] sm:text-xl">{t("inventory.title")}</h2>
-              <p className="text-sm font-medium text-[#1D4ED8]">{t("inventory.totalItems", { count: s.filteredRows.length })}</p>
-            </div>
-            <InventoryFormSection
-              form={s.form}
-              updateForm={(k, v) => s.setForm(prev => ({ ...prev, [k]: v }))}
-              handleTypeChange={(val) => s.setForm(prev => ({
-                ...prev,
-                type: val as any,
-                itemName: "",
-                modelName: ""
-              }))}
-              handleItemNameChange={(val) => s.setForm(prev => ({
-                ...prev,
-                itemName: val,
-                modelName: ""
-              }))}
-              addPhotoInputRef={s.addPhotoInputRef}
-              handleAddPhotoUpload={s.handleAddPhotoUpload}
-              openInvoiceDrawer={() => s.openInvoiceDrawer(false)}
-              addInvoicePreviewLabel={s.draftInvoice?.invoiceNumber || t("inventory.addInvoice")}
-              handleAddRow={s.handleAddRow}
-              formError={s.formError}
-              dynamicCategoryOptions={s.dynamicCategoryOptions}
-              dynamicConditionOptions={s.dynamicConditionOptions}
-              dynamicItemNameOptions={s.dynamicItemNameOptions}
-              dynamicModelOptions={s.dynamicModelOptions}
-              departments={s.departments}
-            />
-          </CardContent>
-        </Card>
 
         <Card variant="bordered" padding="none" className="overflow-hidden rounded-xl border border-[#BFD0E6] bg-white shadow-md">
           <div className="w-full overflow-x-auto">
@@ -294,13 +305,14 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
               <div className="text-sm font-semibold text-slate-700">{t("inventory.heading")}</div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-slate-600">{t("inventory.type")}</span>
-                <select value={s.filterType} onChange={(e) => { s.setFilterType(e.target.value); s.setCurrentPage(1); }} className="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-700 focus:ring-1 focus:ring-blue-500">
-                  <option value="all">{t("inventory.all")}</option>
-                  <option value="furniture">Furniture</option>
-                  <option value="it-equipment">IT Equipment</option>
-                  <option value="electronic-fixtures">Electronic Fixtures</option>
-                  <option value="vehicle">Vehicle</option>
-                </select>
+                <div className="w-[160px] [&_input]:!h-8 [&_input]:!text-xs [&_button[role=combobox]]:!h-8 [&_button[role=combobox]]:!text-xs [&_button[role=combobox]_span]:!text-xs">
+                  <SearchSelect
+                    value={s.filterType}
+                    onChange={(_, val) => { s.setFilterType(val); s.setCurrentPage(1); }}
+                    options={filterOptions}
+                    disableSearch={true}
+                  />
+                </div>
               </div>
             </div>
             <MasterTable
@@ -349,7 +361,7 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
                   <DeleteButton onClick={() => s.handleDeleteRow(row.id)} />
                 </>
               )}
-              actionLabel={t("inventory.columns.actions")} pageNumber={s.currentPage} pageSize={PAGE_SIZE} totalCount={s.filteredRows.length} totalPages={Math.max(1, Math.ceil(s.filteredRows.length / PAGE_SIZE))} onPageChange={s.setCurrentPage} paginationConfig={{ enabled: true }} maxBodyHeightClassName="max-h-none" tableClassName="min-w-[1160px] text-xs [&_th]:text-[11px] [&_td]:text-xs [&_th]:py-2 [&_td]:py-1.5" containerClassName="overflow-hidden rounded-xl border border-[#CBD8EA]"
+              actionLabel={t("inventory.columns.actions")} pageNumber={s.currentPage} pageSize={PAGE_SIZE} totalCount={s.filteredRows.length} totalPages={Math.max(1, Math.ceil(s.filteredRows.length / PAGE_SIZE))} onPageChange={s.setCurrentPage} paginationConfig={{ enabled: true }} maxBodyHeightClassName="max-h-none" tableClassName="min-w-[1160px] text-xs [&_th]:text-[11px] [&_td]:text-xs [&_th]:py-1.5 [&_td]:py-0.5" containerClassName="overflow-hidden rounded-xl border border-[#CBD8EA]"
             />
           </div>
         </Card>

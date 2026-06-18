@@ -196,7 +196,6 @@ export function BuildingOwnershipDetailsSection({
           onChange={(e: any) => handleChange(e)}
           placeholder="Ramdas Peth"
           disabled={formData.isMovableCategory}
-          required={!formData.isMovableCategory}
           className="h-8 text-[13px]"
         />
 

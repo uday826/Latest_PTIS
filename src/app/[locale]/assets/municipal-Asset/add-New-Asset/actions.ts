@@ -357,6 +357,8 @@ export async function submitAssetForm(formData: AssetFormData) {
       inChargeEmail: formData.inChargeEmail || null,
       locality: formData.locality || null,
       pinCode: formData.pinCode || null,
+      partitionNo: formData.partitionNo || null,
+      upicId: formData.upicId || null,
       isActive: false,
       createdBy: 1,
 
@@ -369,6 +371,8 @@ export async function submitAssetForm(formData: AssetFormData) {
         surveyNumber: formData.surveyNumber,
         offset: formData.offset,
         offsetOp: formData.offsetOp,
+        partitionNo: formData.partitionNo,
+        upicId: formData.upicId,
       })
         .filter(([_, value]) => value !== undefined && value !== null && value !== "")
         .map(([key, value]) => {

@@ -39,11 +39,11 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
 
   const categoryFlags: CategoryFlags | undefined =
     formData.hasFloorDetails !== undefined ? {
-      isMovable:            formData.isMovableCategory,
-      hasFloorDetails:      formData.hasFloorDetails,
-      hasInventory:         formData.hasInventory,
+      isMovable: formData.isMovableCategory,
+      hasFloorDetails: formData.hasFloorDetails,
+      hasInventory: formData.hasInventory,
       isInventoryMandatory: formData.isInventoryMandatory,
-      hasLegalCompliance:   formData.hasLegalCompliance,
+      hasLegalCompliance: formData.hasLegalCompliance,
     } : undefined;
 
   const steps = getFilteredSteps(formData.category, formData.assetType, formData.parentBuildingId, categoryFlags);
@@ -60,58 +60,19 @@ function AssetFormHeaderContent({ children }: AssetFormHeaderProps) {
 
   return (
     <div className="flex flex-col h-full bg-slate-50/50 overflow-hidden">
-      {/* Top Wizard Header — styled to match the main site header color */}
-      <div 
-        className="text-white px-4 py-2 flex items-center justify-between border-b border-white/10 shrink-0"
-        style={{ backgroundColor: '#1e293b' }}
-      >
-        <div className="flex items-center gap-3">
-          <div className="bg-white/15 border border-white/20 p-2 rounded-lg flex items-center justify-center shadow-inner">
-            {isEditMode
-              ? <PencilLine className="size-5 text-yellow-300" />
-              : <Home className="size-5 text-white" />
-            }
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-extrabold tracking-tight text-white leading-none">
-                {isEditMode ? t("wizard.editAsset") : t("wizard.addNewAsset")}
-              </h1>
-              {isEditMode && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-amber-400">
-                  {t("wizard.editMode")}
-                </span>
-              )}
-            </div>
-            <p className="text-[10px] text-yellow-300 font-extrabold uppercase tracking-wider mt-1.5">
-              {t("wizard.stepOf", {
-                current: currentStep?.id ?? 1,
-                total: steps.length,
-                label: currentStep ? t(`wizard.steps.${currentStep.key}`) : t("wizard.steps.basic-info")
-              })}
-              {isEditMode && assetCode && (
-                <span className="ml-2 text-white/70">• {assetCode}</span>
-              )}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleBackToDashboard}
-            className="px-3 py-1.5 border border-slate-500 hover:border-slate-300 hover:bg-slate-800 rounded-lg text-[10px] font-bold text-slate-300 uppercase transition-colors"
-            title={t("wizard.closeWizard")}
-          >
-            {t("wizard.close")}
-          </button>
-        </div>
-      </div>
-
       {/* Stepper container */}
-      <div className="px-4 py-1.5 bg-white border-b border-slate-100 shadow-sm relative z-10 shrink-0">
+      <div className="px-4 py-1.5 bg-white border-b border-slate-100 shadow-sm relative z-10 shrink-0 flex items-center justify-between gap-4">
         <AssetStepper
           currentStepId={currentStep?.id ?? 1}
           steps={steps}
         />
+        <button
+          onClick={handleBackToDashboard}
+          className="px-4 py-1.5 bg-white hover:bg-red-50 active:bg-red-100 border border-red-600 rounded-lg text-[10px] font-bold text-red-600 uppercase transition-colors shrink-0 shadow-lg shadow-red-100/80"
+          title={t("wizard.closeWizard")}
+        >
+          {t("wizard.close")}
+        </button>
       </div>
 
       {/* Main wizard step content */}

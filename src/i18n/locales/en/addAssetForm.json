@@ -75,7 +75,7 @@
     "selectZoneAndWard": "Select both Zone and Ward to enable asset search.",
     "typeSearchTerm": "Type an asset code or name to search within the selected zone and ward.",
     "assetSelected": "Asset selected",
-    "noFloors": "No floors available in master data."
+    "noFloors": "No floors registered yet. Add floor details first."
   },
   "search": {
     "resultsSummary": "{count} of {total} {total, plural, =1 {result} other {results}} for \"{term}\"",
@@ -128,7 +128,7 @@
     },
     "fields": {
       "type": "Type",
-      "building": "Building",
+      "building": "Parent Asset Name",
       "propertyNo": "Property No",
       "csnNo": "CSN No.",
       "ownerResidentName": "Owner / Resident Name",
@@ -218,6 +218,12 @@
     "assetRegisteredSuccess": "Asset Registered Successfully!",
     "assetNameLabel": "Asset Name",
     "assetNoLabel": "Asset No",
+    "successModal": {
+      "successTitle": "Asset Successfully Added!",
+      "successSubtitle": "Your asset has been registered in the system",
+      "successNote": "The asset has been successfully added to the Municipal Corporation Estate Management System. You can now view, edit, or manage this asset from the main dashboard.",
+      "autoCloseText": "Auto-closing in 5 seconds..."
+    },
     "previous": "< Previous",
     "stepProgress": "Step {current} of {total}",
     "submitting": "Submitting...",
@@ -262,13 +268,15 @@
       "subzone": "Subzone",
       "csnNoSurvey": "CSN No. / Survey Number",
       "csnNo": "CSN No.",
+      "partitionNo": "Partition No.",
+      "upicId": "UPIC ID",
       "propertyNo": "Property No",
       "assetCondition": "Asset Condition",
-      "length": "Length (Sq. Mtr)",
-      "width": "Width (Sq. Mtr)",
+      "length": "Plot Length (Sq. Mtr)",
+      "width": "Plot Width (Sq. Mtr)",
       "offsetOperation": "Offset Operation",
       "offset": "Offset (Sq. Mtr)",
-      "totalArea": "Total Area (Sq. Mtr)",
+      "totalArea": "Total Plot Area (Sq. Mtr)",
       "plotNumber": "Plot Number",
       "typeOfUse": "Type of Use",
       "subTypeOfUse": "Sub Type of Use",
@@ -375,6 +383,7 @@
     "typeOfUse": "Type of Use",
     "subTypeOfUse": "Sub Type of Use",
     "renter": "Renter",
+    "departmentName": "Department Name",
     "rooms": "Rooms",
     "areaSqFt": "Area (Sq Ft)",
     "builtupAreaSqFt": "Builtup Area (Sq Ft)",
@@ -481,8 +490,8 @@
     "notApplicableTitle": "Inventory Tracking Not Applicable",
     "notApplicableDesc": "Inventory tracking for furniture and fixtures is typically not required for {category} assets of this type.",
     "proceedMsg": "Please proceed to the next step",
-    "title": "Furniture & Fixtures Inventory",
-    "heading": "Inventory",
+    "title": "Add Item",
+    "heading": "Inventory Items",
     "totalItems": "Total {count} items",
     "all": "All",
     "saving": "Saving inventory...",
@@ -575,7 +584,7 @@
   },
   "valuation": {
     "assetSummary": {
-      "title": "A) Asset Valuation Summary",
+      "title": "Asset Valuation Summary",
       "grossValue": "Gross Value (₹)",
       "grossValuePlaceholder": "Original Purchase Value",
       "purchaseDate": "Purchase Date",
@@ -719,9 +728,6 @@
       "saveFailed": "Save failed."
     }
   },
-  "notifications": {
-    "noFloors": "No floors registered yet. Add floor details first."
-  },
   "subunit": {
     "title": "Unit {unit} — Configuration",
     "duration": {
@@ -746,7 +752,7 @@
     "fields": {
       "newUnit": "New Unit",
       "type": "Type",
-      "building": "Building",
+      "building": "Parent Asset Name",
       "departmentName": "Department",
       "propertyNo": "Property No.",
       "csnNo": "CSN No.",

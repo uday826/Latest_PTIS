@@ -441,6 +441,7 @@ export function useFurnitureFixtureState(
   };
 
   const handleAddRow = async () => {
+    if (isSaving) return;
     const isDateValid = !!form.purchaseDate && !isNaN(new Date(form.purchaseDate).getTime()) && new Date(form.purchaseDate) <= new Date();
 
     const missing: string[] = [];
@@ -453,7 +454,6 @@ export function useFurnitureFixtureState(
     }
     if (!form.condition) missing.push("Condition");
     if (!form.owningDepartment) missing.push("Owning Department");
-    if (!form.specifications) missing.push("Specification");
     if (!form.quantity || Number(form.quantity) <= 0) {
       if (!form.quantity) missing.push("Quantity");
       else missing.push("Quantity (must be greater than 0)");
@@ -481,7 +481,7 @@ export function useFurnitureFixtureState(
         inventoryType: form.type,
         itemName: form.itemName,
         modelBrand: form.modelName,
-        specifications: form.specifications.trim() || undefined,
+        specifications: form.specifications?.trim() || undefined,
         purchaseDate: form.purchaseDate,
         condition: form.condition,
         quantity: Number(form.quantity),
@@ -590,6 +590,7 @@ export function useFurnitureFixtureState(
 
   const handleUpdateRow = async () => {
     if (editingId === null) return;
+    if (isSaving) return;
     if (!editForm.type || !editForm.itemName || !editForm.modelName || !editForm.purchaseDate || !editForm.condition || Number(editForm.quantity) <= 0 || Number(editForm.unitValue) <= 0) {
       return setFormError("Please fill in all required fields and positive values.");
     }
@@ -604,7 +605,7 @@ export function useFurnitureFixtureState(
       photoName: editForm.photoName,
       itemName: editForm.itemName,
       modelName: editForm.modelName,
-      specifications: editForm.specifications.trim() || "NA",
+      specifications: editForm.specifications?.trim() || "NA",
       purchaseDate: editForm.purchaseDate,
       condition: editForm.condition,
       quantity: Number(editForm.quantity),

@@ -67,12 +67,19 @@ interface HeaderProps {
 
 export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const t = useTranslations('common');
+  const tForm = useTranslations('addAssetForm');
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [isLogoutPending, startLogoutTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const isWizardPage = pathname.includes('/add-New-Asset');
+  const isEditMode = isWizardPage && (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mode') === 'edit');
+  const systemTitle = isWizardPage
+    ? (isEditMode ? tForm('wizard.editAsset') : tForm('wizard.addNewAsset'))
+    : (pathname.includes('/assets') ? t('app.assetManagementSystem') : headerDetails);
 
   const branding = ulbData as (UlbMaster & { logoUrl?: string }) | undefined;
   const logoSrc = useMemo(() => {
@@ -214,7 +221,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
                 <span>{pathname.includes('/assets') ? t('app.assetDepartmentName') : t('app.departmentName')}</span>
                 <span className="hidden sm:inline-block text-yellow-400">|</span>
                 <span className="font-medium text-yellow-300">
-                  {pathname.includes('/assets') ? t('app.assetManagementSystem') : headerDetails}
+                  {systemTitle}
                 </span>
               </p>
             </div>

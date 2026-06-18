@@ -131,6 +131,10 @@ export function AssetFormFooter() {
     }
   }, [formData, lastSavedFormData, setLastSavedFormData]);
 
+  useEffect(() => {
+    setIsSubmitting(false);
+  }, [pathname, searchParams]);
+
   const categoryFlags: CategoryFlags | undefined =
     formData.hasFloorDetails !== undefined ? {
       isMovable: formData.isMovableCategory,
@@ -154,7 +158,8 @@ export function AssetFormFooter() {
   const isLastStep = !nextStep;
 
   const handlePrevious = () => {
-    if (!previousStep || isSubmitting) return;
+    if (!previousStep || isSubmitting || isDataLoading) return;
+    setIsSubmitting(true);
     router.push(appendQuery(withLocale(pathname, previousStep.path)));
   };
 
@@ -478,6 +483,7 @@ export function AssetFormFooter() {
           if (formData.assetCode) {
             sp.set("assetCode", String(formData.assetCode));
           }
+          setIsSubmitting(true);
           router.push(withLocale(pathname, nextStep.path) + "?" + sp.toString());
         }
         return;

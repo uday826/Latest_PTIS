@@ -203,31 +203,47 @@ export function BuildingPropertyDetailsSection({
           error={showError("surveyNumber") ? errors.surveyNumber : undefined}
         />
 
-        <div className="hidden">
-          <Input
-            label={t("basicInfo.propertyDetails.propertyNo")}
-            name="propertyNumber"
-            value={formData.propertyNumber}
-            onChange={handleChange}
-            placeholder="e.g. MC/WD15/2024/001"
-            className="h-8 text-[13px]"
-            required
-            error={showError("propertyNumber") ? errors.propertyNumber : undefined}
-          />
-        </div>
+        <Input
+          label={t("basicInfo.propertyDetails.partitionNo")}
+          name="partitionNo"
+          value={(formData as any).partitionNo || ""}
+          onChange={handleChange}
+          placeholder="e.g. 0"
+          disabled={formData.isMovableCategory}
+          className="h-8 text-[13px]"
+          error={showError("partitionNo" as any) ? (errors as any).partitionNo : undefined}
+        />
 
-        <SearchSelect
-          label={t("basicInfo.propertyDetails.assetCondition")}
-          name="condition"
-          value={formData.condition || "Good"}
-          onChange={(name, value) => handleChange({ target: { name, value } } as any)}
-          options={[
-            { label: t("basicInfo.propertyDetails.conditions.good"), value: "Good" },
-            { label: t("basicInfo.propertyDetails.conditions.average"), value: "Average" },
-            { label: t("basicInfo.propertyDetails.conditions.poor"), value: "Poor" },
-          ]}
-          placeholder={t("basicInfo.propertyDetails.selectCondition")}
-          className="font-semibold text-sm"
+        <Input
+          label={t("basicInfo.propertyDetails.upicId")}
+          name="upicId"
+          value={(formData as any).upicId || ""}
+          onChange={handleChange}
+          placeholder="e.g. UPIC-123"
+          disabled={formData.isMovableCategory}
+          className="h-8 text-[13px]"
+          error={showError("upicId" as any) ? (errors as any).upicId : undefined}
+        />
+
+        <Input
+          label={t("basicInfo.propertyDetails.propertyNo")}
+          name="propertyNumber"
+          value={formData.propertyNumber}
+          onChange={handleChange}
+          placeholder="e.g. MC/WD15/2024/001"
+          className="h-8 text-[13px]"
+          error={showError("propertyNumber") ? errors.propertyNumber : undefined}
+        />
+
+        <Input
+          label={t("basicInfo.propertyDetails.plotNumber")}
+          name="plotNumber"
+          value={(formData as any).plotNumber || ""}
+          onChange={handleChange}
+          placeholder="e.g. 15"
+          disabled={formData.isMovableCategory}
+          className="h-8 text-[13px]"
+          error={showError("plotNumber" as any) ? (errors as any).plotNumber : undefined}
         />
 
         {
@@ -302,16 +318,6 @@ export function BuildingPropertyDetailsSection({
         {
           isLand && (
             <>
-              <Input
-                label={t("basicInfo.propertyDetails.plotNumber")}
-                name="plotNumber"
-                value={(formData as any).plotNumber || ""}
-                onChange={handleChange}
-                placeholder="e.g. 15"
-                className="h-8 text-[13px]"
-                required
-                error={showError("plotNumber" as any) ? (errors as any).plotNumber : undefined}
-              />
               <SearchSelect
                 label={t("basicInfo.propertyDetails.typeOfUse")}
                 name="typeOfUseId"
@@ -352,6 +358,20 @@ export function BuildingPropertyDetailsSection({
             </>
           )
         }
+
+        <SearchSelect
+          label={t("basicInfo.propertyDetails.assetCondition")}
+          name="condition"
+          value={formData.condition || "Good"}
+          onChange={(name, value) => handleChange({ target: { name, value } } as any)}
+          options={[
+            { label: t("basicInfo.propertyDetails.conditions.good"), value: "Good" },
+            { label: t("basicInfo.propertyDetails.conditions.average"), value: "Average" },
+            { label: t("basicInfo.propertyDetails.conditions.poor"), value: "Poor" },
+          ]}
+          placeholder={t("basicInfo.propertyDetails.selectCondition")}
+          className="font-semibold text-sm"
+        />
       </CardContent >
     </Card >
   );

@@ -176,6 +176,11 @@ export function InventoryEditDrawer({
             min={1}
             value={editForm.quantity}
             onChange={(event) => updateEditForm("quantity", event.target.value)}
+            onKeyDown={(e) => {
+              if (["e", "E", "+", "-", "."].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
           />
 
           <Input
@@ -184,6 +189,11 @@ export function InventoryEditDrawer({
             min={0}
             value={editForm.unitValue}
             onChange={(event) => updateEditForm("unitValue", event.target.value)}
+            onKeyDown={(e) => {
+              if (["e", "E", "+", "-"].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
           />
         </div>
 
