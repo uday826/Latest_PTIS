@@ -440,41 +440,53 @@ export async function submitAssetForm(formData: AssetFormData) {
     if (response.success && response.data) {
       const resData = response.data as any;
 
-      // Recursive key scanner to dynamically find the created asset's primary key (id / Id / assetId)
-      const findAssetId = (obj: any): number | null => {
+      // Safe, non-recursive ID extractor to prevent grabbing IDs from nested objects like 'ward' or 'zone'
+      const getAssetIdSafe = (obj: any): number | null => {
         if (!obj || typeof obj !== "object") return null;
-        const directId = obj.id ?? obj.Id ?? obj.assetId ?? obj.AssetId;
-        if (typeof directId === "number" && directId > 0) return directId;
-        if (typeof directId === "string" && !isNaN(Number(directId)) && Number(directId) > 0) return Number(directId);
 
-        const subKeys = ["items", "Items", "data", "Data", "record", "Record", "result", "Result"];
-        for (const key of subKeys) {
-          if (obj[key]) {
-            const found = findAssetId(obj[key]);
-            if (found) return found;
-          }
-        }
+        const checkDirect = (o: any): number | null => {
+          if (!o || typeof o !== "object") return null;
+          const directId = o.id ?? o.Id ?? o.assetId ?? o.AssetId ?? o.assetMasterId ?? o.AssetMasterId;
+          if (typeof directId === "number" && directId > 0) return directId;
+          if (typeof directId === "string" && !isNaN(Number(directId)) && Number(directId) > 0) return Number(directId);
+          return null;
+        };
 
-        if (Array.isArray(obj)) {
-          for (const item of obj) {
-            const found = findAssetId(item);
-            if (found) return found;
-          }
-        }
+        // 1. Check root level
+        let found = checkDirect(obj);
+        if (found) return found;
 
-        for (const key in obj) {
-          if (Object.prototype.hasOwnProperty.call(obj, key) && typeof obj[key] === "object" && obj[key] !== null) {
-            const found = findAssetId(obj[key]);
-            if (found) return found;
+        // 2. Check well-known wrappers
+        const wrappers = ["items", "Items", "data", "Data", "record", "Record", "result", "Result"];
+        for (const w of wrappers) {
+          if (obj[w] && typeof obj[w] === "object") {
+             if (Array.isArray(obj[w]) && obj[w].length > 0) {
+                 found = checkDirect(obj[w][0]);
+                 if (found) return found;
+             } else {
+                 found = checkDirect(obj[w]);
+                 if (found) return found;
+             }
           }
         }
         return null;
       };
 
-      assetId = findAssetId(resData) || (isUpdate ? parsedId : null);
+      const debugLog = `=== [${new Date().toISOString()}] ===\n` +
+                       `=== API REQUEST ===\n${JSON.stringify(apiRequest, null, 2)}\n` +
+                       `=== BACKEND RESPONSE ===\n${JSON.stringify(resData, null, 2)}\n` +
+                       `=== EXTRACTED ===\n${getAssetIdSafe(resData) || (isUpdate ? parsedId : null)}\n\n`;
+      try {
+        require("fs").appendFileSync("create-asset-debug.log", debugLog);
+      } catch (e) {}
+
+      console.log("=== API REQUEST ===", JSON.stringify(apiRequest, null, 2));
+      console.log("=== BACKEND RESPONSE ===", JSON.stringify(resData, null, 2));
+      assetId = getAssetIdSafe(resData) || (isUpdate ? parsedId : null);
+      console.log("=== EXTRACTED ASSET ID ===", assetId);
 
       if (assetId && apiRequest.fieldValues && apiRequest.fieldValues.length > 0) {
-        
+
         // Use the bulk endpoint to save all dynamic fields in a single DB transaction.
         try {
           const bulkPayload = apiRequest.fieldValues.map(fv => ({

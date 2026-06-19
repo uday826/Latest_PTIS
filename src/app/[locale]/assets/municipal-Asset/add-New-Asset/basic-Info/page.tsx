@@ -14,6 +14,7 @@ import { getCachedWards, getCachedZones, getCachedDepartments, getCachedMoujas, 
 import { fetchBuildingFieldDefinitions } from "./actions";
 import { zoneService } from "@/lib/api/asset/zone.service";
 import { getUseTypesPagedServer } from "@/lib/api/typeofuse.service";
+import { getSubTypesPagedServer } from "@/lib/api/typeofusesubtype.service";
 
 interface BuildingBasicInfoPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -35,6 +36,7 @@ export default async function BuildingBasicInfoPage({
   let prefetchedFields: any[] = [];
   let subzones: any[] = [];
   let useTypes: any[] = [];
+  let subUseTypes: any[] = [];
 
   try {
     // Fetch CONCURRENTLY to prevent overloading the backend latency-wise
@@ -48,14 +50,18 @@ export default async function BuildingBasicInfoPage({
     ]);
 
     const fieldsRes = categoryId > 0 && typeId > 0
-        ? await fetchBuildingFieldDefinitions(categoryId, typeId)
-        : { success: false as const, error: "Missing ids", data: [] };
-    
+      ? await fetchBuildingFieldDefinitions(categoryId, typeId)
+      : { success: false as const, error: "Missing ids", data: [] };
+
     let useTypesRes: any = null;
+    let subUseTypesRes: any = null;
     try {
-      useTypesRes = await getUseTypesPagedServer({ pageNumber: 1, pageSize: 1000 });
+      [useTypesRes, subUseTypesRes] = await Promise.all([
+        getUseTypesPagedServer({ pageNumber: 1, pageSize: 1000 }),
+        getSubTypesPagedServer({ pageNumber: 1, pageSize: 1000 })
+      ]);
     } catch (utErr) {
-      console.error("Failed to fetch use types in server component:", utErr);
+      console.error("Failed to fetch use types or subtypes in server component:", utErr);
     }
 
     if (wardsRes?.success && Array.isArray(wardsRes.data)) {
@@ -82,20 +88,24 @@ export default async function BuildingBasicInfoPage({
     if (useTypesRes && Array.isArray(useTypesRes.items)) {
       useTypes = useTypesRes.items;
     }
+    if (subUseTypesRes && Array.isArray(subUseTypesRes.items)) {
+      subUseTypes = subUseTypesRes.items;
+    }
   } catch (error) {
     console.error("Error pre-fetching data in BuildingBasicInfoPage:", error);
   }
 
   return (
-    <BasicInfoPage 
-      wards={wards} 
-      zones={zones} 
+    <BasicInfoPage
+      wards={wards}
+      zones={zones}
       departments={departments}
       moujas={moujas}
       ownershipTypes={ownershipTypes}
-      prefetchedFields={prefetchedFields} 
+      prefetchedFields={prefetchedFields}
       subzones={subzones}
       useTypes={useTypes}
+      subUseTypes={subUseTypes}
     />
   );
 }

@@ -24,7 +24,7 @@ import type { Zone } from "@/lib/api/asset/zone.service";
 import type { OwnershipType } from "@/lib/api/asset/ownership-type.service";
 import type { BasicInfoPageProps } from "@/types/asset-types/basic-info/basicInfo.types";
 
-export default function BasicInfoPage({ wards = [], zones = [], departments = [], moujas = [], prefetchedFields = [], ownershipTypes = [], useTypes = [], subzones = [] }: BasicInfoPageProps) {
+export default function BasicInfoPage({ wards = [], zones = [], departments = [], moujas = [], prefetchedFields = [], ownershipTypes = [], useTypes = [], subzones = [], subUseTypes = [] }: BasicInfoPageProps & { subUseTypes?: any[] }) {
   return (
     <BuildingBasicInfoContent
       wards={wards}
@@ -35,6 +35,7 @@ export default function BasicInfoPage({ wards = [], zones = [], departments = []
       prefetchedFields={prefetchedFields}
       useTypes={useTypes}
       subzones={subzones}
+      subUseTypes={subUseTypes}
     />
   );
 }
@@ -52,6 +53,7 @@ function BuildingBasicInfoContent({
   prefetchedFields = [],
   useTypes = [],
   subzones = [],
+  subUseTypes = [],
 }: {
   wards?: Ward[];
   zones?: Zone[];
@@ -61,6 +63,7 @@ function BuildingBasicInfoContent({
   prefetchedFields?: any[];
   useTypes?: any[];
   subzones?: any[];
+  subUseTypes?: any[];
 }) {
   const {
     formData,
@@ -72,9 +75,6 @@ function BuildingBasicInfoContent({
   } = useBuildingBasicInfoForm();
   const { confirm } = useConfirm();
   const t = useTranslations("addAssetForm");
-
-  const [dynamicSubTypes, setDynamicSubTypes] = useState<any[]>([]);
-  const [isLoadingSubTypes, setIsLoadingSubTypes] = useState(false);
 
   const [dynamicWards, setDynamicWards] = useState<Ward[]>([]);
   const [isLoadingWards, setIsLoadingWards] = useState(false);
@@ -134,32 +134,15 @@ function BuildingBasicInfoContent({
     setHasFetchedSubzones(false);
   }, [formData.mouja]);
 
-  // Load subtypes of use reactively whenever typeOfUseId is set or changed in formData
-  useEffect(() => {
-    if (!formData.typeOfUseId) {
-      setDynamicSubTypes([]);
-      return;
-    }
+  const filteredSubzones = subzones.filter((s) => {
+    if (!formData.mouja) return true;
+    return String(s.moujaId) === String(formData.mouja);
+  });
 
-    const loadSubTypes = async () => {
-      setIsLoadingSubTypes(true);
-      try {
-        const { fetchSubTypesByTypeAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/basic-Info/actions");
-        const res = await fetchSubTypesByTypeAction(formData.typeOfUseId ? Number(formData.typeOfUseId) : 0);
-        if (res.success && res.data) {
-          setDynamicSubTypes(res.data);
-        } else {
-          setDynamicSubTypes([]);
-        }
-      } catch (err) {
-        console.error("Failed to load sub use types:", err);
-        setDynamicSubTypes([]);
-      } finally {
-        setIsLoadingSubTypes(false);
-      }
-    };
-    loadSubTypes();
-  }, [formData.typeOfUseId]);
+  const filteredSubTypes = subUseTypes.filter((st) => {
+    if (!formData.typeOfUseId) return true;
+    return String(st.typeOfUseId) === String(formData.typeOfUseId);
+  });
 
   const handleMoujaChange = (_moujaId: string) => {
     // Clear subzone selection in the form state on manual change
@@ -331,8 +314,8 @@ function BuildingBasicInfoContent({
                 onSubzoneFocus={handleSubzoneFocus}
                 onMoujaChange={handleMoujaChange}
                 useTypes={useTypes}
-                subUseTypes={dynamicSubTypes}
-                isLoadingSubTypes={isLoadingSubTypes}
+                subUseTypes={filteredSubTypes}
+                isLoadingSubTypes={false}
               />
 
               {/* Section B — Ownership Details & Address Details */}

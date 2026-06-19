@@ -136,88 +136,19 @@ export async function saveFloorDetail(data: FloorDetailApiRequest): Promise<Acti
     const cookieStore = await cookies();
     const userIdStr = cookieStore.get("user_id")?.value;
     const userId = userIdStr ? Number(userIdStr) : undefined;
-    const token = cookieStore.get("auth_token")?.value;
-
     const payload = {
       ...data,
       createdBy: userId ?? data.createdBy ?? 1,
     };
-
-    const { getAppConfig } = await import("@/config/app.config");
-    const config = getAppConfig();
-    const url = `${config.api.baseUrl.replace(/\/$/, "")}/AssetFloorDetails`;
-
-    let response: Response;
-    const isDev = process.env.NODE_ENV === 'development' && process.env.NTIS_STRICT_LOCAL_TLS !== '1';
-    const init = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "Accept": "application/json, text/plain, */*",
-        ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify(payload),
-    };
-
-    const LOCAL_HTTPS_RE = /^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//;
-    if (isDev && LOCAL_HTTPS_RE.test(url)) {
-      const { Agent, fetch: uFetch } = await import('undici');
-      const relaxedAgent = new Agent({ connect: { rejectUnauthorized: false } });
-      response = await uFetch(url, {
-        ...init,
-        dispatcher: relaxedAgent,
-      } as any) as any;
-    } else {
-      response = await fetch(url, init);
-    }
-
-    const text = await response.text();
-    if (!response.ok) {
-      let errMsg = text || response.statusText || "Failed to save floor detail";
-      try {
-        const parsed = JSON.parse(text);
-        if (parsed && typeof parsed === "object") {
-          if (parsed.message) {
-            errMsg = parsed.message;
-          } else if (parsed.error) {
-            errMsg = parsed.error;
-          } else if (parsed.errors && typeof parsed.errors === "object" && !Array.isArray(parsed.errors)) {
-            const errorsObj = parsed.errors as Record<string, any>;
-            const firstKey = Object.keys(errorsObj)[0];
-            if (firstKey) {
-              const val = errorsObj[firstKey];
-              if (Array.isArray(val) && val.length > 0) {
-                errMsg = val[0];
-              } else if (typeof val === "string") {
-                errMsg = val;
-              }
-            }
-          }
-        }
-      } catch (e) {
-        // Ignore JSON parsing errors
+    const res = await floorDetailsService.createFloor(payload);
+    if (res.success && res.data) {
+      const body = res.data as any;
+      if (body.success === false) {
+        return { success: false, error: body.message || "Failed to save floor detail" };
       }
-      return { success: false, error: errMsg };
+      return { success: true, data: body.items || body.data || body };
     }
-
-    const trimmed = text.trim();
-    let resData: any = trimmed;
-    if (/^\d+$/.test(trimmed)) {
-      resData = Number(trimmed);
-    } else {
-      try {
-        resData = JSON.parse(trimmed);
-      } catch { }
-    }
-
-    if (resData && typeof resData === "object") {
-      if (resData.success === false) {
-        return { success: false, error: resData.message || "Failed to save floor detail" };
-      }
-      const unwrapped = resData.items ?? resData.data ?? resData;
-      return { success: true, data: unwrapped };
-    }
-    return { success: true, data: resData };
+    return { success: false, error: res.error ?? "Failed to save floor detail" };
   } catch (err: any) {
     logger.error("saveFloorDetail Error:", { error: err });
     return { success: false, error: "Network error saving floor detail" };
@@ -535,22 +466,22 @@ export async function createChildAssetAction(
               ...currentAsset,
               parentAssetId: data.parentAssetId || currentAsset.parentAssetId || currentAsset.ParentAssetId || null,
               ParentAssetId: data.parentAssetId || currentAsset.parentAssetId || currentAsset.ParentAssetId || null,
-              
+
               owningDepartmentId: data.departmentId ? Number(data.departmentId) : (currentAsset.owningDepartmentId ?? currentAsset.OwningDepartmentId ?? currentAsset.departmentId ?? currentAsset.DepartmentId ?? null),
               OwningDepartmentId: data.departmentId ? Number(data.departmentId) : (currentAsset.owningDepartmentId ?? currentAsset.OwningDepartmentId ?? currentAsset.departmentId ?? currentAsset.DepartmentId ?? null),
-              
+
               departmentId: data.departmentId ? Number(data.departmentId) : (currentAsset.departmentId ?? currentAsset.DepartmentId ?? currentAsset.owningDepartmentId ?? currentAsset.OwningDepartmentId ?? null),
               DepartmentId: data.departmentId ? Number(data.departmentId) : (currentAsset.departmentId ?? currentAsset.DepartmentId ?? currentAsset.owningDepartmentId ?? currentAsset.OwningDepartmentId ?? null),
-              
+
               assetName: data.shopUnitName || currentAsset.assetName || currentAsset.AssetName || currentAsset.name || currentAsset.Name || null,
               AssetName: data.shopUnitName || currentAsset.assetName || currentAsset.AssetName || currentAsset.name || currentAsset.Name || null,
-              
+
               address: resolvedAddress || currentAsset.address || currentAsset.Address || null,
               Address: resolvedAddress || currentAsset.address || currentAsset.Address || null,
-              
+
               latitude: resolvedLat ? Number(resolvedLat) : (currentAsset.latitude ?? currentAsset.Latitude ?? null),
               Latitude: resolvedLat ? Number(resolvedLat) : (currentAsset.latitude ?? currentAsset.Latitude ?? null),
-              
+
               longitude: resolvedLng ? Number(resolvedLng) : (currentAsset.longitude ?? currentAsset.Longitude ?? null),
               Longitude: resolvedLng ? Number(resolvedLng) : (currentAsset.longitude ?? currentAsset.Longitude ?? null),
 
@@ -871,7 +802,7 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
         const master = assetMasterRes.data as any;
         detail.departmentId = master.departmentId || null;
         detail.departmentName = master.departmentName || null;
-        
+
         // Merge and normalize floorDetailsId/floorId
         const masterFloorDetailsId = master.floorDetailsId ?? master.FloorDetailsId ?? master.floorId ?? master.FloorId ?? null;
         detail.floorDetailsId = detail.floorDetailsId ?? detail.FloorDetailsId ?? detail.floorId ?? detail.FloorId ?? masterFloorDetailsId;

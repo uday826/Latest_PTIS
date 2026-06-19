@@ -86,7 +86,7 @@ export async function uploadDocument(formData: FormData) {
     // Hardcode ModuleId to avoid fetching the entire Module list on every single document upload.
     // Asset Management module is generally ID 2. If it is provided in formData, use that.
     if (!formData.has("ModuleId")) {
-      formData.append("ModuleId", "2"); 
+      formData.append("ModuleId", "2");
     }
   } catch (e) {
     console.error("Error setting ModuleId", e);
@@ -95,7 +95,7 @@ export async function uploadDocument(formData: FormData) {
   try {
     const url = `${getBaseUrl()}/AssetDocument/upload`;
     const headers = await getBinaryFetchHeaders();
-    
+
     // Do NOT set Content-Type header so fetch automatically handles multipart boundary.
     const response = await documentServerFetch(url, {
       method: "POST",
@@ -112,10 +112,10 @@ export async function uploadDocument(formData: FormData) {
     }
 
     if (!response.ok || (data && data.success === false)) {
-      return { 
-        success: false, 
-        error: data.message || data.error || `Upload failed with status ${response.status}`, 
-        statusCode: response.status 
+      return {
+        success: false,
+        error: data.message || data.error || `Upload failed with status ${response.status}`,
+        statusCode: response.status
       };
     }
 
@@ -128,7 +128,7 @@ export async function uploadDocument(formData: FormData) {
 export async function uploadBulkDocuments(formData: FormData) {
   try {
     if (!formData.has("ModuleId")) {
-      formData.append("ModuleId", "2"); 
+      formData.append("ModuleId", "2");
     }
   } catch (e) {
     console.error("Error setting ModuleId", e);
@@ -136,13 +136,13 @@ export async function uploadBulkDocuments(formData: FormData) {
 
   const url = `${getBaseUrl()}/AssetDocument/upload/bulk`;
   const headers = await getBinaryFetchHeaders();
-  
-  const response = await documentServerFetch(url, { 
-    method: "POST", 
-    headers, 
-    body: formData 
+
+  const response = await documentServerFetch(url, {
+    method: "POST",
+    headers,
+    body: formData
   });
-  
+
   const text = await response.text();
   let data;
   try {

@@ -33,10 +33,17 @@ export function MovableParentAssetSection({
       setSearchResults([]);
       return;
     }
+    
+    let isActive = true; // Tracks if this specific effect is still the active one
+
     const delayDebounce = setTimeout(async () => {
       setIsSearching(true);
       try {
         const res = await fetchAssetsByFilter({ search: searchTerm });
+        
+        // If the user typed again and this request was abandoned, ignore the result!
+        if (!isActive) return;
+        
         if (res.success && res.data) {
           // Filter out other Movable Assets to avoid circular parent-child loops
           const nonMovable = res.data.filter(
@@ -47,13 +54,19 @@ export function MovableParentAssetSection({
           setSearchResults(nonMovable);
         }
       } catch (err) {
+        if (!isActive) return;
         console.error("Failed to search parent assets:", err);
       } finally {
-        setIsSearching(false);
+        if (isActive) {
+          setIsSearching(false);
+        }
       }
     }, 400);
 
-    return () => clearTimeout(delayDebounce);
+    return () => {
+      isActive = false; // Flag previous request as abandoned
+      clearTimeout(delayDebounce);
+    };
   }, [searchTerm]);
 
   const [isSearching, setIsSearching] = useState(false);
