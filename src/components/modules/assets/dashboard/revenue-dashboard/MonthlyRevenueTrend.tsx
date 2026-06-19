@@ -77,6 +77,11 @@ const MonthlyRevenueTrendScreen: React.FC<MonthlyRevenueTrendProps> = ({
   collectedLabel,
   pendingLabel,
 }) => {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const chartData: ChartPoint[] = useMemo(
     () =>
       data.map((point) => ({
@@ -98,62 +103,66 @@ const MonthlyRevenueTrendScreen: React.FC<MonthlyRevenueTrendProps> = ({
       <h2 className="text-xl font-bold text-gray-800 mb-6">{title}</h2>
 
       <div className="w-full" style={{ height: '250px' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#6b7280', fontSize: 12 }}
-              dy={10}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#6b7280', fontSize: 12 }}
-              tickFormatter={(value) => `₹${value}L`}
-              domain={[0, upperBound]}
-              ticks={ticks}
-            />
-            <Tooltip
-              content={<TrendTooltip collectedLabel={collectedLabel} pendingLabel={pendingLabel} />}
-            />
-            <Legend
-              verticalAlign="bottom"
-              height={36}
-              iconType="circle"
-              formatter={(value) => (
-                <span className="text-sm font-medium text-gray-600 ml-2">{value}</span>
-              )}
-            />
+        {mounted ? (
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#6b7280', fontSize: 12 }}
+                dy={10}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#6b7280', fontSize: 12 }}
+                tickFormatter={(value) => `₹${value}L`}
+                domain={[0, upperBound]}
+                ticks={ticks}
+              />
+              <Tooltip
+                content={<TrendTooltip collectedLabel={collectedLabel} pendingLabel={pendingLabel} />}
+              />
+              <Legend
+                verticalAlign="bottom"
+                height={36}
+                iconType="circle"
+                formatter={(value) => (
+                  <span className="text-sm font-medium text-gray-600 ml-2">{value}</span>
+                )}
+              />
 
-            <Bar
-              dataKey="collected"
-              name={collectedLabel}
-              fill="url(#colorCollected)"
-              radius={[8, 8, 0, 0]}
-              barSize={40}
-            />
+              <Bar
+                dataKey="collected"
+                name={collectedLabel}
+                fill="url(#colorCollected)"
+                radius={[8, 8, 0, 0]}
+                barSize={40}
+              />
 
-            <Line
-              type="monotone"
-              dataKey="pending"
-              name={pendingLabel}
-              stroke="#dc2626"
-              strokeWidth={3}
-              dot={{ fill: '#dc2626', r: 5, strokeWidth: 0 }}
-              activeDot={{ r: 7, strokeWidth: 0 }}
-            />
+              <Line
+                type="monotone"
+                dataKey="pending"
+                name={pendingLabel}
+                stroke="#dc2626"
+                strokeWidth={3}
+                dot={{ fill: '#dc2626', r: 5, strokeWidth: 0 }}
+                activeDot={{ r: 7, strokeWidth: 0 }}
+              />
 
-            <defs>
-              <linearGradient id="colorCollected" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={1} />
-                <stop offset="95%" stopColor="#60a5fa" stopOpacity={1} />
-              </linearGradient>
-            </defs>
-          </ComposedChart>
-        </ResponsiveContainer>
+              <defs>
+                <linearGradient id="colorCollected" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={1} />
+                  <stop offset="95%" stopColor="#60a5fa" stopOpacity={1} />
+                </linearGradient>
+              </defs>
+            </ComposedChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="w-full h-full bg-gray-50 animate-pulse rounded-lg" />
+        )}
       </div>
     </div>
   );

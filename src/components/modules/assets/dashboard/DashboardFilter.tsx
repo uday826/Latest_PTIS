@@ -1,6 +1,7 @@
 'use client';
 
 import { MapPin } from 'lucide-react';
+import { Select } from '@/components/common/select';
 
 interface DashboardFiltersProps {
   zonesList: string[];
@@ -25,9 +26,6 @@ export function DashboardFilters({
   allWardsLabel,
   filtersLabel,
 }: DashboardFiltersProps) {
-  const SELECT_CLS =
-    'px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold bg-white shadow-sm';
-
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
       <div className="flex items-center gap-2 text-sm font-bold text-gray-600">
@@ -36,29 +34,29 @@ export function DashboardFilters({
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
-        <select
-          className={SELECT_CLS}
+        <Select
+          ariaLabel={allZonesLabel}
+          placeholder={allZonesLabel}
+          options={zonesList.map((z) => ({
+            label: z === 'all' ? allZonesLabel : z,
+            value: z,
+          }))}
           value={activeZone}
-          onChange={(e) => onZoneChange(e.target.value)}
-        >
-          {zonesList.map((z) => (
-            <option key={z} value={z}>
-              {z === 'all' ? allZonesLabel : z}
-            </option>
-          ))}
-        </select>
+          onChange={(e, val) => onZoneChange(val)}
+          className="w-[180px]"
+        />
 
-        <select
-          className={SELECT_CLS}
+        <Select
+          ariaLabel={allWardsLabel}
+          placeholder={allWardsLabel}
+          options={wardsList.map((w) => ({
+            label: w === 'all' ? allWardsLabel : w,
+            value: w,
+          }))}
           value={activeWard}
-          onChange={(e) => onWardChange(e.target.value)}
-        >
-          {wardsList.map((w) => (
-            <option key={w} value={w}>
-              {w === 'all' ? allWardsLabel : w}
-            </option>
-          ))}
-        </select>
+          onChange={(e, val) => onWardChange(val)}
+          className="w-[180px]"
+        />
       </div>
     </div>
   );

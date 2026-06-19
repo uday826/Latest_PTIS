@@ -21,6 +21,11 @@ const ZoneWiseDemandCollection: React.FC<ZoneWiseDemandCollectionProps> = ({
   title,
   totalDemandLabel,
 }) => {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const chartData = useMemo(
     () =>
       data.map((zone, index) => ({
@@ -38,26 +43,30 @@ const ZoneWiseDemandCollection: React.FC<ZoneWiseDemandCollectionProps> = ({
 
       <div className="flex flex-col xl:flex-row items-center justify-between gap-6">
         <div className="relative w-[360px] h-[250px] shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={chartData}
-                cx="50%"
-                cy="100%"
-                startAngle={180}
-                endAngle={0}
-                innerRadius={100}
-                outerRadius={160}
-                paddingAngle={2}
-                dataKey="demand"
-                stroke="none"
-              >
-                {chartData.map((entry) => (
-                  <Cell key={`cell-${entry.zoneId}`} fill={entry.color} />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+          {mounted ? (
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="100%"
+                  startAngle={180}
+                  endAngle={0}
+                  innerRadius={100}
+                  outerRadius={160}
+                  paddingAngle={2}
+                  dataKey="demand"
+                  stroke="none"
+                >
+                  {chartData.map((entry) => (
+                    <Cell key={`cell-${entry.zoneId}`} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="w-full h-full bg-gray-50 animate-pulse rounded-full" />
+          )}
 
           <div className="absolute top-2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center mt-8">
             <p className="text-2xl font-bold text-gray-800">{formatCrore(totalDemand)}</p>

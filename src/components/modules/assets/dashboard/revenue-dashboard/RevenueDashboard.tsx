@@ -258,7 +258,7 @@ export function RevenueAssetDashboard({ data }: RevenueAssetDashboardProps) {
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card>
+          <Card className="min-w-0">
             <CardContent className="p-0">
               <MonthlyRevenueTrendScreen
                 data={overview.monthlyTrend}
@@ -269,7 +269,7 @@ export function RevenueAssetDashboard({ data }: RevenueAssetDashboardProps) {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="min-w-0">
             <CardContent className="p-0">
               <ZoneWiseDemandCollection
                 data={overview.zoneStats}

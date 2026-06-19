@@ -8,6 +8,9 @@ import { Card } from '@/components/common/Card';
 import { DashboardLayout } from '../DashboardLayout';
 import { RevenueFilters } from './RevenueFilters';
 import { useRevenueUrlFilters } from '@/hooks/useRevenueUrlFilters';
+import { Select } from '@/components/common/select';
+import { MasterTable, Column } from '@/components/common/MasterTable';
+import { Tabs } from '@/components/common/Tabs';
 import { cn } from '@/lib/utils/cn';
 import { formatINR, formatLakh } from '@/lib/utils/asset-utils/revenue-format';
 import {
@@ -44,42 +47,6 @@ function iconForCategory(valuationType: string): React.ElementType {
 /* -------------------------------------------------------------------------- */
 /* Presentational sub-components                                               */
 /* -------------------------------------------------------------------------- */
-
-const SidebarItem: React.FC<{
-  icon: React.ElementType;
-  name: string;
-  description: string;
-  count: number;
-  isActive: boolean;
-  onClick: () => void;
-}> = ({ icon: Icon, name, description, count, isActive, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={cn(
-      'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left',
-      isActive ? 'bg-blue-600 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100'
-    )}
-  >
-    <Icon className={cn('w-5 h-5', isActive ? 'text-white' : 'text-gray-500')} />
-    <div className="flex-1 min-w-0">
-      <div className={cn('text-sm font-medium truncate', isActive ? 'text-white' : 'text-gray-900')}>
-        {name}
-      </div>
-      <div className={cn('text-xs truncate', isActive ? 'text-blue-100' : 'text-gray-500')}>
-        {description}
-      </div>
-    </div>
-    <span
-      className={cn(
-        'text-xs font-semibold px-2 py-1 rounded-full',
-        isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
-      )}
-    >
-      {count}
-    </span>
-  </button>
-);
 
 const SummaryCard: React.FC<{
   title: string;
@@ -139,9 +106,6 @@ const LeaseTypeBadge: React.FC<{ type: string }> = ({ type }) => {
   );
 };
 
-const SELECT_CLS =
-  'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-slate-800 bg-white shadow-sm focus:border-blue-500 focus:outline-none';
-
 /* -------------------------------------------------------------------------- */
 /* Main view                                                                   */
 /* -------------------------------------------------------------------------- */
@@ -180,15 +144,15 @@ export default function RevenueAssetRecordsView({ data, searchTerm = '' }: Reven
   // records actually shown — never the raw asset count.
   const stats = activeCategory
     ? {
-        demand: activeCategory.demand,
-        collected: activeCategory.collection,
-        pending: activeCategory.unpaidCount,
-      }
+      demand: activeCategory.demand,
+      collected: activeCategory.collection,
+      pending: activeCategory.unpaidCount,
+    }
     : {
-        demand: summary.totalDemand,
-        collected: summary.totalCollection,
-        pending: summary.unpaidLeaseCount,
-      };
+      demand: summary.totalDemand,
+      collected: summary.totalCollection,
+      pending: summary.unpaidLeaseCount,
+    };
 
   const headerName = activeCategory ? activeCategory.categoryName : t('records.allCategories');
 
@@ -204,46 +168,62 @@ export default function RevenueAssetRecordsView({ data, searchTerm = '' }: Reven
 
   const startIndex = (list.pageNumber - 1) * list.pageSize;
 
-  const renderRow = (item: AssetRevenueListItem, index: number) => (
-    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{item.assetNo}</td>
-      <td className="px-6 py-4 text-sm text-gray-900">{item.assetName}</td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.zoneName}</td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.wardName}</td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <LeaseTypeBadge type={item.leaseType} />
-      </td>
-      <td className="px-6 py-4 text-sm text-gray-900">{item.tenantName}</td>
-      <td className="px-6 py-4 whitespace-nowrap">
+  const columns: Column<any>[] = [
+    {
+      key: 'srNo',
+      label: t('records.cols.srNo'),
+      width: '80px',
+      render: (_, row, rowIndex) => startIndex + rowIndex + 1,
+    },
+    {
+      key: 'assetNo',
+      label: t('records.cols.assetId'),
+      cellClassName: 'font-semibold text-blue-600',
+    },
+    {
+      key: 'assetName',
+      label: t('records.cols.assetName'),
+    },
+    {
+      key: 'zoneName',
+      label: t('records.cols.zone'),
+    },
+    {
+      key: 'wardName',
+      label: t('records.cols.ward'),
+    },
+    {
+      key: 'leaseType',
+      label: t('records.cols.leaseType'),
+      render: (val) => <LeaseTypeBadge type={String(val)} />,
+    },
+    {
+      key: 'tenantName',
+      label: t('records.cols.tenant'),
+    },
+    {
+      key: 'paymentStatus',
+      label: t('records.cols.status'),
+      render: (val) => (
         <StatusBadge
-          status={item.paymentStatus}
+          status={String(val)}
           paidLabel={t('records.statusPaid')}
           unpaidLabel={t('records.statusUnpaid')}
         />
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-        {formatINR(item.monthlyRent)}
-      </td>
-    </tr>
-  );
+      ),
+    },
+    {
+      key: 'monthlyRent',
+      label: t('records.cols.rent'),
+      align: 'right',
+      cellClassName: 'font-medium text-right',
+      render: (val) => formatINR(Number(val)),
+    },
+  ];
 
   return (
     <DashboardLayout
       loading={isPending}
-      filters={
-        <RevenueFilters
-          zones={zones}
-          wards={wards}
-          selectedZoneId={currentZoneId}
-          selectedWardId={currentWardId}
-          onZoneChange={(zoneId) => setParams({ zoneId, wardId: null }, { resetPage: true })}
-          onWardChange={(wardId) => setParams({ wardId }, { resetPage: true })}
-          filtersLabel={t('filters.label')}
-          allZonesLabel={t('filters.allZones')}
-          allWardsLabel={t('filters.allWards')}
-        />
-      }
     >
       <div className="bg-gray-50 flex rounded-xl overflow-hidden">
         {/* Sidebar */}
@@ -257,33 +237,72 @@ export default function RevenueAssetRecordsView({ data, searchTerm = '' }: Reven
               <ArrowLeft className="w-4 h-4" />
               {t('records.backToDashboard')}
             </button>
-
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-1">{t('records.totalLeasedAssets')}</h2>
               <p className="text-sm text-gray-500">{t('records.assetCategories')}</p>
             </div>
+            <Tabs
+              value={selectedCategoryId == null ? 'all' : selectedCategoryId}
+              onChange={(val) => setParams({ category: val === 'all' ? null : Number(val) }, { resetPage: true })}
+              orientation="vertical"
+              variant="pills"
+              className="space-y-2 w-full"
+            >
+              <Tabs.TabList className="flex flex-col gap-2 w-full border-none p-0 bg-transparent">
+                <Tabs.Tab
+                  value="all"
+                  className={cn(
+                    "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 border-none [&>span]:w-full [&>span]:flex [&>span]:items-center",
+                    selectedCategoryId == null ? "bg-blue-600 text-white shadow-md hover:text-white" : "text-gray-700 hover:bg-gray-100 hover:text-gray-700"
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-3 w-full">
+                    <div className="flex items-center gap-3">
+                      <LayoutDashboard className={cn('w-5 h-5 shrink-0', selectedCategoryId == null ? 'text-white' : 'text-gray-500')} />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold truncate leading-tight">{t('records.allCategories')}</div>
+                        <div className={cn('text-xs truncate font-normal leading-normal mt-0.5', selectedCategoryId == null ? 'text-blue-100' : 'text-gray-500')}>
+                          {t('records.allCategoriesCount', { count: totalAssets })}
+                        </div>
+                      </div>
+                    </div>
+                    <span className={cn('text-xs font-semibold px-2 py-1 rounded-full shrink-0', selectedCategoryId == null ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600')}>
+                      {totalAssets}
+                    </span>
+                  </div>
+                </Tabs.Tab>
 
-            <nav className="space-y-2">
-              <SidebarItem
-                icon={LayoutDashboard}
-                name={t('records.allCategories')}
-                description={t('records.allCategoriesCount', { count: totalAssets })}
-                count={totalAssets}
-                isActive={selectedCategoryId == null}
-                onClick={() => setParams({ category: null }, { resetPage: true })}
-              />
-              {categories.map((category) => (
-                <SidebarItem
-                  key={category.assetCategoryId}
-                  icon={iconForCategory(category.valuationType)}
-                  name={category.categoryName}
-                  description={category.categoryCode}
-                  count={category.assetCount}
-                  isActive={selectedCategoryId === category.assetCategoryId}
-                  onClick={() => setParams({ category: category.assetCategoryId }, { resetPage: true })}
-                />
-              ))}
-            </nav>
+                {categories.map((category) => {
+                  const Icon = iconForCategory(category.valuationType);
+                  const isActive = selectedCategoryId === category.assetCategoryId;
+                  return (
+                    <Tabs.Tab
+                      key={category.assetCategoryId}
+                      value={category.assetCategoryId}
+                      className={cn(
+                        "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 border-none [&>span]:w-full [&>span]:flex [&>span]:items-center",
+                        isActive ? "bg-blue-600 text-white shadow-md hover:text-white" : "text-gray-700 hover:bg-gray-100 hover:text-gray-700"
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-3 w-full">
+                        <div className="flex items-center gap-3">
+                          <Icon className={cn('w-5 h-5 shrink-0', isActive ? 'text-white' : 'text-gray-500')} />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold truncate leading-tight">{category.categoryName}</div>
+                            <div className={cn('text-xs truncate font-normal leading-normal mt-0.5', isActive ? 'text-blue-100' : 'text-gray-500')}>
+                              {category.categoryCode}
+                            </div>
+                          </div>
+                        </div>
+                        <span className={cn('text-xs font-semibold px-2 py-1 rounded-full shrink-0', isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600')}>
+                          {category.assetCount}
+                        </span>
+                      </div>
+                    </Tabs.Tab>
+                  );
+                })}
+              </Tabs.TabList>
+            </Tabs>
           </div>
         </aside>
 
@@ -315,62 +334,62 @@ export default function RevenueAssetRecordsView({ data, searchTerm = '' }: Reven
                 <span className="text-sm font-semibold">{t('filters.label')}:</span>
               </div>
               <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-3xl">
-                <select
-                  className={SELECT_CLS}
-                  aria-label={t('filters.zone')}
+                <Select
+                  ariaLabel={t('filters.zone')}
+                  placeholder={t('filters.zone')}
+                  options={[
+                    { label: t('filters.zone'), value: ALL },
+                    ...zones.map((zone) => ({ label: zone.label, value: String(zone.id) })),
+                  ]}
                   value={currentZoneId == null ? ALL : String(currentZoneId)}
-                  onChange={(e) =>
+                  onChange={(e, val) =>
                     setParams(
-                      { zoneId: e.target.value === ALL ? null : e.target.value, wardId: null },
+                      { zoneId: val === ALL ? null : Number(val), wardId: null },
                       { resetPage: true }
                     )
                   }
-                >
-                  <option value={ALL}>{t('filters.zone')}</option>
-                  {zones.map((zone) => (
-                    <option key={zone.id} value={zone.id}>
-                      {zone.label}
-                    </option>
-                  ))}
-                </select>
+                  className="w-full"
+                />
 
-                <select
-                  className={SELECT_CLS}
-                  aria-label={t('filters.ward')}
+                <Select
+                  ariaLabel={t('filters.ward')}
+                  placeholder={t('filters.ward')}
+                  options={[
+                    { label: t('filters.ward'), value: ALL },
+                    ...wards.map((ward) => ({ label: ward.label, value: String(ward.id) })),
+                  ]}
                   value={currentWardId == null ? ALL : String(currentWardId)}
-                  onChange={(e) =>
-                    setParams({ wardId: e.target.value === ALL ? null : e.target.value }, { resetPage: true })
+                  onChange={(e, val) =>
+                    setParams({ wardId: val === ALL ? null : Number(val) }, { resetPage: true })
                   }
-                >
-                  <option value={ALL}>{t('filters.ward')}</option>
-                  {wards.map((ward) => (
-                    <option key={ward.id} value={ward.id}>
-                      {ward.label}
-                    </option>
-                  ))}
-                </select>
+                  className="w-full"
+                />
 
-                <select
-                  className={SELECT_CLS}
-                  aria-label={t('filters.type')}
+                <Select
+                  ariaLabel={t('filters.type')}
+                  placeholder={t('filters.allTypes')}
+                  options={[
+                    { label: t('filters.allTypes'), value: ALL },
+                    { label: t('cards.lease'), value: 'Lease' },
+                    { label: t('cards.rent'), value: 'Rent' },
+                  ]}
                   value={currentType}
-                  onChange={(e) => setParams({ type: e.target.value }, { resetPage: true })}
-                >
-                  <option value={ALL}>{t('filters.allTypes')}</option>
-                  <option value="Lease">{t('cards.lease')}</option>
-                  <option value="Rent">{t('cards.rent')}</option>
-                </select>
+                  onChange={(e, val) => setParams({ type: val }, { resetPage: true })}
+                  className="w-full"
+                />
 
-                <select
-                  className={SELECT_CLS}
-                  aria-label={t('filters.status')}
+                <Select
+                  ariaLabel={t('filters.status')}
+                  placeholder={t('filters.allStatuses')}
+                  options={[
+                    { label: t('filters.allStatuses'), value: ALL },
+                    { label: t('records.statusPaid'), value: 'Paid' },
+                    { label: t('records.statusUnpaid'), value: 'Unpaid' },
+                  ]}
                   value={currentStatus}
-                  onChange={(e) => setParams({ status: e.target.value }, { resetPage: true })}
-                >
-                  <option value={ALL}>{t('filters.allStatuses')}</option>
-                  <option value="Paid">{t('records.statusPaid')}</option>
-                  <option value="Unpaid">{t('records.statusUnpaid')}</option>
-                </select>
+                  onChange={(e, val) => setParams({ status: val }, { resetPage: true })}
+                  className="w-full"
+                />
               </div>
             </div>
           </header>
@@ -385,70 +404,17 @@ export default function RevenueAssetRecordsView({ data, searchTerm = '' }: Reven
             </div>
 
             {/* Table */}
-            <Card variant="default" padding="none">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('records.cols.srNo')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('records.cols.assetId')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('records.cols.assetName')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('records.cols.zone')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('records.cols.ward')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('records.cols.leaseType')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('records.cols.tenant')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('records.cols.status')}</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('records.cols.rent')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {list.items.length > 0 ? (
-                      list.items.map(renderRow)
-                    ) : (
-                      <tr>
-                        <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
-                          <div className="flex flex-col items-center gap-2">
-                            <Search className="w-8 h-8 text-gray-400" />
-                            <p>{t('records.empty')}</p>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-
-            {/* Pagination */}
-            {list.totalCount > 0 && (
-              <div className="mt-4 flex items-center justify-between px-6 py-3 bg-white border border-gray-200 rounded-lg">
-                <p className="text-sm text-gray-500">
-                  {t('records.showing', {
-                    from: startIndex + 1,
-                    to: startIndex + list.items.length,
-                    total: list.totalCount,
-                  })}
-                </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-                    disabled={!list.hasPrevious}
-                    onClick={() => setParams({ pageNumber: list.pageNumber - 1 })}
-                  >
-                    {t('records.previous')}
-                  </button>
-                  <button
-                    type="button"
-                    className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-                    disabled={!list.hasNext}
-                    onClick={() => setParams({ pageNumber: list.pageNumber + 1 })}
-                  >
-                    {t('records.next')}
-                  </button>
-                </div>
-              </div>
-            )}
+            <MasterTable
+              columns={columns}
+              data={list.items as any}
+              pageNumber={list.pageNumber}
+              pageSize={list.pageSize}
+              totalCount={list.totalCount}
+              totalPages={list.totalPages}
+              onPageChange={(page) => setParams({ pageNumber: page })}
+              paginationConfig={{ enabled: true, showPageSizeSelector: false }}
+              emptyText={t('records.empty')}
+            />
           </div>
         </main>
       </div>

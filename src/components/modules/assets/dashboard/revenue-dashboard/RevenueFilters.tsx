@@ -2,6 +2,7 @@
 
 import { MapPin } from 'lucide-react';
 import type { RevenueFilterOption } from '@/types/asset-type/revenue-dashboard.types';
+import { Select } from '@/components/common/select';
 
 interface RevenueFiltersProps {
   zones: RevenueFilterOption[];
@@ -14,9 +15,6 @@ interface RevenueFiltersProps {
   allZonesLabel: string;
   allWardsLabel: string;
 }
-
-const SELECT_CLS =
-  'px-4 py-2 border border-gray-300 rounded-xl text-sm font-semibold text-slate-800 bg-white shadow-sm focus:border-blue-500 focus:outline-none';
 
 const ALL = 'all';
 
@@ -46,33 +44,29 @@ export function RevenueFilters({
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
-        <select
-          className={SELECT_CLS}
-          aria-label={allZonesLabel}
+        <Select
+          ariaLabel={allZonesLabel}
+          placeholder={allZonesLabel}
+          options={[
+            { label: allZonesLabel, value: ALL },
+            ...zones.map((zone) => ({ label: zone.label, value: String(zone.id) })),
+          ]}
           value={selectedZoneId == null ? ALL : String(selectedZoneId)}
-          onChange={(e) => onZoneChange(toId(e.target.value))}
-        >
-          <option value={ALL}>{allZonesLabel}</option>
-          {zones.map((zone) => (
-            <option key={zone.id} value={zone.id}>
-              {zone.label}
-            </option>
-          ))}
-        </select>
+          onChange={(e, val) => onZoneChange(toId(val))}
+          className="w-[180px]"
+        />
 
-        <select
-          className={SELECT_CLS}
-          aria-label={allWardsLabel}
+        <Select
+          ariaLabel={allWardsLabel}
+          placeholder={allWardsLabel}
+          options={[
+            { label: allWardsLabel, value: ALL },
+            ...wards.map((ward) => ({ label: ward.label, value: String(ward.id) })),
+          ]}
           value={selectedWardId == null ? ALL : String(selectedWardId)}
-          onChange={(e) => onWardChange(toId(e.target.value))}
-        >
-          <option value={ALL}>{allWardsLabel}</option>
-          {wards.map((ward) => (
-            <option key={ward.id} value={ward.id}>
-              {ward.label}
-            </option>
-          ))}
-        </select>
+          onChange={(e, val) => onWardChange(toId(val))}
+          className="w-[180px]"
+        />
       </div>
     </div>
   );
