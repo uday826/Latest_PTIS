@@ -14,6 +14,44 @@ import {
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
+function calculateArea(
+  shape: string,
+  length: number,
+  width: number,
+  radius: number,
+  base1: number,
+  base2: number,
+  height: number
+): number {
+  const s = (shape || "Rectangle").toLowerCase();
+  if (s === "rectangle" || s === "rect") {
+    return length * width;
+  }
+  if (s === "square") {
+    const side = length || width;
+    return side * side;
+  }
+  if (s === "triangle") {
+    return 0.5 * (length || base1 || 0) * (width || height || 0);
+  }
+  if (s === "trapezoid") {
+    return 0.5 * (base1 + base2) * (height || width || length || 0);
+  }
+  if (s === "circle") {
+    const r = radius || length || width || 0;
+    return Math.PI * r * r;
+  }
+  if (s === "semi circle" || s === "semicircle") {
+    const r = radius || length || width || 0;
+    return 0.5 * Math.PI * r * r;
+  }
+  if (s === "quarter circle" || s === "quartercircle" || s === "quarter") {
+    const r = radius || length || width || 0;
+    return 0.25 * Math.PI * r * r;
+  }
+  return 0;
+}
+
 export function StandaloneSubUnitStep({
   dropdownOptions,
   initialSubUnits = []
@@ -65,20 +103,44 @@ export function StandaloneSubUnitStep({
       let mappedRooms: any[] = [];
       if (Array.isArray(u.roomWiseDetails)) {
         mappedRooms = u.roomWiseDetails.map((r: any) => {
-          const areaSqM = Number(r.areaSqMtr || r.areaSqM || 0);
+          let areaSqM = Number(r.areaSqMtr || r.areaSqM || 0);
+          if (areaSqM <= 0) {
+            areaSqM = calculateArea(
+              r.shape || "Rectangle",
+              Number(r.lengthMtr || 0),
+              Number(r.widthMtr || 0),
+              Number(r.radiusMtr || r.lengthMtr || r.widthMtr || 0),
+              Number(r.base1Mtr || 0),
+              Number(r.base2Mtr || 0),
+              Number(r.heightMtr || 0)
+            );
+          }
           const areaSqFt = areaSqM * 10.7639;
-          const rOffsets = Array.isArray(r.offsets) ? r.offsets.map((off: any) => ({
-            id: off.id,
-            shape: off.shape || "Rectangle",
-            length: Number(off.length !== undefined ? off.length : (off.radius || 0)),
-            width: Number(off.width || 0),
-            height: Number(off.height || 0),
-            base1: Number(off.base1 || 0),
-            base2: Number(off.base2 || 0),
-            radius: Number(off.length !== undefined ? off.length : (off.radius || 0)),
-            areaSqM: Number(off.areaSqM || 0),
-            op: off.op || "Subtract"
-          })) : [];
+          const rOffsets = Array.isArray(r.offsets) ? r.offsets.map((off: any) => {
+            const sh = off.shape || "Rectangle";
+            const len = Number(off.length !== undefined ? off.length : (off.radius || 0));
+            const wid = Number(off.width || 0);
+            const h = Number(off.height || 0);
+            const b1 = Number(off.base1 || 0);
+            const b2 = Number(off.base2 || 0);
+            const rad = Number(off.radius !== undefined ? off.radius : len);
+            let oArea = Number(off.areaSqM || 0);
+            if (oArea <= 0) {
+              oArea = calculateArea(sh, len, wid, rad, b1, b2, h);
+            }
+            return {
+              id: off.id,
+              shape: sh,
+              length: len,
+              width: wid,
+              height: h,
+              base1: b1,
+              base2: b2,
+              radius: rad,
+              areaSqM: oArea,
+              op: off.op || "Subtract"
+            };
+          }) : [];
 
           let netAdjustmentSqM = 0;
           rOffsets.forEach((off: any) => {
@@ -144,6 +206,7 @@ export function StandaloneSubUnitStep({
       // Resolve floorDetailsId and floor level ID from any of the standard names
       let floorDetailsId = u.floorDetailsId ?? u.FloorDetailsId ?? null;
       let resolvedFloorLevelId = u.floorId ?? u.FloorId ?? u.selectedFloorId ?? null;
+      let subFloorId = u.subFloorId ?? u.SubFloorId ?? null;
 
       // If we have floorDetailsId but not resolvedFloorLevelId, try to find it in parentFloors
       if (floorDetailsId && !resolvedFloorLevelId) {
@@ -199,11 +262,29 @@ export function StandaloneSubUnitStep({
         unitNumber: u.unitNo || u.assetNo || u.assetCode || "",
         unitName: u.shopUnitName || u.assetName || u.name || `${unitType} ${u.unitNo || u.assetNo || u.assetCode || ""}`,
         unitType,
-        carpetAreaSqFeet: u.totalAreaSqFt || 0,
+        carpetAreaSqFeet: (() => {
+          const rawArea = Number(u.totalAreaSqFt || u.carpetAreaSqFeet || u.carpetAreaSqFt || 0);
+          if (rawArea > 0) return rawArea;
+          if (mappedRooms.length > 0) {
+            return mappedRooms.reduce((acc, r) => {
+              const netAreaSqFt = r.netAreaSqFt !== undefined
+                ? Number(r.netAreaSqFt)
+                : (r.netAreaSqM !== undefined
+                  ? Number(r.netAreaSqM) * 10.7639
+                  : Number(r.areaSqFt || r.area || 0));
+              const roomSqFt = netAreaSqFt * Number(r.count || 1);
+              if (r.minus === "Yes" || r.offset === "Yes") return acc - roomSqFt;
+              if (r.outer === "Yes") return acc + roomSqFt * 0.8;
+              return acc + roomSqFt;
+            }, 0);
+          }
+          return 0;
+        })(),
         baseValue: u.calculatedCapitalValue || 0,
         status: "Active",
         floorId: resolvedFloorLevelId || floorDetailsId,
         floorDetailsId: floorDetailsId,
+        subFloorId: subFloorId,
         rooms: mappedRooms,
         // Lease/rent fields for display
         rentAmount: renterData?.rentAmount || 0,
@@ -388,6 +469,19 @@ export function StandaloneSubUnitStep({
               totalAreaSqMtr: areaSqM * Number(r.count || 1),
               outerYesNo: r.outer === "Yes",
               minusYesNo: r.minus === "Yes" || r.offset === "Yes",
+              offsets: Array.isArray(r.offsets)
+                ? r.offsets.map((off: any) => ({
+                    shape: off.shape || "Rectangle",
+                    length: Number(off.length ?? off.radius ?? 0),
+                    width: Number(off.width ?? 0),
+                    height: Number(off.height ?? 0),
+                    base1: Number(off.base1 ?? 0),
+                    base2: Number(off.base2 ?? 0),
+                    radius: Number(off.radius ?? off.length ?? 0),
+                    areaSqM: Number(off.areaSqM ?? 0),
+                    op: off.op || "Subtract",
+                  }))
+                : [],
             };
           })
           : null;
@@ -421,6 +515,7 @@ export function StandaloneSubUnitStep({
           assetId: unit.id || 0,
           floorDetailsId: resolvedFloorDetailsId,
           floorId: unit.floorId,
+          subFloorId: unit.subFloorId || null,
           unitNo: unit.unitNumber,
           shopUnitName: unit.unitName || null,
           totalAreaSqFt: unit.carpetAreaSqFeet,
