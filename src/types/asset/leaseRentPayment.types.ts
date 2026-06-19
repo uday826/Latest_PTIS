@@ -51,6 +51,13 @@ export interface LeaseRentPaymentDetail {
   monthlyRent: number;
   pendingDue: number;
   currentDemand: number;
+  currentPaid: number;
+  currentPenalty: number;
+  currentGst: number;
+  pendingDemand: number;
+  pendingPaid: number;
+  pendingPenalty: number;
+  pendingGst: number;
   penalty: number;
   gst: number;
   totalPayable: number;
@@ -159,12 +166,23 @@ export interface AssetMasterPaymentDetail {
 export interface LeaseRentDemandSummary {
   leaseRegistrationId: number;
   financeYear: number;
+  currentFinanceYear: number;
   totalRent: number;
   totalPenalty: number;
   totalGst: number;
   totalDemand: number;
   totalPaid: number;
   totalPending: number;
+  currentDemand: number;
+  currentPaid: number;
+  currentPending: number;
+  currentPenalty: number;
+  currentGst: number;
+  pendingDemand: number;
+  pendingPaid: number;
+  pendingOutstanding: number;
+  pendingPenalty: number;
+  pendingGst: number;
   demandCount: number;
   paidCount: number;
   partialCount: number;

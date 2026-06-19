@@ -97,6 +97,7 @@ export function MakePaymentScreen({
   const [selectedMode, setSelectedMode] = useState<PaymentMode>(modeFromQuery);
   const [pendingSubOption, setPendingSubOption] = useState<PendingSubOption>('FULL_BUCKET');
   const [isPeriodDrawerOpen, setIsPeriodDrawerOpen] = useState(false);
+  const [demandFyFilter, setDemandFyFilter] = useState<string>('all');
   const [selectedPeriods, setSelectedPeriods] = useState<string[]>([]);
   const [customAmount, setCustomAmount] = useState('');
   const [mobile, setMobile] = useState(record.tenantMobile);
@@ -119,9 +120,31 @@ export function MakePaymentScreen({
   } = useLeaseRentDemands(record.leaseRentRegistrationId);
 
   const pendingDemandAmount = record.pendingDue;
-  const penaltyAmount = record.penalty;
-  const gstAmount = record.gst;
   const summaryTotalAmount = record.totalPayable;
+
+  // Rupee formatter (₹ 1,23,456.00) shared by every money figure in the summary.
+  const inr = (value: number | null | undefined) =>
+    `₹ ${(value ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  // Outstanding (demand − paid) per bucket, derived on the client.
+  const pendingDueAmount = (record.pendingDemand ?? 0) - (record.pendingPaid ?? 0);
+  const currentDueAmount = (record.currentDemand ?? 0) - (record.currentPaid ?? 0);
+
+  // Finance years present in the demand rows, newest first, for the drawer filter.
+  const availableFinanceYears = useMemo(() => {
+    const years = new Set<number>();
+    for (const row of leaseDemandRows) {
+      const fy = Number(row.financeYear);
+      if (Number.isFinite(fy) && fy > 0) years.add(fy);
+    }
+    return Array.from(years).sort((a, b) => b - a);
+  }, [leaseDemandRows]);
+
+  // Rows shown in the "Select Months" drawer, narrowed by the chosen finance year.
+  const visibleDemandRows = useMemo(() => {
+    if (demandFyFilter === 'all') return leaseDemandRows;
+    return leaseDemandRows.filter((row) => String(row.financeYear) === demandFyFilter);
+  }, [leaseDemandRows, demandFyFilter]);
   const customNumericAmount = Number(customAmount);
   const normalizedPaymentFrequency = record.paymentFrequency?.trim().toLowerCase() ?? '';
   const isYearlyPayment = normalizedPaymentFrequency === 'yearly';
@@ -238,7 +261,7 @@ export function MakePaymentScreen({
   const backendPaymentType = useMemo(() => {
     if (pendingSubOption === 'FULL_BUCKET') return 'Full';
     if (pendingSubOption === 'PERIOD_SELECTION') {
-      const selectedAll = allPendingDemandIds.length > 0 && 
+      const selectedAll = allPendingDemandIds.length > 0 &&
         allPendingDemandIds.every(id => selectedDemandIds.includes(id));
       return selectedAll ? 'Full' : 'Monthwise';
     }
@@ -261,21 +284,21 @@ export function MakePaymentScreen({
     });
   }, []);
 
-  // True when every available demand row is currently selected.
+  // True when every currently-visible demand row is selected.
   const allPeriodsSelected = useMemo(() => {
-    if (leaseDemandRows.length === 0) return false;
-    return leaseDemandRows.every((row) =>
+    if (visibleDemandRows.length === 0) return false;
+    return visibleDemandRows.every((row) =>
       selectedPeriods.some(
         (p) => p.trim().toLowerCase() === String(row.month ?? '').trim().toLowerCase()
       )
     );
-  }, [leaseDemandRows, selectedPeriods]);
+  }, [visibleDemandRows, selectedPeriods]);
 
-  // Toggle every demand row at once. Convenience for the master-table
-  // "Select all" header action.
+  // Toggle every visible demand row at once. Convenience for the master-table
+  // "Select all" header action — scoped to the current finance-year filter.
   const toggleAllPeriods = useCallback(() => {
-    if (leaseDemandRows.length === 0) return;
-    const months = leaseDemandRows
+    if (visibleDemandRows.length === 0) return;
+    const months = visibleDemandRows
       .map((row) => String(row.month ?? '').trim())
       .filter(Boolean);
     if (allPeriodsSelected) {
@@ -286,9 +309,13 @@ export function MakePaymentScreen({
         )
       );
     } else {
-      setSelectedPeriods(months);
+      setSelectedPeriods((prev) => {
+        const next = new Set(prev.map((p) => p.trim()));
+        months.forEach((m) => next.add(m));
+        return Array.from(next);
+      });
     }
-  }, [allPeriodsSelected, leaseDemandRows]);
+  }, [allPeriodsSelected, visibleDemandRows]);
 
   // Build the master-table columns. Uses a custom first column with a
   // checkbox that toggles a single demand row.
@@ -613,78 +640,86 @@ export function MakePaymentScreen({
       </div>
 
       <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
-        {String(record.paymentStatus ?? '').toLowerCase() === 'partial' ? (
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            {/* Left Side: Demand, Penalty, GST, Total Amount */}
-            <div className="space-y-3">
-              <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-3 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
-                <div className="flex items-center justify-between w-full">
-                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">{t('currentDemand')}</span>
-                  <p className="text-sm font-black text-emerald-600">{`₹ ${record.currentDemand.toLocaleString('en-IN')}`}</p>
-                </div>
-              </Card>
-
-              <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-red-50/50 border-red-100 rounded-lg shadow-none">
-                <span className="text-xs font-bold text-red-700">{t('penalty')}</span>
-                <span className="text-sm font-black text-red-600">{`₹ ${penaltyAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-              </Card>
-
-              <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-purple-50/50 border-purple-100 rounded-lg shadow-none">
-                <span className="text-xs font-bold text-purple-700">{t('gst')}</span>
-                <span className="text-sm font-black text-purple-600">{`₹ ${gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-              </Card>
-
-              <Card variant="bordered" padding="none" className="flex justify-between items-center p-4 bg-blue-50 border-blue-200 rounded-xl shadow-sm">
-                <span className="text-sm font-bold text-blue-900">{t('totalAmount')}</span>
-                <span className="text-xl font-black text-blue-700">{`₹ ${summaryTotalAmount.toLocaleString('en-IN')}`}</span>
-              </Card>
+        {/* Two columns: prior-year arrears ("Pending") vs the current finance year ("Current").
+            Within each: Demand (theme) / Penalty / GST / Paid (green) / Due (red). */}
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          {/* PENDING (arrears) */}
+          <div className="rounded-xl border border-amber-300 bg-amber-50/70 p-3">
+            <div className="flex items-center gap-2 mb-2.5">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-500" />
+              <h4 className="text-xs font-extrabold text-amber-800 uppercase tracking-wider">{t('pendingTitle')}</h4>
             </div>
-
-            {/* Right Side: Total Paid and Total Pending Demand */}
-            <div className="space-y-3">
-              <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-3 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
-                <div className="flex items-center justify-between w-full">
-                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">{t('totalPaid')}</span>
-                  <p className="text-sm font-black text-emerald-600">{`₹ ${(record.totalPaid ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</p>
-                </div>
-              </Card>
-
-              <Card variant="bordered" padding="none" className="flex justify-between items-center p-4 bg-red-50 border-red-200 rounded-xl shadow-sm">
-                <span className="text-sm font-bold text-red-900">{t('totalPendingDemand')}</span>
-                <span className="text-xl font-black text-red-700">{`₹ ${(record.totalPending ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-              </Card>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center rounded-lg bg-white border border-amber-200 px-3 py-2">
+                <span className="text-xs font-semibold text-slate-600">{t('demand')}</span>
+                <span className="text-sm font-black text-amber-700">{inr(record.pendingDemand)}</span>
+              </div>
+              <div className="flex justify-between items-center rounded-lg bg-white border border-rose-100 px-3 py-2">
+                <span className="text-xs font-semibold text-rose-700">{t('penalty')}</span>
+                <span className="text-sm font-black text-rose-600">{inr(record.pendingPenalty)}</span>
+              </div>
+              <div className="flex justify-between items-center rounded-lg bg-white border border-violet-100 px-3 py-2">
+                <span className="text-xs font-semibold text-violet-700">{t('gst')}</span>
+                <span className="text-sm font-black text-violet-600">{inr(record.pendingGst)}</span>
+              </div>
+              <div className="flex justify-between items-center rounded-lg bg-white border border-green-200 px-3 py-2">
+                <span className="text-xs font-semibold text-slate-600">{t('paid')}</span>
+                <span className="text-sm font-black text-green-600">{inr(record.pendingPaid)}</span>
+              </div>
+              <div className="flex justify-between items-center rounded-lg bg-red-50 border border-red-200 px-3 py-2">
+                <span className="text-xs font-semibold text-red-700">{t('due')}</span>
+                <span className="text-sm font-black text-red-600">{inr(pendingDueAmount)}</span>
+              </div>
             </div>
           </div>
-        ) : (
-          <>
-            <div className="mb-4">
-              <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
-                <div className="flex items-center justify-between w-full">
-                  <span className="text-base font-extrabold text-emerald-800 uppercase tracking-wider">Demand</span>
-                  <p className="text-2xl font-black text-emerald-600">{`₹ ${record.currentDemand.toLocaleString('en-IN')}`}</p>
-                </div>
-              </Card>
-            </div>
 
-            <div className="space-y-3 mb-6">
-              <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-red-50/50 border-red-100 rounded-lg shadow-none">
-                <span className="text-xs font-bold text-red-700">{t('penalty')}</span>
-                <span className="text-sm font-black text-red-600">{`₹ ${penaltyAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-              </Card>
-              <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-purple-50/50 border-purple-100 rounded-lg shadow-none">
-                <span className="text-xs font-bold text-purple-700">{t('gst')}</span>
-                <span className="text-sm font-black text-purple-600">{`₹ ${gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-              </Card>
-              <Card variant="bordered" padding="none" className="flex justify-between items-center p-4 bg-blue-50 border-blue-200 rounded-xl shadow-sm">
-                <span className="text-sm font-bold text-blue-900">{t('totalAmount')}</span>
-                <span className="text-xl font-black text-blue-700">{`₹ ${summaryTotalAmount.toLocaleString('en-IN')}`}</span>
-              </Card>
+          {/* CURRENT (this finance year) */}
+          <div className="rounded-xl border border-blue-300 bg-blue-50/70 p-3">
+            <div className="flex items-center gap-2 mb-2.5">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-500" />
+              <h4 className="text-xs font-extrabold text-blue-800 uppercase tracking-wider">{t('currentTitle')}</h4>
             </div>
-          </>
-        )}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center rounded-lg bg-white border border-blue-200 px-3 py-2">
+                <span className="text-xs font-semibold text-slate-600">{t('demand')}</span>
+                <span className="text-sm font-black text-blue-700">{inr(record.currentDemand)}</span>
+              </div>
+              <div className="flex justify-between items-center rounded-lg bg-white border border-rose-100 px-3 py-2">
+                <span className="text-xs font-semibold text-rose-700">{t('penalty')}</span>
+                <span className="text-sm font-black text-rose-600">{inr(record.currentPenalty)}</span>
+              </div>
+              <div className="flex justify-between items-center rounded-lg bg-white border border-violet-100 px-3 py-2">
+                <span className="text-xs font-semibold text-violet-700">{t('gst')}</span>
+                <span className="text-sm font-black text-violet-600">{inr(record.currentGst)}</span>
+              </div>
+              <div className="flex justify-between items-center rounded-lg bg-white border border-green-200 px-3 py-2">
+                <span className="text-xs font-semibold text-slate-600">{t('paid')}</span>
+                <span className="text-sm font-black text-green-600">{inr(record.currentPaid)}</span>
+              </div>
+              <div className="flex justify-between items-center rounded-lg bg-red-50 border border-red-200 px-3 py-2">
+                <span className="text-xs font-semibold text-red-700">{t('due')}</span>
+                <span className="text-sm font-black text-red-600">{inr(currentDueAmount)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Roll-up totals — Total Paid / Total Pending Demand / Total Demand on one line */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <Card variant="bordered" padding="none" className="flex flex-col gap-1 p-3 bg-linear-to-r from-indigo-50 to-blue-50 border-indigo-200 rounded-xl shadow-sm">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-indigo-900">{t('totalDemand')}</span>
+            <span className="text-base font-black text-indigo-700">{`₹ ${summaryTotalAmount.toLocaleString('en-IN')}`}</span>
+          </Card>
+          <Card variant="bordered" padding="none" className="flex flex-col gap-1 p-3 bg-green-50 border-green-200 rounded-xl shadow-sm">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-green-800">{t('totalPaid')}</span>
+            <span className="text-base font-black text-green-700">{inr(record.totalPaid)}</span>
+          </Card>
+          <Card variant="bordered" padding="none" className="flex flex-col gap-1 p-3 bg-red-50 border-red-200 rounded-xl shadow-sm">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-red-900">{t('totalPendingDemand')}</span>
+            <span className="text-base font-black text-red-700">{inr(record.totalPending)}</span>
+          </Card>
+
+        </div>
 
         <Card variant="bordered" padding="none" className="bg-white border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
           <div className="grid grid-cols-3 gap-4">
@@ -779,8 +814,8 @@ export function MakePaymentScreen({
               <label
                 onClick={() => setPendingSubOption('FULL_BUCKET')}
                 className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${pendingSubOption === 'FULL_BUCKET'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-slate-300 hover:bg-slate-50'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-slate-300 hover:bg-slate-50'
                   }`}
               >
                 <RadioGroupItem value="FULL_BUCKET" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
@@ -789,8 +824,8 @@ export function MakePaymentScreen({
               <label
                 onClick={() => setPendingSubOption('CUSTOM_AMOUNT')}
                 className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${pendingSubOption === 'CUSTOM_AMOUNT'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-slate-300 hover:bg-slate-50'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-slate-300 hover:bg-slate-50'
                   }`}
               >
                 <RadioGroupItem value="CUSTOM_AMOUNT" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
@@ -802,8 +837,8 @@ export function MakePaymentScreen({
                   setIsPeriodDrawerOpen(true);
                 }}
                 className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${pendingSubOption === 'PERIOD_SELECTION'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-slate-300 hover:bg-slate-50'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-slate-300 hover:bg-slate-50'
                   }`}
               >
                 <RadioGroupItem value="PERIOD_SELECTION" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
@@ -881,7 +916,7 @@ export function MakePaymentScreen({
               >
                 {t('drawer.clear')}
               </button>
-             
+
               <button
                 onClick={() => setIsPeriodDrawerOpen(false)}
                 className="px-5 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
@@ -900,30 +935,45 @@ export function MakePaymentScreen({
             </div>
           )}
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-slate-600">
               {t('drawer.selectedSummary', { count: selectedPeriods.length })}
-              {leaseDemandRows.length > 0 && (
+              {visibleDemandRows.length > 0 && (
                 <span className="ml-2 text-slate-400">
-                  ({leaseDemandRows.length} {t('drawer.table.month').toLowerCase()}
-                  {leaseDemandRows.length === 1 ? '' : 's'})
+                  ({visibleDemandRows.length} {t('drawer.table.month').toLowerCase()}
+                  {visibleDemandRows.length === 1 ? '' : 's'})
                 </span>
               )}
             </p>
-            <button
-              type="button"
-              onClick={() => void refetchDemands()}
-              className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600 hover:bg-slate-50"
-              aria-label="Refresh demand rows"
-            >
-              <RefreshCw className="size-3" />
-              {t('drawer.refresh')}
-            </button>
+            <div className="flex items-center gap-2">
+              <select
+                value={demandFyFilter}
+                onChange={(e) => setDemandFyFilter(e.target.value)}
+                aria-label={t('drawer.financeYearLabel')}
+                className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
+              >
+                <option value="all">{t('drawer.allYears')}</option>
+                {availableFinanceYears.map((fy) => (
+                  <option key={fy} value={String(fy)}>
+                    {`${fy}-${String((fy + 1) % 100).padStart(2, '0')}`}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => void refetchDemands()}
+                className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600 hover:bg-slate-50"
+                aria-label="Refresh demand rows"
+              >
+                <RefreshCw className="size-3" />
+                {t('drawer.refresh')}
+              </button>
+            </div>
           </div>
 
           <MasterTable<LeaseRentDemandItem>
             columns={demandTableColumns}
-            data={leaseDemandRows}
+            data={visibleDemandRows}
             loading={isDemandsLoading}
             loadingText={t('drawer.loading')}
             emptyText={t('drawer.empty')}
