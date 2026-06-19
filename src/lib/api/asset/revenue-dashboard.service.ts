@@ -1,257 +1,76 @@
 import { apiClient } from '@/services/api.service';
-import type { ApiResponse } from '@/types/common.types';
+import { ApiResponse } from '@/types/common.types';
 import type {
-  RevenueDashboardAssetDetailsResponse,
-  RevenueDashboardCategoryDistribution,
-  RevenueDashboardCategoryDistributionParams,
-  RevenueDashboardMonthlyTrend,
-  RevenueDashboardMonthlyTrendParams,
-  RevenueDashboardOverviewParams,
-  RevenueDashboardOverviewResponse,
-  RevenueDashboardParams,
-  RevenueDashboardResponse,
-  RevenueDashboardSummary,
-  RevenueDashboardSummaryParams,
-  RevenueDashboardZoneWise,
-  RevenueDashboardZoneWiseParams,
-} from '@/types/asset-type/revenue-dashboard.type';
+  RevenueDashboardOverview,
+  RevenueListQuery,
+  RevenueListResult,
+  RevenueOverviewQuery,
+} from '@/types/asset-type/revenue-dashboard.types';
+import {
+  normalizeOverview,
+  normalizeRevenueListResult,
+} from './revenue-dashboard-types-guard';
 
-
-/* -------------------------------------------------------------------------- */
-/* 1. GET Revenue Dashboard Items                                          */
-/* -------------------------------------------------------------------------- */
-
-export const getRevenueDashboard = async (
-  params: RevenueDashboardParams = {}
-): Promise<ApiResponse<RevenueDashboardResponse>> => {
-  const query = new URLSearchParams();
-
-  /* ------------------------------ Pagination ------------------------------ */
-
-  query.set('PageNumber', String(params.pageNumber ?? 1));
-  query.set('PageSize', String(params.pageSize ?? 10));
-
-  /* ------------------------------- Filters -------------------------------- */
-
-  if (params.assetId != null) {
-    query.set('AssetId', String(params.assetId));
+/** Append a numeric query param only when it is a finite, positive value. */
+function appendId(params: URLSearchParams, key: string, value?: number): void {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    params.append(key, String(value));
   }
+}
 
-  if (params.assetNo) {
-    query.set('AssetNo', params.assetNo);
-  }
+/**
+ * Client for `RevenueDashboardController` (`/api/RevenueDashboard/*`).
+ * All requests go through the shared `apiClient`; responses are narrowed and
+ * normalized before they cross into the UI.
+ */
+export const revenueDashboardService = {
+  /**
+   * GET /RevenueDashboard/overview — KPI summary, category distribution, monthly
+   * trend and zone-wise demand/collection for the resolved period.
+   */
+  getOverview: async (
+    query: RevenueOverviewQuery = {}
+  ): Promise<ApiResponse<RevenueDashboardOverview>> => {
+    const params = new URLSearchParams();
+    appendId(params, 'Year', query.year);
+    appendId(params, 'Month', query.month);
+    appendId(params, 'AssetCategoryId', query.assetCategoryId);
+    appendId(params, 'ZoneId', query.zoneId);
+    appendId(params, 'WardId', query.wardId);
 
-  if (params.assetName) {
-    query.set('AssetName', params.assetName);
-  }
+    const qs = params.toString();
+    const response = await apiClient.get<unknown>(
+      `/RevenueDashboard/overview${qs ? `?${qs}` : ''}`
+    );
+    if (response.success) {
+      return { ...response, data: normalizeOverview(response.data) };
+    }
+    return response as ApiResponse<RevenueDashboardOverview>;
+  },
 
-  if (params.assetCategoryId != null) {
-    query.set('AssetCategoryId', String(params.assetCategoryId));
-  }
+  /**
+   * GET /RevenueDashboard — paged list of lease/rent records with their asset
+   * details, scoped by category / zone / ward / lease type / payment status.
+   */
+  getRevenueList: async (
+    query: RevenueListQuery
+  ): Promise<ApiResponse<RevenueListResult>> => {
+    const params = new URLSearchParams();
+    params.append('PageNumber', String(query.pageNumber));
+    params.append('PageSize', String(query.pageSize));
+    if (query.searchTerm?.trim()) params.append('SearchTerm', query.searchTerm.trim());
+    if (query.sortBy?.trim()) params.append('SortBy', query.sortBy.trim());
+    if (query.sortOrder?.trim()) params.append('SortOrder', query.sortOrder.trim());
+    appendId(params, 'AssetCategoryId', query.assetCategoryId);
+    appendId(params, 'ZoneId', query.zoneId);
+    appendId(params, 'WardId', query.wardId);
+    if (query.leaseType?.trim()) params.append('LeaseType', query.leaseType.trim());
+    if (query.paymentStatus?.trim()) params.append('PaymentStatus', query.paymentStatus.trim());
 
-  if (params.assetTypeId != null) {
-    query.set('AssetTypeId', String(params.assetTypeId));
-  }
-
-  if (params.parentAssetId != null) {
-    query.set('ParentAssetId', String(params.parentAssetId));
-  }
-
-  if (params.zoneId != null) {
-    query.set('ZoneId', String(params.zoneId));
-  }
-
-  if (params.wardId != null) {
-    query.set('WardId', String(params.wardId));
-  }
-
-  if (params.leaseType) {
-    query.set('LeaseType', params.leaseType);
-  }
-
-  if (params.tenantName) {
-    query.set('TenantName', params.tenantName);
-  }
-
-  if (params.paymentStatus) {
-    query.set('PaymentStatus', params.paymentStatus);
-  }
-
-  if (params.rentStatus) {
-    query.set('RentStatus', params.rentStatus);
-  }
-
-  if (params.fromDate) {
-    query.set('FromDate', params.fromDate);
-  }
-
-  if (params.toDate) {
-    query.set('ToDate', params.toDate);
-  }
-
-  if (params.monthlyRent != null) {
-    query.set('MonthlyRent', String(params.monthlyRent));
-  }
-
-  if (params.searchTerm) { query.set('SearchTerm', params.searchTerm); }
-
-  return apiClient.get<RevenueDashboardResponse>(
-    `/api/RevenueDashboard?${query.toString()}`
-  );
-};
-
-
-/* -------------------------------------------------------------------------- */
-/* 2. Get Asset Details by ID                                              */
-/* -------------------------------------------------------------------------- */
-
-
-export const getRevenueDashboardAssetById = async (
-  assetId: number
-): Promise<ApiResponse<RevenueDashboardAssetDetailsResponse>> => {
-  return apiClient.get<RevenueDashboardAssetDetailsResponse>(
-    `/api/RevenueDashboard/asset/${assetId}`
-  );
-};
-
-
-/* -------------------------------------------------------------------------- */
-/* 3. Get Revenue Dashboard Overview                                         */
-/* -------------------------------------------------------------------------- */
-
-// Service Function
-export const getRevenueDashboardOverview = async (
-  params: RevenueDashboardOverviewParams = {}
-): Promise<ApiResponse<RevenueDashboardOverviewResponse>> => {
-  const query = new URLSearchParams();
-
-  if (params.year != null) {
-    query.set('Year', String(params.year));
-  }
-
-  if (params.month != null) {
-    query.set('Month', String(params.month));
-  }
-
-  if (params.assetCategoryId != null) {
-    query.set('AssetCategoryId', String(params.assetCategoryId));
-  }
-
-  if (params.zoneId != null) {
-    query.set('ZoneId', String(params.zoneId));
-  }
-
-  if (params.wardId != null) {
-    query.set('WardId', String(params.wardId));
-  }
-
-  return apiClient.get<RevenueDashboardOverviewResponse>(
-    `/api/RevenueDashboard/overview?${query.toString()}`
-  );
-};
-
-
-/* -------------------------------------------------------------------------- */
-/* 4. Get Revenue Dashboard Summary                                         */
-/* -------------------------------------------------------------------------- */
-
-
-// Service Function
-export const getRevenueDashboardSummary = async (
-  params: RevenueDashboardSummaryParams = {}
-) => {
-  const query = new URLSearchParams();
-
-  if (params.year != null) query.set('Year', String(params.year));
-  if (params.month != null) query.set('Month', String(params.month));
-  if (params.assetCategoryId != null) {
-    query.set('AssetCategoryId', String(params.assetCategoryId));
-  }
-  if (params.zoneId != null) query.set('ZoneId', String(params.zoneId));
-  if (params.wardId != null) query.set('WardId', String(params.wardId));
-
-  const endpoint = `/api/RevenueDashboard/summary${
-    query.toString() ? `?${query.toString()}` : ''
-  }`;
-
-  return apiClient.get<RevenueDashboardSummary>(endpoint);
-};
-
-
-/* -------------------------------------------------------------------------- */
-/* 5. Get Revenue Dashboard Category Distribution                       */
-/* -------------------------------------------------------------------------- */
-
-// Service Function
-export const getRevenueDashboardCategoryDistribution = async (
-  params: RevenueDashboardCategoryDistributionParams = {}
-) => {
-  const query = new URLSearchParams();
-
-  if (params.year != null) query.set('Year', String(params.year));
-  if (params.month != null) query.set('Month', String(params.month));
-  if (params.assetCategoryId != null) {
-    query.set('AssetCategoryId', String(params.assetCategoryId));
-  }
-  if (params.zoneId != null) query.set('ZoneId', String(params.zoneId));
-  if (params.wardId != null) query.set('WardId', String(params.wardId));
-
-  const endpoint = `/api/RevenueDashboard/category-distribution${
-    query.toString() ? `?${query.toString()}` : ''
-  }`;
-
-  return apiClient.get<RevenueDashboardCategoryDistribution[]>(endpoint);
-};
-
-
-/* -------------------------------------------------------------------------- */
-/* 6. Get Revenue Dashboard Monthly Trend                               */
-/* -------------------------------------------------------------------------- */
-
-// Service Function
-export const getRevenueDashboardMonthlyTrend = async (
-  params: RevenueDashboardMonthlyTrendParams = {}
-) => {
-  const query = new URLSearchParams();
-
-  if (params.year != null) query.set('Year', String(params.year));
-  if (params.month != null) query.set('Month', String(params.month));
-  if (params.assetCategoryId != null) {
-    query.set('AssetCategoryId', String(params.assetCategoryId));
-  }
-  if (params.zoneId != null) query.set('ZoneId', String(params.zoneId));
-  if (params.wardId != null) query.set('WardId', String(params.wardId));
-
-  const endpoint = `/api/RevenueDashboard/monthly-trend${
-    query.toString() ? `?${query.toString()}` : ''
-  }`;
-
-  return apiClient.get<RevenueDashboardMonthlyTrend[]>(endpoint);
-};
-
-
-/* -------------------------------------------------------------------------- */
-/* 7. Get Revenue Dashboard Zone-Wise                                     */
-/* -------------------------------------------------------------------------- */
-
-
-// Service Function
-export const getRevenueDashboardZoneWise = async (
-  params: RevenueDashboardZoneWiseParams = {}
-) => {
-  const query = new URLSearchParams();
-
-  if (params.year != null) query.set('Year', String(params.year));
-  if (params.month != null) query.set('Month', String(params.month));
-  if (params.assetCategoryId != null) {
-    query.set('AssetCategoryId', String(params.assetCategoryId));
-  }
-  if (params.zoneId != null) query.set('ZoneId', String(params.zoneId));
-  if (params.wardId != null) query.set('WardId', String(params.wardId));
-
-  const endpoint = `/api/RevenueDashboard/zone-wise${
-    query.toString() ? `?${query.toString()}` : ''
-  }`;
-
-  return apiClient.get<RevenueDashboardZoneWise[]>(endpoint);
+    const response = await apiClient.get<unknown>(`/RevenueDashboard?${params.toString()}`);
+    if (response.success) {
+      return { ...response, data: normalizeRevenueListResult(response.data) };
+    }
+    return response as ApiResponse<RevenueListResult>;
+  },
 };
