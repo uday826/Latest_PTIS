@@ -63,22 +63,24 @@ export async function fetchFloorsByAsset(assetId: number): Promise<ActionResult<
           floor.roomWiseDetails = roomWiseDetails;
 
           for (const room of roomWiseDetails) {
-            const roomWiseSubmissionId = room.id;
+            const roomWiseSubmissionId = room.id ?? room.Id;
             if (!roomWiseSubmissionId) continue;
 
             // If offsets are already embedded, normalise them
-            if (Array.isArray(room.offsets) && room.offsets.length > 0) {
-              room.offsets = room.offsets.map((off: any) => ({
-                id: String(off.id || ""),
-                shape: off.shape || "Rectangle",
-                length: Number(off.length ?? off.lengthMtr ?? 0),
-                width: Number(off.width ?? off.widthMtr ?? 0),
-                height: Number(off.height ?? off.heightMtr ?? 0),
-                base1: Number(off.base1 ?? off.base1Mtr ?? 0),
-                base2: Number(off.base2 ?? off.base2Mtr ?? 0),
-                radius: Number(off.radius ?? off.length ?? off.lengthMtr ?? 0),
-                areaSqM: Number(off.areaSqM ?? off.areaSqMtr ?? 0),
-                op: (off.op || "Subtract") as "Add" | "Subtract",
+            const rawOffsets = room.offsets ?? room.Offsets;
+            if (Array.isArray(rawOffsets) && rawOffsets.length > 0) {
+              const activeOffsets = rawOffsets.filter((off: any) => off.markedForDeletion !== true && off.MarkedForDeletion !== true);
+              room.offsets = activeOffsets.map((off: any) => ({
+                id: String(off.id ?? off.Id ?? ""),
+                shape: off.shape || off.Shape || "Rectangle",
+                length: Number(off.length ?? off.Length ?? off.lengthMtr ?? off.LengthMtr ?? 0),
+                width: Number(off.width ?? off.Width ?? off.widthMtr ?? off.WidthMtr ?? 0),
+                height: Number(off.height ?? off.Height ?? off.heightMtr ?? off.HeightMtr ?? 0),
+                base1: Number(off.base1 ?? off.Base1 ?? off.base1Mtr ?? off.Base1Mtr ?? 0),
+                base2: Number(off.base2 ?? off.Base2 ?? off.base2Mtr ?? off.Base2Mtr ?? 0),
+                radius: Number(off.radius ?? off.Radius ?? off.length ?? off.Length ?? off.lengthMtr ?? off.LengthMtr ?? 0),
+                areaSqM: Number(off.areaSqM ?? off.AreaSqM ?? off.areaSqMtr ?? off.AreaSqMtr ?? 0),
+                op: (off.op ?? off.Op ?? "Subtract") as "Add" | "Subtract",
               }));
               continue;
             }
@@ -98,20 +100,22 @@ export async function fetchFloorsByAsset(assetId: number): Promise<ActionResult<
                       ? paged.data
                       : [];
                 }
-                const filteredItems = rawItems.filter(
-                  (item: any) => Number(item.roomWiseSubmissionId) === Number(roomWiseSubmissionId)
-                );
+                const filteredItems = rawItems.filter((item: any) => {
+                  const rId = item.roomWiseSubmissionId ?? item.RoomWiseSubmissionId;
+                  const isDeleted = item.markedForDeletion === true || item.MarkedForDeletion === true;
+                  return rId !== undefined && Number(rId) === Number(roomWiseSubmissionId) && !isDeleted;
+                });
                 room.offsets = filteredItems.map((item: any) => ({
-                  id: String(item.id),
-                  shape: item.shape || "Rectangle",
-                  length: Number(item.length ?? item.lengthMtr ?? 0),
-                  width: Number(item.width ?? item.widthMtr ?? 0),
-                  height: Number(item.height ?? item.heightMtr ?? 0),
-                  base1: Number(item.base1 ?? item.base1Mtr ?? 0),
-                  base2: Number(item.base2 ?? item.base2Mtr ?? 0),
-                  radius: Number(item.radius ?? item.length ?? item.lengthMtr ?? 0),
-                  areaSqM: Number(item.areaSqM ?? item.areaSqMtr ?? 0),
-                  op: (item.op || "Subtract") as "Add" | "Subtract",
+                  id: String(item.id ?? item.Id),
+                  shape: item.shape || item.Shape || "Rectangle",
+                  length: Number(item.length ?? item.Length ?? item.lengthMtr ?? item.LengthMtr ?? 0),
+                  width: Number(item.width ?? item.Width ?? item.widthMtr ?? item.WidthMtr ?? 0),
+                  height: Number(item.height ?? item.Height ?? item.heightMtr ?? item.HeightMtr ?? 0),
+                  base1: Number(item.base1 ?? item.Base1 ?? item.base1Mtr ?? item.Base1Mtr ?? 0),
+                  base2: Number(item.base2 ?? item.Base2 ?? item.base2Mtr ?? item.Base2Mtr ?? 0),
+                  radius: Number(item.radius ?? item.Radius ?? item.length ?? item.Length ?? item.lengthMtr ?? item.LengthMtr ?? 0),
+                  areaSqM: Number(item.areaSqM ?? item.AreaSqM ?? item.areaSqMtr ?? item.AreaSqMtr ?? 0),
+                  op: (item.op ?? item.Op ?? "Subtract") as "Add" | "Subtract",
                 }));
               } else {
                 room.offsets = [];
@@ -421,7 +425,7 @@ export async function createChildAssetAction(
     logger.info("createChildAssetAction: API response", { response: res });
 
     if (res.success && res.data) {
-      const createdAssetId = res.data.assetId || (res.data as any).id || (res.data as any).AssetId || (res.data as any).assetID;
+      const createdAssetId = res.data.assetId ?? (res.data as any).id ?? (res.data as any).Id ?? (res.data as any).AssetId ?? (res.data as any).assetID;
       const roomWiseSubmissionDetailId = (res.data as any).roomWiseSubmissionDetailId ||
         (res.data as any).RoomWiseSubmissionDetailId ||
         (res.data as any).roomWiseSubmissionDetailsId ||
@@ -691,14 +695,22 @@ export async function createChildAssetAction(
             const getRes = await manageSubUnitsService.getById(createdAssetId);
             if (getRes.success && getRes.data) {
               const detail = getRes.data as any;
-              const dbRooms = detail.roomWiseDetails || [];
+              const dbRooms = Array.isArray(detail.roomWiseDetails)
+                ? detail.roomWiseDetails
+                : Array.isArray(detail.roomDetails)
+                  ? detail.roomDetails
+                  : Array.isArray(detail.roomWiseSubmissions)
+                    ? detail.roomWiseSubmissions
+                    : [];
 
               for (const inputRoom of data.rooms) {
                 // Find matching room in DB by roomNo
-                const dbRoom = dbRooms.find((r: any) => String(r.roomNo) === String(inputRoom.roomNo));
-                if (dbRoom && dbRoom.id) {
-                  const roomWiseSubmissionId = dbRoom.id;
-
+                const dbRoom = dbRooms.find((r: any) => {
+                  const dbRoomNo = r.roomNo ?? r.RoomNo;
+                  return dbRoomNo !== undefined && String(dbRoomNo) === String(inputRoom.roomNo);
+                });
+                const roomWiseSubmissionId = dbRoom ? (dbRoom.id ?? dbRoom.Id) : null;
+                if (roomWiseSubmissionId) {
                   // ── DELETE existing minus-data rows for this room before re-inserting ──
                   // This prevents duplicate accumulation across multiple "Save & Next" calls.
                   try {
@@ -716,13 +728,15 @@ export async function createChildAssetAction(
                             ? paged.data
                             : [];
                       }
-                      const filtered = existingItems.filter(
-                        (item: any) => Number(item.roomWiseSubmissionId) === Number(roomWiseSubmissionId)
-                      );
+                      const filtered = existingItems.filter((item: any) => {
+                        const rId = item.roomWiseSubmissionId ?? item.RoomWiseSubmissionId;
+                        return rId !== undefined && Number(rId) === Number(roomWiseSubmissionId);
+                      });
                       for (const existing of filtered) {
-                        if (existing.id) {
-                          await assetRoomWiseMinusDataService.delete(Number(existing.id));
-                          logger.info(`createChildAssetAction: Deleted existing offset ID ${existing.id} for room ${roomWiseSubmissionId}`);
+                        const existingId = existing.id ?? existing.Id;
+                        if (existingId) {
+                          await assetRoomWiseMinusDataService.delete(Number(existingId));
+                          logger.info(`createChildAssetAction: Deleted existing offset ID ${existingId} for room ${roomWiseSubmissionId}`);
                         }
                       }
                     }
@@ -812,6 +826,18 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
       const finalFloorDetailsId = detail.floorDetailsId ?? detail.FloorDetailsId ?? detail.floorId ?? detail.FloorId ?? null;
       detail.floorDetailsId = finalFloorDetailsId ? Number(finalFloorDetailsId) : null;
 
+      if (detail.floorDetailsId) {
+        try {
+          const floorRes = await floorDetailsService.getFloorById(detail.floorDetailsId);
+          if (floorRes.success && floorRes.data) {
+            const floorData = floorRes.data as any;
+            detail.subFloorId = floorData.subFloorId ?? floorData.SubFloorId ?? null;
+          }
+        } catch (floorErr) {
+          logger.error(`Failed to fetch floor details for floorDetailsId=${detail.floorDetailsId} to resolve subFloorId:`, { error: floorErr as Error });
+        }
+      }
+
       // Load room-wise offset (minus) data from AssetRoomWiseMinusData
       // Endpoint: GET /AssetRoomWiseMinusData?RoomWiseSubmissionId={room.id}
       // room.id is the roomWiseDetails row id which IS the RoomWiseSubmissionId
@@ -830,24 +856,25 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
         detail.roomDetails = roomWiseDetails;
 
         for (const room of roomWiseDetails) {
-          const roomWiseSubmissionId = room.id;
+          const roomWiseSubmissionId = room.id ?? room.Id;
           if (!roomWiseSubmissionId) continue;
 
           // If offsets are already embedded in the room data (from ManageSubUnits response),
           // normalise them and skip the separate API call.
-          if (Array.isArray(room.offsets) && room.offsets.length > 0) {
-            room.offsets = room.offsets.map((off: any) => ({
-              id: String(off.id || ""),
-              shape: off.shape || "Rectangle",
-              // API returns direct field names (length, width, etc.) not lengthMtr/widthMtr
-              length: Number(off.length ?? off.lengthMtr ?? 0),
-              width: Number(off.width ?? off.widthMtr ?? 0),
-              height: Number(off.height ?? off.heightMtr ?? 0),
-              base1: Number(off.base1 ?? off.base1Mtr ?? 0),
-              base2: Number(off.base2 ?? off.base2Mtr ?? 0),
-              radius: Number(off.radius ?? off.length ?? off.lengthMtr ?? 0),
-              areaSqM: Number(off.areaSqM ?? off.areaSqMtr ?? 0),
-              op: (off.op || "Subtract") as "Add" | "Subtract",
+          const rawOffsets = room.offsets ?? room.Offsets;
+          if (Array.isArray(rawOffsets) && rawOffsets.length > 0) {
+            const activeOffsets = rawOffsets.filter((off: any) => off.markedForDeletion !== true && off.MarkedForDeletion !== true);
+            room.offsets = activeOffsets.map((off: any) => ({
+              id: String(off.id ?? off.Id ?? ""),
+              shape: off.shape || off.Shape || "Rectangle",
+              length: Number(off.length ?? off.Length ?? off.lengthMtr ?? off.LengthMtr ?? 0),
+              width: Number(off.width ?? off.Width ?? off.widthMtr ?? off.WidthMtr ?? 0),
+              height: Number(off.height ?? off.Height ?? off.heightMtr ?? off.HeightMtr ?? 0),
+              base1: Number(off.base1 ?? off.Base1 ?? off.base1Mtr ?? off.Base1Mtr ?? 0),
+              base2: Number(off.base2 ?? off.Base2 ?? off.base2Mtr ?? off.Base2Mtr ?? 0),
+              radius: Number(off.radius ?? off.Radius ?? off.length ?? off.Length ?? off.lengthMtr ?? off.LengthMtr ?? 0),
+              areaSqM: Number(off.areaSqM ?? off.AreaSqM ?? off.areaSqMtr ?? off.AreaSqMtr ?? 0),
+              op: (off.op ?? off.Op ?? "Subtract") as "Add" | "Subtract",
             }));
             continue; // offsets already present — no need to call AssetRoomWiseMinusData
           }
@@ -872,21 +899,22 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
                     : [];
               }
               // Filter to only entries that belong to this specific room
-              const filteredItems = rawItems.filter(
-                (item: any) => Number(item.roomWiseSubmissionId) === Number(roomWiseSubmissionId)
-              );
+              const filteredItems = rawItems.filter((item: any) => {
+                const rId = item.roomWiseSubmissionId ?? item.RoomWiseSubmissionId;
+                const isDeleted = item.markedForDeletion === true || item.MarkedForDeletion === true;
+                return rId !== undefined && Number(rId) === Number(roomWiseSubmissionId) && !isDeleted;
+              });
               room.offsets = filteredItems.map((item: any) => ({
-                id: String(item.id),
-                shape: item.shape || "Rectangle",
-                // AssetRoomWiseMinusData uses direct field names matching the embed format
-                length: Number(item.length ?? item.lengthMtr ?? 0),
-                width: Number(item.width ?? item.widthMtr ?? 0),
-                height: Number(item.height ?? item.heightMtr ?? 0),
-                base1: Number(item.base1 ?? item.base1Mtr ?? 0),
-                base2: Number(item.base2 ?? item.base2Mtr ?? 0),
-                radius: Number(item.radius ?? item.length ?? item.lengthMtr ?? 0),
-                areaSqM: Number(item.areaSqM ?? item.areaSqMtr ?? 0),
-                op: (item.op || "Subtract") as "Add" | "Subtract",
+                id: String(item.id ?? item.Id),
+                shape: item.shape || item.Shape || "Rectangle",
+                length: Number(item.length ?? item.Length ?? item.lengthMtr ?? item.LengthMtr ?? 0),
+                width: Number(item.width ?? item.Width ?? item.widthMtr ?? item.WidthMtr ?? 0),
+                height: Number(item.height ?? item.Height ?? item.heightMtr ?? item.HeightMtr ?? 0),
+                base1: Number(item.base1 ?? item.Base1 ?? item.base1Mtr ?? item.Base1Mtr ?? 0),
+                base2: Number(item.base2 ?? item.Base2 ?? item.base2Mtr ?? item.Base2Mtr ?? 0),
+                radius: Number(item.radius ?? item.Radius ?? item.length ?? item.Length ?? item.lengthMtr ?? item.LengthMtr ?? 0),
+                areaSqM: Number(item.areaSqM ?? item.AreaSqM ?? item.areaSqMtr ?? item.AreaSqMtr ?? 0),
+                op: (item.op ?? item.Op ?? "Subtract") as "Add" | "Subtract",
               }));
             } else {
               room.offsets = [];
@@ -951,7 +979,7 @@ export async function getSubUnitsByAssetAction(parentAssetId: number): Promise<A
       // Fetch full child asset details for each subunit in parallel to get rooms, renter, and department
       const detailedSubUnits = await Promise.all(
         subUnits.map(async (subunit: any) => {
-          const subId = subunit.id || subunit.assetId;
+          const subId = subunit.id ?? subunit.Id ?? subunit.assetId ?? subunit.AssetId;
           if (!subId) return subunit;
           try {
             const childRes = await getChildAssetByIdAction(subId);
@@ -974,6 +1002,8 @@ export async function getSubUnitsByAssetAction(parentAssetId: number): Promise<A
           return {
             ...subunit,
             floorDetailsId: fIdFallback ? Number(fIdFallback) : null,
+            id: subId,
+            assetId: subId,
           };
         })
       );
