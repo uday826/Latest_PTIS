@@ -1,4 +1,4 @@
-import type { AssetLeaseRentDetailsListItem } from '@/lib/api/asset/asset-lease-rent-details.service';
+import type { AssetLeaseRentDetailsListItem } from '@/types/asset-types/lease-rent.types';
 import type {
   AssetMasterPaymentDetail,
   LeaseRentPaymentDetail,

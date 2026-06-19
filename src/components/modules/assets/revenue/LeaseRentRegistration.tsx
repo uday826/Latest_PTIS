@@ -35,6 +35,7 @@ export function LeaseRentRegistration({
   fromDate = '',
   toDate = '',
   assetCategoryId = null,
+  assetTypeId = null,
   zoneId = null,
   wardId = null,
   assetId = null,
@@ -55,6 +56,7 @@ export function LeaseRentRegistration({
   revertDrawerId = null,
   selectedRevert = null,
   categoryOptions = [],
+  assetTypeOptions = [],
   zoneOptions = [],
   wardOptions = [],
   assetOptions = [],
@@ -64,6 +66,7 @@ export function LeaseRentRegistration({
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchTerm);
   const [category, setCategory] = useState(assetCategoryId ? String(assetCategoryId) : 'all');
+  const [assetType, setAssetType] = useState(assetTypeId ? String(assetTypeId) : 'all');
   const [zone, setZone] = useState(zoneId ? String(zoneId) : 'all');
   const [ward, setWard] = useState(wardId ? String(wardId) : 'all');
   const [assetSelect, setAssetSelect] = useState(assetId ? String(assetId) : 'all');
@@ -174,6 +177,9 @@ export function LeaseRentRegistration({
     const currentCategory = hasKey('assetCategoryId')
       ? nextParams.assetCategoryId
       : toNullableNumber(category);
+    const currentAssetType = hasKey('assetTypeId')
+      ? nextParams.assetTypeId
+      : toNullableNumber(assetType);
     const currentZone = hasKey('zoneId') ? nextParams.zoneId : toNullableNumber(zone);
     const currentWard = hasKey('wardId') ? nextParams.wardId : toNullableNumber(ward);
     const currentAsset = hasKey('assetId') ? nextParams.assetId : toNullableNumber(assetSelect);
@@ -182,6 +188,9 @@ export function LeaseRentRegistration({
 
     if (currentCategory != null && Number.isFinite(currentCategory)) {
       params.set('assetCategoryId', String(currentCategory));
+    }
+    if (currentAssetType != null && Number.isFinite(currentAssetType)) {
+      params.set('assetTypeId', String(currentAssetType));
     }
     if (currentZone != null && Number.isFinite(currentZone)) {
       params.set('zoneId', String(currentZone));
@@ -199,7 +208,7 @@ export function LeaseRentRegistration({
     if (normalizedToDate) params.set('toDate', normalizedToDate);
 
     return `${pathname}?${params.toString()}`;
-  }, [assetSelect, category, fromDateValue, pageNumber, pageSize, pathname, searchQuery, toDateValue, toNullableNumber, ward, zone]);
+  }, [assetSelect, category, assetType, fromDateValue, pageNumber, pageSize, pathname, searchQuery, toDateValue, toNullableNumber, ward, zone]);
 
   const updateQuery = useCallback(
     (nextParams: Record<string, string | number | null | undefined>) => {
@@ -238,7 +247,17 @@ export function LeaseRentRegistration({
     (value: string | null) => {
       const nextValue = value ?? 'all';
       setCategory(nextValue);
-      updateQuery({ pageNumber: 1, assetCategoryId: toNullableNumber(value) });
+      setAssetType('all');
+      updateQuery({ pageNumber: 1, assetCategoryId: toNullableNumber(value), assetTypeId: null });
+    },
+    [toNullableNumber, updateQuery]
+  );
+
+  const handleAssetTypeChange = useCallback(
+    (value: string | null) => {
+      const nextValue = value ?? 'all';
+      setAssetType(nextValue);
+      updateQuery({ pageNumber: 1, assetTypeId: toNullableNumber(value) });
     },
     [toNullableNumber, updateQuery]
   );
@@ -332,6 +351,26 @@ export function LeaseRentRegistration({
     return () => clearTimeout(timer);
   }, [searchQuery, searchTerm, updateQuery]);
 
+  useEffect(() => {
+    setCategory(assetCategoryId ? String(assetCategoryId) : 'all');
+  }, [assetCategoryId]);
+
+  useEffect(() => {
+    setAssetType(assetTypeId ? String(assetTypeId) : 'all');
+  }, [assetTypeId]);
+
+  useEffect(() => {
+    setZone(zoneId ? String(zoneId) : 'all');
+  }, [zoneId]);
+
+  useEffect(() => {
+    setWard(wardId ? String(wardId) : 'all');
+  }, [wardId]);
+
+  useEffect(() => {
+    setAssetSelect(assetId ? String(assetId) : 'all');
+  }, [assetId]);
+
   const t = useTranslations('revenueManagement');
 
   const renderStageFilters = () => {
@@ -342,6 +381,8 @@ export function LeaseRentRegistration({
           setSearchQuery={setSearchQuery}
           category={category}
           setCategory={setCategory}
+          assetType={assetType}
+          setAssetType={setAssetType}
           zone={zone}
           setZone={setZone}
           ward={ward}
@@ -349,10 +390,12 @@ export function LeaseRentRegistration({
           assetSelect={assetSelect}
           setAssetSelect={setAssetSelect}
           categoryOptions={categoryOptions}
+          assetTypeOptions={assetTypeOptions}
           zoneOptions={zoneOptions}
           wardOptions={wardOptions}
           assetOptions={assetOptions}
           onCategoryChange={handleCategoryChange}
+          onAssetTypeChange={handleAssetTypeChange}
           onZoneChange={handleZoneChange}
           onWardChange={handleWardChange}
           onAssetChange={handleAssetChange}
@@ -362,7 +405,18 @@ export function LeaseRentRegistration({
 
     return (
       <div className="w-full">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-[200px_minmax(0,1fr)_170px_170px]">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_180px_180px_150px_150px]">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('filters.smartSearch')}</Label>
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={t('filters.smartSearchPlaceholder')}
+              className="mb-0 w-full"
+              showClear={false}
+            />
+          </div>
+
           <div className="space-y-1.5">
             <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('filters.category')}</Label>
             <SearchSelect
@@ -379,13 +433,17 @@ export function LeaseRentRegistration({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('filters.smartSearch')}</Label>
-            <SearchInput
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder={t('filters.smartSearchPlaceholder')}
-              className="mb-0 w-full"
-              showClear={false}
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('filters.assetType') || 'Asset Type'}</Label>
+            <SearchSelect
+              name="assetType"
+              value={assetType}
+              onChange={(_, value) => handleAssetTypeChange(value === 'all' ? null : value)}
+              options={[
+                { label: t('filters.allAssetTypes') || 'All Asset Types', value: 'all' },
+                ...assetTypeOptions,
+              ]}
+              className="w-full"
+              placeholder={t('filters.allAssetTypes') || 'All Asset Types'}
             />
           </div>
 
@@ -394,6 +452,7 @@ export function LeaseRentRegistration({
               type="date"
               label={t('filters.fromDate')}
               value={fromDateValue}
+              max={toDateValue || undefined}
               onChange={(e) => handleFromDateChange(e.target.value)}
               className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400 focus:border-blue-500"
               fullWidth
@@ -405,6 +464,7 @@ export function LeaseRentRegistration({
               type="date"
               label={t('filters.toDate')}
               value={toDateValue}
+              min={fromDateValue || undefined}
               onChange={(e) => handleToDateChange(e.target.value)}
               className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400 focus:border-blue-500"
               fullWidth

@@ -2,8 +2,8 @@ import { ReactNode } from 'react';
 import { Card, CardContent } from '@/components/common';
 import { ManageRentersTabs } from '@/components/modules/assets/revenue/ManageRentersTabs';
 import { LeaseRentStats } from '@/components/modules/assets/revenue/LeaseRentStats';
-import { getManageRentersTabCountsAction } from './registration-actions';
-import { getTranslations } from 'next-intl/server';
+import { getManageRentersTabCountsAction } from './action';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { RevenueHeader } from '@/components/modules/assets/revenue/RevenueHeader';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +18,7 @@ interface LayoutProps {
 
 export default async function ManageRentersLayout({ children, params }: LayoutProps) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const headerData = await getManageRentersTabCountsAction();
   const t = await getTranslations({ locale, namespace: 'revenueManagement' });
 

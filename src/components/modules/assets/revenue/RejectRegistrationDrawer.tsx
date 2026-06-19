@@ -6,7 +6,7 @@ import { XCircle, Loader2 } from 'lucide-react';
 import { Button, Drawer, Label, useToast } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import type { RejectRegistrationModalProps } from '../../../../types/asset/revenue.types';
-import { rejectAction } from '@/app/[locale]/assets/revenue/manage-renters/actions';
+import { rejectAction } from '@/app/[locale]/assets/revenue/manage-renters/approval/action';
 
 export function RejectRegistrationModal({ record, onClose }: RejectRegistrationModalProps) {
   const t = useTranslations('revenueManagement');

@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import { Button, Drawer, MasterTable, type Column, useToast } from '@/components/common';
 import type { ApprovalLeaseModalProps } from '../../../../types/asset/revenue.types';
-import { approveAction, getPreviousTenantHistoryAction } from '@/app/[locale]/assets/revenue/manage-renters/actions';
+import { getPreviousTenantHistoryAction } from '@/app/[locale]/assets/revenue/manage-renters/action';
+import { approveAction } from '@/app/[locale]/assets/revenue/manage-renters/approval/action';
 import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
 import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
 import {
@@ -458,29 +459,20 @@ export function ApprovalLeaseModal({
         </div>
 
         {/* Overview table */}
-        <div className="grid grid-cols-1 items-start lg:grid-cols-[1fr_300px] gap-4 mb-6">
-          <div className="overflow-x-auto">
-            <MasterTable
-              columns={overviewColumns}
-              data={overviewData}
-              containerClassName="border border-slate-200 rounded-lg shadow-sm"
-              tableClassName="min-w-max text-[10px] table-auto"
-              theadClassName="bg-slate-50"
-              pageSize={1}
-              totalCount={1}
-              totalPages={1}
-              pageNumber={1}
-              paginationConfig={{ enabled: false }}
-              maxBodyHeightClassName="max-h-none"
-            />
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col justify-center">
-            <span className="text-[10px] text-slate-500 font-bold">Asset Category</span>
-            <span className="text-sm font-bold text-red-600 mb-3">{assetCategory}</span>
-            <span className="text-[10px] text-slate-500 font-bold">Unit Name</span>
-            <span className="text-sm font-bold text-red-600">{shopNameVal || '-'}</span>
-          </div>
+        <div className="mb-6 overflow-x-auto">
+          <MasterTable
+            columns={overviewColumns}
+            data={overviewData}
+            containerClassName="border border-slate-200 rounded-lg shadow-sm"
+            tableClassName="min-w-max text-[10px] table-auto"
+            theadClassName="bg-slate-50"
+            pageSize={1}
+            totalCount={1}
+            totalPages={1}
+            pageNumber={1}
+            paginationConfig={{ enabled: false }}
+            maxBodyHeightClassName="max-h-none"
+          />
         </div>
 
         {/* Construction details */}
@@ -609,7 +601,7 @@ export function ApprovalLeaseModal({
           <div className={`grid grid-cols-1 gap-4 mb-4 ${activePanels.length > 0 ? 'lg:grid-cols-[240px_1fr_250px]' : 'lg:grid-cols-[1fr_250px]'}`}>
             {/* Left: media cards from API */}
             {activePanels.length > 0 && (
-              <div className="flex h-full flex-col justify-center gap-6">
+              <div className="grid grid-cols-3 lg:grid-cols-1 gap-2 lg:gap-4 self-start lg:self-stretch">
                 {activePanels.map((panel) => {
                   const doc = panel.doc;
                   const thumbUrl = doc ? thumbnailUrls[String(doc.id)] : null;
@@ -621,7 +613,7 @@ export function ApprovalLeaseModal({
                       onClick={() => {
                         if (doc) openDocument(doc);
                       }}
-                      className="group relative w-full aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
+                      className="group relative w-full aspect-square overflow-hidden rounded-lg border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
                     >
                       <div className="absolute inset-0 bg-gradient-to-b from-slate-900/0 via-slate-900/0 to-slate-900/15" />
                       <span className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-[#0a869e] px-3 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm text-center whitespace-nowrap">
@@ -636,12 +628,12 @@ export function ApprovalLeaseModal({
                         />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-                          <div className="flex flex-col items-center gap-1 text-center">
-                            <panel.fallbackIcon className="h-8 w-8 text-slate-300" />
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                          <div className="flex flex-col items-center gap-1 text-center px-1">
+                            <panel.fallbackIcon className="h-5 w-5 lg:h-8 lg:w-8 text-slate-300" />
+                            <span className="text-[8px] lg:text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-tight">
                               {panel.fallbackText}
                             </span>
-                            <span className="text-[9px] text-slate-400">{t('drawers.noPreview')}</span>
+                            <span className="hidden lg:block text-[9px] text-slate-400">{t('drawers.noPreview')}</span>
                           </div>
                         </div>
                       )}

@@ -30,7 +30,9 @@
     "allAssets": "All Assets",
     "smartSearch": "Smart Search",
     "fromDate": "From Date",
-    "toDate": "To Date"
+    "toDate": "To Date",
+    "assetType": "Asset Type",
+    "allAssetTypes": "All Asset Types"
   },
   "tables": {
     "emptyRegistration": "No renter records matching selected filters.",
@@ -141,7 +143,7 @@
       "pendingDues": "Pending Dues (₹)",
       "securityDepositRefund": "Security Deposit Refund (₹)",
       "finalInspectionReport": "Final Inspection Report",
-      "remarksDescription": "Remarks / Reason",
+      "remarksDescription": "Remark",
       "remarksDescriptionPlaceholder": "Purpose of lease / any notes...",
       "shopNo": "Unit No.",
       "shopName": "Unit Name",
@@ -168,7 +170,7 @@
     "noFileSelected": "No file selected",
     "invalidFileType": "Invalid file type. Only PDF and image files (PNG, JPG, JPEG) are allowed.",
     "remarksForRevert": "Remarks for Revert",
-    "noDocsApi": "No uploaded documents returned from the API.",
+    "noDocsApi": "No documents have been uploaded yet.",
     "noPreview": "No preview available",
     "assetPhoto": "Asset Photo",
     "opPlan": "OP Plan",

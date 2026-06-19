@@ -3,8 +3,8 @@ import { Building2, Calendar, FileText, Clock, Loader2 } from 'lucide-react';
 import { Button, Drawer, Label, useToast } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import type { RegistrationHistoryModalProps } from '../../../../types/asset/revenue.types';
-import { getPreviousTenantHistoryAction } from '@/app/[locale]/assets/revenue/manage-renters/actions';
-import type { PreviousTenantHistoryItem } from '@/lib/api/asset/asset-lease-rent-details.service';
+import { getPreviousTenantHistoryAction } from '@/app/[locale]/assets/revenue/manage-renters/action';
+import type { PreviousTenantHistoryItem } from '@/types/asset-types/lease-rent.types';
 
 export function RegistrationHistoryModal({ record, onClose }: RegistrationHistoryModalProps) {
   const t = useTranslations('revenueManagement');

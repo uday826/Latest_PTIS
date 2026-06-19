@@ -3,9 +3,11 @@ import {
   getManageRentersVerificationPageDataAction,
   getManageRentersVerificationDetailsAction,
   getManageRentersAssetDetailsAction,
-} from './actions';
+  getLeaseRentDetailsDocumentsAction,
+} from './action';
 import { fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
-import { getLeaseRentDetailsDocuments } from '@/lib/api/asset/asset-lease-rent-details-document.server.service';
+import { setRequestLocale } from 'next-intl/server';
+import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,12 +21,16 @@ function normalizeDrawerId(value: string | string[] | undefined): number | null 
 }
 
 interface ManageRentersVerificationPageProps {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export default async function ManageRentersVerificationPage({
+  params,
   searchParams,
 }: ManageRentersVerificationPageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const query = await searchParams;
   const data = await getManageRentersVerificationPageDataAction(query);
 
@@ -35,14 +41,28 @@ export default async function ManageRentersVerificationPage({
 
   const assetId = selectedVerification?.assetId;
   const selectedAsset = assetId ? await getManageRentersAssetDetailsAction(assetId) : null;
-  const [assetPhotosAndPlans, leaseRentDocuments] = assetId
-    ? await Promise.all([
-        fetchAssetPhotosAndPlansByAsset(assetId).then((res) => res.documents).catch(() => []),
-        selectedVerification?.id
-          ? getLeaseRentDetailsDocuments(Number(selectedVerification.id)).then((res) => res.documents).catch(() => [])
-          : Promise.resolve([]),
-      ])
-    : [[], []];
+
+  let assetPhotosAndPlans: AssetDocumentListItem[] = [];
+  let leaseRentDocuments: AssetDocumentListItem[] = [];
+
+  if (assetId) {
+    const [photosRes, leaseRes] = await Promise.all([
+      fetchAssetPhotosAndPlansByAsset(assetId),
+      selectedVerification?.id
+        ? getLeaseRentDetailsDocumentsAction(Number(selectedVerification.id))
+        : Promise.resolve({ documents: [] as AssetDocumentListItem[], error: null }),
+    ]);
+
+    if (photosRes.error) {
+      console.error('Error fetching asset photos/plans:', photosRes.error);
+    }
+    if (leaseRes.error) {
+      console.error('Error fetching lease rent documents:', leaseRes.error);
+    }
+
+    assetPhotosAndPlans = photosRes.documents || [];
+    leaseRentDocuments = leaseRes.documents || [];
+  }
 
   const drawerRevertId = normalizeDrawerId(query.drawerRevertId);
   const selectedRevert = drawerRevertId
@@ -58,6 +78,7 @@ export default async function ManageRentersVerificationPage({
         data.fromDate,
         data.toDate,
         data.assetCategoryId ?? '',
+        data.assetTypeId ?? '',
         drawerVerificationId ?? '',
         drawerRevertId ?? '',
       ].join('|')}
@@ -70,6 +91,7 @@ export default async function ManageRentersVerificationPage({
       fromDate={data.fromDate}
       toDate={data.toDate}
       assetCategoryId={data.assetCategoryId}
+      assetTypeId={data.assetTypeId}
       verificationRecords={data.records}
       verificationDrawerId={drawerVerificationId}
       selectedVerification={selectedVerification}
@@ -79,6 +101,7 @@ export default async function ManageRentersVerificationPage({
       revertDrawerId={drawerRevertId}
       selectedRevert={selectedRevert}
       categoryOptions={data.categoryOptions}
+      assetTypeOptions={data.assetTypeOptions}
     />
   );
 }

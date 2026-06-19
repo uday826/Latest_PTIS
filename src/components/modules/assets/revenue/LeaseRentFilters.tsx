@@ -10,6 +10,8 @@ interface FiltersProps {
   setSearchQuery: (query: string) => void;
   category: string;
   setCategory: (cat: string) => void;
+  assetType: string;
+  setAssetType: (type: string) => void;
   zone: string;
   setZone: (zone: string) => void;
   ward: string;
@@ -17,10 +19,12 @@ interface FiltersProps {
   assetSelect: string;
   setAssetSelect: (asset: string) => void;
   categoryOptions?: FilterOption[];
+  assetTypeOptions?: FilterOption[];
   zoneOptions?: FilterOption[];
   wardOptions?: FilterOption[];
   assetOptions?: FilterOption[];
   onCategoryChange?: (value: string | null) => void;
+  onAssetTypeChange?: (value: string | null) => void;
   onZoneChange?: (value: string | null) => void;
   onWardChange?: (value: string | null) => void;
   onAssetChange?: (value: string | null) => void;
@@ -31,6 +35,8 @@ export function LeaseRentFilters({
   setSearchQuery,
   category,
   setCategory,
+  assetType,
+  setAssetType,
   zone,
   setZone,
   ward,
@@ -38,10 +44,12 @@ export function LeaseRentFilters({
   assetSelect,
   setAssetSelect,
   categoryOptions = [],
+  assetTypeOptions = [],
   zoneOptions = [],
   wardOptions = [],
   assetOptions = [],
   onCategoryChange,
+  onAssetTypeChange,
   onZoneChange,
   onWardChange,
   onAssetChange,
@@ -63,13 +71,14 @@ export function LeaseRentFilters({
    };
 
   const ALL_CATEGORY_OPTION = { label: t('filters.allCategories'), value: 'all' };
+  const ALL_ASSET_TYPE_OPTION = { label: t('filters.allAssetTypes') || 'All Asset Types', value: 'all' };
   const ALL_ZONE_OPTION = { label: t('filters.allZones'), value: 'all' };
   const ALL_WARD_OPTION = { label: t('filters.allWards'), value: 'all' };
   const ALL_ASSET_OPTION = { label: t('filters.allAssets'), value: 'all' };
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <div className="space-y-1">
           <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('filters.search')}</Label>
           <SearchInput
@@ -92,6 +101,20 @@ export function LeaseRentFilters({
             options={[ALL_CATEGORY_OPTION, ...categoryOptions]}
             className="w-full"
             placeholder={t('filters.allCategories')}
+          />
+        </div>
+
+        <div className="space-y-1">
+          <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('filters.assetType') || 'Asset Type'}</Label>
+          <SearchSelect
+            name="assetType"
+            value={assetType}
+            onChange={(_, value) =>
+              onAssetTypeChange ? onAssetTypeChange(normalizeSelectValue(value)) : setAssetType(value)
+            }
+            options={[ALL_ASSET_TYPE_OPTION, ...assetTypeOptions]}
+            className="w-full"
+            placeholder={t('filters.allAssetTypes') || 'All Asset Types'}
           />
         </div>
 

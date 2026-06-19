@@ -2,8 +2,8 @@
 
 import {
   getAssetLeaseRentDetailsList,
-  type AssetLeaseRentDetailsListItem,
 } from '@/lib/api/asset/asset-lease-rent-details.service';
+import type { AssetLeaseRentDetailsListItem } from '@/types/asset-types/lease-rent.types';
 import { categoryTypeService } from '@/lib/api/asset/category-type.service';
 import { wardService } from '@/lib/api/asset/ward.service';
 import { zoneService } from '@/lib/api/asset/zone.service';

@@ -30,7 +30,9 @@
     "allAssets": "सर्व मालमत्ता",
     "smartSearch": "स्मार्ट शोध",
     "fromDate": "या तारखेपासून",
-    "toDate": "या तारखेपर्यंत"
+    "toDate": "या तारखेपर्यंत",
+    "assetType": "मालमत्ता प्रकार",
+    "allAssetTypes": "सर्व प्रकार"
   },
   "tables": {
     "emptyRegistration": "निवडलेल्या फिल्टरशी जुळणारे कोणतेही भाडेकरूचे रेकॉर्ड आढळले नाहीत.",
@@ -141,7 +143,7 @@
       "pendingDues": "थकीत रक्कम (₹)",
       "securityDepositRefund": "सुरक्षा अनामत परतावा (₹)",
       "finalInspectionReport": "अंतिम तपासणी अहवाल",
-      "remarksDescription": "शेरा / कारण",
+      "remarksDescription": "शेरा",
       "remarksDescriptionPlaceholder": "भाडेपट्टीचा उद्देश / इतर नोंदी...",
       "shopNo": "घटक क्रमांक",
       "shopName": "घटकाचे नाव",
@@ -168,7 +170,7 @@
     "noFileSelected": "कोणतीही फाईल निवडली नाही",
     "invalidFileType": "अवैध फाईल प्रकार. फक्त PDF आणि इमेज फाईल्स (PNG, JPG, JPEG) परवानगी आहे.",
     "remarksForRevert": "परत पाठवल्याचा शेरा",
-    "noDocsApi": "API कडून कोणतीही अपलोड केलेली कागदपत्रे मिळाली नाहीत.",
+    "noDocsApi": "अद्याप कोणतेही कागदपत्रे अपलोड केलेली नाहीत.",
     "noPreview": "पूर्वावलोकन उपलब्ध नाही",
     "assetPhoto": "मालमत्ता फोटो",
     "opPlan": "ओपी आराखडा (OP Plan)",

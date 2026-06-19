@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import type { AssetLeaseRentDetailsListItem } from '@/lib/api/asset/asset-lease-rent-details.service';
+import type { AssetLeaseRentDetailsListItem } from '@/types/asset-types/lease-rent.types';
 import type { LeaseRentPaymentListItem } from '@/types/asset/leaseRentPayment.types';
 
 export interface FilterOption {
@@ -152,14 +152,15 @@ export interface ManageRentersPageData {
   pageSize: number;
   totalCount: number;
   totalPages: number;
-  searchTerm: string;
   assetCategoryId: number | null;
+  assetTypeId: number | null;
   zoneId: number | null;
   wardId: number | null;
   assetId: number | null;
   fromDate: string;
   toDate: string;
   categoryOptions: FilterOption[];
+  assetTypeOptions: FilterOption[];
   zoneOptions: FilterOption[];
   wardOptions: FilterOption[];
   assetOptions: FilterOption[];
@@ -172,9 +173,11 @@ interface ManageRentersWorkflowBaseData {
   totalPages: number;
   searchTerm: string;
   assetCategoryId: number | null;
+  assetTypeId: number | null;
   fromDate: string;
   toDate: string;
   categoryOptions: FilterOption[];
+  assetTypeOptions: FilterOption[];
 }
 
 export interface ManageRentersVerificationPageData extends ManageRentersWorkflowBaseData {
@@ -353,6 +356,7 @@ export interface LeaseRentRegistrationProps {
   fromDate?: string;
   toDate?: string;
   assetCategoryId?: number | null;
+  assetTypeId?: number | null;
   zoneId?: number | null;
   wardId?: number | null;
   assetId?: number | null;
@@ -374,6 +378,7 @@ export interface LeaseRentRegistrationProps {
   revertDrawerId?: number | null;
   selectedRevert?: AssetLeaseRentDetailsListItem | null;
   categoryOptions?: FilterOption[];
+  assetTypeOptions?: FilterOption[];
   zoneOptions?: FilterOption[];
   wardOptions?: FilterOption[];
   assetOptions?: FilterOption[];

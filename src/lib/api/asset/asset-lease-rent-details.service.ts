@@ -1,98 +1,15 @@
-import 'server-only';
 
 import { apiClient } from '@/services/api.service';
 import type { PagedResponse } from '@/types/common.types';
+import type {
+  AssetLeaseRentDetailsListItem,
+  AssetLeaseRentDetailsListParams,
+  AssetLeaseRentDetailsUpdatePayload,
+  AssetLeaseRentDetailsMutationResponse,
+  PreviousTenantHistoryItem,
+  CreateAssetLeaseRentDetailsPayload,
+} from '@/types/asset-types/lease-rent.types';
 
-export interface AssetLeaseRentDetailsListItem {
-  parentAssetId: number;
-  assetId: number;
-  assetNo?: string | null;
-  assetName?: string | null;
-  category?: string | null;
-  assetCategory?: string | null;
-  assetCategoryName?: string | null;
-  zone?: string | null;
-  wardNo?: string | null;
-  floorDetailsId?: number | null;
-  roomWiseSubmissionDetailsId?: number | null;
-  floorId?: number | null;
-  floorDescription?: string | null;
-  shopNo?: string | null;
-  shopName?: string | null;
-  tenantName?: string | null;
-  tenantMobile?: string | null;
-  tenantEmail?: string | null;
-  tenantType?: string | null;
-  tenantAadhaarNo?: string | null;
-  tenantPanCardNo?: string | null;
-  tenantAddress?: string | null;
-  gstNo?: string | null;
-  previousTenantName?: string | null;
-  previousTenantMobile?: string | null;
-  totalAreaSqFt?: number | null;
-  applicationTypeId?: number | null;
-  applicationTypeName?: string | null;
-  leaseType?: string | null;
-  leaseRentType?: string | null;
-  oldLeaseStartDate?: string | null;
-  oldLeaseEndDate?: string | null;
-  leaseStartDate?: string | null;
-  leaseEndDate?: string | null;
-  terminationDate?: string | null;
-  duration?: number | null;
-  previousMonthlyRent?: number | null;
-  monthlyRent?: number | null;
-  rentAmount?: number | null;
-  securityDeposit?: number | null;
-  depositType?: string | null;
-  paymentFrequency?: string | null;
-  agreementId?: string | null;
-  incrementFrequency?: string | null;
-  incrementType?: string | null;
-  incrementValue?: number | null;
-  incrementMethod?: string | null;
-  durationFrom?: string | null;
-  durationTo?: string | null;
-  increment?: string | null;
-  incrementStatus?: boolean | null;
-  rentMonthly?: number | null;
-  reason?: string | null;
-  workflowStatus?: string | null;
-  rejectionReason?: string | null;
-  isRejection?: boolean;
-  rejectionBy?: number | null;
-  rejectionDate?: string | null;
-  isVerified?: boolean;
-  verifiedBy?: number | null;
-  verifiedDate?: string | null;
-  isApproved?: boolean;
-  approvedBy?: number | null;
-  approvedDate?: string | null;
-  rentStatus?: string | null;
-  paymentStatus?: string | null;
-  leaseDurationDisplay?: string | null;
-  rentAmountDisplay?: string | null;
-  remarks?: string | null;
-  id: number;
-  isActive?: boolean;
-  createdDate?: string | null;
-  updatedDate?: string | null;
-}
-
-export interface AssetLeaseRentDetailsListParams {
-  pageNumber?: number;
-  pageSize?: number;
-  searchTerm?: string;
-  workflowStatus?: string;
-  paymentStatus?: string;
-  assetCategoryId?: number;
-  zoneId?: number;
-  wardId?: number;
-  assetId?: number;
-  fromDate?: string;
-  toDate?: string;
-  isActive?: boolean;
-}
 
 function buildAssetLeaseRentDetailsQuery(params: AssetLeaseRentDetailsListParams = {}): string {
   const query = new URLSearchParams();
@@ -105,6 +22,7 @@ function buildAssetLeaseRentDetailsQuery(params: AssetLeaseRentDetailsListParams
   if (params.workflowStatus?.trim()) query.set('WorkflowStatus', params.workflowStatus.trim());
   if (params.paymentStatus?.trim()) query.set('PaymentStatus', params.paymentStatus.trim());
   if (params.assetCategoryId != null) query.set('AssetCategoryId', String(params.assetCategoryId));
+  if (params.assetTypeId != null) query.set('AssetTypeId', String(params.assetTypeId));
   if (params.zoneId != null) query.set('ZoneId', String(params.zoneId));
   if (params.wardId != null) query.set('WardId', String(params.wardId));
   if (params.assetId != null) query.set('AssetId', String(params.assetId));
@@ -123,15 +41,7 @@ export async function getAssetLeaseRentDetailsList(
   );
 
   if (!response.success || !response.data) {
-    return {
-      items: [],
-      totalCount: 0,
-      pageNumber: params.pageNumber ?? 1,
-      pageSize: params.pageSize ?? 10,
-      totalPages: 0,
-      hasPrevious: false,
-      hasNext: false,
-    };
+    throw new Error(response.error || 'Failed to fetch asset lease rent details');
   }
 
   return response.data;
@@ -147,18 +57,6 @@ export async function getAssetLeaseRentDetailsById(
   }
 
   return response.data;
-}
-
-export interface AssetLeaseRentDetailsUpdatePayload extends Partial<Omit<AssetLeaseRentDetailsListItem, 'id'>> {
-  id: number;
-}
-
-export interface AssetLeaseRentDetailsMutationResponse {
-  success: boolean;
-  message: string;
-  items: AssetLeaseRentDetailsListItem | null;
-  errors: string[] | null;
-  correlationId: string | null;
 }
 
 export async function updateAssetLeaseRentDetails(
@@ -283,40 +181,7 @@ export async function revertToVerification(
     : { success: false, message: response.error || 'Failed to revert to verification', items: null, errors: null, correlationId: null };
 }
 
-export interface PreviousTenantHistoryItem {
-  id: number;
-  actionType: string;
-  actionLabel: string;
-  performedDate: string;
-  fromStatus: string;
-  toStatus: string;
-  remarks: string | null;
-  tenantName: string;
-  tenantMobile: string;
-  tenantEmail: string | null;
-  tenantType: string;
-  tenantAadhaarNo: string;
-  tenantPanCardNo: string;
-  tenantAddress: string;
-  previousTenantName: string | null;
-  previousTenantMobile: string | null;
-  leaseType: string;
-  shopNo: string;
-  floor: string | null;
-  shopName: string;
-  oldLeaseStartDate: string | null;
-  oldLeaseEndDate: string | null;
-  leaseStartDate: string;
-  leaseEndDate: string;
-  terminationDate: string | null;
-  previousMonthlyRent: number | null;
-  monthlyRent: number;
-  securityDeposit: number;
-  paymentFrequency: string;
-  workflowStatus: string;
-  rentStatus: string;
-  duration?: number | null;
-}
+
 
 export async function getPreviousTenantHistory(
   id: number
@@ -327,13 +192,7 @@ export async function getPreviousTenantHistory(
   return response.success && response.data?.items ? response.data.items : [];
 }
 
-export interface CreateAssetLeaseRentDetailsPayload extends Partial<Omit<AssetLeaseRentDetailsListItem, 'id'>> {
-  isActive: boolean;
-  createdBy: number;
-  assetId: number;
-  applicationTypeId: number;
-  tenantName: string;
-}
+
 
 export async function createAssetLeaseRentDetails(
   payload: CreateAssetLeaseRentDetailsPayload

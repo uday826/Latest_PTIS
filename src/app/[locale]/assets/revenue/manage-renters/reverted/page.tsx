@@ -4,9 +4,11 @@ import {
   getManageRentersRevertedPageDataAction,
   getApplicationTypesAction,
   getManageRentersVerificationDetailsAction,
-} from './actions';
+  getLeaseRentDetailsDocumentsAction,
+} from './action';
 import { fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
-import { getLeaseRentDetailsDocuments } from '@/lib/api/asset/asset-lease-rent-details-document.server.service';
+import { setRequestLocale } from 'next-intl/server';
+import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,17 +22,23 @@ function normalizeDrawerId(value: string | string[] | undefined): number | null 
 }
 
 interface ManageRentersRevertedPageProps {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
+import type { LeaseRentRecord } from '@/types/asset/revenue.types';
+
 export default async function ManageRentersRevertedPage({
+  params,
   searchParams,
 }: ManageRentersRevertedPageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const query = await searchParams;
   const data = await getManageRentersRevertedPageDataAction(query);
   const drawerAssetId = normalizeDrawerId(query.drawerAssetId);
   const selectedRegistration = drawerAssetId
-    ? data.records.find((record) => record.assetMasterId === drawerAssetId) ?? null
+    ? data.records.find((record: LeaseRentRecord) => record.assetMasterId === drawerAssetId) ?? null
     : null;
 
   const drawerRevertId = normalizeDrawerId(query.drawerRevertId);
@@ -42,14 +50,28 @@ export default async function ManageRentersRevertedPage({
   const selectedAsset = assetId ? await getManageRentersAssetDetailsAction(assetId) : null;
   const selectedRegistrationId = Number(selectedRegistration?.id);
   const hasLeaseRentDetailsId = Number.isFinite(selectedRegistrationId) && selectedRegistrationId > 0;
-  const [assetPhotosAndPlans, leaseRentDocuments] = assetId
-    ? await Promise.all([
-        fetchAssetPhotosAndPlansByAsset(assetId).then((res) => res.documents).catch(() => []),
-        hasLeaseRentDetailsId
-          ? getLeaseRentDetailsDocuments(selectedRegistrationId).then((res) => res.documents).catch(() => [])
-          : Promise.resolve([]),
-      ])
-    : [[], []];
+
+  let assetPhotosAndPlans: AssetDocumentListItem[] = [];
+  let leaseRentDocuments: AssetDocumentListItem[] = [];
+
+  if (assetId) {
+    const [photosRes, leaseRes] = await Promise.all([
+      fetchAssetPhotosAndPlansByAsset(assetId),
+      hasLeaseRentDetailsId
+        ? getLeaseRentDetailsDocumentsAction(selectedRegistrationId)
+        : Promise.resolve({ documents: [] as AssetDocumentListItem[], error: null }),
+    ]);
+
+    if (photosRes.error) {
+      console.error('Error fetching asset photos/plans:', photosRes.error);
+    }
+    if (leaseRes.error) {
+      console.error('Error fetching lease rent documents:', leaseRes.error);
+    }
+
+    assetPhotosAndPlans = photosRes.documents || [];
+    leaseRentDocuments = leaseRes.documents || [];
+  }
 
   const applicationTypes = await getApplicationTypesAction();
 
@@ -62,6 +84,7 @@ export default async function ManageRentersRevertedPage({
         data.fromDate,
         data.toDate,
         data.assetCategoryId ?? '',
+        data.assetTypeId ?? '',
         data.zoneId ?? '',
         data.wardId ?? '',
         data.assetId ?? '',
@@ -77,6 +100,7 @@ export default async function ManageRentersRevertedPage({
       fromDate={data.fromDate}
       toDate={data.toDate}
       assetCategoryId={data.assetCategoryId}
+      assetTypeId={data.assetTypeId}
       zoneId={data.zoneId}
       wardId={data.wardId}
       assetId={data.assetId}
@@ -90,6 +114,7 @@ export default async function ManageRentersRevertedPage({
       selectedRevert={selectedRevert}
       initialRecords={data.records}
       categoryOptions={data.categoryOptions}
+      assetTypeOptions={data.assetTypeOptions}
       zoneOptions={data.zoneOptions}
       wardOptions={data.wardOptions}
       assetOptions={data.assetOptions}

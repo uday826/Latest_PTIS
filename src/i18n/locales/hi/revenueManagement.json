@@ -30,7 +30,9 @@
     "allAssets": "सभी संपत्तियां",
     "smartSearch": "स्मार्ट खोज",
     "fromDate": "प्रारंभ तिथि",
-    "toDate": "अंतिम तिथि"
+    "toDate": "अंतिम तिथि",
+    "assetType": "संपत्ति प्रकार",
+    "allAssetTypes": "सभी प्रकार"
   },
   "tables": {
     "emptyRegistration": "चयनित फ़िल्टर से मेल खाने वाले कोई किरायेदार रिकॉर्ड नहीं मिले।",
@@ -141,7 +143,7 @@
       "pendingDues": "लंबित देय राशि (₹)",
       "securityDepositRefund": "सुरक्षा जमा वापसी (₹)",
       "finalInspectionReport": "अंतिम निरीक्षण रिपोर्ट",
-      "remarksDescription": "टिप्पणी / कारण",
+      "remarksDescription": "टिप्पणी",
       "remarksDescriptionPlaceholder": "पट्टे का उद्देश्य / कोई भी टिप्पणी...",
       "shopNo": "इकाई संख्या",
       "shopName": "इकाई का नाम",
@@ -168,7 +170,7 @@
     "noFileSelected": "कोई फ़ाइल नहीं चुनी गई",
     "invalidFileType": "अमान्य फ़ाइल प्रकार। केवल PDF और छवि फ़ाइलें (PNG, JPG, JPEG) स्वीकृत हैं।",
     "remarksForRevert": "वापस भेजने के लिए टिप्पणी",
-    "noDocsApi": "API से कोई अपलोड किए गए दस्तावेज़ नहीं मिले।",
+    "noDocsApi": "अभी तक कोई दस्तावेज़ अपलोड नहीं किया गया है।",
     "noPreview": "कोई पूर्वावलोकन उपलब्ध नहीं है",
     "assetPhoto": "संपत्ति का फोटो",
     "opPlan": "ओपी योजना (OP Plan)",

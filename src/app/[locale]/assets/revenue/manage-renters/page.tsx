@@ -3,9 +3,12 @@ import {
   getManageRentersAssetDetailsAction,
   getManageRentersPageDataAction,
   getApplicationTypesAction,
-} from './registration-actions';
+  getLeaseRentDetailsDocumentsAction,
+} from './action';
 import { fetchAssetDocumentsByAsset, fetchAssetPhotosAndPlansByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
-import { getLeaseRentDetailsDocuments } from '@/lib/api/asset/asset-lease-rent-details-document.server.service';
+import { setRequestLocale } from 'next-intl/server';
+import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +22,7 @@ function normalizeDrawerId(value: string | string[] | undefined): number | null 
 }
 
 interface ManageRentersPageProps {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
@@ -26,7 +30,9 @@ interface ManageRentersPageProps {
  * Dedicated SSR route for Manage Renters Details.
  * Resolves to /assets/revenue/manage-renters
  */
-export default async function ManageRentersPage({ searchParams }: ManageRentersPageProps) {
+export default async function ManageRentersPage({ params, searchParams }: ManageRentersPageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const query = await searchParams;
   const data = await getManageRentersPageDataAction(query);
   const drawerAssetId = normalizeDrawerId(query.drawerAssetId);
@@ -45,15 +51,34 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
     zoneName: selectedRegistration.zone ?? '',
     wardName: selectedRegistration.ward ?? '',
   } : null);
-  const [assetDocuments, assetPhotosAndPlans, leaseRentDocuments] = drawerAssetId
-    ? await Promise.all([
-      fetchAssetDocumentsByAsset(drawerAssetId).then((result) => result.documents).catch(() => []),
-      fetchAssetPhotosAndPlansByAsset(drawerAssetId).then((result) => result.documents).catch(() => []),
+
+  let assetDocuments: AssetDocumentListItem[] = [];
+  let assetPhotosAndPlans: AssetDocumentListItem[] = [];
+  let leaseRentDocuments: AssetDocumentListItem[] = [];
+
+  if (drawerAssetId) {
+    const [docsRes, photosRes, leaseRes] = await Promise.all([
+      fetchAssetDocumentsByAsset(drawerAssetId),
+      fetchAssetPhotosAndPlansByAsset(drawerAssetId),
       hasLeaseRentDetailsId
-        ? getLeaseRentDetailsDocuments(selectedRegistrationId).then((result) => result.documents)
-        : Promise.resolve([]),
-    ])
-    : [[], [], []];
+        ? getLeaseRentDetailsDocumentsAction(selectedRegistrationId)
+        : Promise.resolve({ documents: [] as AssetDocumentListItem[], error: null }),
+    ]);
+
+    if (docsRes.error) {
+      console.error('Error fetching asset documents:', docsRes.error);
+    }
+    if (photosRes.error) {
+      console.error('Error fetching asset photos/plans:', photosRes.error);
+    }
+    if (leaseRes.error) {
+      console.error('Error fetching lease rent documents:', leaseRes.error);
+    }
+
+    assetDocuments = docsRes.documents || [];
+    assetPhotosAndPlans = photosRes.documents || [];
+    leaseRentDocuments = leaseRes.documents || [];
+  }
   const applicationTypes = await getApplicationTypesAction();
 
   return (
@@ -61,14 +86,15 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
       <LeaseRentRegistration
         key={[
           data.pageNumber,
-        data.pageSize,
-        data.searchTerm,
-        data.fromDate,
-        data.toDate,
-        data.assetCategoryId ?? '',
-        data.zoneId ?? '',
-        data.wardId ?? '',
-        data.assetId ?? '',
+          data.pageSize,
+          data.searchTerm,
+          data.fromDate,
+          data.toDate,
+          data.assetCategoryId ?? '',
+          data.assetTypeId ?? '',
+          data.zoneId ?? '',
+          data.wardId ?? '',
+          data.assetId ?? '',
           drawerAssetId ?? '',
         ].join('|')}
         pageNumber={data.pageNumber}
@@ -79,6 +105,7 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
         fromDate={data.fromDate}
         toDate={data.toDate}
         assetCategoryId={data.assetCategoryId}
+        assetTypeId={data.assetTypeId}
         zoneId={data.zoneId}
         wardId={data.wardId}
         assetId={data.assetId}
@@ -91,6 +118,7 @@ export default async function ManageRentersPage({ searchParams }: ManageRentersP
         applicationTypes={applicationTypes}
         initialRecords={data.records}
         categoryOptions={data.categoryOptions}
+        assetTypeOptions={data.assetTypeOptions}
         zoneOptions={data.zoneOptions}
         wardOptions={data.wardOptions}
         assetOptions={data.assetOptions}

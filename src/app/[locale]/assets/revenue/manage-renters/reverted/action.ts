@@ -1,0 +1,268 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { apiClient } from '@/services/api.service';
+import { assetMasterService } from '@/lib/api/asset/asset-master.service';
+import { getAssetCategories, getAssetMasters, getWards, getZones } from '@/lib/api/asset/revenue-masters.service';
+import { categoryTypeService } from '@/lib/api/asset/category-type.service';
+import { getLeaseRentDetailsDocuments } from '@/lib/api/asset/asset-lease-rent-details-document.server.service';
+import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
+import {
+  getAssetLeaseRentDetailsList,
+  getAssetLeaseRentDetailsById,
+  updateAssetLeaseRentDetails,
+  sendForVerification,
+  getPreviousTenantHistory,
+} from '@/lib/api/asset/asset-lease-rent-details.service';
+import type {
+  AssetLeaseRentDetailsListItem,
+  AssetLeaseRentDetailsListParams,
+  AssetLeaseRentDetailsUpdatePayload,
+} from '@/types/asset-types/lease-rent.types';
+import type {
+  ApplicationTypeItem,
+  ManageRentersPageData,
+  LeaseRentRecord,
+} from '@/types/asset/revenue.types';
+
+
+
+export async function getManageRentersRevertedPageDataAction(
+  query: Record<string, string | string[] | undefined>
+): Promise<ManageRentersPageData> {
+  const params = baseLeaseRentQuery(query, 'reverted');
+  const selectedCategoryId = parseOptionalNumber(query.assetCategoryId);
+  const selectedZoneId = parseOptionalNumber(query.zoneId);
+  const [list, categories, types, zones, wards, assets] = await Promise.all([
+    getAssetLeaseRentDetailsList(params),
+    getAssetCategories(),
+    selectedCategoryId
+      ? categoryTypeService.getTypesByCategory(selectedCategoryId)
+      : categoryTypeService.getAllTypes(),
+    getZones(),
+    getWards(selectedZoneId),
+    getAssetMasters(),
+  ]);
+
+  const stats = (list as unknown as { stats?: any }).stats || {
+    totalApproved: 0,
+    totalVerified: 0,
+    verificationPending: 0,
+    approvalPending: 0,
+    totalRejected: 0,
+  };
+
+  const typesData = types.success && types.data ? types.data : [];
+
+  return {
+    records: list.items.map(toLeaseRentRecord),
+    stats,
+    pageNumber: list.pageNumber,
+    pageSize: list.pageSize,
+    totalCount: list.totalCount,
+    totalPages: list.totalPages,
+    searchTerm: query.searchTerm ? (Array.isArray(query.searchTerm) ? query.searchTerm[0] : query.searchTerm) : '',
+    assetCategoryId: selectedCategoryId,
+    assetTypeId: parseOptionalNumber(query.assetTypeId),
+    zoneId: selectedZoneId,
+    wardId: parseOptionalNumber(query.wardId),
+    assetId: parseOptionalNumber(query.assetId),
+    fromDate: query.fromDate ? (Array.isArray(query.fromDate) ? query.fromDate[0] : query.fromDate) : '',
+    toDate: query.toDate ? (Array.isArray(query.toDate) ? query.toDate[0] : query.toDate) : '',
+    categoryOptions: categories.map((category) => ({
+      label: category.categoryName,
+      value: String(category.id),
+    })),
+    assetTypeOptions: typesData.map((t) => ({
+      label: t.typeName || t.assetTypeName || `Type ${t.id}`,
+      value: String(t.id),
+    })),
+    zoneOptions: zones.map((zone) => ({
+      label: zone.zoneNo,
+      value: String(zone.id),
+    })),
+    wardOptions: wards.map((ward) => ({
+      label: ward.wardNo,
+      value: String(ward.id),
+    })),
+    assetOptions: assets.map((asset) => ({
+      label: asset.assetName?.trim() || asset.assetNo?.trim() || String(asset.id),
+      value: String(asset.id),
+    })),
+  };
+}
+
+export async function getManageRentersVerificationDetailsAction(id: number | string) {
+  const parsedId = Number(id);
+  if (!Number.isFinite(parsedId) || parsedId <= 0) return null;
+
+  return await getAssetLeaseRentDetailsById(parsedId);
+}
+
+export async function getManageRentersAssetDetailsAction(assetId: number | string) {
+  const parsedId = Number(assetId);
+  if (!Number.isFinite(parsedId) || parsedId <= 0) return null;
+
+  const response = await assetMasterService.getAssetById(parsedId);
+  return response.success ? response.data ?? null : null;
+}
+
+export async function getApplicationTypesAction(): Promise<ApplicationTypeItem[]> {
+  const response = await apiClient.get<{ items: ApplicationTypeItem[] }>('asset-management/ApplicationType?IsActive=true');
+  if (!response.success || !response.data?.items) {
+     return [];
+  }
+  return response.data.items;
+}
+
+export async function updateAssetLeaseRentDetailsAction(
+  id: number,
+  payload: AssetLeaseRentDetailsUpdatePayload
+) {
+  const res = await updateAssetLeaseRentDetails(id, payload);
+  revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
+  revalidatePath('/assets/revenue/manage-renters');
+  return res;
+}
+
+export async function sendForVerificationAction(
+  id: number,
+  payload: AssetLeaseRentDetailsUpdatePayload
+) {
+  const res = await sendForVerification(id, payload);
+  revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
+  revalidatePath('/assets/revenue/manage-renters');
+  return res;
+}
+
+export async function getPreviousTenantHistoryAction(id: number) {
+  return getPreviousTenantHistory(id);
+}
+
+export async function getLeaseRentDetailsDocumentsAction(leaseRentDetailsId: number) {
+  return getLeaseRentDetailsDocuments(leaseRentDetailsId);
+}
+
+// ─── Local Mappers & Query Helpers ───────────────────────────────────────────
+
+function firstQueryValue(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) return value[0] ?? '';
+  return value ?? '';
+}
+
+function parsePositiveNumber(value: string | string[] | undefined, fallback: number): number {
+  const parsed = Number(firstQueryValue(value));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function parseOptionalNumber(value: string | string[] | undefined): number | null {
+  const raw = firstQueryValue(value).trim();
+  if (!raw) return null;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function normalizeDateQuery(value: string | string[] | undefined): string | undefined {
+  const raw = firstQueryValue(value).trim();
+  if (!raw) return undefined;
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toISOString().slice(0, 10);
+}
+
+function sanitizeSearchTerm(value: string | string[] | undefined): string | undefined {
+  const sanitized = firstQueryValue(value)
+    .trim()
+    .split('')
+    .filter((char) => SEARCH_KEY_REGEX.test(char))
+    .join('')
+    .slice(0, 200);
+
+  return sanitized || undefined;
+}
+
+function normalizeText(value?: string | null): string {
+  return value?.trim() || '';
+}
+
+function pickAssetCategory(item: AssetLeaseRentDetailsListItem): string | undefined {
+  const value = item.category ?? (item as { assetCategory?: string | null }).assetCategory ?? (item as { assetCategoryName?: string | null }).assetCategoryName;
+  return value?.trim() || undefined;
+}
+
+function normalizeRentStatus(value?: string | null): LeaseRentRecord['rentStatus'] {
+  const raw = (value ?? '').trim().toLowerCase();
+  if (raw === 'inuse' || raw === 'in use' || raw === 'approved') return 'In use';
+  if (raw === 'vacant') return 'Vacant';
+  return 'Pending';
+}
+
+function toLeaseRentRecord(item: AssetLeaseRentDetailsListItem): LeaseRentRecord {
+  return {
+    id: String(item.id),
+    assetId: item.assetNo?.trim() || String(item.assetId),
+    assetMasterId: item.assetId,
+    assetName: item.assetName ?? undefined,
+    assetNo: item.assetNo ?? undefined,
+    totalAreaSqFt: item.totalAreaSqFt ?? null,
+    assetCategory: pickAssetCategory(item),
+    shopNo: item.shopNo?.trim() || item.assetNo?.trim() || '',
+    floor: item.floorDescription?.trim() || item.floorId?.toString() || '-',
+    floorDescription: item.floorDescription?.trim() || undefined,
+    shopName: item.shopName?.trim() || item.assetName?.trim() || item.assetNo?.trim() || '-',
+    tenantName: normalizeText(item.tenantName),
+    tenantMobile: item.tenantMobile?.trim() || undefined,
+    tenantEmail: item.tenantEmail?.trim() || undefined,
+    tenantType: item.tenantType?.trim() || undefined,
+    tenantAadhaarNo: item.tenantAadhaarNo?.trim() || undefined,
+    tenantPanCardNo: item.tenantPanCardNo?.trim() || undefined,
+    tenantAddress: item.tenantAddress?.trim() || undefined,
+    pinCode: (item as { pinCode?: string | null }).pinCode?.trim() || undefined,
+    leaseType: item.leaseType?.trim() || '',
+    leaseRentType: item.leaseRentType?.trim() || undefined,
+    applicationTypeName: item.applicationTypeName?.trim() || undefined,
+    applicationTypeId: item.applicationTypeId ?? null,
+    rentStatus: normalizeRentStatus(item.rentStatus ?? item.workflowStatus),
+    rentAmount: item.rentAmount ?? item.rentMonthly ?? item.monthlyRent ?? 0,
+    monthlyRent: item.monthlyRent ?? item.rentAmount ?? item.rentMonthly ?? null,
+    securityDeposit: item.securityDeposit ?? null,
+    paymentFrequency: item.paymentFrequency?.trim() || undefined,
+    previousTenantName: item.previousTenantName?.trim() || undefined,
+    previousTenantMobile: item.previousTenantMobile?.trim() || undefined,
+    previousMonthlyRent: item.previousMonthlyRent ?? null,
+    oldLeaseStartDate: item.oldLeaseStartDate ?? null,
+    oldLeaseEndDate: item.oldLeaseEndDate ?? null,
+    leaseStartDate: item.leaseStartDate ?? null,
+    leaseEndDate: item.leaseEndDate ?? null,
+    terminationDate: item.terminationDate ?? null,
+    reason: item.reason?.trim() || undefined,
+    rentAmountDisplay: item.rentAmountDisplay?.trim() || undefined,
+    leaseDurationDisplay: item.duration ?? undefined,
+    duration: item.duration ?? null,
+    workflowStatus: item.workflowStatus?.trim() || undefined,
+    rejectionReason: item.rejectionReason?.trim() || undefined,
+    category: pickAssetCategory(item),
+    zone: item.zone ?? undefined,
+    ward: item.wardNo ?? undefined,
+    submittedDate: item.updatedDate ?? item.createdDate ?? undefined,
+  };
+}
+
+function baseLeaseRentQuery(
+  query: Record<string, string | string[] | undefined>,
+  workflowStatus?: string
+): AssetLeaseRentDetailsListParams {
+  return {
+    pageNumber: parsePositiveNumber(query.pageNumber, 1),
+    pageSize: parsePositiveNumber(query.pageSize, 10),
+    searchTerm: sanitizeSearchTerm(query.searchTerm),
+    workflowStatus,
+    assetCategoryId: parseOptionalNumber(query.assetCategoryId) ?? undefined,
+    assetTypeId: parseOptionalNumber(query.assetTypeId) ?? undefined,
+    zoneId: parseOptionalNumber(query.zoneId) ?? undefined,
+    wardId: parseOptionalNumber(query.wardId) ?? undefined,
+    assetId: parseOptionalNumber(query.assetId) ?? undefined,
+    fromDate: normalizeDateQuery(query.fromDate),
+    toDate: normalizeDateQuery(query.toDate),
+  };
+}

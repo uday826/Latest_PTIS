@@ -5,10 +5,10 @@ import { useState, useTransition } from 'react';
 import { Undo2, Loader2 } from 'lucide-react';
 import { Button, Drawer, Label, useToast } from '@/components/common';
 import { useTranslations } from 'next-intl';
-import type { AssetLeaseRentDetailsListItem } from '@/lib/api/asset/asset-lease-rent-details.service';
+import type { AssetLeaseRentDetailsListItem } from '@/types/asset-types/lease-rent.types';
 import {
   revertToRegistrationAction,
-} from '@/app/[locale]/assets/revenue/manage-renters/actions';
+} from '@/app/[locale]/assets/revenue/manage-renters/verification/action';
 
 export interface RevertRegistrationModalProps {
   record: AssetLeaseRentDetailsListItem;
