@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import { Button, Card, CardContent, Drawer, MasterTable } from '@/components/common';
@@ -7,6 +6,7 @@ import type { InventoryBatchDetail, InventoryUnitResponse } from '@/types/munici
 import { CircleAlert, Eye, FileText, Hash, Layers3, Package2, SquareStack } from 'lucide-react';
 import React, { useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { blank, formatDate, formatMoney, getInventoryBatchColumns, getInventoryUnitColumns } from './detailcolumn';
 
 interface FurnitureFixturesTabProps {
@@ -17,6 +17,7 @@ type InventoryRow = Record<string, unknown> & InventoryBatchDetail;
 type InventoryUnitRow = Record<string, unknown> & InventoryUnitResponse;
 
 export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): React.JSX.Element {
+  const t = useTranslations('assetDetail');
   const inventoryData = asset.inventoryData;
   const inventoryError = asset.inventoryError;
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,15 +42,15 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
     displayUnitPage * unitPageSize
   );
 
-  const columns = useMemo(() => getInventoryBatchColumns(), []);
-  const unitColumns = useMemo(() => getInventoryUnitColumns(), []);
+  const columns = useMemo(() => getInventoryBatchColumns(t), [t]);
+  const unitColumns = useMemo(() => getInventoryUnitColumns(t), [t]);
 
   if (!inventoryData && !inventoryError) {
     return (
       <Card padding="none" className="rounded-xl border border-slate-200 bg-white shadow-sm">
         <CardContent className="flex min-h-[260px] flex-col items-center justify-center p-8 text-center">
           <Package2 className="mb-3 h-12 w-12 text-slate-300" />
-          <p className="text-sm font-semibold text-slate-600">Loading furniture & fixtures inventory...</p>
+          <p className="text-sm font-semibold text-slate-600">{t('furnitureTab.loading')}</p>
         </CardContent>
       </Card>
     );
@@ -74,28 +75,28 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
             <div>
               <div className="flex items-center gap-2">
                 <Package2 className="h-5 w-5 text-blue-600" />
-                <h3 className="text-lg font-bold text-slate-900">Asset Inventory</h3>
+                <h3 className="text-lg font-bold text-slate-900">{t('furnitureTab.title')}</h3>
                 <span className="text-sm text-slate-500">
-                  ({inventoryData?.totalBatches ?? 0} records · {inventoryData?.totalUnits ?? 0} units)
+                  {t('furnitureTab.recordsCount', { batches: inventoryData?.totalBatches ?? 0, units: inventoryData?.totalUnits ?? 0 })}
                 </span>
               </div>
               <p className="mt-1 text-xs text-slate-500">{inventoryData?.parentAssetName || asset.assetName}</p>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div className="rounded-xl border border-blue-100 bg-blue-50/40 px-3 py-2">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Batches</p>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{t('furnitureTab.batches')}</p>
                 <p className="text-base font-black text-blue-700">{inventoryData?.totalBatches ?? 0}</p>
               </div>
               <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 px-3 py-2">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Units</p>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{t('furnitureTab.units')}</p>
                 <p className="text-base font-black text-emerald-700">{inventoryData?.totalUnits ?? 0}</p>
               </div>
               <div className="rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Purchase</p>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{t('furnitureTab.purchase')}</p>
                 <p className="text-base font-black text-violet-700">{formatMoney(inventoryData?.totalPurchaseValue ?? 0)}</p>
               </div>
               <div className="rounded-xl border border-amber-100 bg-amber-50/40 px-3 py-2">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Capital</p>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{t('furnitureTab.capital')}</p>
                 <p className="text-base font-black text-amber-700">{formatMoney(inventoryData?.totalCapitalValue ?? 0)}</p>
               </div>
             </div>
@@ -112,7 +113,7 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
           totalPages={totalPages}
           onPageChange={setCurrentPage}
           paginationConfig={{ enabled: true }}
-          actionLabel="Action"
+          actionLabel={t('furnitureTab.actionLabel')}
           renderActions={(row) => (
             <Button
               type="button"
@@ -128,7 +129,7 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
               <Eye className="h-4 w-4" />
             </Button>
           )}
-          tableClassName="min-w-[1400px]"
+          tableClassName="min-w-full"
           maxBodyHeightClassName="max-h-[calc(100vh-360px)]"
           containerClassName="overflow-hidden"
         />
@@ -145,7 +146,7 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
               <SquareStack className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-lg font-bold text-black">{selectedBatch?.itemName || 'Batch Details'}</div>
+              <div className="text-lg font-bold text-black">{selectedBatch?.itemName || t('furnitureTab.batchDetails')}</div>
             </div>
           </div>
         }
@@ -154,15 +155,15 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
           <div className="space-y-4 bg-white p-5 text-black">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div className="rounded-xl border border-black/10 bg-black/[0.03] p-4">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-black/60">Condition</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-black/60">{t('furnitureTab.condition')}</p>
                 <p className="mt-1 text-sm font-semibold text-black">{blank(selectedBatch.condition)}</p>
               </div>
               <div className="rounded-xl border border-black/10 bg-black/[0.03] p-4">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-black/60">Quantity</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-black/60">{t('furnitureTab.quantity')}</p>
                 <p className="mt-1 text-sm font-semibold text-black">{selectedBatch.quantity}</p>
               </div>
               <div className="rounded-xl border border-black/10 bg-black/[0.03] p-4">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-black/60">Owning Department</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-black/60">{t('furnitureTab.owningDept')}</p>
                 <p className="mt-1 text-sm font-semibold text-black">{blank(selectedBatch.owningDepartment)}</p>
               </div>
             </div>
@@ -172,17 +173,17 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center gap-2 text-sm font-bold text-black">
                     <FileText className="h-4 w-4 text-black" />
-                    Batch Information
+                    {t('furnitureTab.batchInfo')}
                   </div>
                   <div className="grid grid-cols-1 gap-3 text-sm">
-                    <div><span className="font-semibold text-black/60">Inventory Type:</span> <span className="text-black">{blank(selectedBatch.inventoryType)}</span></div>
-                    <div><span className="font-semibold text-black/60">Model / Brand:</span> <span className="text-black">{blank(selectedBatch.modelBrand)}</span></div>
-                    <div><span className="font-semibold text-black/60">Specifications:</span> <span className="text-black">{blank(selectedBatch.specifications)}</span></div>
-                    <div><span className="font-semibold text-black/60">Purchase Date:</span> <span className="text-black">{formatDate(selectedBatch.purchaseDate)}</span></div>
-                    <div><span className="font-semibold text-black/60">Invoice No:</span> <span className="text-black">{blank(selectedBatch.invoiceNumber)}</span></div>
-                    <div><span className="font-semibold text-black/60">Invoice Date:</span> <span className="text-black">{formatDate(selectedBatch.invoiceDate)}</span></div>
-                    <div><span className="font-semibold text-black/60">Registered:</span> <span className="text-black">{selectedBatch.isRegistered ? 'Yes' : 'No'}</span></div>
-                    <div><span className="font-semibold text-black/60">Registered Date:</span> <span className="text-black">{formatDate(selectedBatch.registeredDate)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.inventoryType')}</span> <span className="text-black">{blank(selectedBatch.inventoryType)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.modelBrand')}</span> <span className="text-black">{blank(selectedBatch.modelBrand)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.specs')}</span> <span className="text-black">{blank(selectedBatch.specifications)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.purchaseDate')}</span> <span className="text-black">{formatDate(selectedBatch.purchaseDate)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.invoiceNo')}</span> <span className="text-black">{blank(selectedBatch.invoiceNumber)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.invoiceDate')}</span> <span className="text-black">{formatDate(selectedBatch.invoiceDate)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.registered')}</span> <span className="text-black">{selectedBatch.isRegistered ? t('furnitureTab.yes') : t('furnitureTab.no')}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.registeredDate')}</span> <span className="text-black">{formatDate(selectedBatch.registeredDate)}</span></div>
                   </div>
                 </CardContent>
               </Card>
@@ -191,15 +192,15 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center gap-2 text-sm font-bold text-black">
                     <Layers3 className="h-4 w-4 text-black" />
-                    Financial Summary
+                    {t('furnitureTab.financialSummary')}
                   </div>
                   <div className="grid grid-cols-1 gap-3 text-sm">
-                    <div><span className="font-semibold text-black/60">Unit Value:</span> <span className="text-black">{formatMoney(selectedBatch.unitValue)}</span></div>
-                    <div><span className="font-semibold text-black/60">Total Purchase Value:</span> <span className="text-black">{formatMoney(selectedBatch.totalBatchValue)}</span></div>
-                    <div><span className="font-semibold text-black/60">Total Capital Value:</span> <span className="text-black">{formatMoney(selectedBatch.totalBatchCV)}</span></div>
-                    <div><span className="font-semibold text-black/60">Created Date:</span> <span className="text-black">{formatDate(selectedBatch.createdDate)}</span></div>
-                    <div><span className="font-semibold text-black/60">Invoice File:</span> <span className="text-black">{blank(selectedBatch.invoiceFileName)}</span></div>
-                    <div><span className="font-semibold text-black/60">Photo File:</span> <span className="text-black">{blank(selectedBatch.photoFileName)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.unitValue')}</span> <span className="text-black">{formatMoney(selectedBatch.unitValue)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.totalPurchaseValue')}</span> <span className="text-black">{formatMoney(selectedBatch.totalBatchValue)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.totalCapitalValue')}</span> <span className="text-black">{formatMoney(selectedBatch.totalBatchCV)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.createdDate')}</span> <span className="text-black">{formatDate(selectedBatch.createdDate)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.invoiceFile')}</span> <span className="text-black">{blank(selectedBatch.invoiceFileName)}</span></div>
+                    <div><span className="font-semibold text-black/60">{t('furnitureTab.photoFile')}</span> <span className="text-black">{blank(selectedBatch.photoFileName)}</span></div>
                   </div>
                 </CardContent>
               </Card>
@@ -210,9 +211,9 @@ export function FurnitureFixturesTab({ asset }: FurnitureFixturesTabProps): Reac
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm font-bold text-black">
                     <Hash className="h-4 w-4 text-black" />
-                    Registered Units
+                    {t('furnitureTab.registeredUnits')}
                   </div>
-                  <span className="text-xs font-semibold text-black/60">{unitTotalCount} units</span>
+                  <span className="text-xs font-semibold text-black/60">{t('furnitureTab.unitsCount', { count: unitTotalCount })}</span>
                 </div>
 
                 <MasterTable<InventoryUnitRow>

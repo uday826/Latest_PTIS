@@ -3,27 +3,31 @@
 import { processMakePaymentAction } from '@/app/[locale]/assets/revenue/payment/details/[recordId]/make-payment/actions';
 import { Button } from '@/components/common/ActionButton';
 import { Card } from '@/components/common/Card';
+import { Checkbox } from '@/components/common/checkbox';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { Drawer } from '@/components/common/Drawer';
 import { Input } from '@/components/common/Input';
+import { MasterTable, type Column } from '@/components/common/MasterTable';
 import { RadioGroup, RadioGroupItem } from '@/components/common/radio-group';
 import { Select } from '@/components/common/select';
+import { useLeaseRentDemands } from '@/hooks/asset-hooks/useLeaseRentDemands';
 import { formatDDMMYYYYToISO, formatDateToDDMMYYYY } from '@/lib/utils/format';
 import {
   EMAIL_REGEX,
   MOBILE_10_REGEX,
   POSITIVE_INTEGER_REGEX,
 } from '@/lib/utils/validation-rules';
-import type { LeaseRentPaymentDetail } from '@/types/asset/leaseRentPayment.types';
-import { Calendar, IndianRupee } from 'lucide-react';
+import type {
+  LeaseRentDemandItem,
+  LeaseRentPaymentDetail,
+} from '@/types/asset/leaseRentPayment.types';
+import { Calendar, IndianRupee, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 type PaymentMode = 'Cash' | 'DD' | 'Cheque' | 'QR / UPI' | 'Online' | '';
-type PaymentOption = 'CURRENT' | 'PENDING' | 'FULL';
-type CurrentSubOption = 'FULL_BUCKET' | 'CUSTOM_AMOUNT';
 type PendingSubOption = 'FULL_BUCKET' | 'CUSTOM_AMOUNT' | 'PERIOD_SELECTION';
 
 const MODE_TO_QUERY: Record<Exclude<PaymentMode, ''>, string> = {
@@ -43,24 +47,32 @@ const QUERY_TO_MODE: Record<string, Exclude<PaymentMode, ''>> = {
   online: 'Online',
 };
 
-const MONTH_OPTIONS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const AMOUNT_REGEX = /^\d+(\.\d{1,2})?$/;
 const PAYMENT_REFERENCE_REGEX = /^[A-Za-z0-9._/-]{6,50}$/;
 const BANK_INSTRUMENT_REGEX = /^[A-Za-z0-9/-]{4,20}$/;
 const DD_MM_YYYY_REGEX = /^(0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-\d{4}$/;
 
-function getFinancialYearOptions(): string[] {
-  const today = new Date();
-  const currentYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
-  return Array.from({ length: 5 }, (_, index) => {
-    const startYear = currentYear - index;
-    return `FY ${startYear}-${String((startYear + 1) % 100).padStart(2, '0')}`;
-  });
-}
-
 function getDateInputValueFromDDMMYYYY(value: string): string {
   const isoDate = formatDDMMYYYYToISO(value);
   return isoDate ? isoDate.split('T')[0] : '';
+}
+
+function formatCurrency(value: number): string {
+  if (!Number.isFinite(value)) return '\u20b9 0.00';
+  return `\u20b9 ${value.toLocaleString('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+// The amount actually payable for a demand row is the remaining (pending) amount,
+// not the full demand total \u2014 a partially-paid month should only collect its balance.
+// Falls back to the full total when the pending amount is unavailable.
+function getRowPayableAmount(row: LeaseRentDemandItem): number {
+  if (row.pendingAmount != null && Number.isFinite(Number(row.pendingAmount))) {
+    return Number(row.pendingAmount);
+  }
+  return Number.isFinite(Number(row.total)) ? Number(row.total) : 0;
 }
 
 export function MakePaymentScreen({
@@ -83,8 +95,6 @@ export function MakePaymentScreen({
   }, [initialMode, searchParams]);
 
   const [selectedMode, setSelectedMode] = useState<PaymentMode>(modeFromQuery);
-  const [paymentOption, setPaymentOption] = useState<PaymentOption>('PENDING');
-  const [currentSubOption, setCurrentSubOption] = useState<CurrentSubOption>('FULL_BUCKET');
   const [pendingSubOption, setPendingSubOption] = useState<PendingSubOption>('FULL_BUCKET');
   const [isPeriodDrawerOpen, setIsPeriodDrawerOpen] = useState(false);
   const [selectedPeriods, setSelectedPeriods] = useState<string[]>([]);
@@ -97,36 +107,109 @@ export function MakePaymentScreen({
   const [transactionId, setTransactionId] = useState('');
   const [isPending, startTransition] = useTransition();
 
+  // Fetch the master-table demand list (month/rent/penalty/gst/total) for this lease.
+  // The hook gracefully handles missing leaseId by returning an empty list.
+  const {
+    demands: leaseDemandRows,
+    isLoading: isDemandsLoading,
+    error: demandsError,
+    refetch: refetchDemands,
+  } = useLeaseRentDemands(record.leaseRentRegistrationId, record.financeYear);
+
   const pendingDemandAmount = record.pendingDue;
-  const currentDemandAmount = record.currentDemand;
   const penaltyAmount = record.penalty;
   const gstAmount = record.gst;
   const summaryTotalAmount = record.totalPayable;
   const customNumericAmount = Number(customAmount);
   const normalizedPaymentFrequency = record.paymentFrequency?.trim().toLowerCase() ?? '';
   const isYearlyPayment = normalizedPaymentFrequency === 'yearly';
-  const periodOptions = isYearlyPayment ? getFinancialYearOptions() : MONTH_OPTIONS;
-  const isCurrentCustom = paymentOption === 'CURRENT' && currentSubOption === 'CUSTOM_AMOUNT';
-  const isPendingCustom = paymentOption === 'PENDING' && pendingSubOption === 'CUSTOM_AMOUNT';
-  const isPendingPeriodSelection =
-    paymentOption === 'PENDING' && pendingSubOption === 'PERIOD_SELECTION';
-  const maxCustomAmount =
-    paymentOption === 'CURRENT' ? currentDemandAmount : pendingDemandAmount;
-  const payNowAmount = useMemo(() => {
-    if (paymentOption === 'FULL') {
-      return pendingDemandAmount + currentDemandAmount + penaltyAmount + gstAmount;
-    }
+  const isPendingCustom = pendingSubOption === 'CUSTOM_AMOUNT';
+  const isPendingPeriodSelection = pendingSubOption === 'PERIOD_SELECTION';
+  const maxCustomAmount = pendingDemandAmount;
 
-    if (paymentOption === 'CURRENT') {
-      if (currentSubOption === 'CUSTOM_AMOUNT') {
-        return Number.isFinite(customNumericAmount) && customNumericAmount > 0
-          ? customNumericAmount
-          : 0;
+  // Build a fast lookup of demand rows keyed by the `month` label so the
+  // selected periods can be converted to the master-table amounts. This
+  // runs before any computed values reference the totals.
+  const demandRowByMonth = useMemo(() => {
+    const map = new Map<string, LeaseRentDemandItem>();
+    for (const row of leaseDemandRows) {
+      if (row?.month) {
+        map.set(String(row.month).trim().toLowerCase(), row);
       }
-
-      return currentDemandAmount;
     }
+    return map;
+  }, [leaseDemandRows]);
 
+  // Sum of the `total` column for the currently selected months. Falls back
+  // to zero when no demand rows are available yet.
+  const selectedPeriodsTotal = useMemo(() => {
+    if (selectedPeriods.length === 0) return 0;
+    let sum = 0;
+    for (const period of selectedPeriods) {
+      const row = demandRowByMonth.get(String(period).trim().toLowerCase());
+      if (row) {
+        sum += getRowPayableAmount(row);
+      }
+    }
+    return sum;
+  }, [demandRowByMonth, selectedPeriods]);
+
+  // Demand record IDs for the selected periods (used for allocations in LeaseRentBill).
+  const selectedDemandIds = useMemo(() => {
+    if (selectedPeriods.length === 0) return [];
+    const ids: number[] = [];
+    for (const period of selectedPeriods) {
+      const row = demandRowByMonth.get(String(period).trim().toLowerCase());
+      if (row && row.id != null) {
+        const numId = Number(row.id);
+        if (Number.isFinite(numId)) ids.push(numId);
+      }
+    }
+    return ids;
+  }, [demandRowByMonth, selectedPeriods]);
+
+  // For Full Pending / Custom Amount, include all pending demand IDs.
+  const allPendingDemandIds = useMemo(() => {
+    return leaseDemandRows
+      .filter((r) => r.demandStatus?.toLowerCase() !== 'paid')
+      .map((r) => Number(r.id))
+      .filter((id) => Number.isFinite(id));
+  }, [leaseDemandRows]);
+
+  const selectedPeriodsRent = useMemo(() => {
+    let sum = 0;
+    for (const period of selectedPeriods) {
+      const row = demandRowByMonth.get(String(period).trim().toLowerCase());
+      if (row && Number.isFinite(row.rent)) {
+        sum += Number(row.rent);
+      }
+    }
+    return sum;
+  }, [demandRowByMonth, selectedPeriods]);
+
+  const selectedPeriodsPenalty = useMemo(() => {
+    let sum = 0;
+    for (const period of selectedPeriods) {
+      const row = demandRowByMonth.get(String(period).trim().toLowerCase());
+      if (row && Number.isFinite(row.penalty)) {
+        sum += Number(row.penalty);
+      }
+    }
+    return sum;
+  }, [demandRowByMonth, selectedPeriods]);
+
+  const selectedPeriodsGst = useMemo(() => {
+    let sum = 0;
+    for (const period of selectedPeriods) {
+      const row = demandRowByMonth.get(String(period).trim().toLowerCase());
+      if (row && Number.isFinite(row.gst)) {
+        sum += Number(row.gst);
+      }
+    }
+    return sum;
+  }, [demandRowByMonth, selectedPeriods]);
+
+  const payNowAmount = useMemo(() => {
     if (pendingSubOption === 'CUSTOM_AMOUNT') {
       return Number.isFinite(customNumericAmount) && customNumericAmount > 0
         ? customNumericAmount
@@ -134,40 +217,180 @@ export function MakePaymentScreen({
     }
 
     if (pendingSubOption === 'PERIOD_SELECTION') {
-      // TODO: Replace this fallback with backend-calculated period amounts once
-      // selected pending months/years are supported by the payment API.
+      if (leaseDemandRows.length > 0 && selectedPeriods.length > 0) {
+        return selectedPeriodsTotal;
+      }
       return pendingDemandAmount;
     }
 
     return pendingDemandAmount;
   }, [
-    currentDemandAmount,
-    currentSubOption,
     customNumericAmount,
-    gstAmount,
-    paymentOption,
+    leaseDemandRows.length,
     pendingDemandAmount,
     pendingSubOption,
-    penaltyAmount,
+    selectedPeriods.length,
+    selectedPeriodsTotal,
   ]);
 
   const backendPaymentType = useMemo(() => {
-    if (paymentOption === 'FULL') return 'Full';
-
-    if (paymentOption === 'CURRENT') {
-      return currentSubOption === 'FULL_BUCKET' ? 'Full' : 'Partial';
+    if (pendingSubOption === 'FULL_BUCKET') return 'Full';
+    if (pendingSubOption === 'PERIOD_SELECTION') {
+      const selectedAll = allPendingDemandIds.length > 0 && 
+        allPendingDemandIds.every(id => selectedDemandIds.includes(id));
+      return selectedAll ? 'Full' : 'Monthwise';
     }
+    return 'Partial';
+  }, [pendingSubOption, allPendingDemandIds, selectedDemandIds]);
 
-    return pendingSubOption === 'FULL_BUCKET' ? 'Full' : 'Partial';
-  }, [currentSubOption, paymentOption, pendingSubOption]);
-
-  const selectedPeriodsLabel = selectedPeriods.join(', ');
-  const periodDrawerButtonLabel = isYearlyPayment ? 'Select Financial Years' : t('selectMonths');
   const periodDrawerTitle = isYearlyPayment ? 'Select Financial Years' : t('drawer.title');
-  const periodSelectionHelpText = isYearlyPayment
-    ? 'Financial year selection is UI-ready. Exact year-wise payable calculation will be added with backend support.'
-    : 'Month selection is UI-ready. Exact month-wise payable calculation will be added with backend support.';
   const instrumentDateInputValue = getDateInputValueFromDDMMYYYY(instrumentDate);
+
+  // Toggle a single period in the selectedPeriods list. Case-insensitive.
+  const togglePeriod = useCallback((period: string) => {
+    const normalized = period.trim();
+    if (!normalized) return;
+    setSelectedPeriods((prev) => {
+      const exists = prev.some((p) => p.trim().toLowerCase() === normalized.toLowerCase());
+      if (exists) {
+        return prev.filter((p) => p.trim().toLowerCase() !== normalized.toLowerCase());
+      }
+      return [...prev, normalized];
+    });
+  }, []);
+
+  // True when every available demand row is currently selected.
+  const allPeriodsSelected = useMemo(() => {
+    if (leaseDemandRows.length === 0) return false;
+    return leaseDemandRows.every((row) =>
+      selectedPeriods.some(
+        (p) => p.trim().toLowerCase() === String(row.month ?? '').trim().toLowerCase()
+      )
+    );
+  }, [leaseDemandRows, selectedPeriods]);
+
+  // Toggle every demand row at once. Convenience for the master-table
+  // "Select all" header action.
+  const toggleAllPeriods = useCallback(() => {
+    if (leaseDemandRows.length === 0) return;
+    const months = leaseDemandRows
+      .map((row) => String(row.month ?? '').trim())
+      .filter(Boolean);
+    if (allPeriodsSelected) {
+      setSelectedPeriods((prev) =>
+        prev.filter(
+          (p) =>
+            !months.some((m) => m.toLowerCase() === p.trim().toLowerCase())
+        )
+      );
+    } else {
+      setSelectedPeriods(months);
+    }
+  }, [allPeriodsSelected, leaseDemandRows]);
+
+  // Build the master-table columns. Uses a custom first column with a
+  // checkbox that toggles a single demand row.
+  const demandTableColumns: Column<LeaseRentDemandItem>[] = useMemo(
+    () => [
+      {
+        key: 'select',
+        label: (
+          <Checkbox
+            checked={allPeriodsSelected}
+            onCheckedChange={toggleAllPeriods}
+            aria-label={t('drawer.selectAll')}
+          />
+        ),
+        width: '52px',
+        align: 'center',
+        render: (_value, row) => {
+          const periodKey = String(row.month ?? '').trim();
+          const checked = selectedPeriods.some(
+            (p) => p.trim().toLowerCase() === periodKey.toLowerCase()
+          );
+          return (
+            <Checkbox
+              checked={checked}
+              onCheckedChange={() => togglePeriod(periodKey)}
+              aria-label={`${t('drawer.table.select')} ${periodKey}`}
+            />
+          );
+        },
+      },
+      {
+        key: 'month',
+        label: t('drawer.table.month'),
+        align: 'left',
+        cellClassName: 'font-semibold text-slate-700',
+      },
+      {
+        key: 'rent',
+        label: t('drawer.table.rent'),
+        align: 'right',
+        cellClassName: 'font-medium text-slate-700',
+        render: (value) => formatCurrency(Number(value ?? 0)),
+      },
+      {
+        key: 'penalty',
+        label: t('drawer.table.penalty'),
+        align: 'right',
+        cellClassName: 'font-medium text-red-600',
+        render: (value) => formatCurrency(Number(value ?? 0)),
+      },
+      {
+        key: 'gst',
+        label: t('drawer.table.gst'),
+        align: 'right',
+        cellClassName: 'font-medium text-purple-600',
+        render: (value) => formatCurrency(Number(value ?? 0)),
+      },
+      {
+        key: 'total',
+        label: t('drawer.table.total'),
+        align: 'right',
+        cellClassName: 'font-bold text-blue-700',
+        render: (value) => formatCurrency(Number(value ?? 0)),
+      },
+      {
+        key: 'paidAmount',
+        label: t('drawer.table.paidAmount'),
+        align: 'right',
+        cellClassName: 'font-medium text-green-600',
+        render: (value) => formatCurrency(Number(value ?? 0)),
+      },
+      {
+        key: 'pendingAmount',
+        label: t('drawer.table.pendingAmount'),
+        align: 'right',
+        cellClassName: 'font-medium text-orange-600',
+        render: (value) => formatCurrency(Number(value ?? 0)),
+      },
+      {
+        key: 'demandStatus',
+        label: t('drawer.table.status'),
+        align: 'center',
+        width: '80px',
+        cellClassName: 'font-medium',
+        render: (value) => {
+          const status = String(value ?? '').toLowerCase();
+          if (status === 'paid' || status === 'true') {
+            return (
+              <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">
+                Paid
+              </span>
+            );
+          }
+          return (
+            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">
+              Unpaid
+            </span>
+          );
+        },
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allPeriodsSelected, selectedPeriods, t, toggleAllPeriods, togglePeriod]
+  );
 
   useEffect(() => {
     setSelectedMode(modeFromQuery);
@@ -201,15 +424,15 @@ export function MakePaymentScreen({
       return 'Payment mode is required.';
     }
 
-    if ((isCurrentCustom || isPendingCustom) && !trimmedCustomAmount) {
+    if (isPendingCustom && !trimmedCustomAmount) {
       return 'Custom amount is required.';
     }
 
-    if ((isCurrentCustom || isPendingCustom) && !AMOUNT_REGEX.test(trimmedCustomAmount)) {
+    if (isPendingCustom && !AMOUNT_REGEX.test(trimmedCustomAmount)) {
       return 'Please enter a valid amount with up to 2 decimal places.';
     }
 
-    if ((isCurrentCustom || isPendingCustom) && !Number.isFinite(customNumericAmount)) {
+    if (isPendingCustom && !Number.isFinite(customNumericAmount)) {
       return 'Please enter a valid payment amount.';
     }
 
@@ -217,7 +440,7 @@ export function MakePaymentScreen({
       return 'Payment amount must be greater than zero.';
     }
 
-    if ((isCurrentCustom || isPendingCustom) && payNowAmount > maxCustomAmount) {
+    if (isPendingCustom && payNowAmount > maxCustomAmount) {
       return 'Custom amount cannot exceed the selected payable amount.';
     }
 
@@ -315,17 +538,41 @@ export function MakePaymentScreen({
       onConfirm: async () => {
         startTransition(async () => {
           try {
+            // Determine which demand IDs and amounts to allocate based on the selected option
+            const demandIds =
+              pendingSubOption === 'PERIOD_SELECTION'
+                ? selectedDemandIds
+                : allPendingDemandIds;
+
+            const allocations = demandIds
+              .map((id) => {
+                const row = leaseDemandRows.find((r) => Number(r.id) === id);
+                if (!row) return null;
+                return { monthWiseDemandId: id, payAmount: getRowPayableAmount(row) };
+              })
+              .filter((a): a is { monthWiseDemandId: number; payAmount: number } => a !== null);
+
+            const resolvedChequeDate = selectedMode === 'Cheque' || selectedMode === 'DD'
+              ? (instrumentDateInputValue ? `${instrumentDateInputValue}T00:00:00.000Z` : null)
+              : null;
+
             const result = await processMakePaymentAction(params.recordId, {
-              mobile: mobile.trim(),
-              email: email.trim(),
-              paymentMode: selectedMode,
-              // TODO: Send explicit CURRENT/PENDING/PERIOD metadata when the backend
-              // process API supports period-aware payment payload fields.
               paymentType: backendPaymentType,
-              amount: payNowAmount,
-              penaltyAmount,
-              gstAmount,
-              transactionId: resolvedTransactionId,
+              paymentMode: selectedMode === 'QR / UPI' ? 'UPI' : selectedMode,
+              paymentDate: new Date().toISOString(),
+              payerMobile: mobile.trim() || undefined,
+              payerEmail: email.trim() || undefined,
+              bankName: bankName.trim() || undefined,
+              branchName: undefined,
+              chequeOrTransactionNo: resolvedTransactionId || undefined,
+              chequeDate: resolvedChequeDate,
+              onlineTransactionId: (selectedMode === 'Online' || selectedMode === 'QR / UPI') ? resolvedTransactionId : undefined,
+              paymentGatewayName: undefined,
+              discountAmount: 0,
+              adjustmentAmount: 0,
+              remark: undefined,
+              customAmount: isPendingCustom ? payNowAmount : undefined,
+              allocations,
             });
 
             if (!result.success) {
@@ -337,7 +584,7 @@ export function MakePaymentScreen({
             const next = new URLSearchParams(searchParams.toString());
             const queryString = next.toString();
             const historyPath = `/${params.locale}/assets/revenue/payment/details/${params.recordId}/payment-history`;
-            
+
             // Await router.push before refresh to avoid microtask race conditions
             await router.push(queryString ? `${historyPath}?${queryString}` : historyPath);
           } catch (err) {
@@ -359,47 +606,83 @@ export function MakePaymentScreen({
           <h3 className="font-bold text-slate-700">{t('title')}</h3>
         </div>
         <div className="px-2.5 py-1 text-[10px] font-bold bg-white border border-slate-200 rounded text-slate-600 shadow-sm">
-          {t('financeYear', { year: '2025' })}
+          {t('financeYear', { year: record.financeYear ? String(record.financeYear) : '2026' })}
         </div>
       </div>
 
       <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <Card variant="bordered" padding="none" className="bg-orange-50 border-orange-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-orange-400"></div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-5 h-5 rounded flex items-center justify-center bg-orange-500 text-white text-[10px] font-bold">?</div>
-              <span className="text-xs font-bold text-orange-800">{t('pendingDemand')}</span>
-            </div>
-            <p className="text-xl font-black text-orange-600">{`₹ ${pendingDemandAmount.toLocaleString('en-IN')}`}</p>
-          </Card>
-          <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-5 h-5 rounded flex items-center justify-center bg-emerald-500 text-white text-[10px] font-bold">?</div>
-              <span className="text-xs font-bold text-emerald-800">{t('currentDemand')}</span>
-            </div>
-            <p className="text-xl font-black text-emerald-600">{`₹ ${currentDemandAmount.toLocaleString('en-IN')}`}</p>
-          </Card>
-        </div>
+        {String(record.paymentStatus ?? '').toLowerCase() === 'partial' ? (
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {/* Left Side: Demand, Penalty, GST, Total Amount */}
+            <div className="space-y-3">
+              <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-3 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">{t('currentDemand')}</span>
+                  <p className="text-sm font-black text-emerald-600">{`₹ ${record.currentDemand.toLocaleString('en-IN')}`}</p>
+                </div>
+              </Card>
 
-        <div className="space-y-3 mb-6">
-          <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-red-50/50 border-red-100 rounded-lg shadow-none">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded bg-red-500 text-white flex items-center justify-center text-[10px] font-bold">%</div>
-              <span className="text-xs font-bold text-red-700">{t('penalty')}</span>
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-red-50/50 border-red-100 rounded-lg shadow-none">
+                <span className="text-xs font-bold text-red-700">{t('penalty')}</span>
+                <span className="text-sm font-black text-red-600">{`₹ ${penaltyAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+              </Card>
+
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-purple-50/50 border-purple-100 rounded-lg shadow-none">
+                <span className="text-xs font-bold text-purple-700">{t('gst')}</span>
+                <span className="text-sm font-black text-purple-600">{`₹ ${gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+              </Card>
+
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-4 bg-blue-50 border-blue-200 rounded-xl shadow-sm">
+                <span className="text-sm font-bold text-blue-900">{t('totalAmount')}</span>
+                <span className="text-xl font-black text-blue-700">{`₹ ${summaryTotalAmount.toLocaleString('en-IN')}`}</span>
+              </Card>
             </div>
-            <span className="text-sm font-black text-red-600">{`₹ ${penaltyAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-          </Card>
-          <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-purple-50/50 border-purple-100 rounded-lg shadow-none">
-            <span className="text-xs font-bold text-purple-700 ml-7">{t('gst')}</span>
-            <span className="text-sm font-black text-purple-600">{`₹ ${gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-          </Card>
-          <Card variant="bordered" padding="none" className="flex justify-between items-center p-4 bg-blue-50 border-blue-200 rounded-xl shadow-sm">
-            <span className="text-sm font-bold text-blue-900">{t('totalAmount')}</span>
-            <span className="text-xl font-black text-blue-700">{`₹ ${summaryTotalAmount.toLocaleString('en-IN')}`}</span>
-          </Card>
-        </div>
+
+            {/* Right Side: Total Paid and Total Pending Demand */}
+            <div className="space-y-3">
+              <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-3 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">{t('totalPaid')}</span>
+                  <p className="text-sm font-black text-emerald-600">{`₹ ${(record.totalPaid ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</p>
+                </div>
+              </Card>
+
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-4 bg-red-50 border-red-200 rounded-xl shadow-sm">
+                <span className="text-sm font-bold text-red-900">{t('totalPendingDemand')}</span>
+                <span className="text-xl font-black text-red-700">{`₹ ${(record.totalPending ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+              </Card>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="mb-4">
+              <Card variant="bordered" padding="none" className="bg-emerald-50 border-emerald-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-base font-extrabold text-emerald-800 uppercase tracking-wider">Demand</span>
+                  <p className="text-2xl font-black text-emerald-600">{`₹ ${record.currentDemand.toLocaleString('en-IN')}`}</p>
+                </div>
+              </Card>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-red-50/50 border-red-100 rounded-lg shadow-none">
+                <span className="text-xs font-bold text-red-700">{t('penalty')}</span>
+                <span className="text-sm font-black text-red-600">{`₹ ${penaltyAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+              </Card>
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-3 bg-purple-50/50 border-purple-100 rounded-lg shadow-none">
+                <span className="text-xs font-bold text-purple-700">{t('gst')}</span>
+                <span className="text-sm font-black text-purple-600">{`₹ ${gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+              </Card>
+              <Card variant="bordered" padding="none" className="flex justify-between items-center p-4 bg-blue-50 border-blue-200 rounded-xl shadow-sm">
+                <span className="text-sm font-bold text-blue-900">{t('totalAmount')}</span>
+                <span className="text-xl font-black text-blue-700">{`₹ ${summaryTotalAmount.toLocaleString('en-IN')}`}</span>
+              </Card>
+            </div>
+          </>
+        )}
 
         <Card variant="bordered" padding="none" className="bg-white border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
           <div className="grid grid-cols-3 gap-4">
@@ -481,159 +764,58 @@ export function MakePaymentScreen({
             </div>
           )}
 
+          {/* Pending Payment Options — only three: Full Pending, Custom Amount, Period Selection */}
           <div className="space-y-1.5 pt-2">
             <div className="border-t border-slate-200 mb-3" />
-            <label className="text-sm font-semibold text-slate-700">Payment Option</label>
+            <label className="text-sm font-semibold text-slate-700">{t('paymentType')}</label>
             <RadioGroup
-              value={paymentOption}
-              onValueChange={(value) => setPaymentOption(value as PaymentOption)}
-              name="paymentOption"
-              className="mt-2 grid grid-cols-3 gap-3"
+              value={pendingSubOption}
+              onValueChange={(value) => setPendingSubOption(value as PendingSubOption)}
+              name="pendingSubOption"
+              className="grid grid-cols-3 gap-3"
             >
               <label
-                onClick={() => setPaymentOption('CURRENT')}
-                className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
-                  paymentOption === 'CURRENT' ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:bg-slate-50'
-                }`}
+                onClick={() => setPendingSubOption('FULL_BUCKET')}
+                className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${pendingSubOption === 'FULL_BUCKET'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-slate-300 hover:bg-slate-50'
+                  }`}
               >
-                <RadioGroupItem value="CURRENT" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                <span className={`text-xs font-semibold ${paymentOption === 'CURRENT' ? 'text-blue-700' : 'text-slate-700'}`}>Current</span>
+                <RadioGroupItem value="FULL_BUCKET" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
+                <span className={`text-xs font-semibold ${pendingSubOption === 'FULL_BUCKET' ? 'text-blue-700' : 'text-slate-700'}`}>{t('fullPayment')}</span>
               </label>
               <label
-                onClick={() => setPaymentOption('PENDING')}
-                className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
-                  paymentOption === 'PENDING' ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:bg-slate-50'
-                }`}
+                onClick={() => setPendingSubOption('CUSTOM_AMOUNT')}
+                className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${pendingSubOption === 'CUSTOM_AMOUNT'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-slate-300 hover:bg-slate-50'
+                  }`}
               >
-                <RadioGroupItem value="PENDING" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                <span className={`text-xs font-semibold ${paymentOption === 'PENDING' ? 'text-blue-700' : 'text-slate-700'}`}>Pending</span>
+                <RadioGroupItem value="CUSTOM_AMOUNT" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
+                <span className={`text-xs font-semibold ${pendingSubOption === 'CUSTOM_AMOUNT' ? 'text-blue-700' : 'text-slate-700'}`}>{t('partialAmount')}</span>
               </label>
               <label
-                onClick={() => setPaymentOption('FULL')}
-                className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
-                  paymentOption === 'FULL' ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:bg-slate-50'
-                }`}
+                onClick={() => {
+                  setPendingSubOption('PERIOD_SELECTION');
+                  setIsPeriodDrawerOpen(true);
+                }}
+                className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${pendingSubOption === 'PERIOD_SELECTION'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-slate-300 hover:bg-slate-50'
+                  }`}
               >
-                <RadioGroupItem value="FULL" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                <span className={`text-xs font-semibold ${paymentOption === 'FULL' ? 'text-blue-700' : 'text-slate-700'}`}>Full</span>
+                <RadioGroupItem value="PERIOD_SELECTION" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
+                <span className={`text-xs font-semibold ${pendingSubOption === 'PERIOD_SELECTION' ? 'text-blue-700' : 'text-slate-700'}`}>
+                  {isYearlyPayment ? t('selectYears') : t('selectMonths')}
+                </span>
               </label>
             </RadioGroup>
-
-            {paymentOption === 'CURRENT' && (
-              <div className="pt-3">
-                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                  Current Payment
-                </label>
-                <RadioGroup
-                  value={currentSubOption}
-                  onValueChange={(value) => setCurrentSubOption(value as CurrentSubOption)}
-                  name="currentSubOption"
-                  className="mt-2 grid grid-cols-2 gap-3"
-                >
-                  <label
-                    onClick={() => setCurrentSubOption('FULL_BUCKET')}
-                    className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
-                      currentSubOption === 'FULL_BUCKET'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-slate-300 hover:bg-slate-50'
-                    }`}
-                  >
-                    <RadioGroupItem value="FULL_BUCKET" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                    <span className={`text-xs font-semibold ${currentSubOption === 'FULL_BUCKET' ? 'text-blue-700' : 'text-slate-700'}`}>Full Current</span>
-                  </label>
-                  <label
-                    onClick={() => setCurrentSubOption('CUSTOM_AMOUNT')}
-                    className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
-                      currentSubOption === 'CUSTOM_AMOUNT'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-slate-300 hover:bg-slate-50'
-                    }`}
-                  >
-                    <RadioGroupItem value="CUSTOM_AMOUNT" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                    <span className={`text-xs font-semibold ${currentSubOption === 'CUSTOM_AMOUNT' ? 'text-blue-700' : 'text-slate-700'}`}>Custom Amount</span>
-                  </label>
-                </RadioGroup>
-              </div>
-            )}
-
-            {paymentOption === 'PENDING' && (
-              <div className="pt-3 space-y-3">
-                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                  Pending Payment
-                </label>
-                <RadioGroup
-                  value={pendingSubOption}
-                  onValueChange={(value) => setPendingSubOption(value as PendingSubOption)}
-                  name="pendingSubOption"
-                  className="grid grid-cols-3 gap-3"
-                >
-                  <label
-                    onClick={() => setPendingSubOption('FULL_BUCKET')}
-                    className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
-                      pendingSubOption === 'FULL_BUCKET'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-slate-300 hover:bg-slate-50'
-                    }`}
-                  >
-                    <RadioGroupItem value="FULL_BUCKET" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                    <span className={`text-xs font-semibold ${pendingSubOption === 'FULL_BUCKET' ? 'text-blue-700' : 'text-slate-700'}`}>Full Pending</span>
-                  </label>
-                  <label
-                    onClick={() => setPendingSubOption('CUSTOM_AMOUNT')}
-                    className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
-                      pendingSubOption === 'CUSTOM_AMOUNT'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-slate-300 hover:bg-slate-50'
-                    }`}
-                  >
-                    <RadioGroupItem value="CUSTOM_AMOUNT" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                    <span className={`text-xs font-semibold ${pendingSubOption === 'CUSTOM_AMOUNT' ? 'text-blue-700' : 'text-slate-700'}`}>Custom Amount</span>
-                  </label>
-                  <label
-                    onClick={() => setPendingSubOption('PERIOD_SELECTION')}
-                    className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
-                      pendingSubOption === 'PERIOD_SELECTION'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-slate-300 hover:bg-slate-50'
-                    }`}
-                  >
-                    <RadioGroupItem value="PERIOD_SELECTION" className="border-slate-400 text-slate-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-blue-600" />
-                    <span className={`text-xs font-semibold ${pendingSubOption === 'PERIOD_SELECTION' ? 'text-blue-700' : 'text-slate-700'}`}>
-                      {isYearlyPayment ? 'Select Years' : 'Select Months'}
-                    </span>
-                  </label>
-                </RadioGroup>
-
-                {pendingSubOption === 'PERIOD_SELECTION' && (
-                  <div className="space-y-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      className="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-                      onClick={() => setIsPeriodDrawerOpen(true)}
-                      icon={Calendar}
-                    >
-                      {periodDrawerButtonLabel}
-                    </Button>
-                    {selectedPeriods.length > 0 && (
-                      <p className="text-xs text-slate-600">
-                        {isYearlyPayment
-                          ? `Selected: ${selectedPeriodsLabel}`
-                          : t('selectedMonths', { months: selectedPeriodsLabel })}
-                      </p>
-                    )}
-                    <p className="text-xs text-amber-700">{periodSelectionHelpText}</p>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
           <div className="flex items-center gap-4 mt-2">
             <div className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg min-w-[176px]">
               <IndianRupee className="w-4 h-4 text-slate-500" />
-              {isCurrentCustom || isPendingCustom ? (
+              {isPendingCustom ? (
                 <Input
                   naked
                   value={customAmount}
@@ -650,9 +832,9 @@ export function MakePaymentScreen({
               size="sm"
               className="px-6 py-2 font-bold text-xs rounded-lg"
               onClick={handlePayNow}
-              disabled={isPending}
+              disabled={isPending || !selectedMode || !pendingSubOption || record.pendingDue <= 0}
             >
-              {isPending ? 'Processing...' : t('payNow')}
+              {isPending ? t('processing') : t('payNow')}
             </Button>
           </div>
         </Card>
@@ -661,58 +843,120 @@ export function MakePaymentScreen({
       <Drawer
         open={isPeriodDrawerOpen}
         onClose={() => setIsPeriodDrawerOpen(false)}
-        width="sm"
+        width="lg"
         title={
           <div className="flex items-center gap-2">
             <div className="bg-blue-600 p-1.5 rounded-lg">
               <Calendar className="size-4 text-white" />
             </div>
-            <span className="text-sm font-bold text-slate-800 uppercase tracking-wide">{periodDrawerTitle}</span>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-slate-800 uppercase tracking-wide">{periodDrawerTitle}</span>
+              <span className="text-[10px] font-medium text-slate-500 normal-case tracking-normal">
+                {t('drawer.subtitle')}
+              </span>
+            </div>
           </div>
         }
         footer={
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsPeriodDrawerOpen(false)}
-              className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors"
-            >
-              {t('drawer.cancel')}
-            </button>
-            <button
-              onClick={() => setIsPeriodDrawerOpen(false)}
-              className="px-5 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-            >
-              {t('drawer.apply')}
-            </button>
+          <div className="flex w-full items-center justify-between gap-3">
+            <div className="flex items-center gap-3 text-xs text-slate-600">
+              <span className="font-semibold text-slate-700">
+                {t('drawer.selectedSummary', { count: selectedPeriods.length })}
+              </span>
+              <span className="font-bold text-blue-700">
+                {t('drawer.amountSummary', {
+                  amount: formatCurrency(selectedPeriodsTotal).replace('\u20b9 ', ''),
+                })}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setSelectedPeriods([]);
+                }}
+                disabled={selectedPeriods.length === 0}
+                className="px-3 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors disabled:opacity-40 disabled:hover:text-slate-500"
+              >
+                {t('drawer.clear')}
+              </button>
+             
+              <button
+                onClick={() => setIsPeriodDrawerOpen(false)}
+                className="px-5 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              >
+                {t('drawer.apply')}
+              </button>
+            </div>
           </div>
         }
       >
-        <div className="p-4 bg-slate-50/50 min-h-full">
-          <div className="grid grid-cols-2 gap-2">
-            {periodOptions.map((period) => {
-              const isSelected = selectedPeriods.includes(period);
-              return (
-                <button
-                  key={period}
-                  type="button"
-                  onClick={() =>
-                    setSelectedPeriods((prev) =>
-                      prev.includes(period)
-                        ? prev.filter((item) => item !== period)
-                        : [...prev, period]
-                    )
-                  }
-                  className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-colors text-left ${
-                    isSelected
-                      ? 'bg-blue-50 border-blue-500 text-blue-700'
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  {period}
-                </button>
-              );
-            })}
+        <div className="p-4 bg-slate-50/50 min-h-full space-y-3">
+          {demandsError && (
+            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+              {t('drawer.loadError')}
+              {demandsError ? `: ${demandsError}` : ''}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-slate-600">
+              {t('drawer.selectedSummary', { count: selectedPeriods.length })}
+              {leaseDemandRows.length > 0 && (
+                <span className="ml-2 text-slate-400">
+                  ({leaseDemandRows.length} {t('drawer.table.month').toLowerCase()}
+                  {leaseDemandRows.length === 1 ? '' : 's'})
+                </span>
+              )}
+            </p>
+            <button
+              type="button"
+              onClick={() => void refetchDemands()}
+              className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600 hover:bg-slate-50"
+              aria-label="Refresh demand rows"
+            >
+              <RefreshCw className="size-3" />
+              {t('drawer.refresh')}
+            </button>
           </div>
+
+          <MasterTable<LeaseRentDemandItem>
+            columns={demandTableColumns}
+            data={leaseDemandRows}
+            loading={isDemandsLoading}
+            loadingText={t('drawer.loading')}
+            emptyText={t('drawer.empty')}
+            getRowKey={(row) => String(row.id ?? row.month)}
+            height="md"
+            containerClassName="border-0 shadow-none"
+            maxBodyHeightClassName="max-h-[60vh]"
+            rowClassName={(row) =>
+              selectedPeriods.some(
+                (p) => p.trim().toLowerCase() === String(row.month ?? '').trim().toLowerCase()
+              )
+                ? 'bg-blue-50/60'
+                : ''
+            }
+            onRowClick={(row) => togglePeriod(String(row.month ?? ''))}
+            footerLeftContent={
+              <div className="flex items-center gap-3 text-[11px] text-slate-600">
+                <span>
+                  {t('drawer.amountSummary', {
+                    amount: formatCurrency(selectedPeriodsRent).replace('\u20b9 ', ''),
+                  }).replace('Total', 'Rent')}
+                </span>
+                <span>
+                  {t('drawer.amountSummary', {
+                    amount: formatCurrency(selectedPeriodsPenalty).replace('\u20b9 ', ''),
+                  }).replace('Total', 'Penalty')}
+                </span>
+                <span>
+                  {t('drawer.amountSummary', {
+                    amount: formatCurrency(selectedPeriodsGst).replace('\u20b9 ', ''),
+                  }).replace('Total', 'GST')}
+                </span>
+              </div>
+            }
+          />
         </div>
       </Drawer>
     </div>

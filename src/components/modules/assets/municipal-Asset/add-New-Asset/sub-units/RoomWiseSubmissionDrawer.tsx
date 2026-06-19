@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { X, Plus, Trash2, Edit2, Layers, Scissors, EyeIcon } from "lucide-react";
-import { Input } from "@/components/common";
+import { Input, SearchSelect } from "@/components/common";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 interface OffsetEntry {
   id: string;
@@ -32,16 +34,16 @@ interface Room {
   offsetLength: number; offsetWidth: number; offsetHeight: number;
   offsetBase1: number; offsetBase2: number; offsetRadius: number;
   offsetAreaSqM: number;    // auto-calculated cutout area
-  hasOffset: "No" | "Yes"; // whether this room has a cutout
+  hasOffset: "No" | "Yes" | ""; // whether this room has a cutout
   offsetOp?: "Add" | "Subtract"; // add or subtract offset
   offsets?: OffsetEntry[]; // list of multiple offset cutouts
   // Net area = areaSqM - offsetAreaSqM
   netAreaSqM: number; netAreaSqFt: number;
   count: number;
   // Outer=Yes → counted at 50% towards carpet (e.g. balcony, terrace)
-  outer: "No" | "Yes";
+  outer: "No" | "Yes" | "";
   // Minus=Yes → entire room deducted from building carpet total
-  minus: "No" | "Yes";
+  minus: "No" | "Yes" | "";
 }
 
 const ROOM_TYPES = [
@@ -100,18 +102,76 @@ function getDimFields(shape: string): { key: DimKey; label: string }[] {
   }
 }
 
-function ShapePreview({ shape, areaSqFt }: { shape: string; areaSqFt: number }) {
-  const label = `${areaSqFt > 0 ? areaSqFt.toFixed(2) : "0"} SqFt`;
-  const f = "rgba(59,130,246,0.12)", s = "#3b82f6";
-  const lbl = <text x="50" y="54" fill="#60a5fa" fontSize="7" fontWeight="bold" textAnchor="middle">{label}</text>;
+function ShapePreview({ shape, areaSqM, roomNo }: { shape: string; areaSqM: number; roomNo: string }) {
+  const f = "rgba(79, 70, 229, 0.08)"; // Very light Indigo
+  const s = "#4f46e5"; // Indigo-600 border
+  const roomLabel = roomNo || "1";
+  const areaLabel = `${areaSqM.toFixed(2)} sq.m`;
+
+  const getLabels = (ry: number, ty: number) => {
+    return (
+      <>
+        <text x="50" y={ty} fill="#1e1b4b" fontSize="8" fontWeight="bold" textAnchor="middle">
+          {roomLabel}
+        </text>
+        <rect x="25" y={ry} width="50" height="11" rx="2.5" ry="2.5" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.8" />
+        <text x="50" y={ry + 8} fill="#047857" fontSize="5.5" fontWeight="bold" textAnchor="middle">
+          {areaLabel}
+        </text>
+      </>
+    );
+  };
+
   switch (shape) {
-    case "Square": return <svg viewBox="0 0 100 100" className="w-28 h-28"><rect x="25" y="25" width="50" height="50" fill={f} stroke={s} strokeWidth={2} />{lbl}</svg>;
-    case "Triangle": return <svg viewBox="0 0 100 100" className="w-28 h-28"><polygon points="50,20 80,80 20,80" fill={f} stroke={s} strokeWidth={2} />{lbl}</svg>;
-    case "Trapezoid": return <svg viewBox="0 0 100 100" className="w-28 h-28"><polygon points="30,25 70,25 85,75 15,75" fill={f} stroke={s} strokeWidth={2} />{lbl}</svg>;
-    case "Circle": return <svg viewBox="0 0 100 100" className="w-28 h-28"><circle cx="50" cy="50" r="32" fill={f} stroke={s} strokeWidth={2} />{lbl}</svg>;
-    case "Semi Circle": return <svg viewBox="0 0 100 100" className="w-28 h-28"><path d="M 18 55 A 32 32 0 0 1 82 55 Z" fill={f} stroke={s} strokeWidth={2} />{lbl}</svg>;
-    case "Quarter": return <svg viewBox="0 0 100 100" className="w-28 h-28"><path d="M 50 50 L 82 50 A 32 32 0 0 0 50 18 Z" fill={f} stroke={s} strokeWidth={2} />{lbl}</svg>;
-    default: return <svg viewBox="0 0 100 100" className="w-28 h-28"><rect x="18" y="30" width="64" height="40" fill={f} stroke={s} strokeWidth={2} />{lbl}</svg>;
+    case "Square":
+      return (
+        <svg viewBox="0 0 100 100" className="w-40 h-40">
+          <rect x="25" y="25" width="50" height="50" rx="4" fill={f} stroke={s} strokeWidth={2.5} />
+          {getLabels(48, 40)}
+        </svg>
+      );
+    case "Triangle":
+      return (
+        <svg viewBox="0 0 100 100" className="w-40 h-40">
+          <polygon points="50,20 82,76 18,76" fill={f} stroke={s} strokeWidth={2.5} strokeLinejoin="round" />
+          {getLabels(52, 44)}
+        </svg>
+      );
+    case "Trapezoid":
+      return (
+        <svg viewBox="0 0 100 100" className="w-40 h-40">
+          <polygon points="30,25 70,25 85,75 15,75" fill={f} stroke={s} strokeWidth={2.5} strokeLinejoin="round" />
+          {getLabels(48, 40)}
+        </svg>
+      );
+    case "Circle":
+      return (
+        <svg viewBox="0 0 100 100" className="w-40 h-40">
+          <circle cx="50" cy="50" r="32" fill={f} stroke={s} strokeWidth={2.5} />
+          {getLabels(48, 40)}
+        </svg>
+      );
+    case "Semi Circle":
+      return (
+        <svg viewBox="0 0 100 100" className="w-40 h-40">
+          <path d="M 18 60 A 32 32 0 0 1 82 60 Z" fill={f} stroke={s} strokeWidth={2.5} strokeLinejoin="round" />
+          {getLabels(48, 40)}
+        </svg>
+      );
+    case "Quarter":
+      return (
+        <svg viewBox="0 0 100 100" className="w-40 h-40">
+          <path d="M 40 60 L 72 60 A 32 32 0 0 0 40 28 Z" fill={f} stroke={s} strokeWidth={2.5} strokeLinejoin="round" />
+          {getLabels(48, 40)}
+        </svg>
+      );
+    default: // Rectangle
+      return (
+        <svg viewBox="0 0 100 100" className="w-40 h-40">
+          <rect x="18" y="28" width="64" height="44" rx="4" fill={f} stroke={s} strokeWidth={2.5} />
+          {getLabels(48, 40)}
+        </svg>
+      );
   }
 }
 
@@ -122,16 +182,16 @@ function makeId() {
 
 function blankRoom(no: number): Room {
   return {
-    id: makeId(), roomNo: String(no), roomType: "Bed Room", shape: "Rectangle",
+    id: makeId(), roomNo: String(no), roomType: "", shape: "",
     length: 0, width: 0, height: 0, base1: 0, base2: 0, radius: 0,
     areaSqM: 0, areaSqFt: 0,
     offsetShape: "Rectangle", offsetLength: 0, offsetWidth: 0, offsetHeight: 0,
     offsetBase1: 0, offsetBase2: 0, offsetRadius: 0,
-    offsetAreaSqM: 0, hasOffset: "No",
+    offsetAreaSqM: 0, hasOffset: "",
     offsetOp: "Subtract",
     offsets: [],
     netAreaSqM: 0, netAreaSqFt: 0,
-    count: 1, outer: "No", minus: "No",
+    count: 1, outer: "", minus: "",
   };
 }
 
@@ -200,6 +260,7 @@ interface RoomWiseSubmissionDrawerProps {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }: RoomWiseSubmissionDrawerProps) {
+  const t = useTranslations("addAssetForm");
   const [rooms, setRooms] = useState<Room[]>([]);
   const [form, setForm] = useState<Room>(blankRoom(1));
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -348,7 +409,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
   // Append uncommitted offset to the temporary drawerOffsets list
   const handleAddOffsetToHistory = () => {
     if (tempOffsetAreaSqM <= 0) {
-      alert("Please enter valid dimensions for the offset.");
+      toast.error(t("subunit.toasts.failed") || "Please enter valid dimensions for the offset.");
       return;
     }
     const newEntry: OffsetEntry = {
@@ -409,7 +470,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
 
   // Add/update room
   const handleAdd = () => {
-    if (form.areaSqM <= 0) { alert("Enter valid dimensions (area must be > 0)."); return; }
+    if (form.areaSqM <= 0) { toast.error(t("subunit.toasts.failed") || "Enter valid dimensions (area must be > 0)."); return; }
     const computed = computeRoom(form);
     if (editingId) {
       setRooms((prev) => prev.map((r) => r.id === editingId ? { ...computed, id: editingId } : r));
@@ -424,7 +485,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
   const handleEdit = (r: Room) => {
     setEditingId(r.id);
     setForm({ ...r });
-    setIsFormOffsetOpen(r.hasOffset === "Yes");
+    setIsFormOffsetOpen(false);
   };
   const handleDelete = (id: string) => {
     setRooms((prev) => prev.filter((r) => r.id !== id));
@@ -478,9 +539,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
   const builtUpSqFt = sqmToSqft(builtUpSqM);
 
   const dimFields = getDimFields(form.shape);
-  const inp = "h-8 text-xs";
-
-
+  const inp = "h-7 text-[11px] font-semibold text-slate-700 border-slate-300 rounded-md";
 
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
@@ -493,10 +552,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
           <div className="flex items-center gap-3">
             <div className="p-1.5 bg-white/20 rounded-lg"><Layers className="size-4 text-white" /></div>
             <div>
-              <h2 className="text-sm font-black text-white uppercase tracking-wider">Room-Wise Submission</h2>
-              <p className="text-[9px] text-blue-100 font-bold uppercase tracking-widest mt-0.5">
-                Enter dimensions → area auto-calculated | Outer=−20% | Offset=Cutout
-              </p>
+              <h2 className="text-sm font-black text-white uppercase tracking-wider">{t("floorDetails.roomWiseSubmission")}</h2>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 hover:bg-blue-700 rounded-lg text-blue-100 hover:text-white"><X className="size-4" /></button>
@@ -510,38 +566,32 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
             <div className="lg:col-span-2 space-y-4">
 
               {/* Add Room Form */}
-              <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                <div className="flex items-center gap-1.5 border-b border-slate-100 pb-2">
-                  <Plus className="size-4 text-blue-600" />
-                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                    {editingId ? "Edit Room" : "Add New Room"}
-                  </span>
-                </div>
-
-                {/* Row 1 */}
+              <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-3 [&_label]:text-[11px] [&_label]:mb-1 [&_label]:!font-bold [&_label]:!uppercase [&_label]:!tracking-wide [&_label]:text-slate-700 [&_input]:!px-2 [&_input]:!py-1 [&_input]:!h-7 [&_input]:!text-[11px] [&_input]:!rounded-md [&_select]:!px-2 [&_select]:!h-7 [&_select]:!text-[11px] [&_select]:!rounded-md [&_select]:!text-slate-700 [&_select]:border-slate-300 [&_select]:bg-white">
+                {/* Row-wise inputs structured in a single 3-column grid */}
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Room No</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">{t("subunit.labels.roomNo")}</label>
                     <Input type="text" value={form.roomNo} onChange={(e) => setForm((p) => ({ ...p, roomNo: e.target.value }))} className={inp} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Room Type</label>
-                    <select value={form.roomType} onChange={(e) => setForm((p) => ({ ...p, roomType: e.target.value }))}
-                      className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}>
-                      {ROOM_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                    </select>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">{t("subunit.fields.roomType")}</label>
+                    <SearchSelect
+                      value={form.roomType}
+                      onChange={(name, value) => setForm((p) => ({ ...p, roomType: value }))}
+                      options={ROOM_TYPES.map((t) => ({ label: t, value: t }))}
+                      placeholder={t("subunit.placeholders.selectRoomType")}
+                    />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Shape</label>
-                    <select value={form.shape} onChange={(e) => setShape(e.target.value)}
-                      className={`${inp} w-full rounded-lg border border-slate-300 bg-white px-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200`}>
-                      {SHAPES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                    </select>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">{t("subunit.labels.shape")}</label>
+                    <SearchSelect
+                      value={form.shape}
+                      onChange={(name, value) => setShape(value)}
+                      options={SHAPES}
+                      placeholder={t("subunit.placeholders.selectShape")}
+                    />
                   </div>
-                </div>
 
-                {/* Row 2: Dimensions */}
-                <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(dimFields.length + 2, 5)}, 1fr)` }}>
                   {dimFields.map((df) => (
                     <div key={df.key} className="min-w-0">
                       <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">{df.label}</label>
@@ -551,62 +601,65 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                         onFocus={(e) => e.target.select()} className={`${inp} w-full`} placeholder="0" />
                     </div>
                   ))}
-                  <div className="min-w-0">
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Area (Sq.M) </label>
-                    <Input type="text" readOnly value={form.areaSqM.toFixed(4)} className={`${inp} bg-emerald-50 border-emerald-200 text-emerald-700 font-bold cursor-default w-full`} />
-                  </div>
-                  <div className="min-w-0">
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Area (SqFt)</label>
-                    <Input type="text" readOnly value={form.areaSqFt.toFixed(2)} className={`${inp} bg-slate-50 text-slate-600 font-mono cursor-default w-full`} />
-                  </div>
-                </div>
 
-                {/* Row 3: Count, Outer, Offset, Minus, Total */}
-                <div className="grid grid-cols-5 gap-2">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Room Count</label>
-                    <Input type="number" min={1}
-                      value={form.count === 0 ? "" : form.count}
-                      onChange={(e) => setForm((p) => computeRoom({ ...p, count: Math.max(1, Number(e.target.value)) }))}
-                      onFocus={(e) => e.target.select()} className={inp} />
+                    <label className="block text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-0.5">{t("subunit.labels.outerDeduction")}</label>
+                    <SearchSelect
+                      value={form.outer}
+                      onChange={(name, value) => setForm((p) => ({ ...p, outer: value as "Yes" | "No" }))}
+                      options={[
+                        { label: t("floorDetails.no"), value: "No" },
+                        { label: t("floorDetails.yes"), value: "Yes" },
+                      ]}
+                      placeholder={t("buttons.select")}
+                    />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-0.5">Outer (−20%)</label>
-                    <select value={form.outer} onChange={(e) => setForm((p) => ({ ...p, outer: e.target.value as "Yes" | "No" }))}
-                      className={`${inp} w-full rounded-lg border px-2 focus:outline-none focus:ring-2 focus:ring-blue-200 ${form.outer === "Yes" ? "border-blue-300 bg-blue-50 text-blue-700 font-bold" : "border-slate-300 bg-white text-slate-700"}`}>
-                      <option value="No">No</option>
-                      <option value="Yes">Yes</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-amber-600 uppercase tracking-wide mb-0.5">Offset (Cutout)</label>
-                    <select value={form.hasOffset} onChange={(e) => handleFormOffsetToggle(e.target.value as "Yes" | "No")}
-                      className={`${inp} w-full rounded-lg border px-2 focus:outline-none focus:ring-2 focus:ring-amber-200 ${form.hasOffset === "Yes" ? "border-amber-300 bg-amber-50 text-amber-700 font-bold" : "border-slate-300 bg-white text-slate-700"}`}>
-                      <option value="No">No</option>
-                      <option value="Yes">Yes</option>
-                    </select>
+                    <label className="block text-[10px] font-bold text-amber-600 uppercase tracking-wide mb-0.5">{t("subunit.labels.offsetCutout")}</label>
+                    <SearchSelect
+                      value={form.hasOffset}
+                      onChange={(name, value) => handleFormOffsetToggle(value as "Yes" | "No")}
+                      options={[
+                        { label: t("floorDetails.no"), value: "No" },
+                        { label: t("floorDetails.yes"), value: "Yes" },
+                      ]}
+                      placeholder={t("buttons.select")}
+                    />
                     {form.hasOffset === "Yes" && (
                       <button
                         type="button"
                         onClick={() => setIsFormOffsetOpen(true)}
                         className="text-[9px] text-amber-600 hover:text-amber-700 font-black uppercase flex items-center gap-0.5 mt-1 transition-colors mx-auto"
                       >
-                        <EyeIcon className="size-7.5" /> See Offset
+                        <EyeIcon className="size-7.5" /> {t("subunit.labels.seeOffset")}
                       </button>
                     )}
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-red-500 uppercase tracking-wide mb-0.5">Minus (deduct all)</label>
-                    <select value={form.minus} onChange={(e) => setForm((p) => ({ ...p, minus: e.target.value as "Yes" | "No" }))}
-                      className={`${inp} w-full rounded-lg border px-2 focus:outline-none focus:ring-2 focus:ring-red-200 ${form.minus === "Yes" ? "border-red-300 bg-red-50 text-red-700 font-bold" : "border-slate-300 bg-white text-slate-700"}`}>
-                      <option value="No">No</option>
-                      <option value="Yes">Yes</option>
-                    </select>
+                    <label className="block text-[10px] font-bold text-red-500 uppercase tracking-wide mb-0.5">{t("subunit.labels.minusDeduct")}</label>
+                    <SearchSelect
+                      value={form.minus}
+                      onChange={(name, value) => setForm((p) => ({ ...p, minus: value as "Yes" | "No" }))}
+                      options={[
+                        { label: t("floorDetails.no"), value: "No" },
+                        { label: t("floorDetails.yes"), value: "Yes" },
+                      ]}
+                      placeholder={t("buttons.select")}
+                    />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Net Total (Sq.M)</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">{t("subunit.labels.totalAreaSqM")}</label>
                     <Input type="text" readOnly
-                      value={(form.netAreaSqM * form.count).toFixed(4)}
+                      value={(() => {
+                        const baseArea = form.netAreaSqM * form.count;
+                        if (form.minus === "Yes") {
+                           return (-baseArea).toFixed(4);
+                        }
+                        if (form.outer === "Yes") {
+                           return (baseArea * 0.8).toFixed(4);
+                        }
+                        return baseArea.toFixed(4);
+                      })()}
                       className={`${inp} bg-blue-50 border-blue-200 text-blue-700 font-bold cursor-default`} />
                   </div>
                 </div>
@@ -614,11 +667,11 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                 <div className="flex justify-end gap-2 pt-1 border-t border-slate-100">
                   {editingId && (
                     <button type="button" onClick={() => { setEditingId(null); setForm(blankRoom(rooms.length + 1)); }}
-                      className="h-8 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-[10px] font-bold uppercase">Cancel</button>
+                      className="h-8 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-[10px] font-bold uppercase">{t("floorDetails.cancel")}</button>
                   )}
                   <button type="button" onClick={handleAdd}
                     className="h-8 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-1.5 text-[10px] font-black uppercase shadow-sm">
-                    <Plus className="size-3.5" />{editingId ? "Update Room" : "Add Room"}
+                    <Plus className="size-3.5" />{editingId ? t("subunit.labels.updateRoom") : t("subunit.labels.addRoom")}
                   </button>
                 </div>
               </div>
@@ -626,29 +679,25 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
               {/* Room Table */}
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                  <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Configured Rooms ({rooms.length})</span>
-                  <span className="text-[9px] text-slate-400">Outer rooms count at 50% • Minus rooms deducted • Offset = cutout from room</span>
+                  <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">{t("subunit.labels.addedRooms")}</span>
                 </div>
                 <div className="overflow-x-auto max-h-[260px] overflow-y-auto">
                   <table className="w-full text-xs text-left">
                     <thead className="bg-slate-100 sticky top-0 border-b border-slate-200">
-                      <tr className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                        <th className="px-2 py-2">No</th>
-                        <th className="px-2 py-2">Type</th>
-                        <th className="px-2 py-2">Shape</th>
-                        <th className="px-2 py-2 text-right">Area(m²)</th>
-                        <th className="px-2 py-2 text-center">Offset Cutout</th>
-                        <th className="px-2 py-2 text-right">Net(m²)</th>
-                        <th className="px-2 py-2 text-center">Cnt</th>
-                        <th className="px-2 py-2 text-center">Outer</th>
-                        <th className="px-2 py-2 text-center">Minus</th>
-                        <th className="px-2 py-2 text-right">Total(m²)</th>
-                        <th className="px-2 py-2 text-center">Act</th>
+                      <tr className="text-[10px] font-black text-slate-900 uppercase tracking-wider">
+                        <th className="px-2 py-2">{t("inventory.columns.no")}</th>
+                        <th className="px-2 py-2">{t("inventory.columns.type")}</th>
+                        <th className="px-2 py-2">{t("subunit.labels.shape")}</th>
+                        <th className="px-2 py-2 text-center">{t("subunit.labels.offsetCutout")}</th>
+                        <th className="px-2 py-2 text-center">{t("subunit.labels.outer")}</th>
+                        <th className="px-2 py-2 text-center">{t("subunit.labels.minus")}</th>
+                        <th className="px-2 py-2 text-right">{t("subunit.labels.totalAreaSqM")}</th>
+                        <th className="px-2 py-2 text-center">{t("inventory.columns.actions")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {rooms.length === 0 ? (
-                        <tr><td colSpan={11} className="px-3 py-6 text-center text-slate-400">No rooms added yet</td></tr>
+                        <tr><td colSpan={8} className="px-3 py-6 text-center text-slate-400">{t("subunit.labels.noRoomsAdded")}</td></tr>
                       ) : rooms.flatMap((r) => Array.from({ length: Math.max(1, r.count) }).map((_, idx) => {
                         const isGroup = r.count > 1;
                         const displayNo = isGroup ? `${r.roomNo}.${idx + 1}` : r.roomNo;
@@ -661,39 +710,34 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                               {r.shape}
                             </span>
                           </td>
-                          <td className="px-2 py-1.5 text-right font-mono font-bold text-slate-700 text-[10px]">{r.areaSqM.toFixed(2)}</td>
                           <td className="px-2 py-1.5 text-center">
                             <button
                               type="button"
                               onClick={() => toggleOffset(r.id, r.hasOffset === "Yes" ? "No" : "Yes")}
                               className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border flex items-center gap-1 mx-auto transition-colors ${r.hasOffset === "Yes"
-                                ? "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
-                                : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+                                 ? "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
+                                 : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
                                 }`}
                             >
                               <Scissors className="size-2.5" />
-                              {r.hasOffset === "Yes" ? `${r.offsetOp === "Add" ? "+" : "−"}${r.offsetAreaSqM.toFixed(2)}m²` : "No"}
+                              {r.hasOffset === "Yes" ? `${r.offsetOp === "Add" ? "+" : "−"}${r.offsetAreaSqM.toFixed(2)}m²` : t("floorDetails.no")}
                             </button>
                           </td>
-                          <td className={`px-2 py-1.5 text-right font-mono font-bold text-[10px] ${r.hasOffset === "Yes" ? "text-amber-800" : "text-slate-800"}`}>
-                            {r.netAreaSqM.toFixed(2)}
-                          </td>
-                          <td className="px-2 py-1.5 text-center font-bold text-slate-800" title={isGroup ? `Part of a group of ${r.count} rooms` : ""}>1</td>
                           <td className="px-2 py-1.5 text-center">
                             <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${r.outer === "Yes" ? "bg-blue-50 text-blue-700 border border-blue-200" : "bg-slate-50 text-slate-500"}`}>
-                              {r.outer === "Yes" ? "−20%" : "No"}
+                              {r.outer === "Yes" ? "−20%" : t("floorDetails.no")}
                             </span>
                           </td>
                           <td className="px-2 py-1.5 text-center">
                             <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${r.minus === "Yes" ? "bg-red-50 text-red-700 border border-red-200" : "bg-slate-50 text-slate-500"}`}>{r.minus}</span>
                           </td>
                           <td className={`px-2 py-1.5 text-right font-mono font-bold text-[10px] ${r.minus === "Yes" ? "text-red-700" : r.outer === "Yes" ? "text-blue-700" : "text-slate-900"}`}>
-                            {r.minus === "Yes" ? "-" : r.outer === "Yes" ? "×0.8=" : ""}
-                            {r.minus === "Yes"
-                              ? (r.netAreaSqM * 1).toFixed(2)
-                              : r.outer === "Yes"
-                                ? (r.netAreaSqM * 1 * 0.8).toFixed(2)
-                                : (r.netAreaSqM * 1).toFixed(2)}
+                            {(() => {
+                              const base = r.netAreaSqM;
+                              if (r.minus === "Yes") return `-${base.toFixed(2)}`;
+                              if (r.outer === "Yes") return (base * 0.8).toFixed(2);
+                              return base.toFixed(2);
+                            })()}
                           </td>
                           <td className="px-2 py-1.5 text-center flex gap-1 justify-center">
                             {idx === 0 && (
@@ -710,45 +754,132 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                   </table>
                 </div>
                 <div className="px-3 py-2 bg-slate-100 border-t border-slate-200 flex justify-between items-center text-xs font-bold text-slate-700">
-                  <span>TOTAL ROOMS: {rooms.reduce((s, r) => s + r.count, 0)}</span>
+                  <span>{t("subunit.labels.totalRooms")}: {rooms.reduce((s, r) => s + r.count, 0)}</span>
                   <div className="flex gap-4">
-                    <span>CARPET: <span className="text-blue-700">{carpetSqM.toFixed(2)} m² ({carpetSqFt.toFixed(2)} SqFt)</span></span>
-                    <span>BUILT-UP: <span className="text-emerald-700">{builtUpSqM.toFixed(2)} m² ({builtUpSqFt.toFixed(2)} SqFt)</span></span>
+                    <span>{t("subunit.labels.carpet")}: <span className="text-blue-700">{carpetSqM.toFixed(2)} m² ({carpetSqFt.toFixed(2)} SqFt)</span></span>
+                    <span>{t("subunit.labels.builtup")}: <span className="text-emerald-700">{builtUpSqM.toFixed(2)} m² ({builtUpSqFt.toFixed(2)} SqFt)</span></span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Right: Shape preview */}
-            <div className="lg:col-span-1">
-              <div className="bg-slate-900 text-slate-100 rounded-xl p-4 flex flex-col min-h-80 justify-between border border-slate-800 shadow-lg">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Live Shape Preview</span>
-                  <span className="px-2 py-0.5 bg-blue-900/50 text-blue-400 border border-blue-800/40 rounded text-[9px] font-bold uppercase">
-                    {form.roomType} #{form.roomNo}
+            <div className="lg:col-span-1 flex flex-col">
+              <div className="bg-white rounded-xl flex flex-col h-full border border-slate-200 shadow-sm overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white shrink-0">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1 bg-white/20 rounded-md">
+                      <Layers className="size-4 text-white" />
+                    </div>
+                    <span className="text-[11px] font-bold bg-blue-800/40 px-2 py-0.5 rounded-full border border-white/20">
+                      {t("subunit.labels.areaEquals", { area: form.areaSqM.toFixed(2) })}
+                    </span>
+                  </div>
+                  <span className="px-2 py-0.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
+                    <span className="size-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    {t("subunit.labels.roomNumberText", { no: form.roomNo || "1" })}
                   </span>
                 </div>
-                <div className="flex-1 flex flex-col items-center justify-center py-4">
-                  <ShapePreview shape={form.shape} areaSqFt={form.areaSqFt} />
+
+                {/* SVG/Shape container with light background and inner border */}
+                <div className="flex-1 flex flex-col items-center justify-center p-4 bg-slate-50/50 min-h-[220px]">
+                  <div className="w-full max-w-[200px] aspect-square bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-center p-3 relative">
+                    <ShapePreview shape={form.shape} areaSqM={form.areaSqM} roomNo={form.roomNo} />
+                  </div>
                 </div>
-                <div className="text-center border-t border-slate-800/60 pt-2 space-y-1">
-                  <p className="text-[9px] text-slate-500 font-mono">
-                    {formulaText(form.shape, form.length, form.width, form.height, form.base1, form.base2, form.radius)}
-                  </p>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">
-                    {form.shape} • {form.areaSqM.toFixed(2)} m² • {form.areaSqFt.toFixed(2)} SqFt
-                  </p>
-                  {form.outer === "Yes" && (
-                    <p className="text-[9px] text-blue-400 font-bold">Outer → 20% deduction → counts 80% = {(form.areaSqM * 0.8).toFixed(2)} m²</p>
-                  )}
-                  {form.hasOffset === "Yes" && (
-                    <p className="text-[9px] text-amber-500 font-bold">
-                      Offset ({(form.offsetOp || "Subtract") === "Add" ? "Added" : "Deducted"}) = {(form.offsetOp || "Subtract") === "Add" ? "+" : "−"}{form.offsetAreaSqM.toFixed(2)} m² (Net = {form.netAreaSqM.toFixed(2)} m²)
+
+                {/* Formula Box at the bottom */}
+                <div className="p-3 bg-white border-t border-slate-100 space-y-2 shrink-0">
+                  {/* Formula and Calculations box */}
+                  <div className="p-2 rounded-lg border-2 border-double border-blue-200 bg-blue-50/20 text-center space-y-1">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      {(() => {
+                        switch (form.shape) {
+                          case "Rectangle": return t("subunit.formulas.rectangle");
+                          case "Square": return t("subunit.formulas.square");
+                          case "Triangle": return t("subunit.formulas.triangle");
+                          case "Trapezoid": return t("subunit.formulas.trapezoid");
+                          case "Circle": return t("subunit.formulas.circle");
+                          case "Semi Circle": return t("subunit.formulas.semiCircle");
+                          case "Quarter": return t("subunit.formulas.quarter");
+                          default: return t("subunit.formulas.rectangle");
+                        }
+                      })()}
+                    </div>
+                    <div className="text-xs font-black text-slate-800 font-mono">
+                      {(() => {
+                        const L = form.length;
+                        const W = form.width;
+                        const H = form.height;
+                        const B1 = form.base1;
+                        const B2 = form.base2;
+                        const R = form.radius;
+                        switch (form.shape) {
+                          case "Rectangle": return `${L}m × ${W}m = ${form.areaSqM.toFixed(2)} sq.m`;
+                          case "Square": return `(${L}m)² = ${form.areaSqM.toFixed(2)} sq.m`;
+                          case "Triangle": return `½ × ${L}m × ${H}m = ${form.areaSqM.toFixed(2)} sq.m`;
+                          case "Trapezoid": return `½ × (${B1}m + ${B2}m) × ${H}m = ${form.areaSqM.toFixed(2)} sq.m`;
+                          case "Circle": return `π × (${R}m)² = ${form.areaSqM.toFixed(2)} sq.m`;
+                          case "Semi Circle": return `½ × π × (${R}m)² = ${form.areaSqM.toFixed(2)} sq.m`;
+                          case "Quarter": return `¼ × π × (${R}m)² = ${form.areaSqM.toFixed(2)} sq.m`;
+                          default: return `${L}m × ${W}m = ${form.areaSqM.toFixed(2)} sq.m`;
+                        }
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Calculation Breakdown Card */}
+                  <div className="space-y-1.5 mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center mb-1">
+                      {t("subunit.labels.calcBreakdown")}
                     </p>
-                  )}
-                  {form.minus === "Yes" && (
-                    <p className="text-[9px] text-red-400 font-bold">Minus → deducted from carpet total</p>
-                  )}
+                    <div className="text-[11px] text-slate-700 space-y-1 font-bold">
+                      <div className="flex justify-between px-1">
+                        <span className="text-slate-500 uppercase text-[9px] tracking-wider">{t("subunit.labels.baseArea", { shape: form.shape })}:</span>
+                        <span className="font-mono">{form.areaSqM.toFixed(2)} m² / {form.areaSqFt.toFixed(2)} SqFt</span>
+                      </div>
+                      
+                      {form.hasOffset === "Yes" && (
+                        <>
+                          <div className="flex justify-between px-1 text-amber-700">
+                            <span className="uppercase text-[9px] tracking-wider">{t("subunit.labels.offsetCutoutText", { op: (form.offsetOp || "Subtract") === "Add" ? t("subunit.labels.added") : t("subunit.labels.subtracted") })}:</span>
+                            <span className="font-mono">{(form.offsetOp || "Subtract") === "Add" ? "+" : "-"}{form.offsetAreaSqM.toFixed(2)} m²</span>
+                          </div>
+                          <div className="flex justify-between px-1 border-t border-slate-100 pt-1 text-slate-800">
+                            <span className="uppercase text-[9px] tracking-wider">{t("subunit.labels.netRoomArea")}:</span>
+                            <span className="font-mono">{form.netAreaSqM.toFixed(2)} m²</span>
+                          </div>
+                        </>
+                      )}
+                      
+                      {form.outer === "Yes" && (
+                        <div className="flex justify-between px-1 text-blue-600">
+                          <span className="uppercase text-[9px] tracking-wider">{t("subunit.labels.outerBalconyTerrace")}:</span>
+                          <span className="font-mono">counts 80% (-{(form.netAreaSqM * 0.2).toFixed(2)} m²)</span>
+                        </div>
+                      )}
+                      
+                      {form.minus === "Yes" && (
+                        <div className="flex justify-between px-1 text-red-600">
+                          <span className="uppercase text-[9px] tracking-wider">{t("subunit.labels.minusDeductRoom")}:</span>
+                          <span className="font-mono">-{form.netAreaSqM.toFixed(2)} m²</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between px-2.5 py-1 border-t-2 border-double border-blue-200 text-xs font-black text-blue-700 bg-blue-50/50 rounded-lg mt-1.5 shadow-sm">
+                        <span className="uppercase tracking-wide">{t("subunit.labels.finalContribution")}:</span>
+                        <span className="font-mono">
+                          {(() => {
+                            const base = form.netAreaSqM;
+                            if (form.minus === "Yes") return `-${base.toFixed(2)} m²`;
+                            if (form.outer === "Yes") return `${(base * 0.8).toFixed(2)} m²`;
+                            return `${base.toFixed(2)} m²`;
+                          })()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -756,16 +887,11 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 bg-white border-t border-slate-200 shrink-0 flex items-center justify-between">
-          <p className="text-[10px] text-slate-500">
-            Carpet: <strong className="text-blue-700">{carpetSqFt.toFixed(2)} SqFt ({carpetSqM.toFixed(2)} m²)</strong>
-            &nbsp;|&nbsp;Built-up: <strong className="text-emerald-700">{builtUpSqFt.toFixed(2)} SqFt ({builtUpSqM.toFixed(2)} m²)</strong>
-            &nbsp;— for <strong className="text-slate-800">{unit?.unitNumber || "this unit"}</strong>
-          </p>
+        <div className="px-4 py-3 bg-white border-t border-slate-200 shrink-0 flex items-center justify-end">
           <div className="flex gap-2">
-            <button onClick={onClose} className="px-4 py-1.5 border border-slate-300 hover:bg-slate-50 rounded-lg text-[10px] font-bold text-slate-700 uppercase">Close</button>
+            <button onClick={onClose} className="px-4 py-1.5 border border-slate-300 hover:bg-slate-50 rounded-lg text-[10px] font-bold text-slate-700 uppercase">{t("buttons.close")}</button>
             <button onClick={() => { onSaveRooms(rooms, carpetSqFt); onClose(); }}
-              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-[10px] font-bold text-white uppercase shadow-md">Save Data</button>
+              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-[10px] font-bold text-white uppercase shadow-md">{t("subunit.labels.saveData")}</button>
           </div>
         </div>
       </div>
@@ -781,9 +907,9 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
               <div className="flex items-center gap-2">
                 <div className="p-1.5 bg-white/20 rounded-lg"><Scissors className="size-4 text-white" /></div>
                 <div>
-                  <h3 className="text-sm font-black text-white uppercase tracking-wide">Offset Details</h3>
+                  <h3 className="text-sm font-black text-white uppercase tracking-wide">{t("subunit.labels.offsetDetails")}</h3>
                   <p className="text-[9px] text-amber-100 font-bold uppercase tracking-widest mt-0.5">
-                    Room No: {offsetRoom.roomNo} — enter cutout shape &amp; dimensions
+                    {t("subunit.labels.offsetSubtitle", { no: offsetRoom.roomNo })}
                   </p>
                 </div>
               </div>
@@ -797,7 +923,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
               {/* Total & Operation Toggles Row */}
               <div className="flex items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm shrink-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-700">Total:</span>
+                  <span className="text-xs font-bold text-slate-700">{t("subunit.labels.total")}:</span>
                   <div className="relative">
                     <input
                       type="text"
@@ -854,11 +980,11 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
 
                   {/* Select Shape */}
                   <div className="flex-1 min-w-[120px]">
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Select Shape</label>
-                    <select
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">{t("subunit.labels.selectShape")}</label>
+                    <SearchSelect
                       value={tempOffsetShape}
-                      onChange={(e) => {
-                        const newShape = e.target.value;
+                      onChange={(name, value) => {
+                        const newShape = value;
                         setTempOffsetShape(newShape);
                         // reset temp dims
                         setTempOffsetLength(0);
@@ -868,10 +994,9 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                         setTempOffsetBase2(0);
                         setTempOffsetRadius(0);
                       }}
-                      className="h-8 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
-                    >
-                      {SHAPES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                    </select>
+                      options={SHAPES}
+                      placeholder={t("subunit.placeholders.selectShape")}
+                    />
                   </div>
 
                   {/* Dimensions fields mapped dynamically based on selected shape */}
@@ -914,7 +1039,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
 
                   {/* Calculated Area */}
                   <div className="flex-1 min-w-[120px]">
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1 text-center">Calculated Area</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1 text-center">{t("subunit.labels.calcArea")}</label>
                     <div className="h-8 w-full rounded-lg border border-purple-300 bg-purple-50/50 flex items-center justify-center text-xs font-bold text-purple-700">
                       {tempOffsetAreaSqM.toFixed(2)} sq.m
                     </div>
@@ -943,24 +1068,24 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                   onClick={handleAddOffsetToHistory}
                   className="h-8 px-6 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-lg flex items-center justify-center gap-1.5 text-xs font-bold uppercase shadow-md transition-all duration-200 active:scale-95 cursor-pointer"
                 >
-                  Add
+                  {t("subunit.labels.add")}
                 </button>
               </div>
 
               {/* Operation History Table */}
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mt-4">
                 <div className="px-3 py-2 bg-teal-600 text-white text-center font-bold text-xs uppercase tracking-wider">
-                  Operation History
+                  {t("subunit.labels.opHistory")}
                 </div>
                 <table className="w-full text-xs text-left">
                   <thead className="bg-slate-100 border-b border-slate-200">
                     <tr className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                      <th className="px-3 py-2">No</th>
-                      <th className="px-3 py-2">Status</th>
-                      <th className="px-3 py-2">Shape</th>
-                      <th className="px-3 py-2">Dim.</th>
-                      <th className="px-3 py-2 text-right">Area (sq.m)</th>
-                      <th className="px-3 py-2 text-center">Del</th>
+                      <th className="px-3 py-2">{t("inventory.columns.no")}</th>
+                      <th className="px-3 py-2">{t("inventory.columns.condition")}</th>
+                      <th className="px-3 py-2">{t("subunit.labels.shape")}</th>
+                      <th className="px-3 py-2">{t("subunit.labels.dim")}</th>
+                      <th className="px-3 py-2 text-right">{t("subunit.labels.areaSqM")}</th>
+                      <th className="px-3 py-2 text-center">{t("subunit.labels.del")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -973,7 +1098,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                               ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                               : "bg-orange-50 text-orange-700 border border-orange-200"
                               }`}>
-                              {off.op === "Add" ? "+ Add" : "- Sub"}
+                              {off.op === "Add" ? `+ ${t("subunit.labels.add")}` : `- ${t("subunit.labels.sub")}`}
                             </span>
                           </td>
                           <td className="px-3 py-2 font-semibold text-slate-700">{off.shape}</td>
@@ -1002,7 +1127,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                     ) : (
                       <tr>
                         <td colSpan={6} className="px-3 py-6 text-center text-slate-400">
-                          No operations added yet. Enter details above and click Add.
+                          {t("subunit.labels.noOpsAdded")}
                         </td>
                       </tr>
                     )}
@@ -1010,7 +1135,7 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
                 </table>
                 {drawerOffsets.length > 0 && (
                   <div className="px-3 py-2 bg-blue-50 border-t border-slate-200 text-xs font-bold text-slate-700 flex justify-between">
-                    <span>Net Adjustment:</span>
+                    <span>{t("subunit.labels.netAdjustment")}:</span>
                     <span className={drawerNetAdjustmentSqM >= 0 ? "text-emerald-700" : "text-orange-700"}>
                       {drawerNetAdjustmentSqM >= 0 ? "+" : "−"}{Math.abs(drawerNetAdjustmentSqM).toFixed(2)} sq.m
                     </span>
@@ -1023,11 +1148,11 @@ export function RoomWiseSubmissionDrawer({ isOpen, onClose, unit, onSaveRooms }:
             <div className="px-4 py-3 bg-white border-t border-slate-200 shrink-0 flex items-center justify-center gap-3">
               <button onClick={handleOkSave}
                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold uppercase shadow-sm transition-all active:scale-95 cursor-pointer">
-                OK
+                {t("subunit.labels.ok")}
               </button>
               <button onClick={handleDrawerClose}
                 className="px-6 py-2 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 uppercase transition-all active:scale-95 cursor-pointer">
-                Close
+                {t("buttons.close")}
               </button>
             </div>
           </div>

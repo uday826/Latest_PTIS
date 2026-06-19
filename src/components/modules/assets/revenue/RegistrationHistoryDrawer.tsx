@@ -1,11 +1,13 @@
 import { useEffect, useState, useTransition } from 'react';
 import { Building2, Calendar, FileText, Clock, Loader2 } from 'lucide-react';
 import { Button, Drawer, Label, useToast } from '@/components/common';
+import { useTranslations } from 'next-intl';
 import type { RegistrationHistoryModalProps } from '../../../../types/asset/revenue.types';
 import { getPreviousTenantHistoryAction } from '@/app/[locale]/assets/revenue/manage-renters/actions';
 import type { PreviousTenantHistoryItem } from '@/lib/api/asset/asset-lease-rent-details.service';
 
 export function RegistrationHistoryModal({ record, onClose }: RegistrationHistoryModalProps) {
+  const t = useTranslations('revenueManagement');
   const [historyItems, setHistoryItems] = useState<PreviousTenantHistoryItem[]>([]);
   const [isPending, startTransition] = useTransition();
   const { error: toastError } = useToast();
@@ -17,10 +19,10 @@ export function RegistrationHistoryModal({ record, onClose }: RegistrationHistor
         const items = await getPreviousTenantHistoryAction(Number(record.id));
         setHistoryItems(items);
       } catch {
-        toastError('Failed to load registration history.');
+        toastError(t('drawers.loadHistoryFailed'));
       }
     });
-  }, [record.id, toastError]);
+  }, [record.id, toastError, t]);
 
   const drawerTitle = (
     <div className="flex items-center gap-3">
@@ -28,15 +30,15 @@ export function RegistrationHistoryModal({ record, onClose }: RegistrationHistor
         <Clock className="w-5 h-5 text-purple-600" />
       </div>
       <div>
-        <h2 className="font-bold text-base text-slate-800 leading-tight">Registration History</h2>
-        <p className="text-[10px] text-slate-500 font-medium">View complete history and changes</p>
+        <h2 className="font-bold text-base text-slate-800 leading-tight">{t('drawers.historyTitle')}</h2>
+        <p className="text-[10px] text-slate-500 font-medium">{t('drawers.historySubtitle')}</p>
       </div>
     </div>
   );
 
   const drawerFooter = (
     <Button onClick={onClose} variant="primary" size="sm">
-      Close
+      {t('drawers.close')}
     </Button>
   );
 
@@ -54,16 +56,16 @@ export function RegistrationHistoryModal({ record, onClose }: RegistrationHistor
                 {record.shopName || '-'}
               </h3>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Registration ID: {record.id || '-'}
+                {t('drawers.registrationId')}: {record.id || '-'}
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { label: 'Category', value: record.category || '-' },
-              { label: 'Tenant Name', value: record.tenantName || '-' },
-              { label: 'Lease Type', value: record.leaseType || '-' }
+              { label: t('drawers.assetCategory'), value: record.category || '-' },
+              { label: t('tables.cols.tenantName'), value: record.tenantName || '-' },
+              { label: t('tables.cols.leaseType'), value: record.leaseType || '-' }
             ].map((f, i) => (
               <div key={i} className="space-y-1.5">
                 <Label className="text-[10px] font-bold text-slate-500">{f.label}</Label>
@@ -79,7 +81,7 @@ export function RegistrationHistoryModal({ record, onClose }: RegistrationHistor
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
             <Calendar className="w-4 h-4 text-purple-600" />
-            <h3 className="font-bold text-sm text-slate-800">Status Timeline</h3>
+            <h3 className="font-bold text-sm text-slate-800">{t('drawers.timeline')}</h3>
           </div>
           
           {isPending ? (
@@ -112,7 +114,7 @@ export function RegistrationHistoryModal({ record, onClose }: RegistrationHistor
               ))}
             </div>
           ) : (
-            <p className="text-xs text-slate-400 text-center font-medium">No timeline history records found.</p>
+            <p className="text-xs text-slate-400 text-center font-medium">{t('drawers.emptyTimeline')}</p>
           )}
         </div>
 
@@ -120,14 +122,14 @@ export function RegistrationHistoryModal({ record, onClose }: RegistrationHistor
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
             <FileText className="w-4 h-4 text-purple-600" />
-            <h3 className="font-bold text-sm text-slate-800">Lease Details</h3>
+            <h3 className="font-bold text-sm text-slate-800">{t('drawers.details')}</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             {[
-              { label: 'Lease Type', value: record.leaseType || 'Rent' },
-              { label: 'Rent Amount', value: record.rentAmount != null ? `₹ ${record.rentAmount.toLocaleString('en-IN')}` : '-' },
-              { label: 'Payment Frequency', value: record.paymentFrequency || 'Monthly' }
+              { label: t('tables.cols.leaseType'), value: record.leaseType || 'Rent' },
+              { label: t('tables.cols.rentAmount'), value: record.rentAmount != null ? `₹ ${record.rentAmount.toLocaleString('en-IN')}` : '-' },
+              { label: t('tables.cols.paymentFrequency'), value: record.paymentFrequency || 'Monthly' }
             ].map((f, i) => (
               <div key={i} className="space-y-1.5">
                 <Label className="text-[10px] font-bold text-slate-500">{f.label}</Label>

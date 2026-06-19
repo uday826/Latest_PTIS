@@ -13,7 +13,7 @@ import {
   Building2,
   MapPinned,
 } from 'lucide-react';
-import { Button, Drawer, MasterTable, type Column, useConfirm, useToast } from '@/components/common';
+import { Button, Drawer, MasterTable, type Column, useToast } from '@/components/common';
 import type { ApprovalLeaseModalProps } from '../../../../types/asset/revenue.types';
 import { approveAction, getPreviousTenantHistoryAction } from '@/app/[locale]/assets/revenue/manage-renters/actions';
 import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
@@ -25,6 +25,8 @@ import {
   parseFileNameFromDisposition,
 } from '@/components/modules/assets/municipal-Asset/detail-tabs/documentHelpers';
 import { RemarkActionDrawer } from './RemarkActionDrawer';
+
+import { useTranslations } from 'next-intl';
 
 function isBlank(value: unknown): boolean {
   return value === null || value === undefined || value === '';
@@ -78,7 +80,7 @@ interface ConstructionTableRow extends Record<string, unknown> {
   shopArea: string;
   renterName: string;
   monthlyRent: string;
-  bharaniKaalavadi: string;
+  bharaniKaalavadi: number;
   status: string;
 }
 
@@ -93,7 +95,8 @@ export function ApprovalLeaseModal({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const { confirm } = useConfirm();
+  const t = useTranslations('revenueManagement');
+
   const { success: toastSuccess, error: toastError } = useToast();
   const [historyItems, setHistoryItems] = useState<any[]>([]);
 
@@ -238,7 +241,7 @@ export function ApprovalLeaseModal({
 
   const leftMediaPanels = [
     {
-      title: 'Asset Photo',
+      title: t('drawers.assetPhoto'),
       doc:
         mediaCards.find((doc) => {
           const name = getMediaSearchText(doc);
@@ -251,27 +254,34 @@ export function ApprovalLeaseModal({
           );
         }) ?? null,
       fallbackIcon: Building2,
-      fallbackText: 'Asset Photo',
+      fallbackText: t('drawers.assetPhoto'),
     },
     {
-      title: 'OP Plan',
+      title: t('drawers.opPlan'),
       doc: mediaCards.find((doc) => {
         const name = getMediaSearchText(doc);
         return name.includes('op plan') || (name.includes('plan') && !name.includes('dp plan') && !name.includes('asset photo plan'));
       }) ?? null,
       fallbackIcon: Grid,
-      fallbackText: 'OP Plan',
+      fallbackText: t('drawers.opPlan'),
     },
     {
-      title: 'DP Plan',
+      title: t('drawers.dpPlan'),
       doc: mediaCards.find((doc) => {
         const name = getMediaSearchText(doc);
         return name.includes('dp plan') || name.includes('asset photo plan') || name.includes('digital plan');
       }) ?? null,
       fallbackIcon: MapPinned,
-      fallbackText: 'DP Plan',
+      fallbackText: t('drawers.dpPlan'),
     },
   ] as const;
+
+  const activePanels = leftMediaPanels.filter((panel) => {
+    if (panel.title === t('drawers.opPlan') && panel.doc === null) {
+      return false;
+    }
+    return true;
+  });
 
   useEffect(() => {
     const imageDocuments = [...documentCards, ...mediaCards].filter((doc) => doc.isImage);
@@ -343,13 +353,13 @@ export function ApprovalLeaseModal({
   const asset = assetDetails as Record<string, any> | null;
 
   const currentTenantFields = [
-    { l: 'Sr. No:', v: toDisplay(record.id), l2: 'Duration:', v2: record.leaseDurationDisplay ?? '-' },
-    { l: 'Application Type:', v: record.applicationTypeName ?? '-', l2: 'Lease Period:', v2: `${toDateDisplay(record.leaseStartDate)} - ${toDateDisplay(record.leaseEndDate)}` },
-    { l: 'Tenant Name:', v: record.tenantName ?? '-', vClass: 'font-bold text-slate-900', l2: 'Rent (₹):', v2: record.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-', v2Class: 'font-bold text-red-600' },
-    { l: 'Mobile:', v: record.tenantMobile ?? '-', l2: 'Deposit (₹):', v2: record.securityDeposit != null ? `₹ ${toCurrencyDisplay(record.securityDeposit)}` : '-' },
-    { l: 'Tenant Type:', v: record.tenantType ?? '-', l2: 'Payment Frequency:', v2: record.paymentFrequency ?? '-' },
-    { l: 'Email:', v: record.tenantEmail ?? '-', l2: 'Aadhaar No:', v2: record.tenantAadhaarNo ?? '-' },
-    { l: 'PAN Card No:', v: record.tenantPanCardNo ?? '-', l2: 'Status (Active):', v2: toDisplay(record.isActive) },
+    { l: `${t('drawers.srNo')}:`, v: toDisplay(record.id), l2: `${t('tables.cols.duration')}:`, v2: record.leaseDurationDisplay ?? '-' },
+    { l: `${t('drawers.form.applicationType')}:`, v: record.applicationTypeName ?? '-', l2: `${t('drawers.leasePeriod')}:`, v2: `${toDateDisplay(record.leaseStartDate)} - ${toDateDisplay(record.leaseEndDate)}` },
+    { l: `${t('tables.cols.tenantName')}:`, v: record.tenantName ?? '-', vClass: 'font-bold text-slate-900', l2: `${t('tables.cols.rentAmount')}:`, v2: record.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-', v2Class: 'font-bold text-red-600' },
+    { l: `${t('drawers.form.mobileNumber')}:`, v: record.tenantMobile ?? '-', l2: `${t('drawers.form.securityDeposit')}:`, v2: record.securityDeposit != null ? `₹ ${toCurrencyDisplay(record.securityDeposit)}` : '-' },
+    { l: `${t('drawers.form.tenantType')}:`, v: record.tenantType ?? '-', l2: `${t('drawers.form.paymentFrequency')}:`, v2: record.paymentFrequency ?? '-' },
+    { l: `${t('drawers.form.emailAddress')}:`, v: record.tenantEmail ?? '-', l2: `${t('drawers.form.aadhaarNumber')}:`, v2: record.tenantAadhaarNo ?? '-' },
+    { l: `${t('drawers.form.panNumber')}:`, v: record.tenantPanCardNo ?? '-', l2: `${t('drawers.statusActive')}:`, v2: toDisplay(record.isActive) },
   ];
 
   const assetNumber = asset?.assetNo ?? '-';
@@ -357,11 +367,11 @@ export function ApprovalLeaseModal({
   const assetCategory = asset?.assetCategoryName ?? '-';
   const shopNameVal = record.shopName ?? '-';
   const overviewColumns: Column<OverviewTableRow>[] = [
-    { key: 'zoneNo', label: 'Zone No', align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'wardNo', label: 'Ward No', align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'unitName', label: 'Unit Name', align: 'center', width: '170px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopNumber', label: 'Unit Number', align: 'center', width: '110px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopActNumber', label: 'Unit Act Number', align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'zoneNo', label: t('drawers.cols.zoneNo'), align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'wardNo', label: t('drawers.cols.wardNo'), align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'unitName', label: t('drawers.cols.unitName'), align: 'center', width: '170px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopNumber', label: t('drawers.cols.unitNumber'), align: 'center', width: '110px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopActNumber', label: t('drawers.cols.unitActNumber'), align: 'center', width: '120px', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
   ];
 
   const overviewData: OverviewTableRow[] = [
@@ -375,21 +385,21 @@ export function ApprovalLeaseModal({
   ];
 
   const constructionColumns: Column<ConstructionTableRow>[] = [
-    { key: 'shopNo', label: 'Unit No.', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopArea', label: 'Unit Area (sq.mt)', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'renterName', label: 'Renter Name', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'monthlyRent', label: 'Monthly Rent (₹)', align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
-    { key: 'bharaniKaalavadi', label: 'Duration', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'status', label: 'Status', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopNo', label: t('drawers.cols.unitNumber'), align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopArea', label: t('drawers.cols.unitArea'), align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'renterName', label: t('tables.cols.tenantName'), align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'monthlyRent', label: t('tables.cols.rentAmount'), align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
+    { key: 'bharaniKaalavadi', label: t('tables.cols.duration'), align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'status', label: t('tables.cols.status'), align: 'center', cellClassName: 'whitespace-nowrap' },
   ];
 
   const constructionData: ConstructionTableRow[] = [
     {
       shopNo: record.shopNo ?? '-',
-      shopArea: record.totalAreaSqFt != null ? String(record.totalAreaSqFt) : '-',
+      shopArea: record.totalAreaSqFt != null ? Number(record.totalAreaSqFt).toFixed(2) : '-',
       renterName: record.tenantName ?? '-',
       monthlyRent: record.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-',
-      bharaniKaalavadi: record.leaseDurationDisplay ?? '-',
+      bharaniKaalavadi: record.duration ?? 0,
       status: record.workflowStatus ?? '-',
     },
   ];
@@ -400,29 +410,29 @@ export function ApprovalLeaseModal({
   const expectedAnnualRentVal = totalMonthlyRentVal ? totalMonthlyRentVal * 12 : undefined;
 
   const rentSummaryRows = [
-    { l: 'सद्यस्थितीतील मासिक भाडे उत्पन्न', v: currentMonthlyRentVal ? `₹ ${toCurrencyDisplay(currentMonthlyRentVal)}` : '-' },
-    { l: 'मुदत संपल्यानंतरही वाढीव भाडे', v: revisedRentVal ? `₹ ${toCurrencyDisplay(revisedRentVal)}` : '-' },
-    { l: 'एकूण मासिक भाडे उत्पन्न', v: totalMonthlyRentVal ? `₹ ${toCurrencyDisplay(totalMonthlyRentVal)}` : '-' },
-    { l: 'वार्षिक भाडे उत्पन्न (अपेक्षित)', v: expectedAnnualRentVal ? `₹ ${toCurrencyDisplay(expectedAnnualRentVal)}` : '-' },
+    { l: t('rentSummary.currentRent'), v: currentMonthlyRentVal ? `₹ ${toCurrencyDisplay(currentMonthlyRentVal)}` : '-' },
+    { l: t('rentSummary.revisedRent'), v: revisedRentVal ? `₹ ${toCurrencyDisplay(revisedRentVal)}` : '-' },
+    { l: t('rentSummary.totalMonthlyRent'), v: totalMonthlyRentVal ? `₹ ${toCurrencyDisplay(totalMonthlyRentVal)}` : '-' },
+    { l: t('rentSummary.expectedAnnualRent'), v: expectedAnnualRentVal ? `₹ ${toCurrencyDisplay(expectedAnnualRentVal)}` : '-' },
   ];
 
   const drawerTitle = (
     <div className="flex items-center gap-2">
       <FileText className="w-5 h-5 text-black" />
-      <h2 className="font-bold text-sm tracking-wide text-black">Approval</h2>
+      <h2 className="font-bold text-sm tracking-wide text-black">{t('tabs.approval')}</h2>
     </div>
   );
 
   const drawerFooter = (
     <>
       <Button onClick={onClose} variant="secondary" size="sm" icon={X} disabled={isPending}>
-        Cancel
+        {t('drawers.cancel')}
       </Button>
       <Button variant="danger" size="sm" icon={ShieldX} onClick={handleRevertClick} disabled={isPending}>
-        Revert to Verification
+        {t('drawers.revertToVerification')}
       </Button>
       <Button variant="success" size="sm" icon={FileCheck2} onClick={handleOpenRemarkDrawer} disabled={isPending}>
-        {isPending ? 'Approving...' : 'Approve'}
+        {isPending ? 'Approving...' : t('drawers.approve')}
       </Button>
     </>
   );
@@ -434,17 +444,17 @@ export function ApprovalLeaseModal({
         <div className="grid grid-cols-1 md:grid-cols-[1fr_200px_200px] gap-4 mb-4">
           <div className="bg-white border border-slate-200 rounded-lg p-3 relative mt-3 shadow-sm">
             <span className="absolute -top-3 left-4 bg-[#0a869e] text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm">
-              ASSET INFORMATION
+              {t('drawers.assetInformation')}
             </span>
             <div className="grid grid-cols-[120px_1fr] gap-x-2 gap-y-2 mt-1">
-              <span className="text-[10px] text-slate-500 font-bold">Asset Name</span>
+              <span className="text-[10px] text-slate-500 font-bold">{t('drawers.assetName')}</span>
               <span className="text-xs font-bold text-red-600">{buildingAssetName || '-'}</span>
-              <span className="text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-2">Address</span>
+              <span className="text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-2">{t('drawers.address')}</span>
               <span className="text-xs font-bold text-slate-800 border-t border-slate-100 pt-2">{record.tenantAddress ?? '-'}</span>
             </div>
           </div>
-          <InfoCard label="ASSET NO" value={assetNumber} />
-          <InfoCard label="WORKFLOW STATUS" value={record.workflowStatus ?? '-'} />
+          <InfoCard label={t('drawers.assetNo')} value={assetNumber} />
+          <InfoCard label={t('drawers.workflowStatus')} value={record.workflowStatus ?? '-'} />
         </div>
 
         {/* Overview table */}
@@ -514,19 +524,19 @@ export function ApprovalLeaseModal({
                         </span>
                       </div>
                       <div className="text-[9px] text-slate-500 font-semibold">
-                        Mobile: {item.tenantMobile || '-'} | Type: {item.leaseType || '-'}
+                        {t('drawers.form.mobileNumber')}: {item.tenantMobile || '-'} | {t('tables.cols.leaseType')}: {item.leaseType || '-'}
                       </div>
                       {item.leaseStartDate && (
                         <div className="text-[9px] text-slate-400 font-medium">
-                          Duration: {new Date(item.leaseStartDate).toLocaleDateString('en-IN')} - {item.leaseEndDate ? new Date(item.leaseEndDate).toLocaleDateString('en-IN') : 'Present'}
+                          {t('tables.cols.duration')}: {new Date(item.leaseStartDate).toLocaleDateString('en-IN')} - {item.leaseEndDate ? new Date(item.leaseEndDate).toLocaleDateString('en-IN') : 'Present'}
                         </div>
                       )}
                       <div className="text-[9px] text-slate-500 font-semibold">
-                        Rent: ₹ {item.monthlyRent ? item.monthlyRent.toLocaleString('en-IN') : '-'}
+                        {t('tables.cols.rentAmount')}: ₹ {item.monthlyRent ? item.monthlyRent.toLocaleString('en-IN') : '-'}
                       </div>
                       {item.remarks && (
                         <div className="text-[8px] text-slate-400 italic">
-                          Remarks: &quot;{item.remarks}&quot;
+                          {t('tables.cols.remarks')}: &quot;{item.remarks}&quot;
                         </div>
                       )}
                     </div>
@@ -548,7 +558,7 @@ export function ApprovalLeaseModal({
             {/* Current tenant */}
             <div className="flex-1 flex flex-col">
               <div className="bg-slate-50 border-b border-slate-200 text-[#008f11] text-[10px] font-bold py-1.5 flex items-center justify-center gap-1">
-                <User className="w-3.5 h-3.5" /> Current Tenant
+                <User className="w-3.5 h-3.5" /> {t('drawers.currentTenant')}
               </div>
               <div className="p-0">
                 <table className="w-full text-[9px] font-semibold text-slate-700">
@@ -562,27 +572,27 @@ export function ApprovalLeaseModal({
                       </tr>
                     ))}
                     <tr>
-                      <td className="px-3 py-1.5 bg-slate-50/50">Lease/Rent Start:</td>
+                      <td className="px-3 py-1.5 bg-slate-50/50">{t('drawers.form.leaseStartDate')}:</td>
                       <td className="px-3 py-1.5 border-r border-slate-100">{toDateDisplay(record.leaseStartDate)}</td>
-                      <td className="px-3 py-1.5 bg-slate-50/50">Address:</td>
+                      <td className="px-3 py-1.5 bg-slate-50/50">{t('drawers.address')}:</td>
                       <td className="px-3 py-1.5">{record.tenantAddress ?? '-'}</td>
                     </tr>
                     <tr>
-                      <td className="px-3 py-1.5 bg-slate-50/50">Lease/Rent End:</td>
+                      <td className="px-3 py-1.5 bg-slate-50/50">{t('drawers.form.leaseEndDate')}:</td>
                       <td className="px-3 py-1.5 border-r border-slate-100">{toDateDisplay(record.leaseEndDate)}</td>
-                      <td className="px-3 py-1.5 bg-slate-50/50">Reason:</td>
+                      <td className="px-3 py-1.5 bg-slate-50/50">{t('tables.cols.remarks')}:</td>
                       <td className="px-3 py-1.5">{record.remarks ?? record.reason ?? record.rejectionReason ?? '-'}</td>
                     </tr>
                     {Boolean(record.oldLeaseStartDate || record.oldLeaseEndDate || record.terminationDate) && (
                       <>
                         <tr>
-                          <td className="px-3 py-1.5 bg-slate-50/50">Old Lease Start:</td>
+                          <td className="px-3 py-1.5 bg-slate-50/50">{t('drawers.form.oldLeaseStartDate')}:</td>
                           <td className="px-3 py-1.5 border-r border-slate-100">{toDateDisplay(record.oldLeaseStartDate)}</td>
-                          <td className="px-3 py-1.5 bg-slate-50/50">Termination Date:</td>
+                          <td className="px-3 py-1.5 bg-slate-50/50">{t('drawers.form.vacatingDate')}:</td>
                           <td className="px-3 py-1.5">{toDateDisplay(record.terminationDate)}</td>
                         </tr>
                         <tr>
-                          <td className="px-3 py-1.5 bg-slate-50/50">Old Lease End:</td>
+                          <td className="px-3 py-1.5 bg-slate-50/50">{t('drawers.form.oldLeaseEndDate')}:</td>
                           <td className="px-3 py-1.5 border-r border-slate-100">{toDateDisplay(record.oldLeaseEndDate)}</td>
                           <td className="px-3 py-1.5 bg-slate-50/50"></td>
                           <td className="px-3 py-1.5"></td>
@@ -596,61 +606,62 @@ export function ApprovalLeaseModal({
           </div>
         </div>
 
-        {/* Bottom grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_250px] gap-4 mb-4">
-          {/* Left: media cards from API */}
-          <div className="flex flex-col gap-3">
-            {leftMediaPanels.map((panel) => {
-              const doc = panel.doc;
-              const thumbUrl = doc ? thumbnailUrls[String(doc.id)] : null;
+          <div className={`grid grid-cols-1 gap-4 mb-4 ${activePanels.length > 0 ? 'lg:grid-cols-[240px_1fr_250px]' : 'lg:grid-cols-[1fr_250px]'}`}>
+            {/* Left: media cards from API */}
+            {activePanels.length > 0 && (
+              <div className="flex h-full flex-col justify-center gap-6">
+                {activePanels.map((panel) => {
+                  const doc = panel.doc;
+                  const thumbUrl = doc ? thumbnailUrls[String(doc.id)] : null;
 
-              return (
-                <button
-                  key={panel.title}
-                  type="button"
-                  onClick={() => {
-                    if (doc) openDocument(doc);
-                  }}
-                  className="group relative min-h-[120px] flex-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-b from-slate-900/0 via-slate-900/0 to-slate-900/15" />
-                  <span className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-[#0a869e] px-3 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm">
-                    {panel.title}
-                  </span>
+                  return (
+                    <button
+                      key={panel.title}
+                      type="button"
+                      onClick={() => {
+                        if (doc) openDocument(doc);
+                      }}
+                      className="group relative w-full aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/0 via-slate-900/0 to-slate-900/15" />
+                      <span className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-[#0a869e] px-3 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm text-center whitespace-nowrap">
+                        {panel.title}
+                      </span>
 
-                  {doc && thumbUrl ? (
-                    <img
-                      src={thumbUrl}
-                      alt={panel.title}
-                      className="absolute inset-0 h-full w-full object-contain bg-slate-50 p-2"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-                      <div className="flex flex-col items-center gap-1 text-center">
-                        <panel.fallbackIcon className="h-8 w-8 text-slate-300" />
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                          {panel.fallbackText}
-                        </span>
-                        <span className="text-[9px] text-slate-400">No preview available</span>
-                      </div>
-                    </div>
-                  )}
+                      {doc && thumbUrl ? (
+                        <img
+                          src={thumbUrl}
+                          alt={panel.title}
+                          className="absolute inset-0 h-full w-full object-contain bg-slate-50 p-2"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+                          <div className="flex flex-col items-center gap-1 text-center">
+                            <panel.fallbackIcon className="h-8 w-8 text-slate-300" />
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                              {panel.fallbackText}
+                            </span>
+                            <span className="text-[9px] text-slate-400">{t('drawers.noPreview')}</span>
+                          </div>
+                        </div>
+                      )}
 
-                  {doc ? (
-                    <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-900/65 to-transparent px-2 pb-2 pt-6">
-                      <div className="text-[9px] font-semibold text-white/90">{doc.label}</div>
-                    </div>
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
+                      {doc ? (
+                        <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-900/65 to-transparent px-2 pb-2 pt-6">
+                          <div className="text-[9px] font-semibold text-white/90">{doc.label}</div>
+                        </div>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
           {/* Center: uploaded documents from API */}
           <div className="space-y-6">
             <div className="border border-slate-200 rounded-lg relative p-4 flex flex-col bg-white shadow-sm min-h-[380px]">
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0a869e] text-white text-[9px] font-bold px-3 py-0.5 rounded shadow-sm flex items-center gap-1">
-                <FileText className="w-3 h-3" /> Uploaded Documents
+                <FileText className="w-3 h-3" /> {t('drawers.uploadedDocs')}
               </span>
 
               {documentCards.length > 0 ? (
@@ -677,7 +688,7 @@ export function ApprovalLeaseModal({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[10px] font-bold text-slate-700 truncate">{doc.label}</div>
-                        <div className="text-[9px] font-bold text-emerald-600 mt-0.5">View Document</div>
+                        <div className="text-[9px] font-bold text-emerald-600 mt-0.5">{t('drawers.viewDoc')}</div>
                         {doc.uploadedDate ? (
                           <div className="text-[8px] text-slate-400 mt-0.5">{toDateDisplay(doc.uploadedDate)}</div>
                         ) : null}
@@ -688,8 +699,8 @@ export function ApprovalLeaseModal({
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center gap-3">
                   <FolderOpen className="w-10 h-10 text-slate-300" />
-                  <p className="text-xs font-semibold text-slate-400">No documents linked to this record</p>
-                  <p className="text-[10px] text-slate-300">Documents will appear here once uploaded via the portal</p>
+                  <p className="text-xs font-semibold text-slate-400">{t('drawers.noDocs')}</p>
+                  <p className="text-[10px] text-slate-300">{t('drawers.noDocsDesc')}</p>
                 </div>
               )}
             </div>
@@ -697,7 +708,7 @@ export function ApprovalLeaseModal({
             {/* Rejection reason if exists */}
             {record.rejectionReason && (
               <div className="border border-red-200 rounded-lg bg-red-50 p-3 shadow-sm">
-                <div className="text-[10px] font-bold text-red-600 mb-1">Rejection Reason</div>
+                <div className="text-[10px] font-bold text-red-600 mb-1">{t('drawers.rejectionReason')}</div>
                 <p className="text-xs text-red-700">{record.rejectionReason}</p>
               </div>
             )}
@@ -707,13 +718,13 @@ export function ApprovalLeaseModal({
           <div className="space-y-4">
             <div className="bg-white border border-[#0a869e] rounded-lg shadow-sm overflow-hidden">
               <div className="bg-[#0a869e] text-white text-[10px] font-bold py-1.5 text-center">
-                भाडे उत्पन्न सारांश तक्ता
+                {t('rentSummary.title')}
               </div>
               <table className="w-full text-[9px] font-semibold text-slate-700">
                 <thead>
                   <tr className="border-b border-slate-200 text-center bg-slate-50/50">
-                    <th className="px-2 py-2 border-r border-slate-200">तपशील</th>
-                    <th className="px-2 py-2">रक्कम (₹)</th>
+                    <th className="px-2 py-2 border-r border-[#e2e8f0]">{t('rentSummary.colDetail')}</th>
+                    <th className="px-2 py-2">{t('rentSummary.colAmount')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-center">
@@ -726,8 +737,8 @@ export function ApprovalLeaseModal({
                 </tbody>
               </table>
             </div>
+          </div>
         </div>
-      </div>
       </div>
 
       <DocumentPreviewDrawer
@@ -752,3 +763,4 @@ export function ApprovalLeaseModal({
     </Drawer>
   );
 }
+

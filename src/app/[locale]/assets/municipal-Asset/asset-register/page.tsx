@@ -1,12 +1,161 @@
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import { setRequestLocale } from 'next-intl/server';
+import { parsePaginationParams } from '@/lib/utils/pagination';
+import { AssetRegisterView } from '@/components/modules/assets/municipal-Asset/asset-register/AssetRegisterView';
+import {
+  fetchAssetRegisterPage,
+  fetchAssetTypesByCategory,
+  fetchZones,
+  fetchWards,
+  fetchDepartments,
+  fetchCategories,
+} from './[categoryId]/action';
+
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{
     locale: string;
   }>;
+  searchParams: Promise<{
+    page?: string;
+    pageSize?: string;
+    search?: string;
+    AssetTypeId?: string;
+    assetTypeId?: string;
+    ZoneId?: string;
+    zoneId?: string;
+    WardId?: string;
+    wardId?: string;
+    OwningDepartmentId?: string;
+    owningDepartmentId?: string;
+  }>;
 }
 
-export default async function AssetRegisterRootPage({ params }: PageProps) {
+function readParam(query: Record<string, string | undefined>, canonical: string, legacy: string) {
+  return query[canonical] ?? query[legacy];
+}
+
+function isValidFilterValue(value: string): boolean {
+  return value === 'all' || /^\d+$/.test(value);
+}
+
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const;
+
+const INDIAN_LANGUAGE_SEARCH_REGEX = /^[\p{L}\p{M}\p{N}\s.,\-()/]$/u;
+
+function sanitizeSearch(value: string | undefined): string {
+  return (value || '')
+    .trim()
+    .split('')
+    .filter((char) => INDIAN_LANGUAGE_SEARCH_REGEX.test(char))
+    .join('')
+    .slice(0, 200);
+}
+
+export default async function Page({ params, searchParams }: PageProps) {
   const { locale } = await params;
-  redirect(`/${locale}/assets/municipal-Asset`);
+  setRequestLocale(locale);
+  const query = await searchParams;
+
+  const { pageNumber: safePage, pageSize: rawPageSize } = parsePaginationParams(
+    query.page,
+    query.pageSize
+  );
+  const safePageSize = PAGE_SIZE_OPTIONS.includes(rawPageSize as (typeof PAGE_SIZE_OPTIONS)[number]) ? rawPageSize : 10;
+  const safeSearch = sanitizeSearch(query.search);
+  const rawAssetTypeId = readParam(query, 'assetTypeId', 'AssetTypeId');
+  const rawZoneId = readParam(query, 'zoneId', 'ZoneId');
+  const rawWardId = readParam(query, 'wardId', 'WardId');
+  const rawOwningDepartmentId = readParam(query, 'owningDepartmentId', 'OwningDepartmentId');
+  const safeAssetTypeId = isValidFilterValue(rawAssetTypeId ?? 'all') ? (rawAssetTypeId ?? 'all') : 'all';
+  const safeZoneId = isValidFilterValue(rawZoneId ?? 'all') ? (rawZoneId ?? 'all') : 'all';
+  const safeWardId = isValidFilterValue(rawWardId ?? 'all') ? (rawWardId ?? 'all') : 'all';
+  const safeOwningDepartmentId = isValidFilterValue(rawOwningDepartmentId ?? 'all') ? (rawOwningDepartmentId ?? 'all') : 'all';
+  const updatedDate = new Date().toLocaleDateString('en-GB');
+
+  const [assetsResult, typesResult, zonesResult, wardsResult, departmentsResult, categoriesResult] = await Promise.all([
+    fetchAssetRegisterPage(
+      null,
+      safePage,
+      safePageSize,
+      safeSearch,
+      safeAssetTypeId === 'all' ? null : Number(safeAssetTypeId),
+      safeZoneId === 'all' ? null : Number(safeZoneId),
+      safeWardId === 'all' ? null : Number(safeWardId),
+      safeOwningDepartmentId === 'all' ? null : Number(safeOwningDepartmentId)
+    ),
+    fetchAssetTypesByCategory(null),
+    fetchZones(),
+    fetchWards(safeZoneId),
+    fetchDepartments(),
+    fetchCategories(),
+  ]);
+
+  if (assetsResult.error) {
+    throw new Error(assetsResult.error);
+  }
+
+  let finalWardId = safeWardId;
+  if (safeZoneId !== 'all' && safeWardId !== 'all') {
+    const ward = wardsResult.find((w) => String(w.id) === safeWardId);
+    if (!ward || String(ward.zoneId) !== safeZoneId) {
+      finalWardId = 'all';
+    }
+  }
+
+  const totalPages = Math.max(1, Math.ceil(assetsResult.totalCount / safePageSize));
+  let finalPage = safePage;
+  if (safePage > totalPages) {
+    finalPage = totalPages;
+  }
+
+  const canonicalQuery = new URLSearchParams();
+  if (finalPage > 1) canonicalQuery.set('page', String(finalPage));
+  if (safePageSize !== 10) canonicalQuery.set('pageSize', String(safePageSize));
+  if (safeSearch) canonicalQuery.set('search', safeSearch);
+  if (safeAssetTypeId !== 'all') canonicalQuery.set('assetTypeId', safeAssetTypeId);
+  if (safeZoneId !== 'all') canonicalQuery.set('zoneId', safeZoneId);
+  if (finalWardId !== 'all') canonicalQuery.set('wardId', finalWardId);
+  if (safeOwningDepartmentId !== 'all') canonicalQuery.set('owningDepartmentId', safeOwningDepartmentId);
+
+  const isCanonical =
+    (query.page || '1') === String(finalPage) &&
+    (query.pageSize || '10') === String(safePageSize) &&
+    (query.search || '') === safeSearch &&
+    (query.assetTypeId === safeAssetTypeId || (query.assetTypeId === undefined && safeAssetTypeId === 'all')) &&
+    (query.zoneId === safeZoneId || (query.zoneId === undefined && safeZoneId === 'all')) &&
+    (query.wardId === finalWardId || (query.wardId === undefined && finalWardId === 'all')) &&
+    (query.owningDepartmentId === safeOwningDepartmentId || (query.owningDepartmentId === undefined && safeOwningDepartmentId === 'all')) &&
+    query.AssetTypeId === undefined &&
+    query.ZoneId === undefined &&
+    query.WardId === undefined &&
+    query.OwningDepartmentId === undefined;
+  if (!isCanonical) {
+    const qStr = canonicalQuery.toString();
+    redirect(`/${locale}/assets/municipal-Asset/asset-register${qStr ? '?' + qStr : ''}`);
+  }
+
+  return (
+    <AssetRegisterView
+      locale={locale}
+      categoryId={undefined}
+      categoryName={null}
+      safeSearch={safeSearch}
+      safeAssetTypeId={safeAssetTypeId}
+      safeZoneId={safeZoneId}
+      finalWardId={finalWardId}
+      safeOwningDepartmentId={safeOwningDepartmentId}
+      safePageSize={safePageSize}
+      finalPage={finalPage}
+      totalPages={totalPages}
+      assetsResult={assetsResult}
+      typesResult={typesResult}
+      zonesResult={zonesResult}
+      wardsResult={wardsResult}
+      departmentsResult={departmentsResult}
+      updatedDate={updatedDate}
+      categoryOptions={categoriesResult}
+    />
+  );
 }

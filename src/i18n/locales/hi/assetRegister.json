@@ -29,6 +29,7 @@
     "Remarks":  "टिप्पणी",
     "Action":  "कार्य",
     "All_Asset_Types":  "सभी संपत्ति प्रकार",
+    "All_Asset_Categories": "सभी संपत्ति श्रेणियां",
     "All_Zones":  "सभी ज़ोन",
     "All_Wards":  "सभी वार्ड",
     "Asset_Register":  "संपत्ति रजिस्टर",
@@ -40,5 +41,6 @@
     "Search_assets":  "संपत्ति खोजें ...",
     "No_asset_records":  "इस श्रेणी के लिए कोई संपत्ति रिकॉर्ड नहीं मिला",
     "Ownership_Type":  "स्वामित्व प्रकार",
-    "Ownership":  "स्वामित्व"
+    "Ownership":  "स्वामित्व",
+    "All_Departments": "सभी विभाग"
 }

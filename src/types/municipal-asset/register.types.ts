@@ -67,11 +67,8 @@ export interface AssetRegisterApiRecord {
   assetName?: string;
   name?: string;
   categoryName?: string;
-  assetCategoryName?: string;
   assetCategoryId?: number | null;
-  assetTypeName?: string;
   assetTypeId?: number | null;
-  departmentName?: string;
   department?: string;
   parentAssetId?: number;
 
@@ -131,9 +128,6 @@ export interface AssetRegisterApiRecord {
   // Navigation property names for display
   authorityName?: string;
   organizationName?: string;
-  departmentName?: string;
-  assetCategoryName?: string;
-  assetTypeName?: string;
   parentAssetName?: string;
   zoneName?: string;
   wardName?: string;

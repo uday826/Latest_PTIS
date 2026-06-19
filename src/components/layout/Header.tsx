@@ -67,12 +67,21 @@ interface HeaderProps {
 
 export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const t = useTranslations('common');
+  const tForm = useTranslations('addAssetForm');
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [isLogoutPending, startLogoutTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const headerDetails = t('app.assessmentSystem');
+  const isWizardPage = pathname.includes('/add-New-Asset');
+  const isEditMode = isWizardPage && (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mode') === 'edit');
+
+  const systemTitle = isWizardPage
+    ? (isEditMode ? tForm('wizard.editAsset') : tForm('wizard.addNewAsset'))
+    : (pathname.includes('/assets') ? t('app.assetManagementSystem') : headerDetails);
 
   const branding = ulbData as (UlbMaster & { logoUrl?: string }) | undefined;
   const logoSrc = useMemo(() => {
@@ -93,7 +102,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const locale = getLocaleFromPathname(pathname);
   const showLocalCouncilName = locale !== 'en' && Boolean(localName);
 
-  const headerDetails = t('app.assessmentSystem');
+
 
   const localeLabel = useMemo(() => {
     if (locale === 'en') return t('language.english');
@@ -211,9 +220,11 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
               ) : null}
 
               <p className="mt-1 flex flex-wrap gap-1 text-[10px] sm:text-xs md:text-sm text-gray-200">
-                <span>{t('app.departmentName')}</span>
+                <span>{pathname.includes('/assets') ? t('app.assetDepartmentName') : t('app.departmentName')}</span>
                 <span className="hidden sm:inline-block text-yellow-400">|</span>
-                <span className="font-medium text-yellow-300">{headerDetails}</span>
+                <span className="font-medium text-yellow-300">
+                  {systemTitle}
+                </span>
               </p>
             </div>
           </div>
@@ -391,11 +402,10 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
                               size="sm"
                               role="option"
                               aria-selected={locale === code}
-                              className={`h-auto w-full rounded-lg px-3 py-2 text-left text-xs !justify-start hover:bg-white/10 sm:text-sm ${
-                                locale === code
-                                  ? 'bg-white/10 font-medium !text-white'
-                                  : '!text-blue-50/95'
-                              }`}
+                              className={`h-auto w-full rounded-lg px-3 py-2 text-left text-xs !justify-start hover:bg-white/10 sm:text-sm ${locale === code
+                                ? 'bg-white/10 font-medium !text-white'
+                                : '!text-blue-50/95'
+                                }`}
                               onClick={() => pickLocale(code)}
                             >
                               <span className="block w-full truncate">{label}</span>

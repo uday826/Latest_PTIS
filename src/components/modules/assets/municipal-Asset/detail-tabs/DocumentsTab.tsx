@@ -1,5 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
@@ -8,6 +6,7 @@ import type { AssetDetailRecord, AssetDocumentListItem } from '@/types/municipal
 import { AlertCircle, Eye, FileImage, FileText } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   DocumentPreviewDrawer,
   isImage,
@@ -21,6 +20,7 @@ export function DocumentsTab({
   asset: AssetDetailRecord;
   initialDocumentId?: string | null;
 }) {
+  const t = useTranslations('assetDetail');
   const documents = useMemo(() => asset.documents ?? [], [asset.documents]);
   const router = useRouter();
   const pathname = usePathname();
@@ -180,10 +180,10 @@ export function DocumentsTab({
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
           <h3 className="flex min-w-0 items-center gap-2 text-sm font-bold text-blue-900">
             <FileText className="h-4 w-4 text-blue-600" />
-            Documents
+            {t('documentsTab.title')}
           </h3>
           <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">
-            {documents.length} {documents.length === 1 ? 'file' : 'files'}
+            {documents.length} {documents.length === 1 ? t('documentsTab.fileSingular') : t('documentsTab.filePlural')}
           </span>
         </div>
 
@@ -198,8 +198,8 @@ export function DocumentsTab({
           <div className="mt-3 flex min-h-[180px] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
             <div>
               <FileText className="mx-auto mb-2 h-10 w-10 text-slate-300" />
-              <p className="text-sm font-bold text-slate-700">No documents available</p>
-              <p className="mt-1 text-xs text-slate-500">Uploaded asset documents will appear here.</p>
+              <p className="text-sm font-bold text-slate-700">{t('documentsTab.noDocuments')}</p>
+              <p className="mt-1 text-xs text-slate-500">{t('documentsTab.noDocumentsDesc')}</p>
             </div>
           </div>
         ) : (

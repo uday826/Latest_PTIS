@@ -1,14 +1,18 @@
 import { notFound, redirect } from 'next/navigation';
+import { setRequestLocale } from 'next-intl/server';
 import { parsePaginationParams } from '@/lib/utils/pagination';
-import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
-import { AssetRegisterView } from '@/components/modules/assets/municipal-Asset/building-assets/AssetRegisterView';
+import { AssetRegisterView } from '@/components/modules/assets/municipal-Asset/asset-register/AssetRegisterView';
 import {
   fetchAssetRegisterPage,
   fetchAssetTypesByCategory,
   fetchZones,
   fetchWards,
   fetchCategoryNameById,
-} from './actions';
+  fetchDepartments,
+  fetchCategories,
+} from './action';
+
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{
@@ -25,6 +29,8 @@ interface PageProps {
     zoneId?: string;
     WardId?: string;
     wardId?: string;
+    OwningDepartmentId?: string;
+    owningDepartmentId?: string;
   }>;
 }
 
@@ -38,17 +44,20 @@ function isValidFilterValue(value: string): boolean {
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const;
 
+const INDIAN_LANGUAGE_SEARCH_REGEX = /^[\p{L}\p{M}\p{N}\s.,\-()/]$/u;
+
 function sanitizeSearch(value: string | undefined): string {
   return (value || '')
     .trim()
     .split('')
-    .filter((char) => SEARCH_KEY_REGEX.test(char))
+    .filter((char) => INDIAN_LANGUAGE_SEARCH_REGEX.test(char))
     .join('')
     .slice(0, 200);
 }
 
 export default async function Page({ params, searchParams }: PageProps) {
   const { locale, categoryId } = await params;
+  setRequestLocale(locale);
   const query = await searchParams;
   const parsed = Number(categoryId);
 
@@ -65,12 +74,14 @@ export default async function Page({ params, searchParams }: PageProps) {
   const rawAssetTypeId = readParam(query, 'assetTypeId', 'AssetTypeId');
   const rawZoneId = readParam(query, 'zoneId', 'ZoneId');
   const rawWardId = readParam(query, 'wardId', 'WardId');
+  const rawOwningDepartmentId = readParam(query, 'owningDepartmentId', 'OwningDepartmentId');
   const safeAssetTypeId = isValidFilterValue(rawAssetTypeId ?? 'all') ? (rawAssetTypeId ?? 'all') : 'all';
   const safeZoneId = isValidFilterValue(rawZoneId ?? 'all') ? (rawZoneId ?? 'all') : 'all';
   const safeWardId = isValidFilterValue(rawWardId ?? 'all') ? (rawWardId ?? 'all') : 'all';
+  const safeOwningDepartmentId = isValidFilterValue(rawOwningDepartmentId ?? 'all') ? (rawOwningDepartmentId ?? 'all') : 'all';
   const updatedDate = new Date().toLocaleDateString('en-GB');
 
-  const [categoryName, assetsResult, typesResult, zonesResult, wardsResult] = await Promise.all([
+  const [categoryName, assetsResult, typesResult, zonesResult, wardsResult, departmentsResult, categoriesResult] = await Promise.all([
     fetchCategoryNameById(parsed),
     fetchAssetRegisterPage(
       parsed,
@@ -79,17 +90,14 @@ export default async function Page({ params, searchParams }: PageProps) {
       safeSearch,
       safeAssetTypeId === 'all' ? null : Number(safeAssetTypeId),
       safeZoneId === 'all' ? null : Number(safeZoneId),
-      safeWardId === 'all' ? null : Number(safeWardId)
+      safeWardId === 'all' ? null : Number(safeWardId),
+      safeOwningDepartmentId === 'all' ? null : Number(safeOwningDepartmentId)
     ),
     fetchAssetTypesByCategory(parsed),
-    fetchZones().catch((error) => {
-      console.error('Failed to fetch zones for asset register:', error);
-      return [];
-    }),
-    fetchWards(safeZoneId).catch((error) => {
-      console.error('Failed to fetch wards for asset register:', error);
-      return [];
-    }),
+    fetchZones(),
+    fetchWards(safeZoneId),
+    fetchDepartments(),
+    fetchCategories(),
   ]);
 
   if (assetsResult.error) {
@@ -121,6 +129,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   if (safeAssetTypeId !== 'all') canonicalQuery.set('assetTypeId', safeAssetTypeId);
   if (safeZoneId !== 'all') canonicalQuery.set('zoneId', safeZoneId);
   if (finalWardId !== 'all') canonicalQuery.set('wardId', finalWardId);
+  if (safeOwningDepartmentId !== 'all') canonicalQuery.set('owningDepartmentId', safeOwningDepartmentId);
 
   const isCanonical =
     (query.page || '1') === String(finalPage) &&
@@ -129,9 +138,11 @@ export default async function Page({ params, searchParams }: PageProps) {
     (query.assetTypeId === safeAssetTypeId || (query.assetTypeId === undefined && safeAssetTypeId === 'all')) &&
     (query.zoneId === safeZoneId || (query.zoneId === undefined && safeZoneId === 'all')) &&
     (query.wardId === finalWardId || (query.wardId === undefined && finalWardId === 'all')) &&
+    (query.owningDepartmentId === safeOwningDepartmentId || (query.owningDepartmentId === undefined && safeOwningDepartmentId === 'all')) &&
     query.AssetTypeId === undefined &&
     query.ZoneId === undefined &&
-    query.WardId === undefined;
+    query.WardId === undefined &&
+    query.OwningDepartmentId === undefined;
   if (!isCanonical) {
     const qStr = canonicalQuery.toString();
     redirect(`/${locale}/assets/municipal-Asset/asset-register/${categoryId}${qStr ? '?' + qStr : ''}`);
@@ -146,6 +157,7 @@ export default async function Page({ params, searchParams }: PageProps) {
       safeAssetTypeId={safeAssetTypeId}
       safeZoneId={safeZoneId}
       finalWardId={finalWardId}
+      safeOwningDepartmentId={safeOwningDepartmentId}
       safePageSize={safePageSize}
       finalPage={finalPage}
       totalPages={totalPages}
@@ -153,7 +165,9 @@ export default async function Page({ params, searchParams }: PageProps) {
       typesResult={typesResult}
       zonesResult={zonesResult}
       wardsResult={wardsResult}
+      departmentsResult={departmentsResult}
       updatedDate={updatedDate}
+      categoryOptions={categoriesResult}
     />
   );
 }

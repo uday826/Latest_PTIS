@@ -36,6 +36,18 @@ export async function fetchFloorsByAsset(assetId: number): Promise<ActionResult<
     if (res.success && res.data) {
       const floors = getArray(res.data);
       for (const floor of floors) {
+        // Normalize floorId and id casing
+        const resolvedId = floor.id ?? floor.Id;
+        const resolvedFloorId = floor.floorId ?? floor.FloorId;
+        if (resolvedId) {
+          floor.id = Number(resolvedId);
+          floor.Id = Number(resolvedId);
+        }
+        if (resolvedFloorId) {
+          floor.floorId = Number(resolvedFloorId);
+          floor.FloorId = Number(resolvedFloorId);
+        }
+
         // Resolve rooms list
         const roomWiseDetails = Array.isArray(floor.roomDetails)
           ? floor.roomDetails
@@ -113,7 +125,7 @@ export async function fetchFloorsByAsset(assetId: number): Promise<ActionResult<
       return { success: true, data: floors };
     }
     return { success: true, data: [] };
-  } catch (err) {
+  } catch (err: any) {
     logger.error("fetchFloorsByAsset Error:", { error: err });
     return { success: true, data: [] };
   }
@@ -161,7 +173,31 @@ export async function saveFloorDetail(data: FloorDetailApiRequest): Promise<Acti
 
     const text = await response.text();
     if (!response.ok) {
-      return { success: false, error: text || response.statusText || "Failed to save floor detail" };
+      let errMsg = text || response.statusText || "Failed to save floor detail";
+      try {
+        const parsed = JSON.parse(text);
+        if (parsed && typeof parsed === "object") {
+          if (parsed.message) {
+            errMsg = parsed.message;
+          } else if (parsed.error) {
+            errMsg = parsed.error;
+          } else if (parsed.errors && typeof parsed.errors === "object" && !Array.isArray(parsed.errors)) {
+            const errorsObj = parsed.errors as Record<string, any>;
+            const firstKey = Object.keys(errorsObj)[0];
+            if (firstKey) {
+              const val = errorsObj[firstKey];
+              if (Array.isArray(val) && val.length > 0) {
+                errMsg = val[0];
+              } else if (typeof val === "string") {
+                errMsg = val;
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // Ignore JSON parsing errors
+      }
+      return { success: false, error: errMsg };
     }
 
     const trimmed = text.trim();
@@ -480,25 +516,90 @@ export async function createChildAssetAction(
           }
         }
 
-        // Since the backend's /ManageSubUnits/create DTO ignores departmentId and location details,
+        // Since the backend's /ManageSubUnits/create DTO ignores departmentId, location details, and floor details,
         // we update the child asset's AssetMaster record directly to save them.
-        if (data.departmentId || data.shopUnitName || resolvedAddress || resolvedLat || resolvedLng) {
+        if (data.departmentId || data.shopUnitName || resolvedAddress || resolvedLat || resolvedLng || data.floorDetailsId) {
           try {
-            const updatePayload: any = {};
-            if (data.departmentId) updatePayload.departmentId = Number(data.departmentId);
-            if (data.shopUnitName) updatePayload.assetName = data.shopUnitName;
-            if (resolvedAddress) updatePayload.address = resolvedAddress;
-            if (resolvedLat) {
-              updatePayload.latitude = String(resolvedLat);
+            // Fetch the existing asset master record to preserve required fields and avoid validation failures
+            let currentAsset: any = {};
+            try {
+              const currentRes = await assetMasterService.getAssetById(createdAssetId);
+              if (currentRes.success && currentRes.data) {
+                currentAsset = currentRes.data;
+              }
+            } catch (err) {
+              logger.error("Failed to fetch current child asset master:", { error: err as Error });
             }
-            if (resolvedLng) {
-              updatePayload.longitude = String(resolvedLng);
+
+            const updatePayload: any = {
+              ...currentAsset,
+              parentAssetId: data.parentAssetId || currentAsset.parentAssetId || currentAsset.ParentAssetId || null,
+              ParentAssetId: data.parentAssetId || currentAsset.parentAssetId || currentAsset.ParentAssetId || null,
+              
+              owningDepartmentId: data.departmentId ? Number(data.departmentId) : (currentAsset.owningDepartmentId ?? currentAsset.OwningDepartmentId ?? currentAsset.departmentId ?? currentAsset.DepartmentId ?? null),
+              OwningDepartmentId: data.departmentId ? Number(data.departmentId) : (currentAsset.owningDepartmentId ?? currentAsset.OwningDepartmentId ?? currentAsset.departmentId ?? currentAsset.DepartmentId ?? null),
+              
+              departmentId: data.departmentId ? Number(data.departmentId) : (currentAsset.departmentId ?? currentAsset.DepartmentId ?? currentAsset.owningDepartmentId ?? currentAsset.OwningDepartmentId ?? null),
+              DepartmentId: data.departmentId ? Number(data.departmentId) : (currentAsset.departmentId ?? currentAsset.DepartmentId ?? currentAsset.owningDepartmentId ?? currentAsset.OwningDepartmentId ?? null),
+              
+              assetName: data.shopUnitName || currentAsset.assetName || currentAsset.AssetName || currentAsset.name || currentAsset.Name || null,
+              AssetName: data.shopUnitName || currentAsset.assetName || currentAsset.AssetName || currentAsset.name || currentAsset.Name || null,
+              
+              address: resolvedAddress || currentAsset.address || currentAsset.Address || null,
+              Address: resolvedAddress || currentAsset.address || currentAsset.Address || null,
+              
+              latitude: resolvedLat ? Number(resolvedLat) : (currentAsset.latitude ?? currentAsset.Latitude ?? null),
+              Latitude: resolvedLat ? Number(resolvedLat) : (currentAsset.latitude ?? currentAsset.Latitude ?? null),
+              
+              longitude: resolvedLng ? Number(resolvedLng) : (currentAsset.longitude ?? currentAsset.Longitude ?? null),
+              Longitude: resolvedLng ? Number(resolvedLng) : (currentAsset.longitude ?? currentAsset.Longitude ?? null),
+
+              authorityId: currentAsset.authorityId ?? currentAsset.AuthorityId ?? null,
+              AuthorityId: currentAsset.authorityId ?? currentAsset.AuthorityId ?? null,
+
+              organizationId: currentAsset.organizationId ?? currentAsset.OrganizationId ?? null,
+              OrganizationId: currentAsset.organizationId ?? currentAsset.OrganizationId ?? null,
+
+              assetNo: currentAsset.assetNo ?? currentAsset.AssetNo ?? null,
+              AssetNo: currentAsset.assetNo ?? currentAsset.AssetNo ?? null,
+
+              assetCategoryId: currentAsset.assetCategoryId ?? currentAsset.AssetCategoryId ?? null,
+              AssetCategoryId: currentAsset.assetCategoryId ?? currentAsset.AssetCategoryId ?? null,
+
+              assetTypeId: currentAsset.assetTypeId ?? currentAsset.AssetTypeId ?? null,
+              AssetTypeId: currentAsset.assetTypeId ?? currentAsset.AssetTypeId ?? null,
+
+              hierarchyLevel: currentAsset.hierarchyLevel ?? currentAsset.HierarchyLevel ?? null,
+              HierarchyLevel: currentAsset.hierarchyLevel ?? currentAsset.HierarchyLevel ?? null,
+
+              status: currentAsset.status ?? currentAsset.Status ?? null,
+              Status: currentAsset.status ?? currentAsset.Status ?? null,
+
+              isActive: currentAsset.isActive ?? currentAsset.IsActive ?? true,
+              IsActive: currentAsset.isActive ?? currentAsset.IsActive ?? true,
+            };
+
+            if (data.floorDetailsId) {
+              updatePayload.floorDetailsId = Number(data.floorDetailsId);
+              updatePayload.FloorDetailsId = Number(data.floorDetailsId);
+            } else if (currentAsset.floorDetailsId || currentAsset.FloorDetailsId) {
+              updatePayload.floorDetailsId = Number(currentAsset.floorDetailsId ?? currentAsset.FloorDetailsId);
+              updatePayload.FloorDetailsId = Number(currentAsset.floorDetailsId ?? currentAsset.FloorDetailsId);
             }
+
+            if (data.floorId) {
+              updatePayload.floorId = Number(data.floorId);
+              updatePayload.FloorId = Number(data.floorId);
+            } else if (currentAsset.floorId || currentAsset.FloorId) {
+              updatePayload.floorId = Number(currentAsset.floorId ?? currentAsset.FloorId);
+              updatePayload.FloorId = Number(currentAsset.floorId ?? currentAsset.FloorId);
+            }
+
             logger.info("createChildAssetAction: Updating AssetMaster " + createdAssetId, { updatePayload });
             const masterRes = await apiClient.put(`/AssetMaster/${createdAssetId}`, updatePayload);
             logger.info("createChildAssetAction: AssetMaster update response", { response: masterRes });
           } catch (updateErr: any) {
-            logger.error("Failed to update child asset master with department/location:", { error: updateErr });
+            logger.error("Failed to update child asset master with department/location/floor:", { error: updateErr });
           }
         }
 
@@ -765,12 +866,20 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
       logger.info(`[DEBUG] getChildAssetByIdAction assetId=${assetId} detail keys: ${Object.keys(detail || {}).join(', ')}`);
       logger.info(`[DEBUG] getChildAssetByIdAction roomDetails count: ${Array.isArray(detail?.roomDetails) ? detail.roomDetails.length : 'N/A'}, roomWiseDetails count: ${Array.isArray(detail?.roomWiseDetails) ? detail.roomWiseDetails.length : 'N/A'}`);
 
-      // Merge department details from AssetMaster
+      // Merge department and floor details from AssetMaster
       if (assetMasterRes.success && assetMasterRes.data) {
         const master = assetMasterRes.data as any;
         detail.departmentId = master.departmentId || null;
         detail.departmentName = master.departmentName || null;
+        
+        // Merge and normalize floorDetailsId/floorId
+        const masterFloorDetailsId = master.floorDetailsId ?? master.FloorDetailsId ?? master.floorId ?? master.FloorId ?? null;
+        detail.floorDetailsId = detail.floorDetailsId ?? detail.FloorDetailsId ?? detail.floorId ?? detail.FloorId ?? masterFloorDetailsId;
       }
+
+      // Ensure it is mapped as lowercase floorDetailsId
+      const finalFloorDetailsId = detail.floorDetailsId ?? detail.FloorDetailsId ?? detail.floorId ?? detail.FloorId ?? null;
+      detail.floorDetailsId = finalFloorDetailsId ? Number(finalFloorDetailsId) : null;
 
       // Load room-wise offset (minus) data from AssetRoomWiseMinusData
       // Endpoint: GET /AssetRoomWiseMinusData?RoomWiseSubmissionId={room.id}
@@ -872,25 +981,69 @@ export async function getChildAssetByIdAction(assetId: number): Promise<ActionRe
  */
 export async function getSubUnitsByAssetAction(parentAssetId: number): Promise<ActionResult<any[]>> {
   try {
-    const res = await manageSubUnitsService.getByAssetId(parentAssetId);
+    // Fetch child assets from AssetMaster directly (the source of truth for all child asset records)
+    const res = await apiClient.get<any>(`/AssetMaster?ParentAssetId=${parentAssetId}&pageSize=1000`);
     if (res.success && res.data) {
-      // In parallel, fetch full child asset details for each sub-unit to get rooms, renter, and department
+      // Extract the flat array of items using a robust approach
+      let items: any[] = [];
+      const dataObj = res.data;
+      if (Array.isArray(dataObj)) {
+        items = dataObj;
+      } else if (dataObj && typeof dataObj === "object") {
+        const payload = dataObj.data ?? dataObj.items ?? dataObj.result ?? dataObj.Result ?? dataObj;
+        if (Array.isArray(payload)) {
+          items = payload;
+        } else if (payload && typeof payload === "object") {
+          const nested = payload.items ?? payload.Items ?? payload.data ?? payload.Data ?? [];
+          items = Array.isArray(nested) ? nested : [];
+        }
+      }
+
+      // Filter out non-subunit child assets (like inventory, furniture, fixtures)
+      const subUnits = items.filter((item: any) => {
+        const assetNo = item.assetNo || item.assetCode || "";
+        return !(
+          item.inventoryBatchId ||
+          item.InventoryBatchId ||
+          assetNo.startsWith('FUR-') ||
+          assetNo.startsWith('ELE-') ||
+          assetNo.startsWith('EQP-')
+        );
+      });
+
+      logger.info(`[DEBUG] getSubUnitsByAssetAction parentAssetId=${parentAssetId} found ${subUnits.length} subunits.`);
+      if (subUnits.length > 0) {
+        logger.info(`[DEBUG] First subunit raw properties: ${Object.keys(subUnits[0]).join(', ')}`);
+        logger.info(`[DEBUG] First subunit floor fields: floorDetailsId=${subUnits[0].floorDetailsId}, FloorDetailsId=${subUnits[0].FloorDetailsId}, floorId=${subUnits[0].floorId}, FloorId=${subUnits[0].FloorId}`);
+      }
+
+      // Fetch full child asset details for each subunit in parallel to get rooms, renter, and department
       const detailedSubUnits = await Promise.all(
-        res.data.map(async (subunit) => {
-          const subId = subunit.assetId || subunit.id;
+        subUnits.map(async (subunit: any) => {
+          const subId = subunit.id || subunit.assetId;
           if (!subId) return subunit;
           try {
             const childRes = await getChildAssetByIdAction(subId);
             if (childRes.success && childRes.data) {
+              const fId = childRes.data.floorDetailsId ?? childRes.data.FloorDetailsId ?? childRes.data.floorId ?? childRes.data.FloorId ?? subunit.floorDetailsId ?? subunit.FloorDetailsId ?? subunit.floorId ?? subunit.FloorId ?? null;
+              logger.info(`[DEBUG] Subunit ID ${subId}: childRes floorDetailsId=${childRes.data.floorDetailsId}, FloorDetailsId=${childRes.data.FloorDetailsId}, floorId=${childRes.data.floorId}, FloorId=${childRes.data.FloorId}. Merged fId=${fId}`);
               return {
                 ...subunit,
                 ...childRes.data,
+                floorDetailsId: fId ? Number(fId) : null,
+                // Ensure id/assetId are mapped correctly
+                id: subId,
+                assetId: subId,
               };
             }
           } catch (err) {
             logger.error(`Failed to fetch full child asset details for sub-unit asset ${subId}:`, { error: err as Error });
           }
-          return subunit;
+          const fIdFallback = subunit.floorDetailsId ?? subunit.FloorDetailsId ?? subunit.floorId ?? subunit.FloorId ?? null;
+          return {
+            ...subunit,
+            floorDetailsId: fIdFallback ? Number(fIdFallback) : null,
+          };
         })
       );
       return { success: true, data: detailedSubUnits };

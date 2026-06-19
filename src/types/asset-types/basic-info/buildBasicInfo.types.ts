@@ -20,18 +20,29 @@ export interface BuildingPropertyDetailsFormData {
   mouja: string;
   propertyNumber: string;
   surveyNumber: string;
+  partitionNo?: string;
+  upicId?: string;
   condition?: string;
   isRevenueGenerating?: string;
   landArea?: string;
   valuationType?: string;
   length?: string;
   width?: string;
+  isMovableCategory?: boolean;
+  parentBuildingId?: number | null;
+  hasFloorDetails?: boolean;
+  plotNumber?: string;
+  typeOfUseId?: string;
+  subTypeOfUseId?: string;
+  offset?: string;
+  offsetOp?: string;
 }
 
 // ─── Section B: Ownership & Address Details ───────────────────────────────────
 
 export interface BuildingOwnershipDetailsFormData {
   assetName: string;
+  assetNameLocal: string;
   /** Department select value (e.g. "estate") */
   department: string;
   fullAddress: string;
@@ -45,13 +56,26 @@ export interface BuildingOwnershipDetailsFormData {
   inChargeEmail: string;
   latitude?: string;
   longitude?: string;
+  isMovableCategory?: boolean;
+  parentBuildingId?: number | null;
+  hasFloorDetails?: boolean;
+  isRented?: string;
+  leaseStartDate?: string;
+  leaseEndDate?: string;
+  leaseAmount?: string;
+  securityDeposit?: string;
+  paymentFrequency?: string;
+  lessorName?: string;
+  lessorMobile?: string;
+  lessorEmail?: string;
+  lessorAddress?: string;
 }
 
 // ─── Combined form model ──────────────────────────────────────────────────────
 
 export interface BuildingBasicInfoFormData
   extends BuildingPropertyDetailsFormData,
-    BuildingOwnershipDetailsFormData {
+  BuildingOwnershipDetailsFormData {
   id?: number;
   assetId?: number;
   /**
@@ -96,6 +120,9 @@ export interface BuildingPropertyDetailsSectionProps {
   subzones?: any[];
   isLoadingSubzones?: boolean;
   onMoujaChange?: (moujaId: string) => void;
+  useTypes?: any[];
+  subUseTypes?: any[];
+  isLoadingSubTypes?: boolean;
 }
 
 export interface BuildingOwnershipDetailsSectionProps {
@@ -139,10 +166,18 @@ export const INITIAL_BUILDING_BASIC_INFO: BuildingBasicInfoFormData = {
   mouja: "",
   propertyNumber: "",
   surveyNumber: "",
+  partitionNo: "",
+  upicId: "",
   length: "",
   width: "",
+  plotNumber: "",
+  typeOfUseId: "",
+  subTypeOfUseId: "",
+  offset: "",
+  offsetOp: "Subtract",
   // Section B
   assetName: "",
+  assetNameLocal: "",
   department: "",
   fullAddress: "",
   locality: "",
@@ -155,6 +190,16 @@ export const INITIAL_BUILDING_BASIC_INFO: BuildingBasicInfoFormData = {
   inChargeEmail: "",
   latitude: "",
   longitude: "",
+  isRented: "No",
+  leaseStartDate: "",
+  leaseEndDate: "",
+  leaseAmount: "",
+  securityDeposit: "",
+  paymentFrequency: "Monthly",
+  lessorName: "",
+  lessorMobile: "",
+  lessorEmail: "",
+  lessorAddress: "",
   // Dynamic attributes
   attributes: {},
   categoryId: 0,

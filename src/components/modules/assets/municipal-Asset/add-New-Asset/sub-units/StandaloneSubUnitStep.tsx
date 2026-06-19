@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAssetForm } from "../AssetFormContext";
 import { Plus, Building2, CheckCircle2, LayoutGrid, Edit2, Loader2 } from "lucide-react";
@@ -10,6 +12,7 @@ import {
   fetchFloorsByAsset,
 } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/floor-details/actions";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 export function StandaloneSubUnitStep({
   dropdownOptions,
@@ -18,10 +21,10 @@ export function StandaloneSubUnitStep({
   dropdownOptions?: any;
   initialSubUnits?: any[];
 }) {
+  const t = useTranslations("addAssetForm");
   const { formData, updateFormData, setSubunitFiles, registerSubmitHook } = useAssetForm();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const initializedRef = useRef(false);
+  const initializedRef = useRef<string | null>(null);
 
   const parentBuildingId = formData.parentBuildingId;
   const parentBuildingData = formData.parentBuildingData;
@@ -44,7 +47,9 @@ export function StandaloneSubUnitStep({
 
   // Load and map initial sub-units from props
   useEffect(() => {
-    if (initializedRef.current) return;
+    const signature = `${initialSubUnits?.length ?? 0}|${(initialSubUnits?.[0] as any)?.assetId ?? (initialSubUnits?.[0] as any)?.id ?? ""}|${parentFloors?.length ?? 0}`;
+    if (initializedRef.current === signature) return;
+    initializedRef.current = signature;
 
     if (!initialSubUnits || initialSubUnits.length === 0) {
       // Only clear if there are no existing units in formData either (prevent clearing on back-nav)
@@ -52,7 +57,6 @@ export function StandaloneSubUnitStep({
       if (existingUnits.length === 0) {
         updateFormData({ unitDetails: [] });
       }
-      initializedRef.current = true;
       return;
     }
 
@@ -137,32 +141,64 @@ export function StandaloneSubUnitStep({
         depositType: rent.depositType || "Refundable",
       } : null;
 
-      const floorDetailsId = u.floorDetailsId ? Number(u.floorDetailsId) : null;
-      let resolvedFloorLevelId: number | null = null;
-      let conYear = "";
-      let conType = "";
-      let useType = "";
-      let subUseType = "";
+      // Resolve floorDetailsId and floor level ID from any of the standard names
+      let floorDetailsId = u.floorDetailsId ?? u.FloorDetailsId ?? null;
+      let resolvedFloorLevelId = u.floorId ?? u.FloorId ?? u.selectedFloorId ?? null;
 
-      if (floorDetailsId) {
-        const floorDetail = parentFloors.find((f: any) => Number(f.id) === floorDetailsId);
-        const floorLevelId = floorDetail?.floorId ? Number(floorDetail.floorId) : null;
-        resolvedFloorLevelId = floorLevelId;
-
+      // If we have floorDetailsId but not resolvedFloorLevelId, try to find it in parentFloors
+      if (floorDetailsId && !resolvedFloorLevelId) {
+        const floorDetail = parentFloors.find((f: any) => Number(f.id ?? f.Id) === Number(floorDetailsId));
         if (floorDetail) {
-          conYear = floorDetail.constructionYear || floorDetail.conYear || "";
-          conType = floorDetail.constructionTypeId ? String(floorDetail.constructionTypeId) : (floorDetail.conType ? String(floorDetail.conType) : "");
-          useType = floorDetail.typeOfUseId ? String(floorDetail.typeOfUseId) : (floorDetail.useType ? String(floorDetail.useType) : "");
-          subUseType = floorDetail.subTypeOfUseId ? String(floorDetail.subTypeOfUseId) : (floorDetail.subUseType ? String(floorDetail.subUseType) : "");
+          resolvedFloorLevelId = (floorDetail.floorId ?? floorDetail.FloorId) ? Number(floorDetail.floorId ?? floorDetail.FloorId) : null;
         }
       }
 
+      // If we have resolvedFloorLevelId but not floorDetailsId, try to find the matching floorDetail from parentFloors
+      if (resolvedFloorLevelId && !floorDetailsId) {
+        const floorDetail = parentFloors.find((f: any) => Number(f.floorId ?? f.FloorId) === Number(resolvedFloorLevelId));
+        if (floorDetail) {
+          floorDetailsId = Number(floorDetail.id ?? floorDetail.Id);
+        }
+      }
+
+      let conYear = u.conYear || "";
+      let conType = u.conType || "";
+      let useType = u.useType || "";
+      let subUseType = u.subUseType || "";
+
+      if (floorDetailsId) {
+        const floorDetail = parentFloors.find((f: any) => Number(f.id ?? f.Id) === Number(floorDetailsId));
+        if (floorDetail) {
+          if (!conYear) conYear = floorDetail.constructionYear || floorDetail.conYear || "";
+          if (!conType) conType = floorDetail.constructionTypeId ? String(floorDetail.constructionTypeId) : (floorDetail.conType ? String(floorDetail.conType) : "");
+          if (!useType) useType = floorDetail.typeOfUseId ? String(floorDetail.typeOfUseId) : (floorDetail.useType ? String(floorDetail.useType) : "");
+          if (!subUseType) subUseType = floorDetail.subTypeOfUseId ? String(floorDetail.subTypeOfUseId) : (floorDetail.subUseType ? String(floorDetail.subUseType) : "");
+        }
+      }
+
+      // Unit type: derive from AssetName or unit number code segment (FLAT, SHOP, OFFICE, ROOM, DEPT)
+      let unitType = "";
+      const numUpper = String(u.unitType || u.unitNo || u.shopUnitName || u.assetNo || u.assetCode || u.assetTypeName || u.assetName || u.name || "").toUpperCase();
+      if (numUpper.includes("FLAT")) unitType = "Flat";
+      else if (numUpper.includes("SHOP")) unitType = "Shop";
+      else if (numUpper.includes("OFFICE")) unitType = "Office";
+      else if (numUpper.includes("ROOM")) unitType = "Room";
+      else if (numUpper.includes("DEPARTMENT") || numUpper.includes("DEPT")) unitType = "Department";
+
+      if (!unitType) {
+        unitType = (u.unitType || "").trim();
+      }
+      if (!unitType && u.shopUnitName) {
+        unitType = (u.shopUnitName as string).split(" ")[0] || "Flat";
+      }
+      if (!unitType) unitType = "Flat";
+
       return {
         id: u.assetId || u.id,
-        subAssetId: u.unitNo || u.shopUnitName || `Unit-${u.id}`,
-        unitNumber: u.unitNo || "",
-        unitName: u.shopUnitName || `${u.unitType || "Unit"} ${u.unitNo || ""}`,
-        unitType: u.unitType || "Flat",
+        subAssetId: u.unitNo || u.shopUnitName || u.assetNo || u.assetCode || `Unit-${u.id}`,
+        unitNumber: u.unitNo || u.assetNo || u.assetCode || "",
+        unitName: u.shopUnitName || u.assetName || u.name || `${unitType} ${u.unitNo || u.assetNo || u.assetCode || ""}`,
+        unitType,
         carpetAreaSqFeet: u.totalAreaSqFt || 0,
         baseValue: u.calculatedCapitalValue || 0,
         status: "Active",
@@ -186,26 +222,26 @@ export function StandaloneSubUnitStep({
     });
 
     updateFormData({ unitDetails: mapped });
-    initializedRef.current = true;
+    initializedRef.current = signature;
   }, [initialSubUnits, parentFloors]);
 
   const handleGenerate = async () => {
     const pId = Number(parentBuildingId || formData.id || formData.assetId || 0);
     if (!pId) {
-      toast.error("Parent building not saved yet. Save Basic Info first.");
+      toast.error(t("standaloneSubUnit.toasts.parentNotSaved"));
       return;
     }
 
     const count = toNo - fromNo + 1;
     if (count < 1) {
-      toast.error("Count must be at least 1.");
+      toast.error(t("standaloneSubUnit.toasts.countMin"));
       return;
     }
 
     const typeLabel = formData.assetType?.split(" ")[0] || "Unit";
 
     setIsGenerating(true);
-    const loadingToast = toast.loading(`Generating ${count} ${typeLabel} unit(s) in database…`);
+    const loadingToast = toast.loading(t("standaloneSubUnit.toasts.generating", { count, typeLabel }));
 
     try {
       const res = await bulkGenerateSubUnitsAction({
@@ -234,15 +270,17 @@ export function StandaloneSubUnitStep({
         }));
 
         setUnits([...units, ...newUnits]);
+        const count = res.data.generatedAssets.length;
+        const unitText = count === 1 ? `unit` : `units`;
         toast.success(
-          `${res.data.generatedAssets.length} unit(s) created in database. Click Detail to configure.`,
+          t("standaloneSubUnit.toasts.generatedSuccess", { count, unitText }),
           { id: loadingToast }
         );
       } else {
-        toast.error(res.error || "Generation failed.", { id: loadingToast });
+        toast.error(res.error || t("standaloneSubUnit.toasts.generationFailed"), { id: loadingToast });
       }
     } catch (err: any) {
-      toast.error(err.message || "Generation failed.", { id: loadingToast });
+      toast.error(err.message || t("standaloneSubUnit.toasts.generationFailed"), { id: loadingToast });
     } finally {
       setIsGenerating(false);
     }
@@ -276,13 +314,11 @@ export function StandaloneSubUnitStep({
   const handleSaveAll = useCallback(async (): Promise<boolean> => {
     if (units.length === 0) return true;
 
-    setIsSaving(true);
-    const loadingToast = toast.loading("Saving all units to database...");
+    const loadingToast = toast.loading(t("standaloneSubUnit.toasts.savingUnits"));
 
     const pId = Number(parentBuildingId || formData.id || formData.assetId || 0);
     if (!pId) {
-      toast.error("Parent building ID not resolved.", { id: loadingToast });
-      setIsSaving(false);
+      toast.error(t("standaloneSubUnit.toasts.parentIdNotResolved"), { id: loadingToast });
       return false;
     }
 
@@ -304,9 +340,8 @@ export function StandaloneSubUnitStep({
         }
       } catch { }
 
-      // Create missing floor details
-      const uniqueFloorLevels = new Set(
-        unsaved.map((u: any) => u.floorId).filter((id): id is number => !!id)
+      const uniqueFloorLevels = new Set<number>(
+        unsaved.map((u: any) => u.floorId as number).filter((id: any): id is number => !!id)
       );
       for (const floorLevelId of uniqueFloorLevels) {
         if (!floorDetailsMap.has(floorLevelId)) {
@@ -419,7 +454,11 @@ export function StandaloneSubUnitStep({
             isModified: false,
           });
         } else {
-          errors.push(`${unit.unitNumber}: ${res.error || "failed"}`);
+          const rawErr = res.error || "failed";
+          const friendlyErr = rawErr.includes("LeaseRent_Asset_NotFound")
+            ? "Failed to register renter: Asset unit not found in registry"
+            : rawErr;
+          errors.push(`${unit.unitNumber}: ${friendlyErr}`);
         }
       }
 
@@ -431,16 +470,14 @@ export function StandaloneSubUnitStep({
       setUnits(updatedUnits);
 
       if (errors.length > 0) {
-        toast.warning(`Saved ${saved.length} units. ${errors.length} failed: ${errors.join(", ")}`, { id: loadingToast });
+        toast.warning(t("standaloneSubUnit.toasts.partialSave", { saved: saved.length, failed: errors.length, errors: errors.join(", ") }), { id: loadingToast });
         return false;
       }
-      toast.success(`All ${saved.length} unit(s) saved. Proceeding…`, { id: loadingToast });
+      toast.success(t("standaloneSubUnit.toasts.allSaved", { count: saved.length }), { id: loadingToast });
       return true;
     } catch (err: any) {
-      toast.error(err.message || "Save failed.", { id: loadingToast });
+      toast.error(err.message || t("standaloneSubUnit.toasts.saveFailed"), { id: loadingToast });
       return false;
-    } finally {
-      setIsSaving(false);
     }
   }, [units, parentBuildingId, formData.id]);
 
@@ -473,12 +510,12 @@ export function StandaloneSubUnitStep({
             <Building2 className="size-6 text-blue-200" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-blue-100 uppercase tracking-widest">Generating Sub-Units For</h2>
+            <h2 className="text-sm font-bold text-blue-100 uppercase tracking-widest">{t("standaloneSubUnit.generatingFor")}</h2>
             <p className="text-xl font-black">{parentBuildingName}</p>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs text-blue-200 uppercase tracking-widest font-bold">Asset Type</p>
+          <p className="text-xs text-blue-200 uppercase tracking-widest font-bold">{t("standaloneSubUnit.assetType")}</p>
           <p className="text-lg font-black text-amber-400">{formData.assetType}</p>
         </div>
       </div>
@@ -490,27 +527,27 @@ export function StandaloneSubUnitStep({
             <details className="group">
               <summary className="flex items-center justify-between cursor-pointer list-none">
                 <div className="flex items-center gap-2 text-xs font-black text-slate-700 uppercase tracking-wider">
-                  <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded font-black">Registered Info</span>
-                  <span>View Registered Parent Building details & dynamic fields</span>
+                  <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded font-black">{t("standaloneSubUnit.registeredInfo")}</span>
+                  <span>{t("standaloneSubUnit.viewDetails")}</span>
                 </div>
-                <span className="text-xs font-bold text-blue-600 group-open:hidden">Show details ▼</span>
-                <span className="text-xs font-bold text-blue-600 hidden group-open:inline">Hide details ▲</span>
+                <span className="text-xs font-bold text-blue-600 group-open:hidden">{t("standaloneSubUnit.showDetails")}</span>
+                <span className="text-xs font-bold text-blue-600 hidden group-open:inline">{t("standaloneSubUnit.hideDetails")}</span>
               </summary>
               <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs animate-in fade-in duration-300">
                 <div>
-                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Asset Name / Code</span>
+                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">{t("standaloneSubUnit.assetNameCode")}</span>
                   <span className="font-bold text-slate-700">{parentBuildingData.assetName} ({parentBuildingData.assetCode})</span>
                 </div>
                 <div>
-                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Property Tax / Survey No</span>
+                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">{t("standaloneSubUnit.propertyTaxSurveyNo")}</span>
                   <span className="font-bold text-slate-700">{parentBuildingData.propertyNumber || "—"} / {parentBuildingData.surveyNumber || "—"}</span>
                 </div>
                 <div>
-                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Ward / Zone</span>
+                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">{t("standaloneSubUnit.wardZone")}</span>
                   <span className="font-bold text-slate-700">{parentBuildingData.ward || "—"} / {parentBuildingData.zone || "—"}</span>
                 </div>
                 <div>
-                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Address / Pin Code</span>
+                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">{t("standaloneSubUnit.addressPinCode")}</span>
                   <span className="font-bold text-slate-700">{parentBuildingData.fullAddress || "—"} - {parentBuildingData.pinCode || "—"}</span>
                 </div>
 
@@ -540,7 +577,7 @@ export function StandaloneSubUnitStep({
         <CardContent className="p-4 flex flex-wrap items-end gap-4">
           <div className="w-32">
             <Input
-              label="From Unit No"
+              label={t("standaloneSubUnit.fromUnitNo")}
               type="number"
               value={fromNo}
               onChange={e => setFromNo(Number(e.target.value))}
@@ -549,7 +586,7 @@ export function StandaloneSubUnitStep({
           </div>
           <div className="w-32">
             <Input
-              label="To Unit No"
+              label={t("standaloneSubUnit.toUnitNo")}
               type="number"
               value={toNo}
               onChange={e => setToNo(Number(e.target.value))}
@@ -560,7 +597,7 @@ export function StandaloneSubUnitStep({
           {parentFloors.length > 0 && (
             <div className="w-48">
               <Select
-                label="Target Floor"
+                label={t("standaloneSubUnit.targetFloor")}
                 name="selectedFloorId"
                 value={selectedFloorId.toString()}
                 onChange={e => setSelectedFloorId(Number(e.target.value))}
@@ -583,13 +620,13 @@ export function StandaloneSubUnitStep({
             ) : (
               <Plus className="size-4" />
             )}
-            Add / Generate
+            {t("standaloneSubUnit.addGenerate")}
           </button>
 
           {units.length > 0 && (
             <div className="ml-auto h-10 px-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg flex items-center gap-2 font-bold text-xs uppercase">
               <CheckCircle2 className="size-4 text-emerald-500" />
-              {units.length} Unit(s) Generated
+              {t("standaloneSubUnit.unitsGenerated", { count: units.length })}
             </div>
           )}
         </CardContent>
@@ -600,28 +637,28 @@ export function StandaloneSubUnitStep({
         <div className="bg-blue-600 px-4 py-2 flex items-center gap-2 shrink-0">
           <LayoutGrid className="size-4 text-blue-200" />
           <h3 className="text-xs font-black text-white uppercase tracking-widest">
-            Generated {formData.assetType} - {parentBuildingName} ({units.length})
+            {t("standaloneSubUnit.generatedHeader", { assetType: formData.assetType, buildingName: parentBuildingName, count: units.length })}
           </h3>
         </div>
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-100 sticky top-0 border-b border-slate-200 z-10 shadow-sm">
               <tr className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="px-3 py-2.5">Asset No.</th>
-                <th className="px-3 py-2.5">Unit No.</th>
-                <th className="px-3 py-2.5">Unit Name</th>
-                <th className="px-3 py-2.5 text-center">Rooms</th>
-                <th className="px-3 py-2.5 text-right">Rent (₹)</th>
-                <th className="px-3 py-2.5">Rent Type</th>
-                <th className="px-3 py-2.5 text-right">Sec. Deposit (₹)</th>
-                <th className="px-3 py-2.5 text-center">Config</th>
+                <th className="px-3 py-2.5">{t("standaloneSubUnit.assetNo")}</th>
+                <th className="px-3 py-2.5">{t("standaloneSubUnit.unitNo")}</th>
+                <th className="px-3 py-2.5">{t("standaloneSubUnit.unitName")}</th>
+                <th className="px-3 py-2.5 text-center">{t("standaloneSubUnit.rooms")}</th>
+                <th className="px-3 py-2.5 text-right">{t("standaloneSubUnit.rent")}</th>
+                <th className="px-3 py-2.5">{t("standaloneSubUnit.rentType")}</th>
+                <th className="px-3 py-2.5 text-right">{t("standaloneSubUnit.secDeposit")}</th>
+                <th className="px-3 py-2.5 text-center">{t("standaloneSubUnit.config")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
               {units.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-3 py-12 text-center text-slate-400 font-bold uppercase tracking-wider">
-                    No units generated yet. Use the tool above.
+                    {t("standaloneSubUnit.noUnitsYet")}
                   </td>
                 </tr>
               ) : (
@@ -639,7 +676,7 @@ export function StandaloneSubUnitStep({
                         onClick={() => setActiveUnit(u)}
                         className="px-3 py-1 bg-white border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 rounded shadow-sm text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 transition-all mx-auto opacity-80 group-hover:opacity-100 cursor-pointer"
                       >
-                        <Edit2 className="size-3" /> Detail
+                        <Edit2 className="size-3" /> {t("standaloneSubUnit.detail")}
                       </button>
                     </td>
                   </tr>
@@ -652,4 +689,5 @@ export function StandaloneSubUnitStep({
     </div>
   );
 }
+
 

@@ -1,11 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useTranslations } from 'next-intl';
 import { Search, IndianRupee, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/common/Card';
-import { Button, MasterTable, SearchInput, Select, type Column } from '@/components/common';
+import { Button, MasterTable, SearchInput, SearchSelect, type Column } from '@/components/common';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import type { PaymentFilterOptions, PaymentRecordRow, PaymentRecordsPageData } from '@/app/[locale]/assets/revenue/payment/actions';
 
@@ -50,6 +51,7 @@ const PAYMENT_STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
   { label: 'Paid', value: 'paid' },
   { label: 'Unpaid', value: 'unpaid' },
+  { label: 'Partial', value: 'partial' },
 ];
 
 type PaymentTableRow = PaymentRecordRow & Record<string, unknown>;
@@ -63,6 +65,13 @@ export function PaymentSection({
   const params = useParams<{ locale: string }>();
   const { query, records, totalEntries, totalPages, startIndex } = pageData;
   const [smartSearch, setSmartSearch] = useState(query.search);
+  const debouncedSearch = useDebounce(smartSearch, 500);
+
+  useEffect(() => {
+    if (debouncedSearch !== query.search) {
+      updateRoute({ Search: debouncedSearch.trim(), PageNumber: '1' });
+    }
+  }, [debouncedSearch]);
 
   const listQueryString = (() => {
     const next = new URLSearchParams();
@@ -136,21 +145,15 @@ export function PaymentSection({
 
   const columns = useMemo<Column<PaymentTableRow>[]>(
     () => [
-      {
-        key: 'id',
-        label: t('table.srNo'),
-        align: 'center',
-        render: (_value, _row, rowIndex) => String(startIndex + rowIndex + 1),
-      },
+      { key: 'shopNo', label: sortableHeader(t('table.shopno'), 'shopNo'), align: 'center' },
       // { key: 'zone', label: sortableHeader(t('table.zone'), 'zone'), align: 'center', render: (value) => String(value ?? '-') },
       // { key: 'wardNo', label: sortableHeader(t('table.ward'), 'wardNo'), align: 'center', render: (value) => String(value ?? '-') },
-      { key: 'assetNo', label: sortableHeader(t('table.assetId'), 'assetNo'), align: 'center' },
-      { key: 'assetName', label: sortableHeader(t('table.assetName'), 'assetName') },
       { key: 'shopName', label: sortableHeader(t('table.shopName'), 'shopName') },
-      { key: 'shopNo', label: sortableHeader(t('table.shopno'), 'shopNo'), align: 'center' },
       { key: 'tenantName', label: sortableHeader(t('table.tenant'), 'tenantName') },
       { key: 'tenantMobile', label: sortableHeader(t('table.mobile'), 'tenantMobile'), align: 'center' },
       { key: 'leaseType', label: sortableHeader(t('table.type'), 'leaseType'), align: 'center' },
+      { key: 'leaseStartDate', label: sortableHeader(t('table.leaseStartDate'), 'leaseStartDate'), align: 'center' },
+      { key: 'leaseEndDate', label: sortableHeader(t('table.leaseEndDate'), 'leaseEndDate'), align: 'center' },
       {
         key: 'rentDue',
         label: sortableHeader(t('table.amount'), 'rentDue'),
@@ -161,99 +164,97 @@ export function PaymentSection({
         key: 'status',
         label: sortableHeader(t('table.status'), 'status'),
         align: 'center',
-        render: (value) => (
-          <StatusBadge
-            value={String(value).toLowerCase() === 'paid' ? 'true' : 'false'}
-            activeLabel={t('status.paid')}
-            inactiveLabel={t('status.unpaid')}
-          />
-        ),
+        render: (value) => {
+          const statusVal = String(value ?? '').trim();
+          if (!statusVal || statusVal === '-') {
+            return '-';
+          }
+          const lowerVal = statusVal.toLowerCase();
+          if (lowerVal === 'pending' || lowerVal === 'partial') {
+            return <StatusBadge variant="pending" label={statusVal} />;
+          }
+          const isPaid = lowerVal === 'paid';
+          return (
+            <StatusBadge
+              value={isPaid ? 'true' : 'false'}
+              activeLabel={statusVal}
+              inactiveLabel={statusVal}
+            />
+          );
+        },
       },
     ],
     [startIndex, t, query.sortBy, query.sortOrder]
   );
 
+  const renderFilters = () => (
+    <div className="w-full">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <div className="space-y-1 text-left">
+          <label className="text-[10px] font-bold text-slate-600">{t('filters.zone')}</label>
+          <SearchSelect name="zone" options={[{ label: 'All', value: 'all' }, ...filterOptions.zoneOptions]} value={query.zone} onChange={(_, value) => updateRoute({ ZoneId: value, WardId: 'all', PageNumber: '1' })} placeholder={t('filters.select')} className="w-full" />
+        </div>
+        <div className="space-y-1 text-left">
+          <label className="text-[10px] font-bold text-slate-600">{t('filters.ward')}</label>
+          <SearchSelect name="ward" options={[{ label: 'All', value: 'all' }, ...filterOptions.wardOptions]} value={query.ward} onChange={(_, value) => updateRoute({ WardId: value, PageNumber: '1' })} placeholder={t('filters.select')} className="w-full" />
+        </div>
+        <div className="space-y-1 text-left">
+          <label className="text-[10px] font-bold text-slate-600">{t('filters.assetCategory')}</label>
+          <SearchSelect name="assetCategory" options={[{ label: 'All', value: 'all' }, ...filterOptions.assetCategoryOptions]} value={query.assetCategory} onChange={(_, value) => updateRoute({ AssetCategoryId: value, PageNumber: '1' })} placeholder={t('filters.allCategories')} className="w-full" />
+        </div>
+        <div className="space-y-1 text-left">
+          <label className="text-[10px] font-bold text-slate-600">{t('filters.leaseRentType')}</label>
+          <SearchSelect name="leaseRentType" options={LEASE_RENT_TYPE_OPTIONS} value={query.leaseRentType} onChange={(_, value) => updateRoute({ LeaseRentType: value, PageNumber: '1' })} placeholder={t('filters.allTypes')} className="w-full" />
+        </div>
+        <div className="space-y-1 text-left">
+          <label className="text-[10px] font-bold text-slate-600">{t('filters.paymentStatus')}</label>
+          <SearchSelect name="paymentStatus" options={PAYMENT_STATUS_OPTIONS} value={query.status} onChange={(_, value) => updateRoute({ Status: value, PageNumber: '1' })} placeholder={t('filters.allStatus')} className="w-full" />
+        </div>
+        <div className="space-y-1 text-left">
+          <label className="text-[10px] font-bold text-slate-600">{t('filters.smartSearch')}</label>
+          <SearchInput value={smartSearch} onChange={setSmartSearch} placeholder={t('filters.smartSearchPlaceholder')} className="mb-0 w-full" />
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-3">
-      <Card variant="bordered" padding="none" className="bg-white shadow-sm border-slate-200 overflow-hidden">
-        <div className="p-5 border-b border-slate-100">
-          <div className="flex items-center gap-2 mb-1">
-            <Search className="w-4 h-4 text-blue-500" />
-            <h2 className="text-sm font-bold text-slate-800">{t('searchFilterTitle')}</h2>
-          </div>
-          <p className="text-[10px] text-slate-500 font-medium mb-4">{t('searchFilterSubtitle')}</p>
-
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-600">{t('filters.zone')}</label>
-              <Select options={[{ label: 'All', value: 'all' }, ...filterOptions.zoneOptions]} value={query.zone} onChange={(_e, value) => updateRoute({ ZoneId: value, WardId: 'all', PageNumber: '1' })} placeholder={t('filters.select')} selectSize="sm" className="text-xs" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-600">{t('filters.ward')}</label>
-              <Select options={[{ label: 'All', value: 'all' }, ...filterOptions.wardOptions]} value={query.ward} onChange={(_e, value) => updateRoute({ WardId: value, PageNumber: '1' })} placeholder={t('filters.select')} selectSize="sm" className="text-xs" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-600">{t('filters.assetCategory')}</label>
-              <Select options={[{ label: 'All', value: 'all' }, ...filterOptions.assetCategoryOptions]} value={query.assetCategory} onChange={(_e, value) => updateRoute({ AssetCategoryId: value, PageNumber: '1' })} placeholder={t('filters.allCategories')} selectSize="sm" className="text-xs" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-600">{t('filters.leaseRentType')}</label>
-              <Select options={LEASE_RENT_TYPE_OPTIONS} value={query.leaseRentType} onChange={(_e, value) => updateRoute({ LeaseRentType: value, PageNumber: '1' })} placeholder={t('filters.allTypes')} selectSize="sm" className="text-xs" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-600">{t('filters.paymentStatus')}</label>
-              <Select options={PAYMENT_STATUS_OPTIONS} value={query.status} onChange={(_e, value) => updateRoute({ Status: value, PageNumber: '1' })} placeholder={t('filters.allStatus')} selectSize="sm" className="text-xs" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-600">{t('filters.smartSearch')}</label>
-              <div className="flex gap-2">
-                <SearchInput value={smartSearch} onChange={setSmartSearch} placeholder={t('filters.smartSearchPlaceholder')} className="mb-0 w-full" />
-                <Button onClick={() => updateRoute({ Search: smartSearch.trim(), PageNumber: '1' })} variant="primary" size="sm" className="h-9 px-4 text-xs font-bold rounded-lg">{t('filters.search')}</Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-0 pt-0">
-          <MasterTable<PaymentTableRow>
-            columns={columns}
-            data={tableRows}
-            pageNumber={query.pageNumber}
-            pageSize={query.pageSize}
-            totalCount={totalEntries}
-            totalPages={totalPages}
-            onPageChange={(page) => updateRoute({ PageNumber: String(page) })}
-            onPageSizeChange={(size) => updateRoute({ PageSize: String(size), PageNumber: '1' })}
-            paginationConfig={{ enabled: true, showPageSizeSelector: true }}
-            pageSizeOptions={[5, 10, 20]}
-            renderActions={(record) =>
-              String(record.status).toLowerCase() === 'unpaid' ? (
-                <Button
-                  onClick={() => {
-                    const next = new URLSearchParams(listQueryString);
-                    next.set('recordId', String(record.id));
-                    next.set('assetId', String(record.assetId));
-                    router.push(`/${params.locale}/assets/revenue/payment/details?${next.toString()}`);
-                  }}
-                  variant="success"
-                  size="xs"
-                  icon={IndianRupee}
-                >
-                  {t('table.pay')}
-                </Button>
-              ) : null
-            }
-            actionLabel={t('table.action')}
-            getRowKey={(record) => `${record.assetId}-${record.id}`}
-            maxBodyHeightClassName="max-h-[calc(100vh-360px)]"
-            tableClassName="text-xs text-slate-700 text-center"
-            theadClassName="bg-[#1f2937] [&_th]:!text-white [&_th]:font-semibold [&_th]:text-xs [&_th]:px-3 [&_th]:py-2 [&_th:first-child]:!rounded-none [&_th:last-child]:!rounded-none"
-            containerClassName="gap-0 [&>div]:!rounded-none [&>div]:!border-0 [&>div]:!shadow-none"
-            footerClassName="!rounded-none"
-          />
-        </div>
-      </Card>
+    <div className="w-full">
+      <MasterTable<PaymentTableRow>
+        columns={columns}
+        data={tableRows}
+        pageNumber={query.pageNumber}
+        pageSize={query.pageSize}
+        totalCount={totalEntries}
+        totalPages={totalPages}
+        onPageChange={(page) => updateRoute({ PageNumber: String(page) })}
+        onPageSizeChange={(size) => updateRoute({ PageSize: String(size), PageNumber: '1' })}
+        paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+        pageSizeOptions={[5, 10, 20]}
+        headerExtra={renderFilters()}
+        renderActions={(record) => {
+          const statusLower = String(record.status).toLowerCase();
+          return statusLower !== 'paid' ? (
+            <Button
+              onClick={() => {
+                const next = new URLSearchParams(listQueryString);
+                next.set('recordId', String(record.id));
+                next.set('assetId', String(record.assetId));
+                router.push(`/${params.locale}/assets/revenue/payment/details?${next.toString()}`);
+              }}
+              variant="success"
+              size="xs"
+              icon={IndianRupee}
+            >
+              {t('table.pay')}
+            </Button>
+          ) : null;
+        }}
+        actionLabel={t('table.action')}
+        getRowKey={(record) => `${record.assetId}-${record.id}`}
+        maxBodyHeightClassName="max-h-[calc(100vh-360px)]"
+        tableClassName="text-sm text-slate-700 text-center"
+      />
     </div>
   );
 }
-

@@ -10,6 +10,8 @@
     "Asset_Name":  "मालमत्तेचे नाव",
     "Asset_Type":  "मालमत्ता प्रकार",
     "Location_Ward":  "ठिकाण आणि प्रभाग",
+    "Address":  "पत्ता",
+    "Ward":  "प्रभाग",
     "Acquisition_Date":  "संपादन तारीख",
     "Acquisition_Value":  "संपादन मूल्य",
     "Current_Value":  "सध्याचे मूल्य",
@@ -27,6 +29,7 @@
     "Remarks":  "शेरा",
     "Action":  "कृती",
     "All_Asset_Types":  "सर्व मालमत्ता प्रकार",
+    "All_Asset_Categories": "सर्व मालमत्ता वर्ग",
     "All_Zones":  "सर्व झोन",
     "All_Wards":  "सर्व प्रभाग",
     "Asset_Register":  "मालमत्ता नोंदवही",
@@ -38,5 +41,6 @@
     "Search_assets":  "मालमत्ता शोधा ...",
     "No_asset_records":  "या श्रेणीसाठी कोणतेही मालमत्ता रेकॉर्ड आढळले नाही",
     "Ownership_Type":  "मालकी प्रकार",
-    "Ownership":  "मालकी"
+    "Ownership":  "मालकी",
+    "All_Departments": "सर्व विभाग"
 }

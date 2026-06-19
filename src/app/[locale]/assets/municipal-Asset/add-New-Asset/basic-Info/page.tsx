@@ -13,6 +13,7 @@ import BasicInfoPage from "@/components/modules/assets/municipal-Asset/add-New-A
 import { getCachedWards, getCachedZones, getCachedDepartments, getCachedMoujas, getCachedOwnershipTypes } from "@/lib/api/asset/cached-master-data";
 import { fetchBuildingFieldDefinitions } from "./actions";
 import { zoneService } from "@/lib/api/asset/zone.service";
+import { getUseTypesPagedServer } from "@/lib/api/typeofuse.service";
 
 interface BuildingBasicInfoPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -33,23 +34,34 @@ export default async function BuildingBasicInfoPage({
   let ownershipTypes: any[] = [];
   let prefetchedFields: any[] = [];
   let subzones: any[] = [];
+  let useTypes: any[] = [];
 
   try {
-    // Fetch sequentially to prevent overloading the backend with 7 simultaneous requests
-    const wardsRes = await getCachedWards();
-    const zonesRes = await getCachedZones();
-    const departmentsRes = await getCachedDepartments();
-    const moujasRes = await getCachedMoujas();
+    // Fetch CONCURRENTLY to prevent overloading the backend latency-wise
+    const [wardsRes, zonesRes, departmentsRes, moujasRes, subzonesRes, ownershipRes] = await Promise.all([
+      getCachedWards(),
+      getCachedZones(),
+      getCachedDepartments(),
+      getCachedMoujas(),
+      zoneService.getSubZones(),
+      getCachedOwnershipTypes()
+    ]);
+
     const fieldsRes = categoryId > 0 && typeId > 0
         ? await fetchBuildingFieldDefinitions(categoryId, typeId)
         : { success: false as const, error: "Missing ids", data: [] };
-    const subzonesRes = await zoneService.getSubZones();
-    const ownershipRes = await getCachedOwnershipTypes();
+    
+    let useTypesRes: any = null;
+    try {
+      useTypesRes = await getUseTypesPagedServer({ pageNumber: 1, pageSize: 1000 });
+    } catch (utErr) {
+      console.error("Failed to fetch use types in server component:", utErr);
+    }
 
-    if (wardsRes.success && Array.isArray(wardsRes.data)) {
+    if (wardsRes?.success && Array.isArray(wardsRes.data)) {
       wards = wardsRes.data;
     }
-    if (zonesRes.success && Array.isArray(zonesRes.data)) {
+    if (zonesRes?.success && Array.isArray(zonesRes.data)) {
       zones = zonesRes.data;
     }
     if (departmentsRes.success && Array.isArray(departmentsRes.data)) {
@@ -67,6 +79,9 @@ export default async function BuildingBasicInfoPage({
     if (ownershipRes.success && Array.isArray(ownershipRes.data)) {
       ownershipTypes = ownershipRes.data;
     }
+    if (useTypesRes && Array.isArray(useTypesRes.items)) {
+      useTypes = useTypesRes.items;
+    }
   } catch (error) {
     console.error("Error pre-fetching data in BuildingBasicInfoPage:", error);
   }
@@ -80,7 +95,7 @@ export default async function BuildingBasicInfoPage({
       ownershipTypes={ownershipTypes}
       prefetchedFields={prefetchedFields} 
       subzones={subzones}
+      useTypes={useTypes}
     />
   );
 }
-

@@ -1,5 +1,7 @@
 {
-  "title": "Master Asset Dashboard",
+  "master": "Master Asset Dashboard",
+  "masterDashboard": "Master Dashboard",
+  "revenueDashboard": "Revenue Dashboard",
   "syncing": "Syncing Database...",
   "filters": "Filters:",
   "allZones": "All Zones",

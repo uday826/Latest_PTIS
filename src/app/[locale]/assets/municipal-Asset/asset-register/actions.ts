@@ -35,6 +35,7 @@ export async function fetchAssetRegisterPage(
         totalMarketValue: (data as any).totalMarketValue || 0,
         totalDepreciation: (data as any).totalDepreciation || 0,
         netBookValue: (data as any).netBookValue || 0,
+        totalCapitalValue: (data as any).totalCapitalValue || 0,
         activeAssetsCount: (data as any).activeAssetsCount || 0,
       };
     }
@@ -42,7 +43,7 @@ export async function fetchAssetRegisterPage(
 
   }
 
-  return { items: [], totalCount: 0, totalPurchaseValue: 0, totalMarketValue: 0, totalDepreciation: 0, netBookValue: 0, activeAssetsCount: 0 };
+  return { items: [], totalCount: 0, totalPurchaseValue: 0, totalMarketValue: 0, totalDepreciation: 0, netBookValue: 0, totalCapitalValue: 0, activeAssetsCount: 0 };
 }
 
 export async function fetchAssetTypesByCategory(categoryId: number) {

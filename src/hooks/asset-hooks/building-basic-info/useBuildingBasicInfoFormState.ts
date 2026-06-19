@@ -26,6 +26,75 @@ export interface BuildingBasicInfoFormStateReturn {
   resetForm: () => void;
 }
 
+export function sanitizeBasicInfoField(name: string, value: string): string {
+  // Sanitize: 1. No leading spaces. 2. Numeric only for contact/pin fields.
+  let sanitizedValue = value.replace(/^\s+/, "");
+  const lowerName = name.toLowerCase();
+  if (
+    lowerName.includes("mobile") ||
+    lowerName.includes("pincode") ||
+    lowerName.includes("phone") ||
+    lowerName.includes("contact")
+  ) {
+    sanitizedValue = sanitizedValue.replace(/\D/g, "");
+  }
+
+  // 3. Special character restrictions for specific text fields
+  if (name === "inChargeName" || name === "surveyedBy") {
+    sanitizedValue = sanitizedValue.replace(/[^a-zA-Z\s.]/g, "");
+  } else if (name === "inChargeDesignation") {
+    sanitizedValue = sanitizedValue.replace(/[^a-zA-Z\s-]/g, "");
+  } else if (name === "assetName") {
+    sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\s-_]/g, "");
+  } else if (name === "locality" || name === "landmark") {
+    sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\s,./-]/g, "");
+  } else if (name === "fullAddress") {
+    sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\s,./#\-()]/g, "");
+  }
+
+  // 4. Added new validations requested by the user
+  if (name === "assetCode" || name === "assetNo") {
+    sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\-_/]/g, "");
+  } else if (name === "propertyNumber") {
+    sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\-/]/g, "");
+  } else if (name === "plotNumber") {
+    sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\-_/.\s]/g, "");
+  } else if (lowerName.includes("email")) {
+    sanitizedValue = sanitizedValue.replace(/\s/g, "");
+  } else if (name === "latitude" || name === "longitude") {
+    sanitizedValue = sanitizedValue.replace(/[^0-9.\-]/g, "");
+    const parts = sanitizedValue.split(".");
+    if (parts.length > 2) {
+      sanitizedValue = parts[0] + "." + parts.slice(1).join("");
+    }
+    if (sanitizedValue.includes("-")) {
+      sanitizedValue = (sanitizedValue.startsWith("-") ? "-" : "") + sanitizedValue.replace(/-/g, "");
+    }
+  } else if (
+    lowerName.includes("value") ||
+    lowerName.includes("rate") ||
+    lowerName.includes("cost") ||
+    lowerName.includes("price") ||
+    lowerName.includes("valuation") ||
+    lowerName.includes("offset") ||
+    name === "length" ||
+    name === "width"
+  ) {
+    sanitizedValue = sanitizedValue.replace(/[^0-9.]/g, "");
+    const parts = sanitizedValue.split(".");
+    if (parts.length > 2) {
+      sanitizedValue = parts[0] + "." + parts.slice(1).join("");
+    }
+  }
+
+  const isTitleCased = name === "assetName" || name === "inChargeName" || name === "inChargeDesignation";
+  if (isTitleCased) {
+    sanitizedValue = sanitizedValue.replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  return sanitizedValue;
+}
+
 /**
  * Manages local state for the Building Basic Info form.
  * No Next.js hooks (router, translations) live here — those belong in the
@@ -67,7 +136,20 @@ export function useBuildingBasicInfoFormState(
 
   const updateFormData = useCallback(
     (patch: Partial<BuildingBasicInfoFormData>) => {
-      setFormData((prev) => ({ ...prev, ...patch }));
+      setFormData((prev) => {
+        let changed = false;
+        const next = { ...prev };
+        for (const key in patch) {
+          if (Object.prototype.hasOwnProperty.call(patch, key)) {
+            const val = patch[key as keyof BuildingBasicInfoFormData];
+            if (val !== undefined && prev[key as keyof BuildingBasicInfoFormData] !== val) {
+              (next as any)[key] = val;
+              changed = true;
+            }
+          }
+        }
+        return changed ? next : prev;
+      });
     },
     []
   );
@@ -75,72 +157,33 @@ export function useBuildingBasicInfoFormState(
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
+      const target = e.target as HTMLInputElement;
+      const start = target.selectionStart;
+      const end = target.selectionEnd;
       
-      // Sanitize: 1. No leading spaces. 2. Numeric only for contact/pin fields.
-      let sanitizedValue = value.replace(/^\s+/, "");
-      const lowerName = name.toLowerCase();
-      if (
-        lowerName.includes("mobile") ||
-        lowerName.includes("pincode") ||
-        lowerName.includes("phone") ||
-        lowerName.includes("contact")
-      ) {
-        sanitizedValue = sanitizedValue.replace(/\D/g, "");
-      }
-
-      // 3. Special character restrictions for specific text fields
-      if (name === "inChargeName" || name === "surveyedBy") {
-        sanitizedValue = sanitizedValue.replace(/[^a-zA-Z\s.]/g, "");
-      } else if (name === "inChargeDesignation") {
-        sanitizedValue = sanitizedValue.replace(/[^a-zA-Z\s-]/g, "");
-      } else if (name === "assetName") {
-        sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\s-_]/g, "");
-      } else if (name === "locality" || name === "landmark") {
-        sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\s,./-]/g, "");
-      } else if (name === "fullAddress") {
-        sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\s,./#\-()]/g, "");
-      }
-
-      // 4. Added new validations requested by the user
-      if (name === "assetCode" || name === "assetNo") {
-        sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\-_/]/g, "");
-      } else if (name === "propertyNumber") {
-        sanitizedValue = sanitizedValue.replace(/[^a-zA-Z0-9\-/]/g, "");
-      } else if (lowerName.includes("email")) {
-        sanitizedValue = sanitizedValue.replace(/\s/g, "");
-      } else if (name === "latitude" || name === "longitude") {
-        sanitizedValue = sanitizedValue.replace(/[^0-9.\-]/g, "");
-        const parts = sanitizedValue.split(".");
-        if (parts.length > 2) {
-          sanitizedValue = parts[0] + "." + parts.slice(1).join("");
-        }
-        if (sanitizedValue.includes("-")) {
-          sanitizedValue = (sanitizedValue.startsWith("-") ? "-" : "") + sanitizedValue.replace(/-/g, "");
-        }
-      } else if (
-        lowerName.includes("value") ||
-        lowerName.includes("rate") ||
-        lowerName.includes("cost") ||
-        lowerName.includes("price") ||
-        lowerName.includes("valuation")
-      ) {
-        sanitizedValue = sanitizedValue.replace(/[^0-9.]/g, "");
-        const parts = sanitizedValue.split(".");
-        if (parts.length > 2) {
-          sanitizedValue = parts[0] + "." + parts.slice(1).join("");
-        }
-      }
+      const sanitizedValue = sanitizeBasicInfoField(name, value);
 
       setFormData((prev) => {
         const patch: Partial<BuildingBasicInfoFormData> = { [name]: sanitizedValue };
         if (name === "zone") {
           patch.ward = "";
+        } else if (name === "typeOfUseId") {
+          patch.subTypeOfUseId = "";
         }
         return {
           ...prev,
           ...patch,
         };
       });
+
+      const isTitleCased = name === "assetName" || name === "inChargeName" || name === "inChargeDesignation";
+      if (start !== null && end !== null && isTitleCased) {
+        requestAnimationFrame(() => {
+          try {
+            target.setSelectionRange(start, end);
+          } catch {}
+        });
+      }
     },
     []
   );

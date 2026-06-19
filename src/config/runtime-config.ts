@@ -77,7 +77,7 @@ export function getRuntimeConfig(): RuntimeConfig {
   } catch (e) {
     console.warn('Failed to parse runtime config from DOM', e);
   }
-  
+
   return window.__RUNTIME_CONFIG__ || defaultConfig;
 }
 

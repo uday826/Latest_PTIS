@@ -68,12 +68,12 @@ export function useMasterDataFormState(
 
     // 1. Code Validation (Unicode Alphanumeric + Hyphen + Underscore)
     const code = formData.code?.trim() || "";
-    const skipCodeValidation = [
+    const skipCodeValidation = ([
       MASTER_IDS.INVENTORY_CONDITION, 
       MASTER_IDS.INVENTORY_MODEL, 
       MASTER_IDS.OWNERSHIP_TYPE, 
       MASTER_IDS.OWNING_DEPARTMENT
-    ].includes(masterId as MasterId);
+    ] as string[]).includes(masterId);
 
     if (!skipCodeValidation) {
       if (!code) errors.code = "errors.codeRequired";
@@ -94,12 +94,12 @@ export function useMasterDataFormState(
     }
 
     // 3. Group/Category validation — required for masters that have a parent
-    const requiresGroup = [
+    const requiresGroup = ([
       MASTER_IDS.TYPE,
       MASTER_IDS.INVENTORY_NAME,
       MASTER_IDS.INVENTORY_CONDITION,
       MASTER_IDS.INVENTORY_MODEL,
-    ].includes(masterId as MasterId);
+    ] as string[]).includes(masterId);
     if (requiresGroup && (!formData.group || formData.group === 'all' || formData.group === '0')) {
       errors.group = "errors.categoryRequired";
     }

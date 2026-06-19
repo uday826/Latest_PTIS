@@ -1,6 +1,6 @@
 'use client';
 
-import type { MasterDataCommonProps } from '@/types/asset-types/asset.types';
+import type { MasterDataCommonProps } from '@/types/asset-type/master-data.types';
 import { MasterDataLayout } from '../common/MasterDataLayout';
 import { MasterTypes } from '../common/MasterTypes';
 import { OwningDepartmentMasterTable } from './OwningDepartmentMasterTable';
@@ -31,3 +31,4 @@ export function OwningDepartmentMasterView(props: OwningDepartmentMasterViewProp
     />
   );
 }
+

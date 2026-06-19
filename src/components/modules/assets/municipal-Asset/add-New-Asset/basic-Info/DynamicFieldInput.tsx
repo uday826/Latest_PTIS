@@ -1,9 +1,10 @@
 "use client";
 
 
-import { Input, Select, ToggleSwitch } from "@/components/common";
+import { Input, Select, ToggleSwitch, SearchSelect } from "@/components/common";
 import { ProcessedField } from "@/components/modules/assets/municipal-Asset/add-New-Asset/FieldRenderer";
 import { DynamicAttributesFormData } from "@/types/asset-types/basic-info/basicInfo.types";
+import { useTranslations } from "next-intl";
 
 interface DynamicFieldInputProps {
   field: ProcessedField;
@@ -14,24 +15,25 @@ interface DynamicFieldInputProps {
 /**
  * Isolated dynamic input component to maintain <200 lines file size.
  */
-export function DynamicFieldInput({ 
-  field, 
-  formData, 
-  onAttributeChange 
+export function DynamicFieldInput({
+  field,
+  formData,
+  onAttributeChange
 }: DynamicFieldInputProps) {
+  const t = useTranslations("addAssetForm");
   const fieldName = field.fieldName;
   const fieldValue = formData.attributes?.[fieldName];
 
   if (Array.isArray(field.options) && field.options.length > 0) {
     return (
-      <Select
+      <SearchSelect
         label={field.fieldLabel}
         name={fieldName}
         value={String(fieldValue ?? "")}
-        onChange={(e) => onAttributeChange(fieldName, e.target.value)}
+        onChange={(name, value) => onAttributeChange(fieldName, value)}
         options={field.options.map((opt: string) => ({ label: opt, value: opt }))}
-        className="font-medium text-sm h-8"
-        selectSize="sm"
+        placeholder={t("placeholders.selectField", { field: field.fieldLabel })}
+        className="font-medium text-[11px] h-7"
         required={field.isRequired}
       />
     );
@@ -40,7 +42,7 @@ export function DynamicFieldInput({
   const typeLower = field.fieldType?.toLowerCase();
   if (typeLower === "checkbox" || typeLower === "boolean") {
     return (
-      <div className="flex items-center gap-2 h-8 pt-6">
+      <div className="flex items-center gap-2 h-7 pt-4">
         <ToggleSwitch
           checked={Boolean(fieldValue || false)}
           onChange={(val) => onAttributeChange(fieldName, val)}
@@ -60,7 +62,7 @@ export function DynamicFieldInput({
       value={typeof fieldValue === "boolean" ? "" : (fieldValue as string | number ?? "")}
       onChange={(e) => {
         let val = e.target.value;
-        
+
         // Sanitize: 1. No leading spaces. 2. Numeric only for contact/pin fields.
         val = val.replace(/^\s+/, "");
         const lowerName = fieldName.toLowerCase();
@@ -133,8 +135,8 @@ export function DynamicFieldInput({
         }
         onAttributeChange(fieldName, val);
       }}
-      className="h-8 text-[13px] font-medium text-slate-700"
-      placeholder={`Enter ${field.fieldLabel.toLowerCase()}`}
+      className="h-7 text-[11px] font-medium text-slate-700"
+      placeholder={t("placeholders.enterField", { field: field.fieldLabel })}
       required={field.isRequired}
     />
   );

@@ -48,6 +48,7 @@ export interface InventoryModelListParams {
   PageSize?: number;
   SearchTerm?: string;
   MarkedForDeletion?: boolean;
+  IsActive?: boolean | string;
 }
 
 export interface InventoryItemNameListParams {
@@ -57,6 +58,7 @@ export interface InventoryItemNameListParams {
   PageSize?: number;
   SearchTerm?: string;
   MarkedForDeletion?: boolean;
+  IsActive?: boolean | string;
 }
 
 export interface InventoryModelPayload {
@@ -107,6 +109,7 @@ export interface InventoryConditionListParams {
   PageSize?: number;
   SearchTerm?: string;
   MarkedForDeletion?: boolean;
+  IsActive?: boolean | string;
 }
 
 export interface InventoryConditionPayload {

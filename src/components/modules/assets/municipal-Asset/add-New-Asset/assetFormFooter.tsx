@@ -15,6 +15,7 @@ import {
   type CategoryFlags,
 } from "./assetFormSteps";
 import AssetSuccessModal from "./AssetSuccessModal";
+import { useTranslations } from "next-intl";
 
 function isDeepEqual(obj1: any, obj2: any): boolean {
   if (obj1 === obj2) return true;
@@ -47,6 +48,7 @@ export function AssetFormFooter() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations("addAssetForm");
   const isEditMode = searchParams.get('mode') === 'edit';
   const {
     formData,
@@ -129,6 +131,10 @@ export function AssetFormFooter() {
     }
   }, [formData, lastSavedFormData, setLastSavedFormData]);
 
+  useEffect(() => {
+    setIsSubmitting(false);
+  }, [pathname, searchParams]);
+
   const categoryFlags: CategoryFlags | undefined =
     formData.hasFloorDetails !== undefined ? {
       isMovable: formData.isMovableCategory,
@@ -152,7 +158,8 @@ export function AssetFormFooter() {
   const isLastStep = !nextStep;
 
   const handlePrevious = () => {
-    if (!previousStep || isSubmitting) return;
+    if (!previousStep || isSubmitting || isDataLoading) return;
+    setIsSubmitting(true);
     router.push(appendQuery(withLocale(pathname, previousStep.path)));
   };
 
@@ -165,24 +172,24 @@ export function AssetFormFooter() {
     // ── EDIT MODE: skip activation, just save & finish ──
     if (isEditMode) {
       if (!assetId || assetId <= 0) {
-        toast.error("Asset ID not found. Please complete all previous steps first.");
+        toast.error(t("wizard.toasts.assetIdNotFound"));
         return;
       }
       setIsSubmitting(true);
       try {
         const result = await submitAssetForm(formData);
         if (result.success) {
-          toast.success("Asset updated successfully!");
+          toast.success(t("wizard.toasts.assetUpdatedSuccess"));
           setSuccessModal({
             assetName: formData.assetName || "",
             assetCode: formData.assetCode || (result as any).assetCode || "",
           });
         } else {
-          toast.error(`Failed to update asset: ${result.error}`);
+          toast.error(t("wizard.toasts.assetUpdateFailed", { error: result.error || "" }));
         }
       } catch (error) {
         console.error("Final edit submit error:", error);
-        toast.error("An unexpected error occurred while updating the asset.");
+        toast.error(t("wizard.toasts.unexpectedUpdateError"));
       } finally {
         setIsSubmitting(false);
       }
@@ -191,7 +198,7 @@ export function AssetFormFooter() {
 
     // ── NEW ASSET MODE: activate, upload staged docs, then show success ──
     if (!assetId || assetId <= 0) {
-      toast.error("Asset ID not found. Please complete all previous steps first.");
+      toast.error(t("wizard.toasts.assetIdNotFound"));
       return;
     }
 
@@ -202,12 +209,8 @@ export function AssetFormFooter() {
         // Sequentially upload staged documents in context now that the asset is active
         const filesToUpload = stagedFiles ? Object.entries(stagedFiles) : [];
         if (filesToUpload.length > 0) {
-          let loadingToast: string | number | undefined;
           try {
-            loadingToast = toast.loading("Uploading staged compliance documents...");
-            let uploadFailed = false;
-
-            for (const [defId, item] of filesToUpload) {
+            const uploadPromises = filesToUpload.map(([defId, item]) => {
               let userId = 1;
               try {
                 const match = document.cookie.match(/(?:^|; )user_id=([^;]*)/);
@@ -227,30 +230,20 @@ export function AssetFormFooter() {
               formDataPayload.append("DocumentType", item.definition.documentCode);
               formDataPayload.append("UploadedByUserId", userId.toString());
 
-              const uploadRes = await uploadDocumentAction(formDataPayload);
-              if (!uploadRes.success) {
-                uploadFailed = true;
+              return uploadDocumentAction(formDataPayload);
+            });
 
-                toast.error(`Failed to upload ${item.definition.documentName}`);
-              }
-            }
+            await Promise.allSettled(uploadPromises);
 
-            if (uploadFailed) {
-              toast.warning("Asset activated, but some documents failed to upload. You can re-upload them in Details.");
-            } else {
-              toast.success("All compliance documents uploaded successfully!");
-              if (setStagedFiles) setStagedFiles({});
-            }
-          } finally {
-            if (loadingToast !== undefined) toast.dismiss(loadingToast);
+            if (setStagedFiles) setStagedFiles({});
+          } catch (e) {
+            console.error("Compliance document upload error:", e);
           }
         }
 
         // Upload basic info files if they exist and haven't been uploaded yet (for new assets)
         if (basicInfoFiles && (basicInfoFiles.frontPhoto || basicInfoFiles.buildingPlan)) {
-          let loadingToast: string | number | undefined;
           try {
-            loadingToast = toast.loading("Uploading asset photos...");
             let userId = 1;
             try {
               const match = document.cookie.match(/(?:^|; )user_id=([^;]*)/);
@@ -314,32 +307,17 @@ export function AssetFormFooter() {
 
             const res = await uploadBulkDocumentsAction(formDataPayload);
             if (res.success && res.data) {
-              const failures = res.data.failureCount || 0;
-              const successes = res.data.successCount || 0;
-              if (failures > 0) {
-                const detailedError = res.data.failedUploads?.[0]?.errorMessage || "Unknown backend error";
-                toast.error(`Photo upload failed: ${successes} successful, ${failures} failed. Reason: ${detailedError}`);
-              } else {
-                toast.success("Asset photos uploaded successfully!");
-                if (setBasicInfoFiles) setBasicInfoFiles({});
-              }
-            } else {
-              const errorMsg = res.error || "Unknown bulk upload error";
-              toast.error(`Photo upload failed: ${errorMsg}`);
+              if (setBasicInfoFiles) setBasicInfoFiles({});
             }
-          } finally {
-            if (loadingToast !== undefined) toast.dismiss(loadingToast);
+          } catch (e) {
+            console.error("Basic info photo upload error:", e);
           }
         }
 
         // Upload subunit files if they exist and haven't been uploaded yet (staged during subunit step)
         const subunitEntries = subunitFiles ? Object.entries(subunitFiles) : [];
         if (subunitEntries.length > 0) {
-          let loadingToast: string | number | undefined;
           try {
-            loadingToast = toast.loading("Uploading subunit photos & plans...");
-            let uploadFailed = false;
-
             let frontPhotoDefId = 0;
             let planDefId = 0;
             try {
@@ -355,8 +333,8 @@ export function AssetFormFooter() {
               console.error("Failed to fetch definitions for subunit upload", e);
             }
 
-            for (const [subUnitId, files] of subunitEntries) {
-              if (!files.photoFile && !files.planFile) continue;
+            const subunitUploadPromises = subunitEntries.map(([subUnitId, files]) => {
+              if (!files.photoFile && !files.planFile) return Promise.resolve();
 
               let userId = 1;
               try {
@@ -402,22 +380,14 @@ export function AssetFormFooter() {
 
               formDataPayload.append("FileMetadataJson", JSON.stringify(metadata));
 
-              const res = await uploadBulkDocumentsAction(formDataPayload);
-              if (!res.success || (res.data && res.data.failureCount > 0)) {
-                uploadFailed = true;
-                const detailedError = res.data?.failedUploads?.[0]?.errorMessage || res.error || "Unknown error";
-                console.error(`Subunit photo upload failed for ID ${subUnitId}: ${detailedError}`);
-              }
-            }
+              return uploadBulkDocumentsAction(formDataPayload);
+            });
 
-            if (uploadFailed) {
-              toast.warning("Asset activated, but some subunit documents failed to upload. You can re-upload them in Details.");
-            } else {
-              toast.success("All subunit photos & plans uploaded successfully!");
-              if (setSubunitFiles) setSubunitFiles({});
-            }
-          } finally {
-            if (loadingToast !== undefined) toast.dismiss(loadingToast);
+            await Promise.allSettled(subunitUploadPromises);
+
+            if (setSubunitFiles) setSubunitFiles({});
+          } catch (e) {
+            console.error("Subunit document upload error:", e);
           }
         }
 
@@ -432,11 +402,11 @@ export function AssetFormFooter() {
           assetCode: formData.assetCode || "",
         });
       } else {
-        toast.error(`Final submission failed: ${result.error}`);
+        toast.error(t("wizard.toasts.finalSubmitFailed", { error: result.error || "" }));
       }
     } catch (error) {
 
-      toast.error("An unexpected error occurred during final submission.");
+      toast.error(t("wizard.toasts.unexpectedFinalSubmitError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -467,7 +437,7 @@ export function AssetFormFooter() {
         }
       } catch (error) {
 
-        toast.error("Failed to complete step actions.");
+        toast.error(t("wizard.toasts.stepActionsFailed"));
         return;
       } finally {
         setIsSubmitting(false);
@@ -498,7 +468,7 @@ export function AssetFormFooter() {
       setErrors?.(validationErrors);
 
       if (Object.keys(validationErrors).length > 0) {
-        toast.error("Please fill in all required fields correctly.");
+        toast.error(t("wizard.toasts.requiredFieldsCorrect"));
         return;
       }
     }
@@ -507,7 +477,7 @@ export function AssetFormFooter() {
 
     if (!confirmedOverride) {
       if (lastSavedFormData && isDeepEqual(formData, lastSavedFormData)) {
-        toast.info("No changes detected. Proceeding to next step.");
+        toast.info(t("wizard.toasts.noChangesDetected"));
         if (nextStep) {
           const sp = new URLSearchParams(searchParams.toString());
           if (formData.id) {
@@ -517,6 +487,7 @@ export function AssetFormFooter() {
           if (formData.assetCode) {
             sp.set("assetCode", String(formData.assetCode));
           }
+          setIsSubmitting(true);
           router.push(withLocale(pathname, nextStep.path) + "?" + sp.toString());
         }
         return;
@@ -629,31 +600,31 @@ export function AssetFormFooter() {
             const successes = res.data.successCount || 0;
             if (failures > 0) {
               const detailedError = res.data.failedUploads?.[0]?.errorMessage || "Unknown backend error";
-              toast.error(`Photo upload failed: ${successes} successful, ${failures} failed. Reason: ${detailedError}`);
+              toast.error(t("wizard.toasts.photoUploadFailed", { successes, failures, reason: detailedError }));
               console.error("Bulk upload partial failures:", res.data.failedUploads);
             } else {
-              toast.success("Photos uploaded successfully!");
+              toast.success(t("wizard.toasts.photosUploadedSuccess"));
               if (setBasicInfoFiles) setBasicInfoFiles({});
             }
           } else {
-            const errorMsg = res.error || "Unknown bulk upload error";
-
-
+            // Bulk upload error
           }
         }
 
-        toast.success(`${stepLabel} saved successfully!`);
+        const stepLabelKey = currentStep ? t(`wizard.steps.${currentStep.key}`) : stepLabel;
+        toast.success(t("wizard.toasts.stepSavedSuccess", { stepLabel: stepLabelKey }));
 
         if (!nextStep) return;
         router.push(withLocale(pathname, nextStep.path) + "?" + sp.toString());
         return;
       } else {
-        toast.error(`Failed to save ${stepLabel.toLowerCase()}: ${result.error}`);
+        const stepLabelKey = currentStep ? t(`wizard.steps.${currentStep.key}`) : stepLabel;
+        toast.error(t("wizard.toasts.stepSaveFailed", { stepLabel: stepLabelKey.toLowerCase(), error: result.error || "" }));
         return;
       }
     } catch (error) {
-
-      toast.error(`An unexpected error occurred while saving ${stepLabel.toLowerCase()}.`);
+      const stepLabelKey = currentStep ? t(`wizard.steps.${currentStep.key}`) : stepLabel;
+      toast.error(t("wizard.toasts.unexpectedStepSaveError", { stepLabel: stepLabelKey.toLowerCase() }));
       return;
     } finally {
       setIsSubmitting(false);
@@ -686,11 +657,11 @@ export function AssetFormFooter() {
               : "border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 active:scale-[0.98]"
               }`}
           >
-            &lt; Previous
+            {t("wizard.previous")}
           </button>
 
           <div className="rounded-xl border border-slate-200 bg-slate-100 px-2 py-2.5 text-xs font-black text-slate-700 uppercase tracking-wider shadow-inner">
-            Step {currentStepId} of {totalSteps}
+            {t("wizard.stepProgress", { current: currentStepId, total: totalSteps })}
           </div>
 
           <button
@@ -707,11 +678,11 @@ export function AssetFormFooter() {
             {isSubmitting ? (
               <>
                 <div className="size-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>{isLastStep ? "Submitting..." : "Saving..."}</span>
+                <span>{isLastStep ? t("wizard.submitting") : t("wizard.saving")}</span>
               </>
             ) : (
               <>
-                {isLastStep ? "✓ Final Submit" : "Save & Next"}
+                {isLastStep ? t("wizard.finalSubmit") : t("wizard.saveAndNext")}
               </>
             )}
           </button>

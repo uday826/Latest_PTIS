@@ -24,9 +24,20 @@ export async function getPaymentDetailRecordAction(
   if (!record) return null;
   if (record.assetId !== Number(assetId)) return null;
 
-  const assetResponse = await leaseRentPaymentService.getAssetById(record.assetId);
-  return mapAssetLeaseRentDetailsToPaymentDetail(
+  const [assetResponse, summaryResponse] = await Promise.all([
+    leaseRentPaymentService.getAssetById(record.assetId),
+    leaseRentPaymentService.getLeaseRentDemandSummary(recordId),
+  ]);
+
+  const mapped = mapAssetLeaseRentDetailsToPaymentDetail(
     record,
     assetResponse.success ? assetResponse.data ?? null : null
   );
+
+  if (summaryResponse.success && summaryResponse.data) {
+    mapped.totalPaid = summaryResponse.data.totalPaid;
+    mapped.totalPending = summaryResponse.data.totalPending;
+  }
+
+  return mapped;
 }

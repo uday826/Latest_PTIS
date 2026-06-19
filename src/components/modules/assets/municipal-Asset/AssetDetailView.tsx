@@ -9,7 +9,6 @@ import {
   BadgeIndianRupee,
   Building2,
   ClipboardList,
-  FileText,
   Info,
   Layers,
   Map,
@@ -18,13 +17,12 @@ import {
 } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DocumentsTab } from './detail-tabs/DocumentsTab';
 import { FloorDetailsTab } from './detail-tabs/FloorDetailsTab';
 import { FurnitureFixturesTab } from './detail-tabs/FurnitureFixturesTab';
-import { LegalPlanningTab } from './detail-tabs/LegalPlanningTab';
 import { OverviewTab } from './detail-tabs/OverviewTab';
 import { SubUnitsTab } from './detail-tabs/SubUnitsTab';
-import { ValuationTab } from './detail-tabs/ValuationTab';
 
 interface AssetDetailProps {
   asset: AssetDetailRecord;
@@ -37,17 +35,11 @@ function textOrBlank(value?: string | number | null) {
   return value === null || value === undefined || value === '' ? '' : String(value);
 }
 
-function formatCurrency(value?: number | string | null) {
-  if (value === null || value === undefined || value === '') return '';
-  const parsed = typeof value === 'number' ? value : Number(value);
-  if (Number.isNaN(parsed)) return String(value);
-  return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(parsed);
-}
 
 const TAB_ICONS: Record<AssetDetailTabKey, React.ElementType> = {
   overview: Info,
   'floor-details': Layers,
-  'legal-planning': FileText,
+  'legal-planning': Info,
   valuation: BadgeIndianRupee,
   documents: ClipboardList,
   'sub-units': Building2,
@@ -55,6 +47,7 @@ const TAB_ICONS: Record<AssetDetailTabKey, React.ElementType> = {
 };
 
 export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: AssetDetailProps) {
+  const t = useTranslations('assetDetail');
   const visibleTabs = useMemo(
     () => (tabs.length > 0 ? tabs : [{ key: 'overview' as const, label: 'Overview' }]),
     [tabs]
@@ -100,38 +93,28 @@ export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: 
         </CardContent>
       </Card>
 
-      <div className={`grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4 ${asset.parentAssetName ? '2xl:grid-cols-7' : '2xl:grid-cols-6'}`}>
-        <div className="group relative min-h-22  overflow-hidden rounded-lg border border-blue-200 bg-white p-3 shadow-sm">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+        <Card variant="default" padding="sm" className="group relative min-h-22 overflow-hidden border-blue-200 shadow-sm">
           <div className="absolute left-0 top-0 h-full w-1 bg-blue-500" />
-          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Info className="h-3 w-3" /> Asset ID</p>
+          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Info className="h-3 w-3 text-blue-500" /> {t('overviewTab.assetNo')}</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.assetNo)}</p>
-        </div>
-        <div className="min-h-22 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Map className="h-3 w-3" /> Zone</p>
+        </Card>
+        <Card variant="default" padding="sm" className="min-h-22 border-slate-200 shadow-sm">
+          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Map className="h-3 w-3 text-blue-500" /> {t('overviewTab.zone')}</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.zoneName)}</p>
-        </div>
-        <div className="min-h-22 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><MapPin className="h-3 w-3" /> Ward</p>
+        </Card>
+        <Card variant="default" padding="sm" className="min-h-22 border-slate-200 shadow-sm">
+          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><MapPin className="h-3 w-3 text-blue-500" /> {t('overviewTab.ward')}</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.wardName)}</p>
-        </div>
-        {!!asset.parentAssetName && (
-          <div className="min-h-22 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-            <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><FileText className="h-3 w-3" /> Parent Asset</p>
-            <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.parentAssetName)}</p>
-          </div>
-        )}
-        <div className="min-h-22  rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><ClipboardList className="h-3 w-3" /> Category</p>
+        </Card>
+        <Card variant="default" padding="sm" className="min-h-22 border-slate-200 shadow-sm">
+          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><ClipboardList className="h-3 w-3 text-blue-500" /> {t('overviewTab.category')}</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.assetCategoryName)}</p>
-        </div>
-        <div className="min-h-22  rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Search className="h-3 w-3" /> CSN</p>
+        </Card>
+        <Card variant="default" padding="sm" className="min-h-22 border-slate-200 shadow-sm">
+          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Search className="h-3 w-3 text-blue-500" /> {t('overviewTab.csn')}</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.csn)}</p>
-        </div>
-        <div className="min-h-22  rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><BadgeIndianRupee className="h-3 w-3" /> Value</p>
-          <p className="mt-1 text-sm font-bold text-slate-800">{formatCurrency(asset.marketValue)}</p>
-        </div>
+        </Card>
       </div>
 
       <Card variant="bordered" padding="none" className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-t-xl border-b-0">
@@ -145,7 +128,7 @@ export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: 
                   icon={TAB_ICONS[tab.key]}
                   className="relative h-auto px-1 pb-3 pt-2 text-[13px] font-bold"
                 >
-                  {tab.label}
+                  {t(`tabs.${tab.key}`, { defaultValue: tab.label })}
                 </Tabs.Tab>
               ))}
             </Tabs.TabList>
@@ -157,12 +140,6 @@ export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: 
             </Tabs.TabPanel>
             <Tabs.TabPanel value="floor-details">
               <FloorDetailsTab asset={asset} />
-            </Tabs.TabPanel>
-            <Tabs.TabPanel value="legal-planning">
-              <LegalPlanningTab asset={asset} />
-            </Tabs.TabPanel>
-            <Tabs.TabPanel value="valuation">
-              <ValuationTab asset={asset} />
             </Tabs.TabPanel>
             <Tabs.TabPanel value="documents">
               <DocumentsTab asset={asset} initialDocumentId={initialDocumentId} />

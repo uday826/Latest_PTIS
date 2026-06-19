@@ -1,17 +1,8 @@
 import { apiClient } from "@/services/api.service";
 import { ApiResponse } from "@/types/common.types";
+import type { Department, ApiDepartmentItem } from "@/types/municipal-asset-service.types";
 
-export interface Department {
-  id: number;
-  departmentName: string;
-  departmentCode?: string;
-  imageUrl?: string;
-  logo?: string;
-  logoUrl?: string;
-  icon?: string;
-  image?: string;
-  isActive?: boolean;
-}
+export type { Department };
 
 /**
  * Service for fetching Department master data
@@ -21,18 +12,19 @@ export const departmentService = {
    * Get all active Departments
    */
   getDepartments: async (): Promise<ApiResponse<Department[]>> => {
-    const response = await apiClient.get<any>("/OwningDepartment", { cacheStrategy: 300 });
-    if (response.success) {
-      const items = Array.isArray(response.data)
-        ? response.data
-        : (response.data?.items || response.data?.Items || response.data?.data || []);
+    const response = await apiClient.get<{ items?: ApiDepartmentItem[] } | ApiDepartmentItem[]>("/OwningDepartment?pageSize=-1", { cacheStrategy: 300 });
+    if (response.success && response.data) {
+      const data = response.data;
+      const items = Array.isArray(data)
+        ? data
+        : (data.items || []);
       const normalized = items
-        .filter((item: any) => 
-          item.isActive !== false && item.isActive !== 0 && 
-          item.IsActive !== false && item.IsActive !== 0 && 
+        .filter((item) => 
+          item.isActive !== false && 
+          item.IsActive !== false && 
           item.status?.toLowerCase() !== 'inactive'
         )
-        .map((item: any) => {
+        .map((item) => {
           const departmentName = item.owningDepartmentName || item.departmentName || `Department ${item.id}`;
           const imageUrl = item.departmentIcon || item.imageUrl || item.logo || item.logoUrl || item.icon || item.image || item.deptImage || item.deptLogo || "";
           return {
@@ -43,6 +35,6 @@ export const departmentService = {
         });
       return { ...response, data: normalized };
     }
-    return response;
+    return response as ApiResponse<Department[]>;
   },
 };

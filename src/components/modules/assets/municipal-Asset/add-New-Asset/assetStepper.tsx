@@ -2,14 +2,17 @@
 
 import { AssetStepperProps } from "@/types/asset-types/basic-info/asset-wizard.types";
 import { Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 import React from "react";
 
 export function AssetStepper({
   currentStepId,
   steps,
 }: AssetStepperProps) {
+  const t = useTranslations("addAssetForm");
+
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#CBD8EA] bg-white px-3 py-1.5 shadow-sm">
+    <div className="overflow-x-auto py-1">
       <div className="flex min-w-max items-center gap-0">
         {steps.map((step, index) => {
           const isCompleted = step.id < currentStepId;
@@ -49,7 +52,7 @@ export function AssetStepper({
                         : "text-slate-400"
                     }`}
                 >
-                  {step.label}
+                  {t(`wizard.steps.${step.key}`)}
                 </span>
               </div>
             </React.Fragment>

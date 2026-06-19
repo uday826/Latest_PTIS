@@ -173,7 +173,12 @@ export function useFurnitureFixtureState(
   const dynamicRates = useMemo(() => {
     if (categories.length === 0) return {};
     const rates: Record<string, number> = {};
-    categories.forEach(c => { rates[c.typeName] = c.depreciationRate; });
+    categories.forEach(c => {
+      rates[c.typeName] = c.depreciationRate;
+      if (c.typeName === "Electronics") {
+        rates["Electronic Fixtures"] = c.depreciationRate;
+      }
+    });
     return rates;
   }, [categories]);
 
@@ -181,15 +186,27 @@ export function useFurnitureFixtureState(
   const dynamicConditions = useMemo(() => {
     if (conditions.length === 0) return {};
     const factors: Record<string, number> = {};
-    conditions.forEach(c => { factors[c.conditionName] = c.conditionFactor; });
+    conditions.forEach(c => {
+      const cat = categories.find(cat => cat.id === c.inventoryItemCategoryId);
+      if (cat) {
+        factors[`${cat.typeName.toLowerCase()}_${c.conditionName.toLowerCase()}`] = c.conditionFactor;
+        if (cat.typeName === "Electronics") {
+          factors[`electronic fixtures_${c.conditionName.toLowerCase()}`] = c.conditionFactor;
+        }
+      }
+      factors[c.conditionName.toLowerCase()] = c.conditionFactor;
+      factors[c.conditionName] = c.conditionFactor;
+    });
     return factors;
-  }, [conditions]);
+  }, [conditions, categories]);
+
+  const enrichedRows = useMemo(() => enrichRows(rows, dynamicRates, dynamicConditions), [rows, dynamicRates, dynamicConditions]);
 
   const addPhotoInputRef = useRef<HTMLInputElement | null>(null);
   const editPhotoInputRef = useRef<HTMLInputElement | null>(null);
   const invoiceInputRef = useRef<HTMLInputElement | null>(null);
 
-  const filteredRows = useMemo(() => filterType === "all" ? rows : rows.filter(r => r.type === filterType), [filterType, rows]);
+  const filteredRows = useMemo(() => filterType === "all" ? enrichedRows : enrichedRows.filter(r => r.type === filterType), [filterType, enrichedRows]);
   const paginatedRows = useMemo(() => filteredRows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE), [currentPage, filteredRows]);
 
   // Build Type dropdown options from actual categories
@@ -294,7 +311,6 @@ export function useFurnitureFixtureState(
     return [];
   }, [conditions, categories, editForm.type]);
 
-  const enrichedRows = useMemo(() => enrichRows(rows, dynamicRates, dynamicConditions), [rows, dynamicRates, dynamicConditions]);
   const categoryGroups = useMemo(() => buildCategoryGroups(enrichedRows), [enrichedRows]);
 
   const grandAssetValue = useMemo(() => rows.reduce((sum, row) => sum + row.total, 0), [rows]);
@@ -304,14 +320,15 @@ export function useFurnitureFixtureState(
     if (categories.length > 0) {
       return categories.map((cat) => {
         // Normalize cat.typeName to match row.type format (lowercase with dashes)
-        const normalizedCatType = cat.typeName.toLowerCase().replace(/\s+/g, "-");
+        const cleanName = cat.typeName.replace(/^[A-Z]\)\s*/i, "");
+        const normalizedCatType = cleanName.toLowerCase().replace(/\s+/g, "-");
         const typeRows = rows.filter((r) => r.type === normalizedCatType);
         return {
           type: cat.typeName,
-          label: cat.typeName,
+          label: cleanName,
           totalAmount: typeRows.reduce((sum, r) => sum + r.total, 0),
           totalItems: typeRows.reduce((sum, r) => sum + r.quantity, 0),
-          cardRing: inventoryMeta[cat.typeName as InventoryType]?.cardRing || "border-l-4 border-l-blue-500",
+          cardRing: inventoryMeta[normalizedCatType as InventoryType]?.cardRing || "border-l-4 border-l-blue-500",
         };
       });
     }
@@ -425,6 +442,7 @@ export function useFurnitureFixtureState(
   };
 
   const handleAddRow = async () => {
+    if (isSaving) return;
     const isDateValid = !!form.purchaseDate && !isNaN(new Date(form.purchaseDate).getTime()) && new Date(form.purchaseDate) <= new Date();
 
     const missing: string[] = [];
@@ -437,7 +455,6 @@ export function useFurnitureFixtureState(
     }
     if (!form.condition) missing.push("Condition");
     if (!form.owningDepartment) missing.push("Owning Department");
-    if (!form.specifications) missing.push("Specification");
     if (!form.quantity || Number(form.quantity) <= 0) {
       if (!form.quantity) missing.push("Quantity");
       else missing.push("Quantity (must be greater than 0)");
@@ -465,7 +482,7 @@ export function useFurnitureFixtureState(
         inventoryType: form.type,
         itemName: form.itemName,
         modelBrand: form.modelName,
-        specifications: form.specifications.trim() || undefined,
+        specifications: form.specifications?.trim() || undefined,
         purchaseDate: form.purchaseDate,
         condition: form.condition,
         quantity: Number(form.quantity),
@@ -504,56 +521,50 @@ export function useFurnitureFixtureState(
             } catch (e) { }
           }
 
-          for (const unit of batchData.units) {
-            if (!unit.assetId) continue;
+          const fd = new FormData();
+          fd.append("AssetId", String(parentAssetId));
+          fd.append("ModuleId", String(finalModuleId || 1004));
+          fd.append("UploadedByUserId", "1");
+          fd.append("IsAdHoc", "true");
 
-            const fd = new FormData();
-            fd.append("AssetId", String(unit.assetId));
-            fd.append("ModuleId", String(finalModuleId || 1004));
-            fd.append("UploadedByUserId", "1");
-            fd.append("IsAdHoc", "true");
+          const metadata: any[] = [];
 
-            const metadata: any[] = [];
+          if (photoFile) {
+            const uniqueName = `photo_${photoFile.name}`;
+            const renamedFile = new File([photoFile], uniqueName, { type: photoFile.type });
+            fd.append("Files", renamedFile);
+            metadata.push({
+              fileName: uniqueName,
+              documentType: "photo",
+              documentTitle: "Inventory Batch Photo",
+              documentDefinitionId: 0
+            });
+          }
 
-            if (photoFile) {
-              const uniqueName = `photo_${photoFile.name}`;
-              const renamedFile = new File([photoFile], uniqueName, { type: photoFile.type });
-              fd.append("Files", renamedFile);
-              metadata.push({
-                fileName: uniqueName,
-                documentType: "photo",
-                documentTitle: "Asset Photo",
-                documentDefinitionId: 0
-              });
+          if (invoiceFile) {
+            const uniqueName = `invoice_${invoiceFile.name}`;
+            const renamedFile = new File([invoiceFile], uniqueName, { type: invoiceFile.type });
+            fd.append("Files", renamedFile);
+            metadata.push({
+              fileName: uniqueName,
+              documentType: "invoice",
+              documentTitle: "Inventory Batch Invoice",
+              documentDefinitionId: 0
+            });
+          }
+
+          fd.append("FileMetadataJson", JSON.stringify(metadata));
+
+          try {
+            const uploadResult = await uploadBulkDocumentsAction(fd);
+            if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
+              const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
+              toast.error(`Document upload failed for batch: ${detailedError}`);
+            } else {
+              toast.success(`Batch documents uploaded successfully!`);
             }
-
-            if (invoiceFile) {
-              const uniqueName = `invoice_${invoiceFile.name}`;
-              const renamedFile = new File([invoiceFile], uniqueName, { type: invoiceFile.type });
-              fd.append("Files", renamedFile);
-              metadata.push({
-                fileName: uniqueName,
-                documentType: "invoice",
-                documentTitle: "Asset Invoice",
-                documentDefinitionId: 0
-              });
-            }
-
-            fd.append("FileMetadataJson", JSON.stringify(metadata));
-
-            try {
-              const uploadResult = await uploadBulkDocumentsAction(fd);
-              if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
-                const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
-
-                toast.error(`Document upload failed for Unit ${unit.unitNumber}: ${detailedError}`);
-              } else {
-                toast.success(`Documents uploaded successfully for Unit ${unit.unitNumber}!`);
-              }
-            } catch (e: any) {
-
-              toast.error(`Document upload exception for Unit ${unit.unitNumber}: ${e.message}`);
-            }
+          } catch (e: any) {
+            toast.error(`Document upload exception: ${e.message}`);
           }
         }
       }
@@ -574,6 +585,7 @@ export function useFurnitureFixtureState(
 
   const handleUpdateRow = async () => {
     if (editingId === null) return;
+    if (isSaving) return;
     if (!editForm.type || !editForm.itemName || !editForm.modelName || !editForm.purchaseDate || !editForm.condition || Number(editForm.quantity) <= 0 || Number(editForm.unitValue) <= 0) {
       return setFormError("Please fill in all required fields and positive values.");
     }
@@ -588,7 +600,7 @@ export function useFurnitureFixtureState(
       photoName: editForm.photoName,
       itemName: editForm.itemName,
       modelName: editForm.modelName,
-      specifications: editForm.specifications.trim() || "NA",
+      specifications: editForm.specifications?.trim() || "NA",
       purchaseDate: editForm.purchaseDate,
       condition: editForm.condition,
       quantity: Number(editForm.quantity),
@@ -675,52 +687,47 @@ export function useFurnitureFixtureState(
               } catch (e) { }
             }
 
-            for (const unit of existingRow.registeredUnits) {
-              if (!unit.assetId) continue;
-              const fd = new FormData();
-              fd.append("AssetId", String(unit.assetId));
-              fd.append("ModuleId", String(finalModuleId || 1004));
-              fd.append("UploadedByUserId", "1");
-              fd.append("IsAdHoc", "true");
+            const fd = new FormData();
+            fd.append("AssetId", String(parentAssetId));
+            fd.append("ModuleId", String(finalModuleId || 1004));
+            fd.append("UploadedByUserId", "1");
+            fd.append("IsAdHoc", "true");
 
-              const metadata: any[] = [];
+            const metadata: any[] = [];
 
-              if (photoFile) {
-                const uniqueName = `photo_${photoFile.name}`;
-                const renamedFile = new File([photoFile], uniqueName, { type: photoFile.type });
-                fd.append("Files", renamedFile);
-                metadata.push({
-                  fileName: uniqueName,
-                  documentType: "photo",
-                  documentTitle: "Asset Photo",
-                  documentDefinitionId: 0
-                });
+            if (photoFile) {
+              const uniqueName = `photo_${photoFile.name}`;
+              const renamedFile = new File([photoFile], uniqueName, { type: photoFile.type });
+              fd.append("Files", renamedFile);
+              metadata.push({
+                fileName: uniqueName,
+                documentType: "photo",
+                documentTitle: "Inventory Batch Photo",
+                documentDefinitionId: 0
+              });
+            }
+            if (invoiceFile) {
+              const uniqueName = `invoice_${invoiceFile.name}`;
+              const renamedFile = new File([invoiceFile], uniqueName, { type: invoiceFile.type });
+              fd.append("Files", renamedFile);
+              metadata.push({
+                fileName: uniqueName,
+                documentType: "invoice",
+                documentTitle: "Inventory Batch Invoice",
+                documentDefinitionId: 0
+              });
+            }
+            fd.append("FileMetadataJson", JSON.stringify(metadata));
+            try {
+              const uploadResult = await uploadBulkDocumentsAction(fd);
+              if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
+                const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
+                toast.error(`Document upload failed for batch: ${detailedError}`);
+              } else {
+                toast.success(`Batch documents updated successfully!`);
               }
-              if (invoiceFile) {
-                const uniqueName = `invoice_${invoiceFile.name}`;
-                const renamedFile = new File([invoiceFile], uniqueName, { type: invoiceFile.type });
-                fd.append("Files", renamedFile);
-                metadata.push({
-                  fileName: uniqueName,
-                  documentType: "invoice",
-                  documentTitle: "Asset Invoice",
-                  documentDefinitionId: 0
-                });
-              }
-              fd.append("FileMetadataJson", JSON.stringify(metadata));
-              try {
-                const uploadResult = await uploadBulkDocumentsAction(fd);
-                if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
-                  const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
-
-                  toast.error(`Document upload failed for Unit ${unit.unitNumber}: ${detailedError}`);
-                } else {
-                  toast.success(`Documents updated successfully for Unit ${unit.unitNumber}!`);
-                }
-              } catch (e: any) {
-
-                toast.error(`Document upload exception for Unit ${unit.unitNumber}: ${e.message}`);
-              }
+            } catch (e: any) {
+              toast.error(`Document upload exception: ${e.message}`);
             }
           }
         }

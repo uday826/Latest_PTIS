@@ -18,6 +18,18 @@ export function validateBuildingBasicInfo(
 ): BuildingBasicInfoFormErrors {
   const errors = validateForm(formData, buildingBasicInfoSchema) as BuildingBasicInfoFormErrors;
 
+  if (formData.isMovableCategory) {
+    // Location details are inherited & disabled, so bypass required validation on these
+    delete (errors as any).zone;
+    delete (errors as any).ward;
+    delete (errors as any).mouja;
+    delete (errors as any).subzone;
+    delete (errors as any).propertyNumber;
+    delete (errors as any).department;
+    delete (errors as any).fullAddress;
+    delete (errors as any).pinCode;
+  }
+
   // Conditionally mandate Total Land Area only for Land Assets
   const isLand =
     formData.category === "Land Assets" ||
@@ -31,6 +43,69 @@ export function validateBuildingBasicInfo(
 
   if ((isLand || isBuilding) && (!formData.landArea || String(formData.landArea).trim() === "")) {
     (errors as any).landArea = "Total Area is required.";
+  }
+
+  if (isLand) {
+    if (!formData.plotNumber || String(formData.plotNumber).trim() === "") {
+      (errors as any).plotNumber = "Plot Number is required.";
+    }
+    if (!formData.typeOfUseId || String(formData.typeOfUseId).trim() === "") {
+      (errors as any).typeOfUseId = "Type of Use is required.";
+    }
+    if (!formData.subTypeOfUseId || String(formData.subTypeOfUseId).trim() === "") {
+      (errors as any).subTypeOfUseId = "Sub Type of Use is required.";
+    }
+    if (!formData.offset || String(formData.offset).trim() === "") {
+      (errors as any).offset = "Offset is required.";
+    } else {
+      const offsetVal = Number(formData.offset);
+      if (isNaN(offsetVal) || offsetVal < 0) {
+        (errors as any).offset = "Offset must be a valid non-negative number.";
+      }
+    }
+  }
+
+  if (formData.isMovableCategory && !formData.parentBuildingId) {
+    (errors as any).parentBuildingId = "Parent Building/Property selection is required.";
+  }
+  if (formData.isMovableCategory && formData.isRented === "Yes") {
+    if (!formData.lessorName || String(formData.lessorName).trim() === "") {
+      (errors as any).lessorName = "Lessor Name is required.";
+    }
+    if (!formData.lessorMobile || String(formData.lessorMobile).trim() === "") {
+      (errors as any).lessorMobile = "Lessor Contact Number is required.";
+    } else if (!/^[6-9]\d{9}$/.test(String(formData.lessorMobile).trim())) {
+      (errors as any).lessorMobile = "Contact Number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9.";
+    }
+    if (formData.lessorEmail && String(formData.lessorEmail).trim() !== "") {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(formData.lessorEmail).trim())) {
+        (errors as any).lessorEmail = "Please enter a valid email address.";
+      }
+    }
+    if (!formData.leaseStartDate || String(formData.leaseStartDate).trim() === "") {
+      (errors as any).leaseStartDate = "Lease Start Date is required.";
+    }
+    if (!formData.leaseAmount || String(formData.leaseAmount).trim() === "") {
+      (errors as any).leaseAmount = "Monthly Lease Amount is required.";
+    } else {
+      const amt = Number(formData.leaseAmount);
+      if (isNaN(amt) || amt <= 0) {
+        (errors as any).leaseAmount = "Monthly Lease Amount must be a valid positive number.";
+      }
+    }
+    if (formData.securityDeposit && String(formData.securityDeposit).trim() !== "") {
+      const dep = Number(formData.securityDeposit);
+      if (isNaN(dep) || dep < 0) {
+        (errors as any).securityDeposit = "Security Deposit must be a valid non-negative number.";
+      }
+    }
+    if (formData.leaseStartDate && formData.leaseEndDate && String(formData.leaseEndDate).trim() !== "") {
+      const start = new Date(formData.leaseStartDate);
+      const end = new Date(formData.leaseEndDate);
+      if (end < start) {
+        (errors as any).leaseEndDate = "Lease End Date cannot be before Lease Start Date.";
+      }
+    }
   }
   if ((isLand || isBuilding) && (!(formData as any).length || String((formData as any).length).trim() === "")) {
     (errors as any).length = "Length is required.";

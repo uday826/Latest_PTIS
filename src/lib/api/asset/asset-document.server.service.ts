@@ -83,21 +83,13 @@ export async function deleteDocument(id: number) {
 
 export async function uploadDocument(formData: FormData) {
   try {
-    const { getModules } = await import("@/lib/api/configuration-settings/screenAccess/master-data.service");
-    const modules = await getModules();
-    const assetManagement = modules.find((m: any) => {
-      const mName = m.moduleName || m.ModuleName;
-      return mName && mName.toLowerCase().includes("asset management");
-    });
-    
-    if (assetManagement) {
-      const dynId = assetManagement.moduleId || (assetManagement as any).ModuleId || 0;
-      if (dynId > 0 && formData.has("ModuleId")) {
-        formData.set("ModuleId", dynId.toString());
-      }
+    // Hardcode ModuleId to avoid fetching the entire Module list on every single document upload.
+    // Asset Management module is generally ID 2. If it is provided in formData, use that.
+    if (!formData.has("ModuleId")) {
+      formData.append("ModuleId", "2"); 
     }
   } catch (e) {
-    console.error("Failed to dynamically resolve ModuleId at server service level", e);
+    console.error("Error setting ModuleId", e);
   }
 
   try {
@@ -135,21 +127,11 @@ export async function uploadDocument(formData: FormData) {
 
 export async function uploadBulkDocuments(formData: FormData) {
   try {
-    const { getModules } = await import("@/lib/api/configuration-settings/screenAccess/master-data.service");
-    const modules = await getModules();
-    const assetManagement = modules.find((m: any) => {
-      const mName = m.moduleName || m.ModuleName;
-      return mName && mName.toLowerCase().includes("asset management");
-    });
-    
-    if (assetManagement) {
-      const dynId = assetManagement.moduleId || (assetManagement as any).ModuleId || 0;
-      if (dynId > 0 && formData.has("ModuleId")) {
-        formData.set("ModuleId", dynId.toString());
-      }
+    if (!formData.has("ModuleId")) {
+      formData.append("ModuleId", "2"); 
     }
   } catch (e) {
-    console.error("Failed to dynamically resolve ModuleId at server service level", e);
+    console.error("Error setting ModuleId", e);
   }
 
   const url = `${getBaseUrl()}/AssetDocument/upload/bulk`;

@@ -6,8 +6,6 @@ import { assetMasterService } from '@/lib/api/asset/asset-master.service';
 import { getAssetCategories, getAssetMasters, getWards, getZones } from '@/lib/api/asset/revenue-masters.service';
 import { SEARCH_KEY_REGEX } from '@/lib/utils/validation-rules';
 import {
-  createLeaseRentRegistration,
-  type CreateLeaseRentRegistrationPayload,
   type CreateLeaseRentRegistrationResponse,
 } from '@/lib/api/asset/leaseRentRegistration.service';
 import {
@@ -38,6 +36,7 @@ import type {
   ManageRentersTabCounts,
   ManageRentersVerificationPageData,
   VerificationRecord,
+  ManageRentersHeaderData,
 } from '@/types/asset/revenue.types';
 
 function firstQueryValue(value: string | string[] | undefined): string {
@@ -113,7 +112,7 @@ function toLeaseRentRecord(item: AssetLeaseRentDetailsListItem): LeaseRentRecord
     tenantPanCardNo: item.tenantPanCardNo?.trim() || undefined,
     tenantAddress: item.tenantAddress?.trim() || undefined,
     pinCode: (item as { pinCode?: string | null }).pinCode?.trim() || undefined,
-    leaseType: item.leaseType?.trim() || '-',
+    leaseType: item.leaseType?.trim() || '',
     leaseRentType: item.leaseRentType?.trim() || undefined,
     applicationTypeName: item.applicationTypeName?.trim() || undefined,
     applicationTypeId: item.applicationTypeId ?? null,
@@ -132,9 +131,9 @@ function toLeaseRentRecord(item: AssetLeaseRentDetailsListItem): LeaseRentRecord
     terminationDate: item.terminationDate ?? null,
     reason: item.reason?.trim() || undefined,
     rentAmountDisplay: item.rentAmountDisplay?.trim() || undefined,
-    leaseDurationDisplay: item.leaseDurationDisplay?.trim() || undefined,
+    leaseDurationDisplay: item.duration ?? undefined,
+    duration: item.duration ?? null,
     workflowStatus: item.workflowStatus?.trim() || undefined,
-    reason: item.reason?.trim() || undefined,
     rejectionReason: item.rejectionReason?.trim() || undefined,
     category: pickAssetCategory(item),
     zone: item.zone ?? undefined,
@@ -156,10 +155,14 @@ function toVerificationRecord(item: AssetLeaseRentDetailsListItem): Verification
       .map((value) => String(value).trim())
       .join(' | '),
     tenantName: normalizeText(item.tenantName),
-    applicationType: normalizeText(item.applicationTypeName ?? item.leaseRentType ?? item.leaseType),
+    applicationType: normalizeText(item.leaseType),
     submittedDate: item.updatedDate ? item.updatedDate.slice(0, 10) : item.createdDate ? item.createdDate.slice(0, 10) : '-',
     status: displayStatus,
     remarks: normalizeText(item.remarks ?? item.reason ?? item.rejectionReason),
+    assetName: item.assetName ?? undefined,
+    leaseStartDate: item.leaseStartDate ? item.leaseStartDate.slice(0, 10) : undefined,
+    leaseEndDate: item.leaseEndDate ? item.leaseEndDate.slice(0, 10) : undefined,
+    paymentFrequency: item.paymentFrequency ?? undefined,
   };
 }
 
@@ -178,6 +181,10 @@ function toApprovalRecord(item: AssetLeaseRentDetailsListItem): ApprovalRecord {
     submittedDate: item.updatedDate ? item.updatedDate.slice(0, 10) : item.createdDate ? item.createdDate.slice(0, 10) : '-',
     status: displayStatus,
     remarks: normalizeText(item.remarks ?? item.reason ?? item.rejectionReason),
+    assetName: item.assetName ?? undefined,
+    leaseStartDate: item.leaseStartDate ? item.leaseStartDate.slice(0, 10) : undefined,
+    leaseEndDate: item.leaseEndDate ? item.leaseEndDate.slice(0, 10) : undefined,
+    paymentFrequency: item.paymentFrequency ?? undefined,
   };
 }
 
@@ -199,20 +206,29 @@ function baseLeaseRentQuery(
   };
 }
 
-export async function getManageRentersTabCountsAction(): Promise<ManageRentersTabCounts> {
+export async function getManageRentersTabCountsAction(): Promise<ManageRentersHeaderData> {
   const [list, registeredList, revertedList] = await Promise.all([
     getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1 }),
     getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1, workflowStatus: 'registered' }),
     getAssetLeaseRentDetailsList({ pageNumber: 1, pageSize: 1, workflowStatus: 'reverted' }),
   ]);
 
-  const stats = (list as unknown as { stats?: any }).stats;
+  const stats = (list as unknown as { stats?: any }).stats || {
+    totalApproved: 0,
+    totalVerified: 0,
+    verificationPending: 0,
+    approvalPending: 0,
+    totalRejected: 0,
+  };
 
   return {
-    registrationCount: registeredList.totalCount,
-    verificationCount: stats?.verificationPending ?? 0,
-    approvalCount: stats?.approvalPending ?? 0,
-    revertedCount: revertedList.totalCount,
+    counts: {
+      registrationCount: registeredList.totalCount,
+      verificationCount: stats?.verificationPending ?? 0,
+      approvalCount: stats?.approvalPending ?? 0,
+      revertedCount: revertedList.totalCount,
+    },
+    stats,
   };
 }
 
@@ -445,6 +461,7 @@ export async function createLeaseRentRegistrationAction(
     monthlyRent: toNum(data.monthlyRent),
     securityDeposit: toNum(data.securityDeposit) ?? 0,
     paymentFrequency: data.paymentFrequency?.trim() || null,
+    duration: toNum(data.duration),
     reason: data.reason?.trim() || null,
   };
 
@@ -490,6 +507,14 @@ export async function verifyAction(id: number, remarks?: string) {
 
 export async function approveAction(id: number, remarks?: string) {
   const res = await approveLeaseRent(id, remarks);
+  if (res.success) {
+    try {
+      const currentYear = new Date().getFullYear();
+      await apiClient.post(`/LeaseRentDemand/${id}`, { financeYear: currentYear });
+    } catch (err) {
+      console.error('Failed to generate LeaseRentDemand:', err);
+    }
+  }
   revalidatePath('/[locale]/assets/revenue/manage-renters', 'layout');
   revalidatePath('/assets/revenue/manage-renters');
   return res;

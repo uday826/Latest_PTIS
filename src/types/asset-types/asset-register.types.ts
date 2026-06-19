@@ -1,4 +1,3 @@
-import { AssetMasterResponse } from "@/types/asset-types/basic-info/asset-wizard.types";
 import type {
   AssetRegisterRow,
   AssetRegisterApiRecord,
@@ -54,6 +53,7 @@ export interface PagedAssetMasterResponse {
   totalMarketValue?: number;
   totalDepreciation?: number;
   netBookValue?: number;
+  totalCapitalValue?: number;
   activeAssetsCount?: number;
 }
 
@@ -61,12 +61,14 @@ export interface PagedAssetMasterResponse {
  * Component Props for Asset Register UI
  */
 export interface AssetRegisterViewProps {
+  locale: string;
   categoryId: number;
   categoryName: string | null;
   safeSearch: string;
   safeAssetTypeId: string;
   safeZoneId: string;
   finalWardId: string;
+  safeOwningDepartmentId: string;
   safePageSize: number;
   finalPage: number;
   totalPages: number;
@@ -74,6 +76,7 @@ export interface AssetRegisterViewProps {
   typesResult: AssetRegisterOption[];
   zonesResult: AssetRegisterOption[];
   wardsResult: AssetRegisterWardOption[];
+  departmentsResult: AssetRegisterOption[];
   updatedDate: string;
 }
 
@@ -90,9 +93,11 @@ export interface AssetRegisterFiltersProps {
   assetTypeId: string;
   zoneId: string;
   wardId: string;
+  owningDepartmentId: string;
   assetTypeOptions: { label: string; value: string }[];
   zoneOptions: { label: string; value: string }[];
   wardOptions: { label: string; value: string }[];
+  owningDepartmentOptions: { label: string; value: string }[];
 }
 
 export interface AssetRegisterExportButtonProps {
@@ -115,6 +120,7 @@ export interface AssetRegisterHeaderSummaryProps {
   totalMarketValue: number;
   totalDepreciation: number;
   netBookValue: number;
+  totalCapitalValue: number;
   activeAssetsCount: number;
   translate: (key: string) => string;
 }
@@ -126,10 +132,13 @@ export interface AssetRegisterControlsProps {
   assetTypeId: string;
   zoneId: string;
   wardId: string;
+  owningDepartmentId: string;
   totalCount: number;
   pageSize: number;
   assets: AssetRegisterApiRecord[];
   assetTypeOptions: { label: string; value: string }[];
   zoneOptions: { label: string; value: string }[];
   wardOptions: { label: string; value: string }[];
+  owningDepartmentOptions: { label: string; value: string }[];
 }
+

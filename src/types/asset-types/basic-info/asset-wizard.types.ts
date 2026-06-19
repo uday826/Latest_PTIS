@@ -70,13 +70,7 @@ export interface AssetFormContextType {
 
 export interface AssetWizardStepProps {
   formData: AssetFormData;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  onToggleChange?: (name: string, checked: boolean) => void;
-}
-
-export interface AssetWizardStepProps {
-  formData: AssetFormData;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   onToggleChange?: (name: string, checked: boolean) => void;
 }
 export interface AssetFieldValueRequest {
@@ -167,6 +161,10 @@ export interface AssetMasterRequest {
   inChargeEmail?: string | null;
   locality?: string | null;
   pinCode?: string | null;
+  partitionNo?: string | null;
+  upicId?: string | null;
+  propertyNo?: string | null;
+  assetLocalName?: string | null;
 
 
   // Optional location

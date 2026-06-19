@@ -21,7 +21,8 @@ import {
   Image as ImageIcon,
   Loader2,
 } from 'lucide-react';
-import { Button, Drawer, Label, MasterTable, type Column, useToast } from '@/components/common';
+import { Button, Drawer, Label, MasterTable, type Column, useToast, Select, type Option, Input, TextArea } from '@/components/common';
+import { useTranslations } from 'next-intl';
 import { EMAIL_REGEX } from '@/lib/utils/validation-rules';
 import { kycValidators } from '@/lib/utils/kyc-validation.constants';
 import { fetchAssetDocumentFile } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
@@ -84,6 +85,12 @@ function firstNonEmpty(...values: Array<unknown>): string {
     if (text) return text;
   }
   return '';
+}
+
+/** Strip legacy '-' placeholder values so empty selects show placeholder */
+function sanitizeSelectValue(value: unknown): string {
+  const str = typeof value === 'string' ? value.trim() : '';
+  return str === '-' ? '' : str;
 }
 
 function toDateDisplay(value: unknown): string {
@@ -160,19 +167,19 @@ function buildInitialFormState(
     tenantName: firstNonEmpty(record?.tenantName),
     mobileNumber: firstNonEmpty(record?.tenantMobile, asset.inChargeMobile),
     emailAddress: firstNonEmpty(record?.tenantEmail, asset.inChargeEmail),
-    tenantType: firstNonEmpty((record as Record<string, unknown> | null)?.tenantType, 'Individual'),
+    tenantType: sanitizeSelectValue((record as Record<string, unknown> | null)?.tenantType),
     aadhaarNumber: firstNonEmpty(record?.tenantAadhaarNo),
     panNumber: firstNonEmpty(record?.tenantPanCardNo),
     pinCode: firstNonEmpty(record?.pinCode, asset.pinCode),
     residentialAddress: firstNonEmpty(record?.tenantAddress, asset.address),
     shopNo: firstNonEmpty(record?.shopNo, asset.assetNo),
     shopName: firstNonEmpty(record?.shopName, asset.assetName),
-    leaseType: firstNonEmpty(record?.leaseType, 'Rent'),
+    leaseType: sanitizeSelectValue(record?.leaseType),
     leaseStartDate: toDateInputValue(record?.leaseStartDate ?? record?.submittedDate ?? asset.createdDate ?? ''),
     leaseEndDate: toDateInputValue(record?.leaseEndDate ?? asset.updatedDate ?? ''),
     monthlyRent: rentValue,
     securityDeposit: record?.securityDeposit != null ? String(record.securityDeposit).replace(/,/g, '') : '',
-    paymentFrequency: firstNonEmpty(record?.paymentFrequency, 'Monthly'),
+    paymentFrequency: sanitizeSelectValue(record?.paymentFrequency),
     existingTenantName: firstNonEmpty(record?.previousTenantName, record?.tenantName),
     oldLeaseStartDate: toDateInputValue(record?.oldLeaseStartDate ?? record?.submittedDate ?? asset.createdDate ?? ''),
     oldLeaseEndDate: toDateInputValue(record?.oldLeaseEndDate ?? asset.updatedDate ?? ''),
@@ -191,120 +198,121 @@ function buildInitialFormState(
     pendingDues: firstNonEmpty((record as Record<string, unknown> | null)?.pendingDues),
     securityDepositRefund: '0',
     finalInspectionReport: 'Yes',
-    remarksDescription: firstNonEmpty(record?.reason),
+    remarksDescription: '',
   };
 }
 
 function buildTemplate(
   applicationTypeId: number,
-  applicationTypes: ApplicationTypeItem[]
+  applicationTypes: ApplicationTypeItem[],
+  t: any
 ): TemplateDef {
   const currentType = applicationTypes.find((t) => t.id === applicationTypeId);
   const typeCode = currentType?.applicationTypeCode || 'APP-NEW';
   const typeOptions = applicationTypes.map((o) => o.applicationTypeName);
 
   const renewal: TemplateDef = {
-    title: 'RENEWAL APPLICATION',
-    submitLabel: 'Send to Verification',
+    title: t('drawers.form.renewalTitle'),
+    submitLabel: t('drawers.sendToVerification'),
     submitIcon: UploadCloud,
     fields: [
-      { key: 'applicationType', label: 'Application Type', icon: FileText, type: 'select', colSpan: 2, options: typeOptions },
-      { key: 'existingTenantName', label: 'Existing Tenant Name', icon: User, type: 'text', placeholder: 'Existing tenant name', required: true },
-      { key: 'mobileNumber', label: 'Mobile Number', icon: Phone, type: 'text', placeholder: 'Mobile Number' },
-      { key: 'oldLeaseStartDate', label: 'Old Lease Start Date', icon: Calendar, type: 'date' },
-      { key: 'oldLeaseEndDate', label: 'Old Lease End Date', icon: Calendar, type: 'date' },
-      { key: 'renewalStartDate', label: 'Renewal Start Date', icon: Calendar, type: 'date', required: true },
-      { key: 'renewalEndDate', label: 'Renewal End Date', icon: Calendar, type: 'date' },
-      { key: 'previousRent', label: 'Previous Monthly Rent (₹)', icon: IndianRupee, type: 'number', placeholder: 'Previous rent amount' },
-      { key: 'revisedRent', label: 'Revised Monthly Rent (₹)', icon: IndianRupee, type: 'number', placeholder: 'New rent amount', required: true },
-      { key: 'paymentFrequency', label: 'Payment Frequency', icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'] },
-      { key: 'securityDeposit', label: 'Security Deposit (₹)', icon: IndianRupee, type: 'number', placeholder: '0' },
-      { key: 'leaseType', label: 'Lease/Rent Type', icon: FileText, type: 'select', options: ['Rent', 'Lease'] },
-      { key: 'reasonForRenewal', label: 'Reason for Renewal', icon: FileText, type: 'textarea', placeholder: 'Enter reason for renewal', colSpan: 2 },
+      { key: 'applicationType', label: t('drawers.form.applicationType'), icon: FileText, type: 'select', colSpan: 2, options: typeOptions },
+      { key: 'existingTenantName', label: t('drawers.form.existingTenantName'), icon: User, type: 'text', placeholder: t('drawers.form.existingTenantNamePlaceholder'), required: true },
+      { key: 'mobileNumber', label: t('drawers.form.mobileNumber'), icon: Phone, type: 'text', placeholder: t('drawers.form.mobileNumberPlaceholder') },
+      { key: 'oldLeaseStartDate', label: t('drawers.form.oldLeaseStartDate'), icon: Calendar, type: 'date' },
+      { key: 'oldLeaseEndDate', label: t('drawers.form.oldLeaseEndDate'), icon: Calendar, type: 'date' },
+      { key: 'renewalStartDate', label: t('drawers.form.renewalStartDate'), icon: Calendar, type: 'date', required: true },
+      { key: 'renewalEndDate', label: t('drawers.form.renewalEndDate'), icon: Calendar, type: 'date' },
+      { key: 'previousRent', label: t('drawers.form.previousRent'), icon: IndianRupee, type: 'number', placeholder: t('drawers.form.previousRentPlaceholder') },
+      { key: 'revisedRent', label: t('drawers.form.revisedRent'), icon: IndianRupee, type: 'number', placeholder: t('drawers.form.revisedRentPlaceholder'), required: true },
+      { key: 'paymentFrequency', label: t('drawers.form.paymentFrequency'), icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'], required: true },
+      { key: 'securityDeposit', label: t('drawers.form.securityDeposit'), icon: IndianRupee, type: 'number', placeholder: '0' },
+      { key: 'leaseType', label: t('drawers.form.leaseType'), icon: FileText, type: 'select', options: ['Rent', 'Lease'], required: true },
+      { key: 'reasonForRenewal', label: t('drawers.form.reasonForRenewal'), icon: FileText, type: 'textarea', placeholder: t('drawers.form.reasonForRenewalPlaceholder'), colSpan: 2 },
     ],
   };
 
   const transfer: TemplateDef = {
-    title: 'TRANSFER APPLICATION',
-    submitLabel: 'Send to Verification',
+    title: t('drawers.form.transferTitle'),
+    submitLabel: t('drawers.sendToVerification'),
     submitIcon: UploadCloud,
     fields: [
-      { key: 'applicationType', label: 'Application Type', icon: FileText, type: 'select', colSpan: 2, options: typeOptions },
-      { key: 'existingTenantName', label: 'Existing Tenant Name', icon: User, type: 'text', placeholder: 'Current tenant name', required: true },
-      { key: 'mobileNumber', label: 'Existing Tenant Mobile', icon: Phone, type: 'text', placeholder: 'Mobile Number' },
-      { key: 'newTenantDetails', label: 'New Tenant Name', icon: User, type: 'text', placeholder: 'New tenant name', required: true },
-      { key: 'newTenantMobile', label: 'New Tenant Mobile', icon: Phone, type: 'text', placeholder: 'Mobile Number' },
-      { key: 'relationship', label: 'Relationship', icon: BadgeCheck, type: 'select', options: ['Spouse', 'Son', 'Daughter', 'Other'] },
-      { key: 'nocFromExistingTenant', label: 'NOC From Existing Tenant', icon: BadgeCheck, type: 'select', options: ['Yes', 'No'] },
-      { key: 'reasonForTransfer', label: 'Reason for Transfer', icon: FileText, type: 'textarea', placeholder: 'Enter reason for transfer', colSpan: 2, required: true },
+      { key: 'applicationType', label: t('drawers.form.applicationType'), icon: FileText, type: 'select', colSpan: 2, options: typeOptions },
+      { key: 'existingTenantName', label: t('drawers.form.existingTenantName'), icon: User, type: 'text', placeholder: t('drawers.form.existingTenantNamePlaceholder'), required: true },
+      { key: 'mobileNumber', label: t('drawers.form.existingTenantMobile'), icon: Phone, type: 'text', placeholder: t('drawers.form.mobileNumberPlaceholder') },
+      { key: 'newTenantDetails', label: t('drawers.form.newTenantName'), icon: User, type: 'text', placeholder: t('drawers.form.newTenantNamePlaceholder'), required: true },
+      { key: 'newTenantMobile', label: t('drawers.form.newTenantMobile'), icon: Phone, type: 'text', placeholder: t('drawers.form.mobileNumberPlaceholder') },
+      { key: 'relationship', label: t('drawers.form.relationship'), icon: BadgeCheck, type: 'select', options: ['Spouse', 'Son', 'Daughter', 'Other'] },
+      { key: 'nocFromExistingTenant', label: t('drawers.form.nocFromExistingTenant'), icon: BadgeCheck, type: 'select', options: ['Yes', 'No'] },
+      { key: 'reasonForTransfer', label: t('drawers.form.reasonForTransfer'), icon: FileText, type: 'textarea', placeholder: t('drawers.form.reasonForTransferPlaceholder'), colSpan: 2, required: true },
     ],
     secondaryButtons: [
-      { label: 'LEGAL HEIR CERTIFICATE', icon: UploadCloud, variant: 'success' },
+      { label: t('drawers.form.legalHeirCertificate'), icon: UploadCloud, variant: 'success' },
     ],
   };
 
   const termination: TemplateDef = {
-    title: 'TERMINATION APPLICATION',
-    submitLabel: 'Send to Verification',
+    title: t('drawers.form.terminationTitle'),
+    submitLabel: t('drawers.sendToVerification'),
     submitIcon: UploadCloud,
     fields: [
-      { key: 'applicationType', label: 'Application Type', icon: FileText, type: 'select', colSpan: 2, options: typeOptions },
-      { key: 'tenantName', label: 'Tenant Name', icon: User, type: 'text', placeholder: 'Tenant name', required: true },
-      { key: 'mobileNumber', label: 'Mobile Number', icon: Phone, type: 'text', placeholder: 'Mobile Number' },
-      { key: 'vacatingDate', label: 'Vacating / Termination Date', icon: Calendar, type: 'date', required: true },
-      { key: 'reasonForTermination', label: 'Reason for Termination', icon: FileText, type: 'select', options: ['Non-payment', 'Vacated', 'Policy', 'Other'] },
-      { key: 'pendingDues', label: 'Pending Dues (₹)', icon: IndianRupee, type: 'number', placeholder: 'Amount' },
-      { key: 'securityDepositRefund', label: 'Security Deposit Refund (₹)', icon: IndianRupee, type: 'number', placeholder: '0' },
-      { key: 'finalInspectionReport', label: 'Final Inspection Report', icon: FileText, type: 'select', options: ['Yes', 'No'] },
-      { key: 'remarksDescription', label: 'Additional Remarks', icon: FileText, type: 'textarea', placeholder: 'Any additional notes...', colSpan: 2 },
+      { key: 'applicationType', label: t('drawers.form.applicationType'), icon: FileText, type: 'select', colSpan: 2, options: typeOptions },
+      { key: 'tenantName', label: t('drawers.form.tenantName'), icon: User, type: 'text', placeholder: t('drawers.form.tenantNamePlaceholder'), required: true },
+      { key: 'mobileNumber', label: t('drawers.form.mobileNumber'), icon: Phone, type: 'text', placeholder: t('drawers.form.mobileNumberPlaceholder') },
+      { key: 'vacatingDate', label: t('drawers.form.vacatingDate'), icon: Calendar, type: 'date', required: true },
+      { key: 'reasonForTermination', label: t('drawers.form.reasonForTermination'), icon: FileText, type: 'select', options: ['Non-payment', 'Vacated', 'Policy', 'Other'] },
+      { key: 'pendingDues', label: t('drawers.form.pendingDues'), icon: IndianRupee, type: 'number', placeholder: 'Amount' },
+      { key: 'securityDepositRefund', label: t('drawers.form.securityDepositRefund'), icon: IndianRupee, type: 'number', placeholder: '0' },
+      { key: 'finalInspectionReport', label: t('drawers.form.finalInspectionReport'), icon: FileText, type: 'select', options: ['Yes', 'No'] },
+      { key: 'remarksDescription', label: t('drawers.form.remarksDescription'), icon: FileText, type: 'textarea', placeholder: t('drawers.form.remarksDescriptionPlaceholder'), colSpan: 2 },
     ],
   };
 
   const modification: TemplateDef = {
-    title: 'MODIFICATION APPLICATION',
-    submitLabel: 'Send to Verification',
+    title: t('drawers.form.modificationTitle'),
+    submitLabel: t('drawers.sendToVerification'),
     submitIcon: UploadCloud,
     fields: [
-      { key: 'applicationType', label: 'Application Type', icon: FileText, type: 'select', colSpan: 2, options: typeOptions },
-      { key: 'tenantName', label: 'Tenant Name', icon: User, type: 'text', placeholder: 'Tenant Name', required: true },
-      { key: 'mobileNumber', label: 'Mobile Number', icon: Phone, type: 'text', placeholder: 'Mobile Number' },
-      { key: 'leaseType', label: 'Lease/Rent Type', icon: FileText, type: 'select', options: ['Rent', 'Lease'] },
-      { key: 'previousRent', label: 'Previous Monthly Rent (₹)', icon: IndianRupee, type: 'number', placeholder: 'Previous amount' },
-      { key: 'revisedRent', label: 'Revised Monthly Rent (₹)', icon: IndianRupee, type: 'number', placeholder: 'Revised amount', required: true },
-      { key: 'paymentFrequency', label: 'Payment Frequency', icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'] },
-      { key: 'leaseStartDate', label: 'Modified Lease Start Date', icon: Calendar, type: 'date' },
-      { key: 'leaseEndDate', label: 'Modified Lease End Date', icon: Calendar, type: 'date' },
-      { key: 'remarksDescription', label: 'Remarks / Description', icon: FileText, type: 'textarea', placeholder: 'Describe the modifications being made...', colSpan: 2 },
+      { key: 'applicationType', label: t('drawers.form.applicationType'), icon: FileText, type: 'select', colSpan: 2, options: typeOptions },
+      { key: 'tenantName', label: t('drawers.form.tenantName'), icon: User, type: 'text', placeholder: t('drawers.form.tenantNamePlaceholder'), required: true },
+      { key: 'mobileNumber', label: t('drawers.form.mobileNumber'), icon: Phone, type: 'text', placeholder: t('drawers.form.mobileNumberPlaceholder') },
+      { key: 'leaseType', label: t('drawers.form.leaseType'), icon: FileText, type: 'select', options: ['Rent', 'Lease'], required: true },
+      { key: 'previousRent', label: t('drawers.form.previousRent'), icon: IndianRupee, type: 'number', placeholder: t('drawers.form.previousRentPlaceholder') },
+      { key: 'revisedRent', label: t('drawers.form.revisedRent'), icon: IndianRupee, type: 'number', placeholder: t('drawers.form.revisedRentPlaceholder'), required: true },
+      { key: 'paymentFrequency', label: t('drawers.form.paymentFrequency'), icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'], required: true },
+      { key: 'leaseStartDate', label: t('drawers.form.leaseStartDate'), icon: Calendar, type: 'date' },
+      { key: 'leaseEndDate', label: t('drawers.form.leaseEndDate'), icon: Calendar, type: 'date' },
+      { key: 'remarksDescription', label: t('drawers.form.remarksDescription'), icon: FileText, type: 'textarea', placeholder: t('drawers.form.remarksDescriptionPlaceholder'), colSpan: 2 },
     ],
   };
 
   const newApp: TemplateDef = {
-    title: 'NEW TENANT REGISTRATION',
-    submitLabel: 'Send to Verification',
+    title: t('drawers.form.newAppTitle'),
+    submitLabel: t('drawers.sendToVerification'),
     submitIcon: UploadCloud,
     fields: [
-      { key: 'applicationType', label: 'Application Type', icon: FileText, type: 'select', colSpan: 2, options: typeOptions },
-      { key: 'shopNo', label: 'Unit No.', icon: Building2, type: 'text', placeholder: 'e.g. UT-001' },
-      { key: 'shopName', label: 'Unit Name', icon: Building2, type: 'text', placeholder: 'Unit name' },
-      { key: 'tenantName', label: 'Tenant Name', icon: User, type: 'text', placeholder: 'Full name', required: true },
-      { key: 'mobileNumber', label: 'Mobile Number', icon: Phone, type: 'text', placeholder: '10-digit mobile', required: true },
-      { key: 'emailAddress', label: 'Email Address', icon: Mail, type: 'text', placeholder: 'email@example.com', required: true },
-      { key: 'tenantType', label: 'Tenant Type', icon: BadgeCheck, type: 'select', options: ['Individual', 'Business', 'Government', 'Trust'] },
-      { key: 'aadhaarNumber', label: 'Aadhaar Number', icon: FileText, type: 'text', placeholder: '12-digit Aadhaar' },
-      { key: 'panNumber', label: 'PAN Number', icon: FileText, type: 'text', placeholder: 'PAN card number' },
-      { key: 'leaseType', label: 'Lease / Rent Type', icon: FileText, type: 'select', options: ['Rent', 'Lease'], required: true },
-      { key: 'monthlyRent', label: 'Monthly Rent (₹)', icon: IndianRupee, type: 'number', placeholder: '0.00', required: true },
-      { key: 'leaseStartDate', label: 'Lease Start Date', icon: Calendar, type: 'date', required: true },
-      { key: 'leaseEndDate', label: 'Lease End Date', icon: Calendar, type: 'date' },
-      { key: 'securityDeposit', label: 'Security Deposit (₹)', icon: IndianRupee, type: 'number', placeholder: '0.00' },
-      { key: 'paymentFrequency', label: 'Payment Frequency', icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'] },
-      { key: 'pinCode', label: 'Pin Code', icon: MapPinned, type: 'text', placeholder: '6-digit pin code' },
-      { key: 'residentialAddress', label: 'Residential Address', icon: MapPin, type: 'textarea', placeholder: 'Full address', colSpan: 2 },
-      { key: 'remarksDescription', label: 'Remarks / Reason', icon: FileText, type: 'textarea', placeholder: 'Purpose of lease / any notes...', colSpan: 2 },
+      { key: 'applicationType', label: t('drawers.form.applicationType'), icon: FileText, type: 'select', colSpan: 2, options: typeOptions },
+      { key: 'shopNo', label: t('drawers.form.shopNo'), icon: Building2, type: 'text', placeholder: 'e.g. UT-001' },
+      { key: 'shopName', label: t('drawers.form.shopName'), icon: Building2, type: 'text', placeholder: t('drawers.form.shopNamePlaceholder') },
+      { key: 'tenantName', label: t('drawers.form.tenantName'), icon: User, type: 'text', placeholder: t('drawers.form.tenantNamePlaceholder'), required: true },
+      { key: 'mobileNumber', label: t('drawers.form.mobileNumber'), icon: Phone, type: 'text', placeholder: t('drawers.form.mobileNumberPlaceholder'), required: true },
+      { key: 'emailAddress', label: t('drawers.form.emailAddress'), icon: Mail, type: 'text', placeholder: 'email@example.com', required: true },
+      { key: 'tenantType', label: t('drawers.form.tenantType'), icon: BadgeCheck, type: 'select', options: ['Individual', 'Business', 'Government', 'Trust'], required: true },
+      { key: 'aadhaarNumber', label: t('drawers.form.aadhaarNumber'), icon: FileText, type: 'text', placeholder: t('drawers.form.aadhaarNumberPlaceholder') },
+      { key: 'panNumber', label: t('drawers.form.panNumber'), icon: FileText, type: 'text', placeholder: t('drawers.form.panNumberPlaceholder') },
+      { key: 'leaseType', label: t('drawers.form.leaseType'), icon: FileText, type: 'select', options: ['Rent', 'Lease'], required: true },
+      { key: 'monthlyRent', label: t('drawers.form.monthlyRent'), icon: IndianRupee, type: 'number', placeholder: '0.00', required: true },
+      { key: 'leaseStartDate', label: t('drawers.form.leaseStartDate'), icon: Calendar, type: 'date', required: true },
+      { key: 'leaseEndDate', label: t('drawers.form.leaseEndDate'), icon: Calendar, type: 'date' },
+      { key: 'securityDeposit', label: t('drawers.form.securityDeposit'), icon: IndianRupee, type: 'number', placeholder: '0.00' },
+      { key: 'paymentFrequency', label: t('drawers.form.paymentFrequency'), icon: Calendar, type: 'select', options: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'], required: true },
+      { key: 'pinCode', label: t('drawers.form.pinCode'), icon: MapPinned, type: 'text', placeholder: t('drawers.form.pinCodePlaceholder') },
+      { key: 'residentialAddress', label: t('drawers.form.residentialAddress'), icon: MapPin, type: 'textarea', placeholder: t('drawers.form.residentialAddressPlaceholder'), colSpan: 2 },
+      { key: 'remarksDescription', label: t('drawers.form.remarksDescription'), icon: FileText, type: 'textarea', placeholder: t('drawers.form.remarksDescriptionPlaceholder'), colSpan: 2, required: true },
     ],
     secondaryButtons: [
-      { label: 'Upload Aadhaar', icon: UploadCloud, variant: 'primary' },
-      { label: 'Upload PAN', icon: UploadCloud, variant: 'success' },
+      { label: t('drawers.form.uploadAadhaar'), icon: UploadCloud, variant: 'primary' },
+      { label: t('drawers.form.uploadPan'), icon: UploadCloud, variant: 'success' },
     ],
   };
 
@@ -320,6 +328,17 @@ function buildTemplate(
     default:
       return newApp;
   }
+}
+
+function calculateDurationInMonths(startDateStr?: string, endDateStr?: string): number | undefined {
+  if (!startDateStr || !endDateStr) return undefined;
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return undefined;
+
+  const diffTime = end.getTime() - start.getTime() + (24 * 60 * 60 * 1000); // inclusive of end day
+  const months = Math.round(diffTime / (30.4375 * 24 * 60 * 60 * 1000));
+  return months >= 0 ? months : 0;
 }
 
 function buildSubmitData(
@@ -343,15 +362,17 @@ function buildSubmitData(
         previousTenantMobile: formState.mobileNumber || undefined,
         tenantName: formState.existingTenantName || 'N/A',
         tenantMobile: formState.mobileNumber || undefined,
-        leaseType: formState.leaseType || 'Rent',
+        leaseType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseRentType: sanitizeSelectValue(formState.leaseType) || undefined,
         oldLeaseStartDate: formState.oldLeaseStartDate || undefined,
         oldLeaseEndDate: formState.oldLeaseEndDate || undefined,
         leaseStartDate: formState.renewalStartDate || undefined,
         leaseEndDate: formState.renewalEndDate || undefined,
+        duration: calculateDurationInMonths(formState.renewalStartDate, formState.renewalEndDate),
         previousMonthlyRent: toNum(formState.previousRent),
         monthlyRent: toNum(formState.revisedRent),
         securityDeposit: toNum(formState.securityDeposit),
-        paymentFrequency: formState.paymentFrequency || 'Monthly',
+        paymentFrequency: sanitizeSelectValue(formState.paymentFrequency) || undefined,
         reason: formState.reasonForRenewal || undefined,
       };
 
@@ -363,7 +384,11 @@ function buildSubmitData(
         previousTenantMobile: formState.mobileNumber || undefined,
         tenantName: formState.newTenantDetails || 'N/A',
         tenantMobile: formState.newTenantMobile || undefined,
-        tenantType: formState.relationship || undefined,
+        tenantType: sanitizeSelectValue(formState.relationship || formState.tenantType) || undefined,
+        leaseType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseRentType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseStartDate: formState.leaseStartDate || undefined,
+        paymentFrequency: sanitizeSelectValue(formState.paymentFrequency) || undefined,
         reason: formState.reasonForTransfer || undefined,
       };
 
@@ -371,9 +396,13 @@ function buildSubmitData(
       return {
         assetId,
         applicationTypeId: selectedTypeId,
-        tenantType: 'Individual',
+        tenantType: sanitizeSelectValue(formState.tenantType) || undefined,
         tenantName: formState.tenantName || 'N/A',
         tenantMobile: formState.mobileNumber || undefined,
+        leaseType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseRentType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseStartDate: formState.leaseStartDate || undefined,
+        paymentFrequency: sanitizeSelectValue(formState.paymentFrequency) || undefined,
         terminationDate: formState.vacatingDate || undefined,
         securityDeposit: toNum(formState.securityDepositRefund),
         reason: [formState.reasonForTermination, formState.remarksDescription].filter(Boolean).join(' - ') || undefined,
@@ -386,12 +415,14 @@ function buildSubmitData(
         tenantType: 'Individual',
         tenantName: formState.tenantName || 'N/A',
         tenantMobile: formState.mobileNumber || undefined,
-        leaseType: formState.leaseType || 'Rent',
+        leaseType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseRentType: sanitizeSelectValue(formState.leaseType) || undefined,
         previousMonthlyRent: toNum(formState.previousRent),
         monthlyRent: toNum(formState.revisedRent),
-        paymentFrequency: formState.paymentFrequency || 'Monthly',
+        paymentFrequency: sanitizeSelectValue(formState.paymentFrequency) || undefined,
         leaseStartDate: formState.leaseStartDate || undefined,
         leaseEndDate: formState.leaseEndDate || undefined,
+        duration: calculateDurationInMonths(formState.leaseStartDate, formState.leaseEndDate),
         reason: formState.remarksDescription || undefined,
       };
 
@@ -404,16 +435,18 @@ function buildSubmitData(
         tenantName: formState.tenantName || 'N/A',
         tenantMobile: formState.mobileNumber || undefined,
         tenantEmail: formState.emailAddress || undefined,
-        tenantType: formState.tenantType || 'Individual',
+        tenantType: sanitizeSelectValue(formState.tenantType) || undefined,
         tenantAadhaarNo: formState.aadhaarNumber || undefined,
         tenantPanCardNo: formState.panNumber || undefined,
         tenantAddress: formState.residentialAddress || undefined,
-        leaseType: formState.leaseType || 'Rent',
+        leaseType: sanitizeSelectValue(formState.leaseType) || undefined,
+        leaseRentType: sanitizeSelectValue(formState.leaseType) || undefined,
         leaseStartDate: formState.leaseStartDate || undefined,
         leaseEndDate: formState.leaseEndDate || undefined,
+        duration: calculateDurationInMonths(formState.leaseStartDate, formState.leaseEndDate),
         monthlyRent: toNum(formState.monthlyRent),
         securityDeposit: toNum(formState.securityDeposit),
-        paymentFrequency: formState.paymentFrequency || 'Monthly',
+        paymentFrequency: sanitizeSelectValue(formState.paymentFrequency) || undefined,
         reason: formState.remarksDescription || undefined,
       };
   }
@@ -526,7 +559,8 @@ function RenderField({
     }
 
     if (field.key === 'tenantName' || field.key === 'existingTenantName' || field.key === 'newTenantDetails') {
-      setValue(nextValue.replace(/[^a-zA-Z\s]/g, ''));
+      const compressed = nextValue.replace(/\s+/g, ' ');
+      setValue(compressed.replace(/[^\p{L}\p{M}\s]/gu, ''));
       return;
     }
 
@@ -535,7 +569,22 @@ function RenderField({
       return;
     }
 
-    if (field.key === 'residentialAddress' || field.key === 'shopNo' || field.key === 'shopName' || field.key === 'remarksDescription' || field.key === 'reasonForRenewal' || field.key === 'reasonForTransfer' || field.key === 'reasonForTermination') {
+    if (
+      field.key === 'residentialAddress' ||
+      field.key === 'remarksDescription' ||
+      field.key === 'reasonForRenewal' ||
+      field.key === 'reasonForTransfer' ||
+      field.key === 'reasonForTermination'
+    ) {
+      let compressed = nextValue.replace(/\s+/g, ' ');
+      compressed = compressed.replace(/-+/g, '-');
+      compressed = compressed.replace(/\s+-/g, '-');
+      compressed = compressed.replace(/-\s+/g, '-');
+      setValue(compressed.replace(/[<>]/g, ''));
+      return;
+    }
+
+    if (field.key === 'shopNo' || field.key === 'shopName') {
       setValue(nextValue.replace(/[<>]/g, ''));
       return;
     }
@@ -568,28 +617,24 @@ function RenderField({
         <Icon className="w-3 h-3 text-slate-400" /> {field.label}
       </Label>
       {field.type === 'select' ? (
-        <select
-          className={sharedInputClass}
+        <Select
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          options={(field.options ?? []).map((opt): Option => ({ label: opt, value: opt }))}
+          onChange={(_, val) => setValue(val)}
+          placeholder="— Select —"
           disabled={disabled}
-          aria-disabled={disabled}
-        >
-          {(field.options ?? []).map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+          selectSize="sm"
+          className="w-full"
+        />
       ) : field.type === 'textarea' ? (
-        <textarea
+        <TextArea
           className="w-full min-h-[60px] px-2 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
           placeholder={field.placeholder}
           value={value}
           onChange={(e) => setValue(e.target.value)}
         />
       ) : (
-        <input
+        <Input
           type={field.type === 'number' ? 'number' : field.type}
           className={sharedInputClass}
           placeholder={field.placeholder}
@@ -600,6 +645,7 @@ function RenderField({
           maxLength={field.type !== 'number' ? maxLength : undefined}
           min={field.type === 'number' ? 0 : undefined}
           step={field.type === 'number' ? 'any' : undefined}
+          naked
         />
       )}
     </div>
@@ -619,7 +665,7 @@ interface ConstructionTableRow extends Record<string, unknown> {
   shopArea: string;
   renterName: string;
   monthlyRent: string;
-  bharaniKaalavadi: string;
+  bharaniKaalavadi: number | string;
   status: string;
 }
 
@@ -631,6 +677,7 @@ export function NewLeaseRegistrationModal({
   applicationTypes = [],
   onClose,
 }: NewLeaseRegistrationModalProps) {
+  const t = useTranslations('revenueManagement');
   const [activeTab, setActiveTab] = useState<'new' | 'previous'>('new');
   const [localDocuments, setLocalDocuments] = useState<LeaseDocumentCard[]>(() => documents);
   const [stagedDocuments, setStagedDocuments] = useState<Record<LeaseDocumentType, StagedLeaseDocument | null>>({
@@ -681,7 +728,7 @@ export function NewLeaseRegistrationModal({
   }, [selectedTypeId, applicationTypes]);
   const isRevertedRecord = (record?.workflowStatus ?? '').toLowerCase() === 'reverted';
 
-  const template = useMemo(() => buildTemplate(selectedTypeId, applicationTypes), [selectedTypeId, applicationTypes]);
+  const template = useMemo(() => buildTemplate(selectedTypeId, applicationTypes, t), [selectedTypeId, applicationTypes, t]);
   const initialFormState = useMemo(
     () => buildInitialFormState(selectedType?.applicationTypeName || '', asset, record),
     [selectedType, asset, record]
@@ -1162,7 +1209,14 @@ export function NewLeaseRegistrationModal({
           };
           result = await updateAssetLeaseRentDetailsAction(targetRecordId, updatePayload);
         } else {
-          result = await createLeaseRentRegistrationAction(payload);
+          const parentAssetId =
+            toPositiveNumber(asset.id) ??
+            toPositiveNumber(record?.assetMasterId) ??
+            toPositiveNumber(asset.assetId);
+          result = await createLeaseRentRegistrationAction({
+            ...payload,
+            parentAssetId,
+          });
           leaseRentDetailsId = extractLeaseRentDetailsId(result);
         }
 
@@ -1237,6 +1291,21 @@ export function NewLeaseRegistrationModal({
   const handleDocumentSelect = useCallback(
     (type: LeaseDocumentType, file: File | null) => {
       if (!file) return;
+
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      const allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg'];
+      const isAllowed = allowedExtensions.includes(fileExtension || '') || file.type === 'application/pdf' || file.type.startsWith('image/');
+
+      if (!isAllowed) {
+        toastError(t('drawers.invalidFileType') || 'Invalid file type. Only PDF and image files (PNG, JPG, JPEG) are allowed.');
+        if (type === 'aadhar' && aadharInputRef.current) {
+          aadharInputRef.current.value = '';
+        } else if (type === 'pan' && panInputRef.current) {
+          panInputRef.current.value = '';
+        }
+        return;
+      }
+
       setStagedDocuments((prev) => ({
         ...prev,
         [type]: {
@@ -1245,7 +1314,7 @@ export function NewLeaseRegistrationModal({
         },
       }));
     },
-    [localDocuments]
+    [localDocuments, toastError, t]
   );
 
   const triggerDocumentPicker = useCallback((type: LeaseDocumentType) => {
@@ -1258,7 +1327,7 @@ export function NewLeaseRegistrationModal({
 
   const stagedLabel = (type: LeaseDocumentType) =>
     stagedDocuments[type]?.file?.name ||
-    'No file selected';
+    t('drawers.noFileSelected');
 
   const renderUploadCard = (type: LeaseDocumentType, label: string) => (
     <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
@@ -1268,15 +1337,16 @@ export function NewLeaseRegistrationModal({
           <div className="mt-1 text-[10px] text-slate-400">{stagedLabel(type)}</div>
         </div>
         <Button type="button" variant="secondary" size="sm" icon={UploadCloud} onClick={() => triggerDocumentPicker(type)}>
-          Choose File
+          {t('drawers.chooseFile')}
         </Button>
       </div>
-      <input
+      <Input
         ref={type === 'aadhar' ? aadharInputRef : panInputRef}
         type="file"
         accept=".pdf,.png,.jpg,.jpeg"
         className="hidden"
         onChange={(e) => handleDocumentSelect(type, e.target.files?.[0] ?? null)}
+        naked
       />
     </div>
   );
@@ -1284,7 +1354,7 @@ export function NewLeaseRegistrationModal({
   const drawerTitle = (
     <div className="flex items-center gap-2">
       <FileText className="w-5 h-5 text-blue-600" />
-      <h2 className="font-bold text-sm tracking-wide text-slate-800">Registration</h2>
+      <h2 className="font-bold text-sm tracking-wide text-slate-800">{t('tabs.registration')}</h2>
     </div>
   );
 
@@ -1292,7 +1362,7 @@ export function NewLeaseRegistrationModal({
     <div className="flex flex-col gap-2 w-full">
       <div className="flex items-center gap-3">
         <Button onClick={onClose} variant="secondary" size="sm" icon={X} disabled={isPending}>
-          Cancel
+          {t('drawers.cancel')}
         </Button>
         <Button
           variant="success"
@@ -1302,7 +1372,7 @@ export function NewLeaseRegistrationModal({
           disabled={isPending}
           className={isPending ? 'opacity-70 cursor-not-allowed' : ''}
         >
-          {isPending ? 'Submitting...' : isRevertedRecord ? 'Send to Verification' : record ? 'New Registration' : 'Submit Registration'}
+          {isPending ? t('drawers.processing') : isRevertedRecord ? t('drawers.sendToVerification') : record ? t('drawers.form.submitNew') : t('drawers.form.submitRegistration')}
         </Button>
       </div>
     </div>
@@ -1313,11 +1383,11 @@ export function NewLeaseRegistrationModal({
   const assetCategory = asset.assetCategoryName ?? '-';
   const shopName = record?.shopName ?? '-';
   const overviewColumns: Column<OverviewTableRow>[] = [
-    { key: 'zoneNo', label: 'Zone No', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'wardNo', label: 'Ward No', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'unitName', label: 'Unit Name', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopNumber', label: 'Unit Number', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
-    { key: 'shopActNumber', label: 'Unit Act Number', align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'zoneNo', label: t('drawers.cols.zoneNo'), align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'wardNo', label: t('drawers.cols.wardNo'), align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'unitName', label: t('drawers.cols.unitName'), align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopNumber', label: t('drawers.cols.unitNumber'), align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopActNumber', label: t('drawers.cols.unitActNumber'), align: 'center', headerClassName: 'whitespace-nowrap', cellClassName: 'whitespace-nowrap' },
   ];
   const overviewData: OverviewTableRow[] = [
     {
@@ -1329,27 +1399,30 @@ export function NewLeaseRegistrationModal({
     },
   ];
   const constructionColumns: Column<ConstructionTableRow>[] = [
-    { key: 'shopArea', label: 'Unit Area (sq.mt)', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'renterName', label: 'Renter Name', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'monthlyRent', label: 'Monthly Rent (₹)', align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
-    { key: 'bharaniKaalavadi', label: 'Duration', align: 'center', cellClassName: 'whitespace-nowrap' },
-    { key: 'status', label: 'Status', align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'shopArea', label: t('drawers.cols.unitArea'), align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'renterName', label: t('tables.cols.tenantName'), align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'monthlyRent', label: t('tables.cols.rentAmount'), align: 'center', cellClassName: 'whitespace-nowrap text-red-600 font-semibold' },
+    { key: 'bharaniKaalavadi', label: t('tables.cols.duration'), align: 'center', cellClassName: 'whitespace-nowrap' },
+    { key: 'status', label: t('tables.cols.status'), align: 'center', cellClassName: 'whitespace-nowrap' },
   ];
   const constructionData: ConstructionTableRow[] = [
     {
       shopNo: record?.shopNo ?? '-',
-      shopArea: record?.totalAreaSqFt != null ? String(record.totalAreaSqFt) : '-',
+      shopArea: record?.totalAreaSqFt != null ? Number(record.totalAreaSqFt).toFixed(2) : '-',
       renterName: record?.tenantName ?? '-',
       monthlyRent: record?.monthlyRent != null ? `₹ ${toCurrencyDisplay(record.monthlyRent)}` : '-',
       bharaniKaalavadi: record?.leaseDurationDisplay ?? '-',
       status: record?.workflowStatus ?? '-',
     },
   ];
+  const monthlyRentNum = Number(String(formState.revisedRent || formState.monthlyRent || formState.previousRent || '0').replace(/,/g, ''));
+  const expectedAnnualRentVal = monthlyRentNum ? monthlyRentNum * 12 : undefined;
+
   const summaryRows = [
-    { label: 'सद्यस्थितीतील मासिक भाडे उत्पन्न', value: toCurrencyDisplay(formState.previousRent || formState.monthlyRent) },
-    { label: 'मुदत संपल्यानंतरही वाढीव भाडे', value: toCurrencyDisplay(formState.revisedRent) },
-    { label: 'एकूण मासिक भाडे उत्पन्न', value: toCurrencyDisplay(formState.revisedRent || formState.monthlyRent || formState.previousRent) },
-    { label: 'वार्षिक भाडे उत्पन्न (अपेक्षित)', value: toCurrencyDisplay(asset.marketValue ?? asset.currentAssetValue ?? formState.revisedRent ?? formState.monthlyRent) },
+    { label: t('rentSummary.currentRent'), value: toCurrencyDisplay(formState.previousRent || formState.monthlyRent) },
+    { label: t('rentSummary.revisedRent'), value: toCurrencyDisplay(formState.revisedRent) },
+    { label: t('rentSummary.totalMonthlyRent'), value: toCurrencyDisplay(formState.revisedRent || formState.monthlyRent || formState.previousRent) },
+    { label: t('rentSummary.expectedAnnualRent'), value: toCurrencyDisplay(expectedAnnualRentVal) },
   ];
   const documentCards = useMemo(() => {
     const seen = new Set<string>();
@@ -1385,7 +1458,7 @@ export function NewLeaseRegistrationModal({
 
   const leftMediaPanels = [
     {
-      title: 'Asset Photo',
+      title: t('drawers.assetPhoto'),
       doc:
         mediaCards.find((doc) => {
           const name = getMediaSearchText(doc);
@@ -1398,27 +1471,34 @@ export function NewLeaseRegistrationModal({
           );
         }) ?? null,
       fallbackIcon: Building2,
-      fallbackText: 'Asset Photo',
+      fallbackText: t('drawers.assetPhoto'),
     },
     {
-      title: 'OP Plan',
+      title: t('drawers.opPlan'),
       doc: mediaCards.find((doc) => {
         const name = getMediaSearchText(doc);
         return name.includes('op plan') || (name.includes('plan') && !name.includes('dp plan') && !name.includes('asset photo plan'));
       }) ?? null,
       fallbackIcon: Grid,
-      fallbackText: 'OP Plan',
+      fallbackText: t('drawers.opPlan'),
     },
     {
-      title: 'DP Plan',
+      title: t('drawers.dpPlan'),
       doc: mediaCards.find((doc) => {
         const name = getMediaSearchText(doc);
         return name.includes('dp plan') || name.includes('asset photo plan') || name.includes('digital plan');
       }) ?? null,
       fallbackIcon: MapPinned,
-      fallbackText: 'DP Plan',
+      fallbackText: t('drawers.dpPlan'),
     },
   ] as const;
+
+  const activePanels = leftMediaPanels.filter((panel) => {
+    if (panel.title === t('drawers.opPlan') && panel.doc === null) {
+      return false;
+    }
+    return true;
+  });
 
   useEffect(() => {
     const imageDocuments = [...documentCards, ...mediaCards].filter((doc) => doc.isImage);
@@ -1466,20 +1546,20 @@ export function NewLeaseRegistrationModal({
         <div className="grid grid-cols-1 md:grid-cols-[1fr_200px_200px] gap-4 mb-4">
           <div className="bg-white border border-slate-200 rounded-lg p-3 relative mt-3 shadow-sm">
             <span className="absolute -top-3 left-4 bg-[#0a869e] text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm">
-              ASSET INFORMATION
+              {t('drawers.assetInformation')}
             </span>
             <div className="grid grid-cols-[120px_1fr] gap-x-2 gap-y-2 mt-1">
-              <span className="text-[10px] text-slate-500 font-bold">Asset Name</span>
+              <span className="text-[10px] text-slate-500 font-bold">{t('drawers.assetName')}</span>
               <span className="text-xs font-bold text-red-600">{buildingAssetName || '-'}</span>
-              <span className="text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-2">Address</span>
+              <span className="text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-2">{t('drawers.address')}</span>
               <span className="text-xs font-bold text-slate-700 border-t border-slate-100 pt-2">{asset.address ?? '-'}</span>
             </div>
           </div>
 
-          <DetailChip label="ASSET NUMBER" value={assetNumber} />
+          <DetailChip label={t('drawers.assetNo')} value={assetNumber} />
           <div className="bg-white border border-slate-200 rounded-lg p-3 relative mt-3 shadow-sm flex flex-col items-center justify-center gap-3">
             <span className="absolute -top-3 bg-[#0a869e] text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm">
-              STATUS
+              {t('drawers.workflowStatus')}
             </span>
             <span className="text-sm font-black text-amber-600 mt-2">
               {record?.workflowStatus ?? '-'}
@@ -1505,16 +1585,16 @@ export function NewLeaseRegistrationModal({
           </div>
 
           <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col justify-center">
-            <span className="text-[10px] text-slate-500 font-bold">Asset Category</span>
+            <span className="text-[10px] text-slate-500 font-bold">{t('drawers.assetCategory')}</span>
             <span className="text-sm font-bold text-red-600 mb-3">{assetCategory}</span>
-            <span className="text-[10px] text-slate-500 font-bold">Unit Name</span>
+            <span className="text-[10px] text-slate-500 font-bold">{t('drawers.unitName')}</span>
             <span className="text-sm font-bold text-red-600">{shopName || '-'}</span>
           </div>
         </div>
 
         <div className="mb-4 overflow-hidden rounded-lg">
           <div className="bg-teal-600 text-white text-[10px] font-bold py-1.5 text-center">
-            Unit Details
+            {t('drawers.unitDetails')}
           </div>
           <MasterTable
             columns={constructionColumns}
@@ -1531,53 +1611,55 @@ export function NewLeaseRegistrationModal({
           />
         </div>
 
-        <div className="grid grid-cols-1 items-stretch lg:grid-cols-[240px_1fr_300px] gap-4 mb-4">
-          <div className="flex h-full flex-col gap-3 self-stretch">
-            {leftMediaPanels.map((panel) => {
-              const doc = panel.doc;
-              const thumbUrl = doc ? thumbnailUrls[String(doc.id)] : null;
+          <div className={`grid grid-cols-1 items-stretch gap-4 mb-4 ${activePanels.length > 0 ? 'lg:grid-cols-[240px_1fr_300px]' : 'lg:grid-cols-[1fr_300px]'}`}>
+            {activePanels.length > 0 && (
+              <div className="flex h-full flex-col justify-center gap-6 self-stretch">
+                {activePanels.map((panel) => {
+                  const doc = panel.doc;
+                  const thumbUrl = doc ? thumbnailUrls[String(doc.id)] : null;
 
-              return (
-                <button
-                  key={panel.title}
-                  type="button"
-                  onClick={() => {
-                    if (doc) openDocument(doc);
-                  }}
-                  className="group relative min-h-[150px] flex-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-b from-slate-900/0 via-slate-900/0 to-slate-900/15" />
-                  <span className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-[#0a869e] px-3 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm">
-                    {panel.title}
-                  </span>
+                  return (
+                    <button
+                      key={panel.title}
+                      type="button"
+                      onClick={() => {
+                        if (doc) openDocument(doc);
+                      }}
+                      className="group relative w-full aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/0 via-slate-900/0 to-slate-900/15" />
+                      <span className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-[#0a869e] px-3 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm text-center whitespace-nowrap">
+                        {panel.title}
+                      </span>
 
-                  {doc && thumbUrl ? (
-                    <img
-                      src={thumbUrl}
-                      alt={panel.title}
-                      className="absolute inset-0 h-full w-full object-contain bg-slate-50 p-2"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-                      <div className="flex flex-col items-center gap-1 text-center">
-                        <panel.fallbackIcon className="h-8 w-8 text-slate-300" />
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                          {panel.fallbackText}
-                        </span>
-                        <span className="text-[9px] text-slate-400">No preview available</span>
-                      </div>
-                    </div>
-                  )}
+                      {doc && thumbUrl ? (
+                        <img
+                          src={thumbUrl}
+                          alt={panel.title}
+                          className="absolute inset-0 h-full w-full object-contain bg-slate-50 p-2"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+                          <div className="flex flex-col items-center gap-1 text-center">
+                            <panel.fallbackIcon className="h-8 w-8 text-slate-300" />
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                              {panel.fallbackText}
+                            </span>
+                            <span className="text-[9px] text-slate-400">{t('drawers.noPreview')}</span>
+                          </div>
+                        </div>
+                      )}
 
-                  {doc ? (
-                    <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-900/65 to-transparent px-2 pb-2 pt-6">
-                      <div className="text-[9px] font-semibold text-white/90">{doc.label}</div>
-                    </div>
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
+                      {doc ? (
+                        <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-900/65 to-transparent px-2 pb-2 pt-6">
+                          <div className="text-[9px] font-semibold text-white/90">{doc.label}</div>
+                        </div>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
           <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex flex-col">
             <div className="flex bg-slate-500 text-white">
@@ -1588,7 +1670,7 @@ export function NewLeaseRegistrationModal({
                   className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${activeTab === tab ? 'bg-slate-600 shadow-inner' : 'hover:bg-slate-500/80 opacity-70'
                     }`}
                 >
-                  {tab === 'new' ? 'New Tenant Registration' : 'Previous Tenant Information'}
+                  {tab === 'new' ? t('drawers.allTenantInfo') : t('drawers.previousTenants', { count: historyItems.length })}
                 </button>
               ))}
             </div>
@@ -1651,7 +1733,7 @@ export function NewLeaseRegistrationModal({
                     <div className="flex flex-col items-center justify-center text-slate-400 gap-2 py-8 bg-slate-50 border border-dashed border-slate-200 rounded-lg">
                       <Users className="w-10 h-10 opacity-30" />
                       <span className="text-xs font-semibold">
-                        {record?.tenantName || 'No previous tenants found'}
+                        {t('drawers.noPreviousTenants')}
                       </span>
                     </div>
                   )}
@@ -1662,8 +1744,8 @@ export function NewLeaseRegistrationModal({
             {activeTab === 'new' ? (
               <div className="border-t border-slate-200 bg-slate-50 p-3">
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  {renderUploadCard('aadhar', 'Upload Aadhaar')}
-                  {renderUploadCard('pan', 'Upload PAN')}
+                  {renderUploadCard('aadhar', t('drawers.form.uploadAadhaar'))}
+                  {renderUploadCard('pan', t('drawers.form.uploadPan'))}
                 </div>
               </div>
             ) : null}
@@ -1672,13 +1754,13 @@ export function NewLeaseRegistrationModal({
           <div className="space-y-3">
             <div className="bg-white border border-teal-600 rounded-lg shadow-sm overflow-hidden">
               <div className="bg-teal-600 text-white text-[10px] font-bold py-1.5 text-center">
-                भाडे उत्पन्न सारांश तक्ता
+                {t('rentSummary.title')}
               </div>
               <table className="w-full text-[9px] font-semibold text-slate-700">
                 <thead>
                   <tr className="border-b border-slate-200 text-center">
-                    <th className="px-2 py-1.5 border-r border-slate-200">तपशील</th>
-                    <th className="px-2 py-1.5">रक्कम (₹)</th>
+                    <th className="px-2 py-1.5 border-r border-slate-200">{t('rentSummary.colDetail')}</th>
+                    <th className="px-2 py-1.5">{t('rentSummary.colAmount')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-center">
@@ -1695,7 +1777,7 @@ export function NewLeaseRegistrationModal({
             {isRevertedRecord ? (
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 shadow-sm">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
-                  Reason for Revert
+                  {t('drawers.remarksForRevert')}
                 </div>
                 <div className="mt-1 text-[11px] font-semibold text-slate-700">
                   {record?.reason ?? record?.rejectionReason ?? '-'}
@@ -1708,7 +1790,7 @@ export function NewLeaseRegistrationModal({
 
         <div className="text-center relative pt-4 pb-2">
           <span className="bg-teal-600 text-white text-[10px] font-bold px-4 py-1 rounded-full shadow-sm">
-            Uploaded Documents
+            {t('drawers.uploadedDocs')}
           </span>
           <div className="absolute top-1/2 left-0 right-0 h-px bg-slate-200 -z-10"></div>
         </div>
@@ -1736,7 +1818,7 @@ export function NewLeaseRegistrationModal({
                   )}
                 </div>
                 <div className="text-center text-[10px] font-bold text-slate-700">{doc.label}</div>
-                <div className="mt-1 text-center text-[9px] font-bold text-emerald-600">View Document</div>
+                <div className="mt-1 text-center text-[9px] font-bold text-emerald-600">{t('drawers.viewDoc')}</div>
                 {doc.uploadedDate ? (
                   <div className="mt-1 text-center text-[8px] text-slate-400">{toDateDisplay(doc.uploadedDate)}</div>
                 ) : null}
@@ -1745,7 +1827,7 @@ export function NewLeaseRegistrationModal({
           </div>
         ) : (
           <div className="rounded-lg border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500 shadow-sm">
-            No uploaded documents returned from the API.
+            {t('drawers.noDocsApi')}
           </div>
         )}
       </div>

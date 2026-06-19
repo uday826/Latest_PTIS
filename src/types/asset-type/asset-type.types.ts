@@ -12,6 +12,8 @@ export interface AssetTypeFormModel {
   isActive: boolean;
   /** Format of the code expected by backend validation (e.g. "1") */
   codeFormat?: string;
+  allowUnitRegistration?: boolean;
+  allowRoomRegistration?: boolean;
 }
 
 /**

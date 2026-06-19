@@ -69,7 +69,8 @@ export interface LeaseRentRecord extends Record<string, unknown> {
   terminationDate?: string | null;
   reason?: string | null;
   rentAmountDisplay?: string;
-  leaseDurationDisplay?: string;
+  leaseDurationDisplay?: number | null;
+  duration?: number | null;
   workflowStatus?: string;
   rejectionReason?: string;
   category?: string;
@@ -88,6 +89,10 @@ export interface VerificationRecord extends Record<string, unknown> {
   submittedDate: string;
   status: string;
   remarks?: string;
+  assetName?: string;
+  leaseStartDate?: string;
+  leaseEndDate?: string;
+  paymentFrequency?: string;
 }
 
 export interface ApprovalRecord extends Record<string, unknown> {
@@ -101,6 +106,10 @@ export interface ApprovalRecord extends Record<string, unknown> {
   submittedDate: string;
   status: string;
   remarks?: string;
+  assetName?: string;
+  leaseStartDate?: string;
+  leaseEndDate?: string;
+  paymentFrequency?: string;
 }
 
 export interface ManageRentersTabCounts {
@@ -116,6 +125,11 @@ export interface LeaseRentRegistrationStats {
   verificationPending: number;
   approvalPending: number;
   totalRejected: number;
+}
+
+export interface ManageRentersHeaderData {
+  counts: ManageRentersTabCounts;
+  stats: LeaseRentRegistrationStats;
 }
 
 export interface ApplicationTypeItem {
@@ -173,6 +187,7 @@ export interface ManageRentersApprovalPageData extends ManageRentersWorkflowBase
 
 export interface LeaseRentFormSubmitData {
   assetId: number;
+  parentAssetId?: number;
   applicationTypeId: number;
   shopNo?: string;
   floorId?: number;
@@ -196,6 +211,7 @@ export interface LeaseRentFormSubmitData {
   monthlyRent?: number;
   securityDeposit?: number;
   paymentFrequency?: string;
+  duration?: number;
   reason?: string;
 }
 

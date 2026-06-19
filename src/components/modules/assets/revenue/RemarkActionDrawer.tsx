@@ -1,7 +1,7 @@
 'use client';
-/* eslint-disable i18next/no-literal-string */
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { Button, Drawer, Label, useToast } from '@/components/common';
 
@@ -30,6 +30,7 @@ export function RemarkActionDrawer({
   onClose,
   onConfirm,
 }: RemarkActionDrawerProps) {
+  const t = useTranslations('revenueManagement');
   const [remark, setRemark] = useState('');
   const { error: toastError } = useToast();
   const drawerTitle = (
@@ -60,7 +61,7 @@ export function RemarkActionDrawer({
       footer={
         <>
           <Button variant="secondary" size="sm" onClick={onClose} disabled={isPending}>
-            Cancel
+            {t('drawers.cancel')}
           </Button>
           <Button
             variant={confirmVariant}

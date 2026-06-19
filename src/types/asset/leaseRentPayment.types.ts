@@ -54,6 +54,12 @@ export interface LeaseRentPaymentDetail {
   penalty: number;
   gst: number;
   totalPayable: number;
+  financeYear?: number;
+  leaseStartDate?: string | null;
+  leaseEndDate?: string | null;
+  totalPaid?: number;
+  totalPending?: number;
+  paymentStatus?: string | null;
 }
 
 export interface LeaseRentPaymentHistoryItem {
@@ -62,8 +68,9 @@ export interface LeaseRentPaymentHistoryItem {
   paymentDate: string;
   paidAmount: number;
   paymentMode: string;
-  paymentType: string;
+  paymentType?: string;
   paymentStatus: string;
+  financeYear?: number;
 }
 
 export interface LeaseRentPaymentHistoryResponse {
@@ -83,6 +90,38 @@ export interface ProcessLeaseRentPaymentRequest {
   penaltyAmount: number;
   gstAmount: number;
   transactionId: string;
+}
+
+/**
+ * A single allocation line within a LeaseRentBill request.
+ * Maps to the backend BillPaymentAllocationDto.
+ */
+export interface BillPaymentAllocationDto {
+  monthWiseDemandId: number;
+  payAmount: number;
+}
+
+/**
+ * Request payload for POST /api/LeaseRentBill/{leaseId}.
+ * Matches the backend CreateBillPaymentDto structure.
+ */
+export interface LeaseRentBillRequest {
+  paymentType: string;
+  paymentMode: string;
+  paymentDate: string;
+  payerMobile?: string;
+  payerEmail?: string;
+  bankName?: string;
+  branchName?: string;
+  chequeOrTransactionNo?: string;
+  chequeDate?: string | null;
+  onlineTransactionId?: string;
+  paymentGatewayName?: string;
+  discountAmount?: number;
+  adjustmentAmount?: number;
+  remark?: string;
+  customAmount?: number;
+  allocations: BillPaymentAllocationDto[];
 }
 
 export interface AssetMasterPaymentDetail {
@@ -116,3 +155,46 @@ export interface AssetMasterPaymentDetail {
   typeOfUseName: string | null;
   subTypeOfUseName: string | null;
 }
+
+export interface LeaseRentDemandSummary {
+  leaseRegistrationId: number;
+  financeYear: number;
+  totalRent: number;
+  totalPenalty: number;
+  totalGst: number;
+  totalDemand: number;
+  totalPaid: number;
+  totalPending: number;
+  demandCount: number;
+  paidCount: number;
+  partialCount: number;
+  pendingCount: number;
+}
+
+/**
+ * Represents a single Lease Rent Demand entry returned from the
+ * GET /api/LeaseRentDemand/{leaseId} endpoint.
+ *
+ * The API exposes a master-table row containing the monthly rent,
+ * penalty, GST and the computed total for each pending/current
+ * period. The `month` field is the canonical key used both as the
+ * period label and as the row identifier.
+ */
+export interface LeaseRentDemandItem extends Record<string, unknown> {
+  id?: number | string;
+  month: string;
+  financeYear?: number | string | null;
+  rent: number;
+  penalty: number;
+  gst: number;
+  total: number;
+  demandStatus?: string | null;
+  paidAmount?: number | null;
+  pendingAmount?: number | null;
+  balanceAmount?: number | null;
+  dueDate?: string | null;
+  // Reserved for UI columns (e.g. checkbox) added by the consumer.
+  select?: boolean;
+}
+
+export type LeaseRentDemandListResponse = LeaseRentDemandItem[];

@@ -26,7 +26,11 @@
       "assetName": "Asset Name",
       "tenantName": "Tenant Name",
       "leaseType": "Lease Type",
-      "financeYear": "Finance Year"
+      "financeYear": "Finance Year",
+      "shopName": "Shop Name",
+      "email": "Email",
+      "leaseStartDate": "Lease Start Date",
+      "leaseEndDate": "Lease End Date"
     },
     "back": "Back"
   },
@@ -38,6 +42,8 @@
     "penalty": "Penalty",
     "gst": "GST",
     "totalAmount": "Total Amount",
+    "totalPaid": "Total Paid",
+    "totalPendingDemand": "Total Pending Demand",
     "mobileNumber": "Mobile Number",
     "emailAddress": "Email Address",
     "paymentMode": "Payment Mode",
@@ -58,13 +64,37 @@
     "pending": "Pending",
     "partial": "Partial",
     "total": "Total",
-    "selectMonths": "Select Months",
+    "selectMonths": "Monthwise Payment",
     "selectedMonths": "Selected: {months}",
     "payNow": "Pay Now",
+    "fullPayment": "Full Payment",
+    "partialAmount": "Partial Payment",
+    "selectYears": "Yearwise Payment",
+    "processing": "Processing...",
     "drawer": {
       "title": "Select Months",
+      "subtitle": "Choose one or more periods to include in this payment.",
       "cancel": "Cancel",
-      "apply": "Apply"
+      "apply": "Apply",
+      "selectAll": "Select All",
+      "clear": "Clear",
+      "selectedSummary": "{count, plural, =0 {No periods selected} one {# period selected} other {# periods selected}}",
+      "amountSummary": "Total: \u20b9{amount}",
+      "refresh": "Refresh",
+      "table": {
+        "month": "Month",
+        "rent": "Rent",
+        "penalty": "Penalty",
+        "gst": "GST",
+        "total": "Total",
+        "paidAmount": "Paid",
+        "pendingAmount": "Pending",
+        "status": "Status",
+        "select": "Select"
+      },
+      "empty": "No demand rows are available for this lease.",
+      "loading": "Loading demand rows...",
+      "loadError": "Unable to load demand rows. Please try again."
     }
   },
   "otherPayment": {
@@ -154,6 +184,8 @@
       "type": "Type",
       "amount": "Amount",
       "status": "Status",
+      "leaseStartDate": "Lease Start Date",
+      "leaseEndDate": "Lease End Date",
       "action": "Action",
       "pay": "Pay"
     },

@@ -3,6 +3,7 @@ import { X, Building2, Plus, Sparkles, Trash2, Home, Edit2 } from "lucide-react"
 import { Input, SearchSelect, Button } from "@/components/common";
 import { useAssetForm } from "../AssetFormContext";
 import { SubUnitDetailedConfigurator } from "../sub-units/SubUnitDetailedConfigurator";
+import { useTranslations } from "next-intl";
 
 interface ChildAssetDrawerProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface ChildAssetDrawerProps {
 
 export function ChildAssetDrawer({ isOpen, onClose, floorId }: ChildAssetDrawerProps) {
   const { formData, updateFormData } = useAssetForm();
+  const t = useTranslations("addAssetForm");
   
   // Local state for the units in this drawer before saving
   const [localUnits, setLocalUnits] = useState<any[]>([]);
@@ -109,10 +111,10 @@ export function ChildAssetDrawer({ isOpen, onClose, floorId }: ChildAssetDrawerP
             </div>
             <div>
               <h2 className="text-sm font-black text-white uppercase tracking-wider">
-                Manage Sub-Units
+                {t("floorDetails.manageSubUnits")}
               </h2>
               <p className="text-[10px] text-blue-400 font-bold tracking-widest uppercase">
-                {currentFloor?.floor} Floor • {currentFloor?.useType}
+                {t("floorDetails.floorUsage", { floor: currentFloor?.floor, useType: currentFloor?.useType })}
               </p>
             </div>
           </div>
@@ -131,34 +133,34 @@ export function ChildAssetDrawer({ isOpen, onClose, floorId }: ChildAssetDrawerP
           <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm space-y-3">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sparkles className="size-3.5 text-amber-500" />
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Bulk Generate Units</h3>
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">{t("floorDetails.bulkGenerateUnits")}</h3>
             </div>
                          <div className="grid grid-cols-4 gap-2">
               <SearchSelect
                 name="bulkType"
-                label="Type"
+                label={t("floorDetails.type") || "Type"}
                 options={[
-                  { label: "Flat", value: "Flat" },
-                  { label: "Shop", value: "Shop" },
-                  { label: "Room", value: "Room" },
-                  { label: "Office", value: "Office" },
+                  { label: t("floorDetails.flat") || "Flat", value: "Flat" },
+                  { label: t("floorDetails.shop") || "Shop", value: "Shop" },
+                  { label: t("floorDetails.room") || "Room", value: "Room" },
+                  { label: t("floorDetails.office") || "Office", value: "Office" },
                 ]}
                 value={bulkType}
                 onChange={(_n, v) => {
                   setBulkType(v);
                   setBulkPrefix(v.toUpperCase() + "-");
                 }}
-                placeholder="Select Type"
+                placeholder={t("floorDetails.selectType") || "Select Type"}
                 className="h-8 text-xs"
               />
               <Input
-                label="Prefix"
+                label={t("floorDetails.prefix") || "Prefix"}
                 value={bulkPrefix}
                 onChange={(e) => setBulkPrefix(e.target.value)}
                 className="h-8 text-xs px-2"
               />
               <Input
-                label="Start #"
+                label={t("floorDetails.startNum") || "Start #"}
                 type="number"
                 min={1}
                 value={bulkStartNum === 0 ? "" : bulkStartNum}
@@ -166,7 +168,7 @@ export function ChildAssetDrawer({ isOpen, onClose, floorId }: ChildAssetDrawerP
                 className="h-8 text-xs px-2"
               />
               <Input
-                label="Count"
+                label={t("floorDetails.count") || "Count"}
                 type="number"
                 min={1}
                 value={bulkCount === 0 ? "" : bulkCount}
@@ -178,7 +180,7 @@ export function ChildAssetDrawer({ isOpen, onClose, floorId }: ChildAssetDrawerP
             <div className="flex justify-end pt-1">
               <Button onClick={handleGenerateBulk} size="sm" icon={Plus}
                 className="text-[10px] font-black uppercase tracking-wider">
-                Generate {bulkCount} Units
+                {t("floorDetails.generateUnitsCount", { count: bulkCount })}
               </Button>
             </div>
           </div>
@@ -188,7 +190,7 @@ export function ChildAssetDrawer({ isOpen, onClose, floorId }: ChildAssetDrawerP
             <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
               <Home className="size-3.5 text-slate-500" />
               <h3 className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                Configured Units ({localUnits.length})
+                {t("floorDetails.configuredUnitsCount", { count: localUnits.length })}
               </h3>
             </div>
             
@@ -196,20 +198,20 @@ export function ChildAssetDrawer({ isOpen, onClose, floorId }: ChildAssetDrawerP
               <table className="w-full text-xs text-left">
                 <thead className="bg-slate-100 sticky top-0 border-b border-slate-200">
                   <tr className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                    <th className="px-3 py-2">Unit Number</th>
-                    <th className="px-3 py-2">Type</th>
-                    <th className="px-3 py-2 text-center">Rooms</th>
-                    <th className="px-3 py-2">Status</th>
-                    <th className="px-3 py-2 text-right">Area (SqFt)</th>
-                    <th className="px-3 py-2 text-right">Value (₹)</th>
-                    <th className="px-3 py-2 text-center">Action</th>
+                    <th className="px-3 py-2">{t("floorDetails.unitNumber")}</th>
+                    <th className="px-3 py-2">{t("floorDetails.type")}</th>
+                    <th className="px-3 py-2 text-center">{t("floorDetails.rooms")}</th>
+                    <th className="px-3 py-2">{t("floorDetails.status")}</th>
+                    <th className="px-3 py-2 text-right">{t("floorDetails.areaSqFt")}</th>
+                    <th className="px-3 py-2 text-right">{t("floorDetails.valueRs") || "Value (₹)"}</th>
+                    <th className="px-3 py-2 text-center">{t("floorDetails.action")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {localUnits.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="px-3 py-8 text-center text-slate-400 font-medium">
-                        No sub-units configured yet. Use the bulk generator above.
+                        {t("floorDetails.noSubUnitsRegistered")}
                       </td>
                     </tr>
                   ) : (
@@ -222,7 +224,7 @@ export function ChildAssetDrawer({ isOpen, onClose, floorId }: ChildAssetDrawerP
                           </span>
                         </td>
                         <td className="px-3 py-1.5 text-center font-mono text-[10px] font-bold text-slate-700">
-                          {unit.rooms?.length || 0} Rooms
+                          {t("floorDetails.unitsCount", { count: unit.rooms?.length || 0 })}
                         </td>
                         <td className="px-3 py-1.5">
                           <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded text-[9px] font-bold uppercase border border-emerald-100">
@@ -233,7 +235,7 @@ export function ChildAssetDrawer({ isOpen, onClose, floorId }: ChildAssetDrawerP
                         <td className="px-3 py-1.5 text-right font-mono font-bold text-slate-700">{unit.baseValue.toLocaleString()}</td>
                         <td className="px-3 py-1.5 text-center flex items-center justify-center gap-1">
                           <Button variant="edit" size="xs" onClick={() => setActiveUnit(unit)}
-                            icon={Edit2} title="Configure Details" />
+                            icon={Edit2} title={t("floorDetails.addDetails") || "Configure Details"} />
                           <Button variant="ghost" size="xs" onClick={() => handleDeleteUnit(unit.id)}
                             icon={Trash2} className="text-slate-400 hover:text-red-500 transition-colors" />
                         </td>
@@ -249,16 +251,16 @@ export function ChildAssetDrawer({ isOpen, onClose, floorId }: ChildAssetDrawerP
         {/* Footer */}
         <div className="px-4 py-3 bg-white border-t border-slate-200 shrink-0 flex items-center justify-between">
           <p className="text-[10px] text-slate-500 font-medium">
-            These units will be attached to the <strong className="text-slate-800">{currentFloor?.floor}</strong> floor.
+            {t("floorDetails.unitsAttached", { floor: currentFloor?.floor })}
           </p>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={onClose}
               className="text-[10px] font-black uppercase tracking-widest text-slate-700">
-              Cancel
+              {t("floorDetails.cancel")}
             </Button>
             <Button onClick={handleSave}
               className="text-[10px] font-black uppercase tracking-widest">
-              Save Units Configuration
+              {t("floorDetails.saveUnitsConfig")}
             </Button>
           </div>
         </div>

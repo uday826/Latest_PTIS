@@ -1,10 +1,9 @@
-/* eslint-disable i18next/no-literal-string */
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { Button, Drawer } from '@/components/common';
 import type { AssetDocumentListItem } from '@/types/municipal-asset/detail-tabs.types';
 import { AlertCircle, Download, File, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export type LoadedDocumentFile = {
   objectUrl: string;
@@ -60,12 +59,14 @@ export function DocumentPreviewDrawer({
   onClose,
   onDownload,
 }: DocumentPreviewDrawerProps) {
+  const t = useTranslations('assetDetail');
+
   const renderPreview = () => {
     if (isLoadingFile) {
       return (
         <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 text-slate-500 sm:min-h-[420px]">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          <p className="text-sm font-semibold">Loading document preview...</p>
+          <p className="text-sm font-semibold">{t('documentPreview.loading')}</p>
         </div>
       );
     }
@@ -75,7 +76,7 @@ export function DocumentPreviewDrawer({
         <div className="flex min-h-[320px] flex-col items-center justify-center gap-2 p-4 text-center sm:min-h-[420px] sm:p-6">
           <AlertCircle className="h-10 w-10 text-red-500" />
           <p className="text-sm font-bold text-slate-800">{fileError}</p>
-          <p className="max-w-sm text-xs text-slate-500">You can close the drawer and try opening the document again.</p>
+          <p className="max-w-sm text-xs text-slate-500">{t('documentPreview.errorFallback')}</p>
         </div>
       );
     }
@@ -107,8 +108,8 @@ export function DocumentPreviewDrawer({
     return (
       <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 p-4 text-center sm:min-h-[420px] sm:p-6">
         <File className="h-12 w-12 text-slate-400" />
-        <p className="text-sm font-bold text-slate-800">Preview is not available for this file type.</p>
-        <p className="max-w-sm text-xs text-slate-500">Use the download button to open this document on your device.</p>
+        <p className="text-sm font-bold text-slate-800">{t('documentPreview.previewNotAvailable')}</p>
+        <p className="max-w-sm text-xs text-slate-500">{t('documentPreview.downloadToView')}</p>
       </div>
     );
   };
@@ -121,7 +122,7 @@ export function DocumentPreviewDrawer({
       title={
         <div className="min-w-0 pr-6 sm:pr-8">
           <p id="drawer-title" className="truncate text-sm font-bold text-slate-900">
-            {selectedDocument?.name || 'Document'}
+            {selectedDocument?.name || t('documentPreview.documentTitleFallback')}
           </p>
           <p className="truncate text-xs text-slate-500">{loadedFile?.fileName || selectedDocument?.fileName}</p>
         </div>
@@ -129,7 +130,7 @@ export function DocumentPreviewDrawer({
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('documentPreview.close')}
           </Button>
           <Button
             variant="success"
@@ -137,7 +138,7 @@ export function DocumentPreviewDrawer({
             onClick={onDownload}
             disabled={!selectedDocument || isLoadingFile || !!fileError || !loadedFile}
           >
-            Download
+            {t('documentPreview.download')}
           </Button>
         </>
       }

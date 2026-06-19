@@ -211,13 +211,15 @@ export async function submitAssetForm(formData: AssetFormData) {
 
     // Fetch definitions to resolve IDs for EAV dynamic fieldValues
     let fieldDefs: any[] = [];
+    let fieldDefsDebug: any = null;
     try {
       const defRes = await assetFieldDefinitionService.getFieldDefinitions(categoryId, typeId);
+      fieldDefsDebug = defRes;
       if (defRes.success && defRes.data) {
         fieldDefs = Array.isArray(defRes.data) ? defRes.data : ((defRes.data as any).items || (defRes.data as any).data || []);
       }
     } catch (err) {
-
+      fieldDefsDebug = { success: false, error: err instanceof Error ? err.message : String(err) };
     }
 
     const parseNumericId = (val: any, mapping?: Record<string, number>): number | null => {
@@ -233,40 +235,14 @@ export async function submitAssetForm(formData: AssetFormData) {
       return null;
     };
 
-    // Fetch actual active masters from DB to prevent foreign key constraint violations
-    let dbDeptIds: number[] = [];
-    let dbWardIds: number[] = [];
-    let dbZoneIds: number[] = [];
-    let dbMoujaIds: number[] = [];
-
-    try {
-      const { getCachedDepartments, getCachedWards, getCachedZones, getCachedMoujas } = await import("@/lib/api/asset/cached-master-data");
-
-      const [deptRes, wardRes, zoneRes, moujaRes] = await Promise.all([
-        getCachedDepartments(),
-        getCachedWards(),
-        getCachedZones(),
-        getCachedMoujas(),
-      ]);
-
-      if (deptRes.success && deptRes.data) dbDeptIds = deptRes.data.map((d: any) => d.id);
-      if (wardRes.success && wardRes.data) dbWardIds = wardRes.data.map((w: any) => w.id);
-      if (zoneRes.success && zoneRes.data) dbZoneIds = zoneRes.data.map((z: any) => z.id);
-      if (moujaRes.success && moujaRes.data) dbMoujaIds = moujaRes.data.map((m: any) => m.id);
-    } catch (err) {
-
-    }
-
     const getSafeForeignKeyId = (
       parsedId: number | null,
-      dbIds: number[],
       isRequiredInUI: boolean
     ): number | null => {
-      if (parsedId !== null && dbIds.includes(parsedId)) {
+      // Trust the UI validation and database schema. 
+      // Do not perform 4 separate redundant DB queries just to validate foreign keys here.
+      if (parsedId !== null && parsedId > 0) {
         return parsedId;
-      }
-      if (dbIds.length > 0 && isRequiredInUI) {
-        return dbIds[0];
       }
       return null;
     };
@@ -294,24 +270,24 @@ export async function submitAssetForm(formData: AssetFormData) {
     const apiRequest: AssetMasterRequest = {
       authorityId: 1,
       organizationId: 1,
-      departmentId: getSafeForeignKeyId(parseNumericId(formData.departmentId || formData.department, departmentMapping), dbDeptIds, true),
+      departmentId: getSafeForeignKeyId(parseNumericId(formData.departmentId || formData.department, departmentMapping), true),
       assetNo: assetNo || null,
       assetName: formData.assetName || formData.assetType,
       assetCategoryId: categoryId,
       assetTypeId: typeId,
-      parentAssetId: null,
+      parentAssetId: parseNumericId(formData.parentBuildingId || (formData as any).parentAssetId),
       hierarchyLevel: 0,
       hierarchyPath: "",
       address: formData.fullAddress || "",
-      wardId: getSafeForeignKeyId(parseNumericId(formData.wardId || formData.ward, wardMapping), dbWardIds, true),
-      zoneId: getSafeForeignKeyId(parseNumericId(formData.zoneId || formData.zone, zoneMapping), dbZoneIds, true),
+      wardId: getSafeForeignKeyId(parseNumericId(formData.wardId || formData.ward, wardMapping), true),
+      zoneId: getSafeForeignKeyId(parseNumericId(formData.zoneId || formData.zone, zoneMapping), true),
       subZoneId: (() => {
         const val = parseNumericId(formData.subZoneId || (formData as any).subzone);
         return val !== null && val > 0 ? val : null;
       })(),
       moujaId: (() => {
         const val = parseNumericId((formData as any).moujaId || (formData as any).mouja);
-        if (val !== null && val > 0 && dbMoujaIds.includes(val)) {
+        if (val !== null && val > 0) {
           return val;
         }
         return null;
@@ -319,8 +295,8 @@ export async function submitAssetForm(formData: AssetFormData) {
       latitude: formData.latitude ? Number(formData.latitude) : null,
       longitude: formData.longitude ? Number(formData.longitude) : null,
       csn: formData.surveyNumber || (formData as any).csn || null,
-      typeOfUseId: null,
-      subTypeOfUseId: null,
+      typeOfUseId: parseNumericId(formData.typeOfUseId),
+      subTypeOfUseId: parseNumericId(formData.subTypeOfUseId),
       builtUpAreaSqMeter: totalBuiltUpSqM || null,
       carpetAreaSqMeter: totalCarpetSqM || null,
       landAreaSqMeter: (() => {
@@ -335,11 +311,11 @@ export async function submitAssetForm(formData: AssetFormData) {
       totalLength: Number(formData.length || formData.totalLength || formData.attributes?.length || formData.attributes?.totalLength) || null,
       averageWidth: Number(formData.width || formData.averageWidth || formData.attributes?.width || formData.attributes?.averageWidth) || null,
       hasLift: !!formData.attributes?.hasLift || !!formData.hasLift || false,
-      purchaseValue: Number(formData.purchaseValue || calculatedBuildingValue) || null,
+      purchaseValue: Number(formData.purchaseValue || formData.grossValue || calculatedBuildingValue) || null,
       purchaseDate: formData.purchaseDate || formData.attributes?.purchaseDate || null,
       marketValue: Number(formData.marketValue || formData.attributes?.marketValue || calculatedBuildingValue) || null,
       marketValueDate: formData.marketValueDate || formData.attributes?.marketValueDate || null,
-      capitalValue: calculatedBuildingValue || null,
+      capitalValue: Number(formData.capitalValue || calculatedBuildingValue) || null,
       lastCVCalculationDate: null,
       currentBookValue: Number(formData.currentBookValue || formData.attributes?.currentBookValue) || null,
       depreciationRate: Number(formData.depreciationRate || formData.attributes?.depreciationRate) || null,
@@ -355,6 +331,10 @@ export async function submitAssetForm(formData: AssetFormData) {
       inChargeEmail: formData.inChargeEmail || null,
       locality: formData.locality || null,
       pinCode: formData.pinCode || null,
+      partitionNo: formData.partitionNo || null,
+      upicId: formData.upicId || null,
+      propertyNo: formData.propertyNumber || null,
+      assetLocalName: formData.assetNameLocal || null,
       isActive: false,
       createdBy: 1,
 
@@ -362,9 +342,22 @@ export async function submitAssetForm(formData: AssetFormData) {
       // Related dynamic attribute values (EAV Pattern mapping to AMS.AssetFieldValue)
       fieldValues: Object.entries({
         ...(formData.attributes || {}),
-        propertyNumber: formData.propertyNumber,
         plotNumber: formData.plotNumber,
         surveyNumber: formData.surveyNumber,
+        offset: formData.offset,
+        offsetOp: formData.offsetOp,
+        partitionNo: formData.partitionNo,
+        upicId: formData.upicId,
+        isRented: formData.isRented,
+        leaseStartDate: formData.leaseStartDate,
+        leaseEndDate: formData.leaseEndDate,
+        leaseAmount: formData.leaseAmount,
+        securityDeposit: formData.securityDeposit,
+        paymentFrequency: formData.paymentFrequency,
+        lessorName: formData.lessorName,
+        lessorMobile: formData.lessorMobile,
+        lessorEmail: formData.lessorEmail,
+        lessorAddress: formData.lessorAddress,
       })
         .filter(([_, value]) => value !== undefined && value !== null && value !== "")
         .map(([key, value]) => {
@@ -426,73 +419,16 @@ export async function submitAssetForm(formData: AssetFormData) {
       : await assetMasterService.createAsset(apiRequest);
 
     if (!response.success) {
-
-      let dbCategories: any[] = [];
-      let dbTypes: any[] = [];
-      let dbConstructionTypes: any[] = [];
-      let dbUseTypes: any[] = [];
-      let dbSubUseTypes: any[] = [];
-      let dbFloors: any[] = [];
-
-      try {
-        const catRes = await categoryTypeService.getCategories();
-        if (catRes.success && catRes.data) {
-          dbCategories = catRes.data;
-        }
-        const typeRes = await categoryTypeService.getAllTypes();
-        if (typeRes.success && typeRes.data) {
-          dbTypes = typeRes.data;
-        }
-        const conRes = await apiClient.get<any[]>('/ConstructionType');
-        if (conRes.success && conRes.data) {
-          dbConstructionTypes = conRes.data;
-        }
-        const useRes = await apiClient.get<any[]>('/TypeOfUse');
-        if (useRes.success && useRes.data) {
-          dbUseTypes = useRes.data;
-        }
-        const subUseRes = await apiClient.get<any[]>('/SubTypeOfUse');
-        if (subUseRes.success && subUseRes.data) {
-          dbSubUseTypes = subUseRes.data;
-        }
-        const floorRes = await apiClient.get<any[]>('/Floor');
-        if (floorRes.success && floorRes.data) {
-          dbFloors = floorRes.data;
-        }
-      } catch (catErr) {
-
-      }
-
-      let dbUlb: any = null;
-      try {
-        const ulbRes = await apiClient.get<any>('/UlbConfig');
-        if (ulbRes.success && ulbRes.data) {
-          dbUlb = ulbRes.data;
-        }
-      } catch (ulbErr) {
-
-      }
-
       try {
         const fs = require("fs");
         const logContent = `[${new Date().toISOString()}] SAVE FAILED\n` +
           `Request Payload:\n${JSON.stringify(apiRequest, null, 2)}\n\n` +
-          `Active DB Wards: ${JSON.stringify(dbWardIds)}\n` +
-          `Active DB Zones: ${JSON.stringify(dbZoneIds)}\n` +
-          `Active DB Departments: ${JSON.stringify(dbDeptIds)}\n` +
-          `Active DB Moujas: ${JSON.stringify(dbMoujaIds)}\n` +
-          `Active DB Categories: ${JSON.stringify(dbCategories)}\n` +
-          `Active DB Types: ${JSON.stringify(dbTypes)}\n` +
-          `Active DB ConstructionTypes: ${JSON.stringify(dbConstructionTypes)}\n` +
-          `Active DB UseTypes: ${JSON.stringify(dbUseTypes)}\n` +
-          `Active DB SubUseTypes: ${JSON.stringify(dbSubUseTypes)}\n` +
-          `Active DB Floors: ${JSON.stringify(dbFloors)}\n` +
-          `Active DB UlbConfig: ${JSON.stringify(dbUlb)}\n\n` +
+          `Field Definitions API Response:\n${JSON.stringify(fieldDefsDebug, null, 2)}\n\n` +
           `Response Error:\n${JSON.stringify(response.error || response, null, 2)}\n` +
           `============================================================\n\n`;
         fs.appendFileSync("server-errors.log", logContent);
       } catch (logErr) {
-
+        // Ignore log errors
       }
     } else {
 
@@ -538,28 +474,27 @@ export async function submitAssetForm(formData: AssetFormData) {
       assetId = findAssetId(resData) || (isUpdate ? parsedId : null);
 
       if (assetId && apiRequest.fieldValues && apiRequest.fieldValues.length > 0) {
+        
+        // Use the bulk endpoint to save all dynamic fields in a single DB transaction.
+        try {
+          const bulkPayload = apiRequest.fieldValues.map(fv => ({
+            assetId: Number(assetId),
+            fieldDefinitionId: fv.fieldDefinitionId ?? 1,
+            fieldName: fv.fieldName,
+            textValue: fv.textValue,
+            numberValue: fv.numberValue,
+            dateValue: fv.dateValue ? fv.dateValue.split("T")[0] : null,
+            booleanValue: fv.booleanValue,
+            createdBy: 1
+          }));
 
-        const savePromises = apiRequest.fieldValues.map(async (fv) => {
-          try {
-            const eavPayload = {
-              assetId: Number(assetId),
-              fieldDefinitionId: fv.fieldDefinitionId ?? 1,
-              fieldName: fv.fieldName,
-              textValue: fv.textValue,
-              numberValue: fv.numberValue,
-              dateValue: fv.dateValue ? fv.dateValue.split("T")[0] : null,
-              booleanValue: fv.booleanValue,
-              createdBy: 1
-            };
-            const eavResponse = await assetFieldValueService.saveFieldValue(eavPayload);
-            if (!eavResponse.success) {
-
-            }
-          } catch (err) {
-
+          const bulkResponse = await assetFieldValueService.saveBulkFieldValues(Number(assetId), bulkPayload);
+          if (!bulkResponse.success) {
+            console.warn(`Failed to bulk save dynamic fields:`, bulkResponse.error);
           }
-        });
-        await Promise.all(savePromises);
+        } catch (err) {
+          console.error(`Error in bulk saving dynamic fields:`, err);
+        }
       } else {
 
       }

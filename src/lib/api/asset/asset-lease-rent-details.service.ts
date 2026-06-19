@@ -91,6 +91,7 @@ export interface AssetLeaseRentDetailsListParams {
   assetId?: number;
   fromDate?: string;
   toDate?: string;
+  isActive?: boolean;
 }
 
 function buildAssetLeaseRentDetailsQuery(params: AssetLeaseRentDetailsListParams = {}): string {
@@ -98,6 +99,7 @@ function buildAssetLeaseRentDetailsQuery(params: AssetLeaseRentDetailsListParams
 
   query.set('PageNumber', String(params.pageNumber ?? 1));
   query.set('PageSize', String(params.pageSize ?? 10));
+  query.set('IsActive', String(params.isActive ?? true));
 
   if (params.searchTerm?.trim()) query.set('SearchTerm', params.searchTerm.trim());
   if (params.workflowStatus?.trim()) query.set('WorkflowStatus', params.workflowStatus.trim());
@@ -313,6 +315,7 @@ export interface PreviousTenantHistoryItem {
   paymentFrequency: string;
   workflowStatus: string;
   rentStatus: string;
+  duration?: number | null;
 }
 
 export async function getPreviousTenantHistory(
@@ -324,34 +327,12 @@ export async function getPreviousTenantHistory(
   return response.success && response.data?.items ? response.data.items : [];
 }
 
-export interface CreateAssetLeaseRentDetailsPayload {
+export interface CreateAssetLeaseRentDetailsPayload extends Partial<Omit<AssetLeaseRentDetailsListItem, 'id'>> {
   isActive: boolean;
   createdBy: number;
   assetId: number;
-  shopNo?: string | null;
-  floorId?: number | null;
-  shopName?: string | null;
-  tenantName: string;
-  tenantMobile?: string | null;
-  tenantEmail?: string | null;
-  tenantType?: string | null;
-  tenantAadhaarNo?: string | null;
-  tenantPanCardNo?: string | null;
-  tenantAddress?: string | null;
-  previousTenantName?: string | null;
-  previousTenantMobile?: string | null;
   applicationTypeId: number;
-  leaseType?: string | null;
-  oldLeaseStartDate?: string | null;
-  oldLeaseEndDate?: string | null;
-  leaseStartDate?: string | null;
-  leaseEndDate?: string | null;
-  terminationDate?: string | null;
-  previousMonthlyRent?: number | null;
-  monthlyRent?: number | null;
-  securityDeposit?: number | null;
-  paymentFrequency?: string | null;
-  reason?: string | null;
+  tenantName: string;
 }
 
 export async function createAssetLeaseRentDetails(

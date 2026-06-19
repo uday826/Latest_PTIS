@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   DollarSign
 } from "lucide-react";
@@ -46,6 +47,7 @@ export function LandValuation({
   electronicFixtures = [],
   vehicles = [],
 }: LandValuationProps) {
+  const t = useTranslations("addAssetForm");
   const landArea = parseFloat(formData.landArea) || 0;
   const rate = parseFloat(formData.landRate) || 0;
 
@@ -66,68 +68,63 @@ export function LandValuation({
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(val);
 
   const summaryCards = [
-    { label: "Land Capital Value (CV)", value: totalLandValue, sub: plotCV ? "From Plot CV Engine" : "From Area & Rates (L)" },
-    { label: "Furniture Items Value", value: furnitureValue, sub: "From Furniture Inventory (A)" },
-    { label: "IT Equipment Value", value: itEquipmentValue, sub: "From IT Equipment Inventory (B)" },
-    { label: "Electronic Fixtures Value", value: electronicFixturesValue, sub: "From Electronic Fixtures Inventory (C)" },
-    { label: "Vehicles Value", value: vehiclesValue, sub: "From Vehicles Inventory (D)" },
+    { label: t("valuation.land.capitalValue"), value: totalLandValue, sub: plotCV ? t("valuation.land.subPlotCv") : t("valuation.land.subAreaRates") },
+    { label: t("valuation.inventory.furnitureValue"), value: furnitureValue, sub: t("valuation.inventory.subFurniture") },
+    { label: t("valuation.inventory.itValue"), value: itEquipmentValue, sub: t("valuation.inventory.subIt") },
+    { label: t("valuation.inventory.electronicValue"), value: electronicFixturesValue, sub: t("valuation.inventory.subElectronic") },
+    { label: t("valuation.inventory.vehiclesValue"), value: vehiclesValue, sub: t("valuation.inventory.subVehicles") },
   ];
 
   const detailCards: Array<{ title: string; color: string; bg: string; textColor: string; rows: DetailRow[]; footer: string; isLandCard?: boolean }> = [
     {
-      title: "Land Valuation",
+      title: t("valuation.land.title"),
       color: "#93C5FD",
       bg: "#DBEAFE",
       textColor: "#1E40AF",
       isLandCard: true,
       rows: [],
-      footer: "ℹ️ Calculated from area and rates",
+      footer: t("valuation.land.footer"),
     },
     {
-      title: "🪑 A) Furniture Items", color: "#C4B5FD", bg: "#EDE9FE", textColor: "#6B21A8",
+      title: `🪑 ${t("valuation.inventory.furnitureValue").replace(" Value", "")}`, color: "#C4B5FD", bg: "#EDE9FE", textColor: "#6B21A8",
       rows: [
-        { label: "Total Furniture Items Count", value: `${furnitureItems.length} ${furnitureItems.length === 1 ? "Item" : "Items"}` },
-        { label: "Total Quantity (Units)", value: `${furnitureItems.reduce((s, i) => s + (i.quantity || 0), 0)} Units` },
-        { label: "Total Furniture Value", value: `₹ ${fmt(furnitureValue)}`, highlight: true, highlightBg: "#F3E8FF", highlightBorder: "#C4B5FD", highlightText: "#6B21A8" },
+        { label: t("valuation.inventory.totalFurnitureCount"), value: `${furnitureItems.length} ${furnitureItems.length === 1 ? t("valuation.inventory.itemsVal", { count: 1 }).split(" ")[1] : t("valuation.inventory.itemsVal", { count: 2 }).split(" ")[1]}` },
+        { label: t("valuation.inventory.totalQty"), value: `${furnitureItems.reduce((s, i) => s + (i.quantity || 0), 0)} ${t("inventory.columns.unitsText")}` },
+        { label: t("valuation.inventory.totalFurnitureValue"), value: `₹ ${fmt(furnitureValue)}`, highlight: true, highlightBg: "#F3E8FF", highlightBorder: "#C4B5FD", highlightText: "#6B21A8" },
       ],
-      footer: "ℹ️ From Furniture Inventory (Part A)",
+      footer: t("valuation.inventory.footerFurniture"),
     },
     {
-      title: "💻 B) IT Equipment", color: "#93C5FD", bg: "#DBEAFE", textColor: "#1E40AF",
+      title: `💻 ${t("valuation.inventory.itValue").replace(" Value", "")}`, color: "#93C5FD", bg: "#DBEAFE", textColor: "#1E40AF",
       rows: [
-        { label: "Total IT Equipment Count", value: `${itEquipmentItems.length} ${itEquipmentItems.length === 1 ? "Item" : "Items"}` },
-        { label: "Total Quantity (Units)", value: `${itEquipmentItems.reduce((s, i) => s + (i.quantity || 0), 0)} Units` },
-        { label: "Total IT Equipment Value", value: `₹ ${fmt(itEquipmentValue)}`, highlight: true, highlightBg: "#DBEAFE", highlightBorder: "#93C5FD", highlightText: "#1E40AF" },
+        { label: t("valuation.inventory.totalItCount"), value: `${itEquipmentItems.length} ${itEquipmentItems.length === 1 ? t("valuation.inventory.itemsVal", { count: 1 }).split(" ")[1] : t("valuation.inventory.itemsVal", { count: 2 }).split(" ")[1]}` },
+        { label: t("valuation.inventory.totalQty"), value: `${itEquipmentItems.reduce((s, i) => s + (i.quantity || 0), 0)} ${t("inventory.columns.unitsText")}` },
+        { label: t("valuation.inventory.totalItValue"), value: `₹ ${fmt(itEquipmentValue)}`, highlight: true, highlightBg: "#DBEAFE", highlightBorder: "#93C5FD", highlightText: "#1E40AF" },
       ],
-      footer: "ℹ️ From IT Equipment Inventory (Part B)",
+      footer: t("valuation.inventory.footerIt"),
     },
     {
-      title: "💡 C) Electronic Fixtures", color: "#6EE7B7", bg: "#D1FAE5", textColor: "#065F46",
+      title: `💡 ${t("valuation.inventory.electronicValue").replace(" Value", "")}`, color: "#6EE7B7", bg: "#D1FAE5", textColor: "#065F46",
       rows: [
-        { label: "Total Electronic Fixtures Count", value: `${electronicFixtures.length} ${electronicFixtures.length === 1 ? "Item" : "Items"}` },
-        { label: "Total Quantity (Units)", value: `${electronicFixtures.reduce((s, i) => s + (i.quantity || 0), 0)} Units` },
-        { label: "Total Electronic Fixtures Value", value: `₹ ${fmt(electronicFixturesValue)}`, highlight: true, highlightBg: "#D1FAE5", highlightBorder: "#6EE7B7", highlightText: "#065F46" },
+        { label: t("valuation.inventory.totalElectronicCount"), value: `${electronicFixtures.length} ${electronicFixtures.length === 1 ? t("valuation.inventory.itemsVal", { count: 1 }).split(" ")[1] : t("valuation.inventory.itemsVal", { count: 2 }).split(" ")[1]}` },
+        { label: t("valuation.inventory.totalQty"), value: `${electronicFixtures.reduce((s, i) => s + (i.quantity || 0), 0)} ${t("inventory.columns.unitsText")}` },
+        { label: t("valuation.inventory.totalElectronicValue"), value: `₹ ${fmt(electronicFixturesValue)}`, highlight: true, highlightBg: "#D1FAE5", highlightBorder: "#6EE7B7", highlightText: "#065F46" },
       ],
-      footer: "ℹ️ From Electronic Fixtures Inventory (Part C)",
+      footer: t("valuation.inventory.footerElectronic"),
     },
     {
-      title: "🚗 D) Vehicles", color: "#FCD34D", bg: "#FEF3C7", textColor: "#92400E",
+      title: `🚗 ${t("valuation.inventory.vehiclesValue").replace(" Value", "")}`, color: "#FCD34D", bg: "#FEF3C7", textColor: "#92400E",
       rows: [
-        { label: "Total Vehicles Count", value: `${vehicles.length} ${vehicles.length === 1 ? "Vehicle" : "Vehicles"}` },
-        { label: "Total Quantity (Units)", value: `${vehicles.reduce((s, i) => s + (i.quantity || 0), 0)} Units` },
-        { label: "Total Vehicles Value", value: `₹ ${fmt(vehiclesValue)}`, highlight: true, highlightBg: "#FEF3C7", highlightBorder: "#FCD34D", highlightText: "#92400E" },
+        { label: t("valuation.inventory.totalVehiclesCount"), value: `${vehicles.length} ${vehicles.length === 1 ? t("valuation.inventory.itemsVal", { count: 1 }).split(" ")[1] : t("valuation.inventory.itemsVal", { count: 2 }).split(" ")[1]}` },
+        { label: t("valuation.inventory.totalQty"), value: `${vehicles.reduce((s, i) => s + (i.quantity || 0), 0)} ${t("inventory.columns.unitsText")}` },
+        { label: t("valuation.inventory.totalVehiclesValue"), value: `₹ ${fmt(vehiclesValue)}`, highlight: true, highlightBg: "#FEF3C7", highlightBorder: "#FCD34D", highlightText: "#92400E" },
       ],
-      footer: "ℹ️ From Vehicles Inventory (Part D)",
+      footer: t("valuation.inventory.footerVehicles"),
     },
   ];
 
   return (
     <div className="space-y-6">
-
-
-
-
-
       {/* 3. Summary Cards (Same as Building Category layout) */}
       <div className="mb-2">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
@@ -150,7 +147,7 @@ export function LandValuation({
 
         {/* Grand Total Asset Value Banner */}
         <div className="mt-2 p-2.5 rounded-lg flex justify-between items-center border-2" style={{ background: "linear-gradient(135deg,#EFF6FF,#DBEAFE,#BFDBFE)", borderColor: "#93C5FD" }}>
-          <span className="font-bold text-sm" style={{ color: "#1E40AF" }}>Grand Total Asset Value</span>
+          <span className="font-bold text-sm" style={{ color: "#1E40AF" }}>{t("valuation.grandTotal")}</span>
           <div className="px-3 py-1.5 rounded-md" style={{ background: "linear-gradient(135deg,#1E40AF,#1E3A8A)", border: "1.5px solid #1D4ED8" }}>
             <span className="text-lg font-bold" style={{ fontFamily: "monospace", color: "#FFFFFF" }}>₹ {fmt(grandTotalValue)}</span>
           </div>
@@ -161,7 +158,7 @@ export function LandValuation({
 
       {/* 4. Detailed Breakdown Cards */}
       <div className="mb-3">
-        <h4 className="text-base font-bold mb-3" style={{ color: "#1E40AF" }}>Detailed Valuation Breakdown</h4>
+        <h4 className="text-base font-bold mb-3" style={{ color: "#1E40AF" }}>{t("valuation.breakdown.title")}</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
           {detailCards.map((card) => (
             <div key={card.title} className="p-3 bg-white rounded-lg border shadow-md hover:shadow-lg transition-shadow duration-300" style={{ borderColor: card.color }}>
@@ -174,17 +171,17 @@ export function LandValuation({
                 <div className="space-y-3">
                   <div className="p-2 rounded-lg bg-gray-50 border border-gray-200">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs text-gray-600">Total Land Area</p>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-100 text-teal-700 font-medium">Auto</span>
+                      <p className="text-xs text-gray-600">{t("valuation.land.totalArea")}</p>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-100 text-teal-700 font-medium">{t("valuation.land.auto")}</span>
                     </div>
                     <p className="text-sm font-bold" style={{ color: "#374151" }}>
-                      {plotCV?.totalPlotAreaSqMtr ?? landArea ?? 0} sq.mtr
+                      {plotCV?.totalPlotAreaSqMtr ?? landArea ?? 0} {t("valuation.land.sqMtr")}
                     </p>
                   </div>
 
                   <div className="p-2 rounded-lg border" style={{ backgroundColor: "#DBEAFE", borderColor: "#93C5FD" }}>
                     <p className="text-xs mb-1 flex items-center gap-1 font-semibold" style={{ color: "#1E40AF" }}>
-                      <DollarSign className="w-3.5 h-3.5" />Land Capital Value (CV)
+                      <DollarSign className="w-3.5 h-3.5" />{t("valuation.land.capitalValue")}
                     </p>
                     <p className="text-sm font-bold" style={{ fontFamily: "monospace", color: "#1E40AF" }}>
                       {formatCurrency(totalLandValue)}

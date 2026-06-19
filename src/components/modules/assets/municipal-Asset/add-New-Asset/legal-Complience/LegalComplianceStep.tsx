@@ -16,6 +16,7 @@ import {
   deleteUploadedDocAction
 } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 // Document status type
 type DocumentStatus = "pending" | "uploading" | "uploaded" | "error";
@@ -29,6 +30,7 @@ interface DocumentUploadState {
 }
 
 export default function LegalCompliancePage() {
+  const t = useTranslations("addAssetForm");
   const { formData, registerSubmitHook, stagedFiles, setStagedFiles, setIsDataLoading } = useAssetForm();
   const [definitions, setDefinitions] = useState<AssetDocumentDefinitionDto[]>([]);
   const [uploadStates, setUploadStates] = useState<Record<number, DocumentUploadState>>({});
@@ -47,7 +49,7 @@ export default function LegalCompliancePage() {
         const fileUrl = URL.createObjectURL(state.file);
         window.open(fileUrl, "_blank");
       } catch (err) {
-        toast.error("Failed to open local file preview.");
+        toast.error(t("compliance.toasts.previewFailed") || "Failed to open local file preview.");
       }
       return;
     }
@@ -72,13 +74,12 @@ export default function LegalCompliancePage() {
         const fileUrl = URL.createObjectURL(blob);
         window.open(fileUrl, "_blank");
       } catch (err: any) {
-
-        toast.error(err.message || "Failed to download document for viewing.");
+        toast.error(err.message || t("compliance.toasts.downloadFailed") || "Failed to download document for viewing.");
       } finally {
         setViewingDocId(null);
       }
     }
-  }, []);
+  }, [t]);
 
   // Fetch document definitions based on category and type
   useEffect(() => {
@@ -87,7 +88,6 @@ export default function LegalCompliancePage() {
       if (setIsDataLoading) setIsDataLoading(true);
       setError(null);
       try {
-
         const response = await fetchDocumentDefinitionsAction(
           formData.categoryId,
           formData.typeId
@@ -114,7 +114,6 @@ export default function LegalCompliancePage() {
           setError(response.error || response.message || "Failed to load document definitions");
         }
       } catch (err) {
-
         setError("Failed to load document definitions. Please try again.");
       } finally {
         setLoading(false);
@@ -157,7 +156,6 @@ export default function LegalCompliancePage() {
           });
         }
       } catch (err) {
-
       }
     }
 
@@ -177,7 +175,7 @@ export default function LegalCompliancePage() {
         [definitionId]: {
           ...prev[definitionId],
           status: "error",
-          error: `File size exceeds ${definition.maxFileSizeMB}MB limit`
+          error: t("compliance.card.sizeExceeds", { size: definition.maxFileSizeMB }) || `File size exceeds ${definition.maxFileSizeMB}MB limit`
         }
       }));
       return;
@@ -192,7 +190,7 @@ export default function LegalCompliancePage() {
         [definitionId]: {
           ...prev[definitionId],
           status: "error",
-          error: `File type not allowed. Allowed: ${definition.allowedExtensions}`
+          error: t("compliance.card.allowedExtensions", { extensions: definition.allowedExtensions }) || `File type not allowed. Allowed: ${definition.allowedExtensions}`
         }
       }));
       return;
@@ -224,7 +222,7 @@ export default function LegalCompliancePage() {
         [definitionId]: { file, definition }
       }));
     }
-  }, [definitions, setStagedFiles]);
+  }, [definitions, setStagedFiles, t]);
 
   // Handle document deletion
   const handleDelete = useCallback((definitionId: number) => {
@@ -262,7 +260,7 @@ export default function LegalCompliancePage() {
   const handleStepSubmit = useCallback(async (): Promise<boolean> => {
     const assetId = formData.assetId || formData.id || 0;
     if (!assetId || assetId === 0) {
-      toast.error("Asset must be saved first before uploading documents.");
+      toast.error(t("compliance.toasts.assetNotSaved") || "Asset must be saved first before uploading documents.");
       return false;
     }
 
@@ -272,7 +270,6 @@ export default function LegalCompliancePage() {
         for (const docId of deletedDocIds) {
           const res = await deleteUploadedDocAction(docId);
           if (!res.success) {
-
           }
         }
         setDeletedDocIds([]);
@@ -289,17 +286,16 @@ export default function LegalCompliancePage() {
       });
 
       if (missingRequired.length > 0) {
-        toast.error(`Please upload all required compliance documents: ${missingRequired.map(d => d.documentName).join(", ")}`);
+        toast.error(t("compliance.toasts.missingRequired", { missing: missingRequired.map(d => d.documentName).join(", ") }) || `Please upload all required compliance documents: ${missingRequired.map(d => d.documentName).join(", ")}`);
         return false;
       }
 
       return true; // Validated, proceed to next step
     } catch (err) {
-
-      toast.error("An unexpected error occurred during document validation.");
+      toast.error(t("compliance.toasts.validationFailed") || "An unexpected error occurred during document validation.");
       return false;
     }
-  }, [formData, uploadStates, deletedDocIds, definitions]);
+  }, [formData, uploadStates, deletedDocIds, definitions, t]);
 
   // Register submit hook in form context
   useEffect(() => {
@@ -336,6 +332,15 @@ export default function LegalCompliancePage() {
     return groups;
   }, [definitions]);
 
+  // Sorted definitions by displayOrder, prioritizing required documents first
+  const sortedDefinitions = React.useMemo(() => {
+    return [...definitions].sort((a, b) => {
+      if (a.isRequired && !b.isRequired) return -1;
+      if (!a.isRequired && b.isRequired) return 1;
+      return a.displayOrder - b.displayOrder;
+    });
+  }, [definitions]);
+
   const requiredCount = groupedDefinitions.required.length;
   const uploadedRequiredCount = groupedDefinitions.required.filter(
     d => uploadStates[d.id]?.status === "uploaded"
@@ -346,7 +351,7 @@ export default function LegalCompliancePage() {
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="size-8 text-blue-600 animate-spin" />
-          <p className="text-sm text-slate-500">Loading compliance document requirements...</p>
+          <p className="text-sm text-slate-500">{t("compliance.loadingRequirements")}</p>
         </div>
       </div>
     );
@@ -362,14 +367,14 @@ export default function LegalCompliancePage() {
             <p className="text-red-800 font-medium">{error}</p>
             {is404 && (
               <p className="text-red-600 text-sm mt-1">
-                The document definitions API endpoint is not available. Please ensure the backend API is running.
+                {t("compliance.apiError")}
               </p>
             )}
             <button
               onClick={() => window.location.reload()}
               className="mt-2 text-sm text-red-600 underline hover:no-underline"
             >
-              Retry
+              {t("compliance.retry")}
             </button>
           </div>
         </div>
@@ -383,44 +388,32 @@ export default function LegalCompliancePage() {
       <div className="mb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-100 rounded-xl">
-              <ShieldCheck className="text-emerald-600 size-5" />
-            </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-800">Legal, Safety & Compliance</h2>
+              <h2 className="text-lg font-bold text-slate-800">{t("compliance.title")}</h2>
               <p className="text-xs text-slate-500">
-                Upload required compliance documents for {formData.category} - {formData.assetType}
+                {t("compliance.subtitle", { category: formData.category, type: formData.assetType })}
               </p>
             </div>
           </div>
-          {requiredCount > 0 && (
-            <div className="flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-1.5">
-              <CheckCircle2 className="size-4 text-emerald-600" />
-              <span className="text-xs font-semibold text-slate-700">
-                {uploadedRequiredCount}/{requiredCount} Required
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Required Documents Section */}
-      {groupedDefinitions.required.length > 0 && (
+      {/* Compliance Documents Section */}
+      {definitions.length > 0 && (
         <div className="border border-emerald-200 bg-white rounded-xl overflow-hidden shadow-sm">
           <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 border-b border-emerald-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShieldCheck className="text-emerald-600 size-4" />
-              <h3 className="font-bold text-emerald-800 text-sm">Required Compliance Documents</h3>
-              <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                Mandatory
-              </span>
+              <h3 className="font-bold text-emerald-800 text-sm">{t("compliance.documents")}</h3>
             </div>
-            <span className="text-xs text-emerald-600 font-medium">
-              {uploadedRequiredCount} of {requiredCount} uploaded
-            </span>
+            {requiredCount > 0 && (
+              <span className="text-xs text-emerald-600 font-medium">
+                {t("compliance.uploadedRequired", { uploaded: uploadedRequiredCount, required: requiredCount })}
+              </span>
+            )}
           </div>
           <div className="p-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {groupedDefinitions.required.map(def => (
+            {sortedDefinitions.map(def => (
               <DocumentUploadCard
                 key={def.id}
                 definition={def}
@@ -430,35 +423,7 @@ export default function LegalCompliancePage() {
                 onView={() => handleView(def.id, uploadStates[def.id])}
                 isViewing={viewingDocId === def.id}
                 fileInputRef={(el) => { fileInputRefs.current[def.id] = el; }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Optional Documents Section */}
-      {groupedDefinitions.optional.length > 0 && (
-        <div className="border border-slate-200 bg-white rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileBox className="text-slate-500 size-4" />
-              <h3 className="font-bold text-slate-700 text-sm">Optional Documents</h3>
-              <span className="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                Optional
-              </span>
-            </div>
-          </div>
-          <div className="p-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {groupedDefinitions.optional.map(def => (
-              <DocumentUploadCard
-                key={def.id}
-                definition={def}
-                state={uploadStates[def.id]}
-                onFileSelect={(file) => handleFileSelect(def.id, file)}
-                onDelete={() => handleDelete(def.id)}
-                onView={() => handleView(def.id, uploadStates[def.id])}
-                isViewing={viewingDocId === def.id}
-                fileInputRef={(el) => { fileInputRefs.current[def.id] = el; }}
+                t={t}
               />
             ))}
           </div>
@@ -471,20 +436,12 @@ export default function LegalCompliancePage() {
           <div className="bg-white p-3 rounded-full shadow-sm mb-3">
             <Info className="size-8 text-slate-400" />
           </div>
-          <h3 className="text-lg font-bold text-slate-700">No Compliance Documents Required</h3>
+          <h3 className="text-lg font-bold text-slate-700">{t("compliance.noDocsTitle")}</h3>
           <p className="text-sm text-slate-500 max-w-sm mt-2">
-            No compliance documents are required for this asset category and type combination.
+            {t("compliance.noDocsDesc")}
           </p>
         </div>
       )}
-
-      {/* Status Indicator */}
-      <div className="mt-2 p-2 bg-emerald-50/50 rounded-xl border border-emerald-100 flex items-center gap-3">
-        <div className="bg-emerald-600 size-2 rounded-full animate-pulse" />
-        <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">
-          Compliance Check: Deferred Upload Configured
-        </p>
-      </div>
     </div>
   );
 }
@@ -498,9 +455,10 @@ interface DocumentUploadCardProps {
   onView?: () => void;
   isViewing?: boolean;
   fileInputRef: (el: HTMLInputElement | null) => void;
+  t: any;
 }
 
-function DocumentUploadCard({ definition, state, onFileSelect, onDelete, onView, isViewing, fileInputRef }: DocumentUploadCardProps) {
+function DocumentUploadCard({ definition, state, onFileSelect, onDelete, onView, isViewing, fileInputRef, t }: DocumentUploadCardProps) {
   const status = state?.status || "pending";
   const inputId = `compliance-doc-${definition.id}`;
 
@@ -512,7 +470,7 @@ function DocumentUploadCard({ definition, state, onFileSelect, onDelete, onView,
   };
 
   const statusConfig = {
-    pending: { bg: "bg-slate-50", border: "border-slate-200", icon: FileUp, iconColor: "text-slate-400" },
+    pending: { bg: "bg-gradient-to-r from-[#C8E1FC] via-[#DBEAFF] to-[#EDF5FF]", border: "border-[#A3CBFA]", icon: FileUp, iconColor: "text-[#1d4ed8]" },
     uploading: { bg: "bg-blue-50", border: "border-blue-200", icon: Loader2, iconColor: "text-blue-600" },
     uploaded: { bg: "bg-emerald-50", border: "border-emerald-200", icon: CheckCircle2, iconColor: "text-emerald-600" },
     error: { bg: "bg-red-50", border: "border-red-200", icon: AlertCircle, iconColor: "text-red-500" }
@@ -522,43 +480,42 @@ function DocumentUploadCard({ definition, state, onFileSelect, onDelete, onView,
   const StatusIcon = config.icon;
 
   return (
-    <div className={`${config.bg} ${config.border} border rounded-xl p-3 transition-all hover:shadow-sm`}>
-      <div className="flex items-start gap-3">
-        <div className={`p-2 rounded-lg ${status === "uploaded" ? "bg-emerald-100" : status === "error" ? "bg-red-100" : "bg-white"}`}>
+    <div className={`${config.bg} ${config.border} border rounded-xl p-3 transition-all hover:shadow-sm w-full h-full flex flex-col justify-between`}>
+      <div className="flex items-start gap-3 h-full">
+        <div className={`p-2 rounded-lg shrink-0 ${status === "uploaded" ? "bg-emerald-100" : status === "error" ? "bg-red-100" : "bg-white"}`}>
           <StatusIcon className={`size-5 ${config.iconColor} ${status === "uploading" ? "animate-spin" : ""}`} />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <h4 className="text-sm font-semibold text-slate-800 leading-tight">{definition.documentName}</h4>
-              {definition.description && (
-                <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{definition.description}</p>
-              )}
+        <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
+          <div>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h4 className="text-sm font-semibold text-slate-800 leading-tight">
+                  {definition.documentName}
+                  {definition.isRequired && <span className="text-red-500 font-bold ml-1">*</span>}
+                </h4>
+                {definition.description && (
+                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{definition.description}</p>
+                )}
+              </div>
             </div>
-            {definition.isRequired && (
-              <span className="shrink-0 text-[9px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded">
-                REQ
-              </span>
+
+            {/* Status / File Name or File Info */}
+            {status === "uploaded" && (state?.file || state?.uploadedDoc) ? (
+              <div className="mt-2 flex items-center gap-1.5 text-emerald-700">
+                <FileBox className="size-3 shrink-0" />
+                <span className="text-[10px] font-medium truncate">
+                  {state.file ? state.file.name : state.uploadedDoc?.fileName}
+                </span>
+              </div>
+            ) : (
+              <div className="mt-2 text-[10px] text-slate-400 space-y-0.5">
+                <p>{t("compliance.card.maxSize", { size: definition.maxFileSizeMB })} • {definition.allowedExtensions || t("compliance.card.allTypes")}</p>
+              </div>
+            )}
+            {status === "error" && state?.error && (
+              <p className="mt-2 text-[10px] text-red-600 font-medium">{state.error}</p>
             )}
           </div>
-
-          {/* File Info */}
-          <div className="mt-2 text-[10px] text-slate-400 space-y-0.5">
-            <p>Max: {definition.maxFileSizeMB}MB • {definition.allowedExtensions || "All types"}</p>
-          </div>
-
-          {/* Status / File Name */}
-          {status === "uploaded" && (state?.file || state?.uploadedDoc) && (
-            <div className="mt-2 flex items-center gap-1.5 text-emerald-700">
-              <FileBox className="size-3" />
-              <span className="text-[10px] font-medium truncate">
-                {state.file ? state.file.name : state.uploadedDoc?.fileName}
-              </span>
-            </div>
-          )}
-          {status === "error" && state?.error && (
-            <p className="mt-2 text-[10px] text-red-600 font-medium">{state.error}</p>
-          )}
 
           {/* Action Buttons */}
           <div className="mt-3 flex items-center gap-2">
@@ -588,17 +545,17 @@ function DocumentUploadCard({ definition, state, onFileSelect, onDelete, onView,
                 {status === "uploading" ? (
                   <>
                     <Loader2 className="size-3 animate-spin" />
-                    Uploading...
+                    {t("compliance.card.uploading")}
                   </>
                 ) : status === "uploaded" ? (
                   <>
                     <Upload className="size-3" />
-                    Replace
+                    {t("compliance.card.replace")}
                   </>
                 ) : (
                   <>
                     <Upload className="size-3" />
-                    Upload
+                    {t("compliance.card.upload")}
                   </>
                 )}
               </label>
@@ -612,7 +569,7 @@ function DocumentUploadCard({ definition, state, onFileSelect, onDelete, onView,
                     onClick={onView}
                     disabled={isViewing}
                     className="p-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 rounded-lg transition-all active:scale-95 flex items-center justify-center cursor-pointer disabled:opacity-50"
-                    title="View Document"
+                    title={t("compliance.card.view")}
                   >
                     {isViewing ? (
                       <Loader2 className="size-3.5 animate-spin text-blue-600" />
@@ -625,7 +582,7 @@ function DocumentUploadCard({ definition, state, onFileSelect, onDelete, onView,
                   type="button"
                   onClick={onDelete}
                   className="p-1.5 border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-all active:scale-95 flex items-center justify-center cursor-pointer"
-                  title="Delete Document"
+                  title={t("compliance.card.delete")}
                 >
                   <Trash2 className="size-3.5" />
                 </button>

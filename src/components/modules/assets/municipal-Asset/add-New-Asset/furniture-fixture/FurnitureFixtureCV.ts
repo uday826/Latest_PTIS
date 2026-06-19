@@ -11,19 +11,19 @@ export const COND_FACTORS: Record<string, number> = {
   "Not Working": 0.10,
 };
 
-export const TYPE_LABELS: Record<InventoryType, string> = {
+export const TYPE_LABELS: Record<string, string> = {
   "furniture":           "Furniture",
   "it-equipment":        "IT Equipment",
   "electronic-fixtures": "Electronic Fixtures",
+  "electronics":         "Electronic Fixtures",
   "vehicle":             "Vehicle",
 };
 
 export function calcRowCV(row: InventoryRow, dynamicRates: Record<string, number>, dynamicConditions: Record<string, number>) {
-  // Handle both internal keys ("furniture") and API type names ("Furniture")
-  // Try TYPE_LABELS first for internal keys, otherwise use row.type directly (for API names)
   const typeName = TYPE_LABELS[row.type as InventoryType] || row.type;
   const depRate   = dynamicRates[typeName] ?? 0.10;
-  const condFactor = dynamicConditions[row.condition] ?? COND_FACTORS[row.condition] ?? 0.75;
+  const condKey = `${typeName.toLowerCase()}_${row.condition.toLowerCase()}`;
+  const condFactor = dynamicConditions[condKey] ?? dynamicConditions[row.condition.toLowerCase()] ?? dynamicConditions[row.condition] ?? COND_FACTORS[row.condition] ?? 0.75;
   const purchYear  = row.purchaseDate ? new Date(row.purchaseDate).getFullYear() : new Date().getFullYear();
   const ageInYears = Math.max(0, new Date().getFullYear() - purchYear);
   const depFactor  = Math.max(0.10, 1 - depRate * ageInYears);

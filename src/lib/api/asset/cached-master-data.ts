@@ -28,6 +28,7 @@ const filterActive = (res: any) => {
   return res;
 };
 
+// Wrap with React cache for request deduplication
 export const getCachedZones = cache(async () => {
   return filterActive(await zoneService.getZones());
 });

@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
-export function DynamicQRCode({ assetId }: { assetId: string }) {
+export function DynamicQRCode({ assetId: _assetId }: { assetId: string }) {
   const [url, setUrl] = useState('');
 
   useEffect(() => {
-    // Generate the exact URL the user is currently on
     setUrl(window.location.href);
   }, []);
 
@@ -17,3 +16,4 @@ export function DynamicQRCode({ assetId }: { assetId: string }) {
 
   return <QRCodeSVG value={url} size={60} className="h-[60px] w-[60px]" />;
 }
+

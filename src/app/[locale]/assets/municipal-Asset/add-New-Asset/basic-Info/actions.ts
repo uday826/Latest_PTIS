@@ -168,3 +168,32 @@ export async function fetchSubzonesByMoujaAction(moujaId: number | string): Prom
   }
 }
 
+/**
+ * Server action to fetch sub-use types filtered by typeOfUse ID.
+ */
+export async function fetchSubTypesByTypeAction(typeOfUseId: number | string): Promise<{
+  success: boolean;
+  data: any[];
+  error?: string;
+}> {
+  try {
+    const { getSubTypesPagedServer } = await import("@/lib/api/typeofusesubtype.service");
+    const response = await getSubTypesPagedServer({
+      pageNumber: 1,
+      pageSize: 1000,
+      typeOfUseId: Number(typeOfUseId),
+    });
+    if (response && Array.isArray(response.items)) {
+      let items = response.items.filter((item: any) => 
+        item.isActive !== false && item.isActive !== 0 && 
+        item.IsActive !== false && item.IsActive !== 0 && 
+        item.status?.toLowerCase() !== 'inactive'
+      );
+      return { success: true, data: items };
+    }
+    return { success: false, data: [], error: "Failed to fetch use subtypes" };
+  } catch (error: any) {
+    return { success: false, data: [], error: error?.message || "Failed to fetch use subtypes" };
+  }
+}
+

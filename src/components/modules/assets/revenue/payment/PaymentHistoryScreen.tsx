@@ -26,7 +26,7 @@ export function PaymentHistoryScreen({ items }: PaymentHistoryScreenProps) {
     return items.filter((row) =>
       row.receiptNo.toLowerCase().includes(normalizedSearch) ||
       row.paymentMode.toLowerCase().includes(normalizedSearch) ||
-      row.paymentType.toLowerCase().includes(normalizedSearch) ||
+      (row.paymentType?.toLowerCase() || '').includes(normalizedSearch) ||
       row.paymentStatus.toLowerCase().includes(normalizedSearch)
     );
   }, [items, searchTerm]);
@@ -82,10 +82,11 @@ export function PaymentHistoryScreen({ items }: PaymentHistoryScreenProps) {
               {pagedRows.map((row) => {
                 const paymentDate = new Date(row.paymentDate);
                 const isValidDate = !Number.isNaN(paymentDate.getTime());
-                const finYear = isValidDate ? String(paymentDate.getFullYear()) : '-';
+                const finYear = row.financeYear !== undefined ? String(row.financeYear) : (isValidDate ? String(paymentDate.getFullYear()) : '-');
                 const date = isValidDate ? paymentDate.toLocaleDateString('en-CA') : '-';
                 const time = isValidDate ? paymentDate.toLocaleTimeString('en-GB') : '-';
-                const isPaid = row.paymentStatus.trim().toLowerCase() === 'paid';
+                const statusLower = (row.paymentStatus || '').trim().toLowerCase();
+                const isPaid = statusLower === 'paid' || statusLower === 'success';
 
                 return (
                   <tr key={row.id} className="hover:bg-slate-50 transition-colors">

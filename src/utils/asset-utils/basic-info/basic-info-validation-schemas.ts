@@ -27,8 +27,6 @@ export const PROPERTY_TAX_RE = /^[a-zA-Z0-9/\-_]+$/;
 export const buildingBasicInfoSchema: ValidationSchema<BuildingBasicInfoFormData> = {
   // Section A: Property Number Details
   propertyNumber: {
-    required: true,
-    requiredMessage: "Property Tax No is required.",
     pattern: PROPERTY_TAX_RE,
     patternMessage: "Property Tax No can only contain alphanumeric characters, '/', '-', and '_'.",
   },

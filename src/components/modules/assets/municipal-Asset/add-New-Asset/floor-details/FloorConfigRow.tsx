@@ -66,7 +66,7 @@ export function FloorConfigRow({
         {/* Floor — always enabled */}
         <div className="flex-1 min-w-0">
           <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Floor <span className="text-red-500">*</span></label>
-          <SearchSelect name="floor" options={floorLevels} value={newFloor.floor}
+          <SearchSelect name="floor" options={(floorLevels || []).map((o: any) => ({ label: o.label, value: String(o.value) }))} value={newFloor.floor}
             onChange={onFloorChange} placeholder="Select" className={BASE_INPUT} />
           <ValidationMessage message={errors.floor} />
         </div>
@@ -74,7 +74,7 @@ export function FloorConfigRow({
         {/* Con Type — enabled after Floor */}
         <div className={`flex-1 min-w-0 ${conTypeEnabled ? "" : DISABLED_CLS}`}>
           <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Con Type <span className="text-red-500">*</span></label>
-          <SearchSelect name="conType" options={constructionTypes} value={newFloor.conType}
+          <SearchSelect name="conType" options={(constructionTypes || []).map((o: any) => ({ label: o.label, value: String(o.value) }))} value={newFloor.conType}
             onChange={onConTypeChange} placeholder="Select"
             disabled={!conTypeEnabled} className={BASE_INPUT} />
           <ValidationMessage message={errors.conType} />
@@ -93,7 +93,7 @@ export function FloorConfigRow({
         {/* Use Type — enabled after valid Con Yr */}
         <div className={`flex-1 min-w-0 ${useTypeEnabled ? "" : DISABLED_CLS}`}>
           <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Use Type <span className="text-red-500">*</span></label>
-          <SearchSelect name="useType" options={useTypes} value={newFloor.useType}
+          <SearchSelect name="useType" options={(useTypes || []).map((o: any) => ({ label: o.label, value: String(o.value) }))} value={newFloor.useType}
             onChange={onUseTypeChange} placeholder="Select"
             disabled={!useTypeEnabled} className={BASE_INPUT} />
           <ValidationMessage message={errors.useType} />
@@ -102,7 +102,7 @@ export function FloorConfigRow({
         {/* Sub Use — enabled after Use Type */}
         <div className={`flex-1 min-w-0 ${subUseEnabled ? "" : DISABLED_CLS}`}>
           <label className="block text-[11px] font-medium text-slate-700 mb-1 truncate">Sub Use <span className="text-red-500">*</span></label>
-          <SearchSelect name="subUseType" options={subUseTypes} value={newFloor.subUseType}
+          <SearchSelect name="subUseType" options={(subUseTypes || []).map((o: any) => ({ label: o.label, value: String(o.value) }))} value={newFloor.subUseType}
             onChange={onSelect("subUseType")} placeholder="Select"
             disabled={!subUseEnabled} className={BASE_INPUT} />
           <ValidationMessage message={errors.subUseType} />

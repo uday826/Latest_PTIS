@@ -80,7 +80,13 @@ export interface PoolUnit {
   capitalValue?: number;
   rentInformation?: RentInformationDto | null;
   subFloorId?: number | null;
-  floorDetailsId?: number | null;
+  // Property registration numbers
+  propertyNo?: string | null;
+  surveyNo?: string | null;
+  shopActNo?: string | null;
+  partitionNo?: string | null;
+  // Unit name (for shop/office/department)
+  unitName?: string | null;
 }
 
 /* ── Form state for the "add new floor" row ─────────────────────────────────*/
@@ -186,6 +192,11 @@ export interface FloorDetailApiResponse extends FloorDetailApiRequest {
   id: number;
   createdDate: string;
   updatedDate?: string | null;
+  subFloorName?: string | null;
+  subTypeOfUseName?: string | null;
+  useTypeName?: string | null;
+  roomDetails?: any[] | null;
+  roomWiseDetails?: any[] | null;
 }
 
 export interface SubUnitApiRequest {

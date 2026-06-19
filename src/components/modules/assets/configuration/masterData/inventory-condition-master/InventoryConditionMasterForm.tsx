@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import type { ChangeEvent } from 'react';
 import { CheckCircle2, X, LayoutGrid } from 'lucide-react';
 import { Drawer, Input, TextArea } from '@/components/common';

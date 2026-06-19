@@ -26,7 +26,11 @@
       "assetName": "संपत्ति नाम",
       "tenantName": "किरायेदार नाम",
       "leaseType": "लीज़ प्रकार",
-      "financeYear": "वित्तीय वर्ष"
+      "financeYear": "वित्तीय वर्ष",
+      "shopName": "दुकान नाम",
+      "email": "ईमेल",
+      "leaseStartDate": "लीज़ प्रारंभ तिथि",
+      "leaseEndDate": "लीज़ समाप्ति तिथि"
     },
     "back": "वापस"
   },
@@ -37,6 +41,8 @@
     "currentDemand": "वर्तमान मांग",
     "penalty": "जुर्माना",
     "gst": "जीएसटी",
+    "totalPaid": "कुल भुगतान",
+    "totalPendingDemand": "कुल लंबित मांग",
     "totalAmount": "कुल राशि",
     "mobileNumber": "मोबाइल नंबर",
     "emailAddress": "ईमेल पता",
@@ -58,13 +64,37 @@
     "pending": "लंबित",
     "partial": "आंशिक",
     "total": "पूर्ण",
-    "selectMonths": "महीने चुनें",
+    "selectMonths": "महीनेवार भुगतान",
     "selectedMonths": "चयनित: {months}",
     "payNow": "अभी भुगतान करें",
+    "fullPayment": "पूर्ण भुगतान",
+    "partialAmount": "आंशिक राशि",
+    "selectYears": "वर्षवार भुगतान",
+    "processing": "प्रसंस्करण...",
     "drawer": {
       "title": "महीने चुनें",
+      "subtitle": "इस भुगतान में शामिल करने के लिए एक या अधिक अवधि चुनें।",
       "cancel": "रद्द करें",
-      "apply": "लागू करें"
+      "apply": "लागू करें",
+      "selectAll": "सभी चुनें",
+      "clear": "साफ़ करें",
+      "selectedSummary": "{count, plural, =0 {कोई अवधि नहीं चुनी गई} one {# अवधि चुनी गई} other {# अवधियाँ चुनी गईं}}",
+      "amountSummary": "कुल: \u20b9{amount}",
+      "refresh": "रिफ्रेश",
+      "table": {
+        "month": "महीना",
+        "rent": "किराया",
+        "penalty": "जुर्माना",
+        "gst": "जीएसटी",
+        "total": "कुल",
+        "paidAmount": "भुगतान",
+        "pendingAmount": "बकाया",
+        "status": "स्थिति",
+        "select": "चुनें"
+      },
+      "empty": "इस लीज़ के लिए कोई माँग पंक्तियाँ उपलब्ध नहीं हैं।",
+      "loading": "माँग पंक्तियाँ लोड हो रही हैं...",
+      "loadError": "माँग पंक्तियाँ लोड करने में असमर्थ। कृपया पुनः प्रयास करें।"
     }
   },
   "otherPayment": {
@@ -154,6 +184,8 @@
       "type": "प्रकार",
       "amount": "राशि",
       "status": "स्थिति",
+      "leaseStartDate": "लीज़ प्रारंभ तिथि",
+      "leaseEndDate": "लीज़ समाप्ति तिथि",
       "action": "क्रिया",
       "pay": "भुगतान"
     },
