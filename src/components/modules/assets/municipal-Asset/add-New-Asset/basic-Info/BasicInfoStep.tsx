@@ -24,7 +24,7 @@ import type { Zone } from "@/lib/api/asset/zone.service";
 import type { OwnershipType } from "@/lib/api/asset/ownership-type.service";
 import type { BasicInfoPageProps } from "@/types/asset-types/basic-info/basicInfo.types";
 
-export default function BasicInfoPage({ wards = [], zones = [], departments = [], moujas = [], prefetchedFields = [], ownershipTypes = [], useTypes = [] }: BasicInfoPageProps) {
+export default function BasicInfoPage({ wards = [], zones = [], departments = [], moujas = [], prefetchedFields = [], ownershipTypes = [], useTypes = [], subzones = [] }: BasicInfoPageProps) {
   return (
     <BuildingBasicInfoContent
       wards={wards}
@@ -34,6 +34,7 @@ export default function BasicInfoPage({ wards = [], zones = [], departments = []
       ownershipTypes={ownershipTypes}
       prefetchedFields={prefetchedFields}
       useTypes={useTypes}
+      subzones={subzones}
     />
   );
 }
@@ -50,6 +51,7 @@ function BuildingBasicInfoContent({
   ownershipTypes = [],
   prefetchedFields = [],
   useTypes = [],
+  subzones = [],
 }: {
   wards?: Ward[];
   zones?: Zone[];
@@ -58,6 +60,7 @@ function BuildingBasicInfoContent({
   ownershipTypes?: OwnershipType[];
   prefetchedFields?: any[];
   useTypes?: any[];
+  subzones?: any[];
 }) {
   const {
     formData,
@@ -70,37 +73,65 @@ function BuildingBasicInfoContent({
   const { confirm } = useConfirm();
   const t = useTranslations("addAssetForm");
 
-  const [dynamicSubzones, setDynamicSubzones] = useState<any[]>([]);
-  const [isLoadingSubzones, setIsLoadingSubzones] = useState(false);
-
   const [dynamicSubTypes, setDynamicSubTypes] = useState<any[]>([]);
   const [isLoadingSubTypes, setIsLoadingSubTypes] = useState(false);
 
-  // Load subzones reactively whenever mouja is set or changed in formData
-  useEffect(() => {
-    if (!formData.mouja) {
-      setDynamicSubzones([]);
-      return;
-    }
+  const [dynamicWards, setDynamicWards] = useState<Ward[]>([]);
+  const [isLoadingWards, setIsLoadingWards] = useState(false);
+  const [hasFetchedWards, setHasFetchedWards] = useState(false);
 
-    const loadSubzones = async () => {
-      setIsLoadingSubzones(true);
-      try {
-        const { fetchSubzonesByMoujaAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/basic-Info/actions");
-        const res = await fetchSubzonesByMoujaAction(formData.mouja);
-        if (res.success && res.data) {
-          setDynamicSubzones(res.data);
-        } else {
-          setDynamicSubzones([]);
-        }
-      } catch (err) {
-        console.error("Failed to load subzones:", err);
-        setDynamicSubzones([]);
-      } finally {
-        setIsLoadingSubzones(false);
+  const handleWardFocus = async () => {
+    if (hasFetchedWards || !formData.zone) return;
+    setIsLoadingWards(true);
+    try {
+      const { fetchWardsByZoneAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/basic-Info/actions");
+      const res = await fetchWardsByZoneAction(formData.zone);
+      if (res.success && res.data) {
+        setDynamicWards(res.data);
+      } else {
+        setDynamicWards([]);
       }
-    };
-    loadSubzones();
+    } catch (err) {
+      console.error("Failed to load wards:", err);
+      setDynamicWards([]);
+    } finally {
+      setIsLoadingWards(false);
+      setHasFetchedWards(true);
+    }
+  };
+
+  useEffect(() => {
+    setDynamicWards([]);
+    setHasFetchedWards(false);
+  }, [formData.zone]);
+
+  const [dynamicSubzones, setDynamicSubzones] = useState<any[]>([]);
+  const [isLoadingSubzones, setIsLoadingSubzones] = useState(false);
+  const [hasFetchedSubzones, setHasFetchedSubzones] = useState(false);
+
+  const handleSubzoneFocus = async () => {
+    if (hasFetchedSubzones || !formData.mouja) return;
+    setIsLoadingSubzones(true);
+    try {
+      const { fetchSubzonesByMoujaAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/basic-Info/actions");
+      const res = await fetchSubzonesByMoujaAction(formData.mouja);
+      if (res.success && res.data) {
+        setDynamicSubzones(res.data);
+      } else {
+        setDynamicSubzones([]);
+      }
+    } catch (err) {
+      console.error("Failed to load subzones:", err);
+      setDynamicSubzones([]);
+    } finally {
+      setIsLoadingSubzones(false);
+      setHasFetchedSubzones(true);
+    }
+  };
+
+  useEffect(() => {
+    setDynamicSubzones([]);
+    setHasFetchedSubzones(false);
   }, [formData.mouja]);
 
   // Load subtypes of use reactively whenever typeOfUseId is set or changed in formData
@@ -290,11 +321,14 @@ function BuildingBasicInfoContent({
                 errors={errors}
                 showError={showError}
                 handleChange={handleChange}
-                wards={wards}
+                wards={dynamicWards}
+                isLoadingWards={isLoadingWards}
+                onWardFocus={handleWardFocus}
                 zones={zones}
                 moujas={moujas}
                 subzones={dynamicSubzones}
                 isLoadingSubzones={isLoadingSubzones}
+                onSubzoneFocus={handleSubzoneFocus}
                 onMoujaChange={handleMoujaChange}
                 useTypes={useTypes}
                 subUseTypes={dynamicSubTypes}

@@ -169,6 +169,36 @@ export async function fetchSubzonesByMoujaAction(moujaId: number | string): Prom
 }
 
 /**
+ * Server action to fetch wards filtered by zone ID.
+ */
+export async function fetchWardsByZoneAction(zoneId: number | string): Promise<{
+  success: boolean;
+  data: any[];
+  error?: string;
+}> {
+  try {
+    const { apiClient } = await import("@/services/api.service");
+    const response = await apiClient.get<any>(`/Ward?pageSize=-1&ZoneId=${zoneId}`);
+    if (response.success && response.data) {
+      let items = Array.isArray(response.data)
+        ? response.data
+        : (response.data.items || response.data.Items || response.data.data || []);
+      
+      items = items.filter((item: any) => 
+        item.isActive !== false && item.isActive !== 0 && 
+        item.IsActive !== false && item.IsActive !== 0 && 
+        item.status?.toLowerCase() !== 'inactive'
+      );
+      
+      return { success: true, data: items };
+    }
+    return { success: false, data: [], error: response.error || "Failed to fetch wards" };
+  } catch (error: any) {
+    return { success: false, data: [], error: error?.message || "Failed to fetch wards" };
+  }
+}
+
+/**
  * Server action to fetch sub-use types filtered by typeOfUse ID.
  */
 export async function fetchSubTypesByTypeAction(typeOfUseId: number | string): Promise<{

@@ -56,6 +56,8 @@ export function DynamicAttributes({
     formData.attributes?.LandArea
   ]);
 
+  const lastFetchedRef = React.useRef({ catId: -1, typId: -1 });
+
   // Load fields dynamically if useApi is enabled
   React.useEffect(() => {
     if (!useApi) return;
@@ -63,15 +65,10 @@ export function DynamicAttributes({
     const catId = formData.categoryId;
     const typId = formData.typeId;
 
-    // Check if the current client selections match the server preloaded values
-    if (
-      prefetchedFields &&
-      prefetchedFields.length > 0 &&
-      catId &&
-      typId &&
-      Number(catId) === Number(hydratedRef.current.categoryId) &&
-      Number(typId) === Number(hydratedRef.current.typeId)
-    ) {
+    // Since Category and Type are read-only in the Basic Info step,
+    // if prefetchedFields were provided by the server, we can trust them completely
+    // and skip any client-side fetching.
+    if (prefetchedFields && prefetchedFields.length > 0) {
       setFields(prefetchedFields);
       setLoading(false);
       return;
@@ -80,6 +77,10 @@ export function DynamicAttributes({
     const resolveAndLoadFields = async () => {
       let resolvedCatId = catId;
       let resolvedTypId = typId;
+
+      if (lastFetchedRef.current.catId === Number(resolvedCatId) && lastFetchedRef.current.typId === Number(resolvedTypId)) {
+        return;
+      }
 
       setLoading(true);
       try {
@@ -135,6 +136,7 @@ export function DynamicAttributes({
 
           const processedFields = processFieldDefinitions({ success: true, data: filteredFields });
           setFields(processedFields);
+          lastFetchedRef.current = { catId: Number(resolvedCatId), typId: Number(resolvedTypId) };
         } else {
           setFields([]);
         }

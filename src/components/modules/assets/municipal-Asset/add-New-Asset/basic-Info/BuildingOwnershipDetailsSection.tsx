@@ -63,6 +63,11 @@ export function BuildingOwnershipDetailsSection({
     return () => clearTimeout(timer);
   }, [formData.assetName]);
 
+  const updateFormDataRef = React.useRef(updateFormData);
+  React.useEffect(() => {
+    updateFormDataRef.current = updateFormData;
+  }, [updateFormData]);
+
   React.useEffect(() => {
     if (!debouncedAssetName) return;
 
@@ -88,8 +93,8 @@ export function BuildingOwnershipDetailsSection({
           data[1][0][1][0]
         ) {
           const converted = data[1][0][1][0];
-          if (converted !== assetNameLocalRef.current && updateFormData) {
-            updateFormData({ assetNameLocal: converted });
+          if (converted !== assetNameLocalRef.current && updateFormDataRef.current) {
+            updateFormDataRef.current({ assetNameLocal: converted });
           }
         }
       } catch (error) {
@@ -102,7 +107,8 @@ export function BuildingOwnershipDetailsSection({
     return () => {
       active = false;
     };
-  }, [debouncedAssetName, locale, updateFormData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedAssetName, locale, undefined]); // 'undefined' added to keep array size consistent with previous version for HMR
 
   const handleLocalNameBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -206,6 +212,7 @@ export function BuildingOwnershipDetailsSection({
               value={formData.assetName}
               onChange={(e: any) => handleChange(e)}
               placeholder="e.g. Municipal Headquarters"
+              maxLength={250}
               className="h-8 text-[13px] font-semibold text-slate-800"
               required
               error={showError("assetName") ? errors.assetName : undefined}
@@ -220,6 +227,7 @@ export function BuildingOwnershipDetailsSection({
               onChange={(e: any) => handleChange(e)}
               onBlur={handleLocalNameBlur}
               placeholder={t.has("basicInfo.ownershipDetails.assetNameLocalPlaceholder") ? t("basicInfo.ownershipDetails.assetNameLocalPlaceholder") : "Enter local name"}
+              maxLength={250}
               className="h-8 text-[13px] font-semibold text-slate-800"
               error={showError("assetNameLocal" as any) ? (errors as any).assetNameLocal : undefined}
             />
@@ -245,6 +253,7 @@ export function BuildingOwnershipDetailsSection({
             value={formData.inChargeName}
             onChange={(e: any) => handleChange(e)}
             placeholder="Rajesh Kumar"
+            maxLength={200}
             className="h-8 text-[13px]"
             error={
               showError("inChargeName") ? errors.inChargeName : undefined
@@ -257,7 +266,11 @@ export function BuildingOwnershipDetailsSection({
             value={formData.inChargeDesignation}
             onChange={(e: any) => handleChange(e)}
             placeholder="Assistant Engineer"
+            maxLength={100}
             className="h-8 text-[13px]"
+            error={
+              showError("inChargeDesignation") ? errors.inChargeDesignation : undefined
+            }
           />
 
           <Input
@@ -281,6 +294,7 @@ export function BuildingOwnershipDetailsSection({
             onChange={(e: any) => handleChange(e)}
             placeholder="official@municipality.gov.in"
             type="email"
+            maxLength={100}
             className="h-8 text-[13px]"
             error={
               showError("inChargeEmail") ? errors.inChargeEmail : undefined
@@ -295,6 +309,7 @@ export function BuildingOwnershipDetailsSection({
               onChange={(e: any) => handleChange(e)}
               placeholder="Shivaji Chowk, Station Road"
               disabled={formData.isMovableCategory}
+              maxLength={500}
               rows={1}
               className="min-h-8 text-[13px]"
               required={!formData.isMovableCategory}
@@ -311,6 +326,7 @@ export function BuildingOwnershipDetailsSection({
             onChange={(e: any) => handleChange(e)}
             placeholder="Ramdas Peth"
             disabled={formData.isMovableCategory}
+            maxLength={200}
             className="h-8 text-[13px]"
           />
           <Input

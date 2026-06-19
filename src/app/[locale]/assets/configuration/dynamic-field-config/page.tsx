@@ -1,11 +1,13 @@
+import React, { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 import { Definitions } from '@/components/modules/assets/configuration/definitions/Definitions';
 import type { Metadata } from 'next';
 import type { AssetCategory, AssetType, AssetFieldDefinition } from '@/types/asset-type/definitions.types';
 import type { AssetDocumentDefinitionDto } from '@/lib/api/asset/asset-document.service';
 import { getDocumentDefinitions } from '@/lib/api/asset/asset-document.server.service';
-import { 
-  getAssetCategoriesAction, 
-  getAssetTypesAction, 
+import {
+  getAssetCategoriesAction,
+  getAssetTypesAction,
   getFieldDefinitionsAction
 } from './action';
 
@@ -31,7 +33,7 @@ function sanitizeNumber(val: unknown, fallback = null): number | null {
 
 export default async function DefinitionsPage({ searchParams }: PageProps): Promise<React.ReactElement> {
   const params = await searchParams;
-  
+
   const categoryId = sanitizeNumber(params.categoryId);
   const typeId = sanitizeNumber(params.typeId);
   const viewAll = params.viewAll === 'true';
@@ -131,6 +133,8 @@ export default async function DefinitionsPage({ searchParams }: PageProps): Prom
   };
 
   return (
-    <Definitions initialData={initialData} />
+    <Suspense fallback={<div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" /></div>}>
+      <Definitions initialData={initialData} />
+    </Suspense>
   );
 }

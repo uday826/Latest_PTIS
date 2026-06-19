@@ -143,7 +143,11 @@ export function InventoryEditDrawer({
               label={editLabels.specifications}
               placeholder={editSpecsPlaceholder}
               value={editForm.specifications}
-              onChange={(event) => updateEditForm("specifications", event.target.value)}
+              onChange={(event) => {
+                let val = event.target.value.replace(/[^a-zA-Z0-9\s.,\-_/()]/g, "");
+                updateEditForm("specifications", val);
+              }}
+              maxLength={150}
             />
           )}
 
@@ -174,8 +178,13 @@ export function InventoryEditDrawer({
             label={t("inventory.columns.quantity")}
             type="number"
             min={1}
+            max={100}
             value={editForm.quantity}
-            onChange={(event) => updateEditForm("quantity", event.target.value)}
+            onChange={(event) => {
+              let val = event.target.value;
+              if (val && Number(val) > 100) val = "100";
+              updateEditForm("quantity", val);
+            }}
             onKeyDown={(e) => {
               if (["e", "E", "+", "-", "."].includes(e.key)) {
                 e.preventDefault();
@@ -187,8 +196,13 @@ export function InventoryEditDrawer({
             label={t("inventory.columns.unitValue")}
             type="number"
             min={0}
+            max={999999999999}
             value={editForm.unitValue}
-            onChange={(event) => updateEditForm("unitValue", event.target.value)}
+            onChange={(event) => {
+              let val = String(event.target.value);
+              if (val && val.length > 12) val = val.slice(0, 12);
+              updateEditForm("unitValue", val);
+            }}
             onKeyDown={(e) => {
               if (["e", "E", "+", "-"].includes(e.key)) {
                 e.preventDefault();

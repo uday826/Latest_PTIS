@@ -233,7 +233,14 @@ export function BuildingValuationSummary({
   const totalBuiltUpAreaFromFloors = floors.reduce((sum, floor) => sum + (parseFloat(String(floor.builtUpAreaSqFt || "0")) || 0), 0);
   const totalBuiltUpArea = builtUpFromAPI > 0 ? builtUpFromAPI : totalBuiltUpAreaFromFloors;
 
-  const fmt = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmt = (value: number): string => {
+    if (value >= 10000000) {
+      return `${(value / 10000000).toFixed(2).replace(/\.?0+$/, "")}Cr`;
+    } else if (value >= 100000) {
+      return `${(value / 100000).toFixed(2).replace(/\.?0+$/, "")}L`;
+    }
+    return value.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   const categoryStyles: Record<string, { icon: string; color: string; bg: string; textColor: string; highlightBg: string; highlightBorder: string; highlightText: string }> = {
     "furniture": { icon: "🪑", color: "#C4B5FD", bg: "#EDE9FE", textColor: "#6B21A8", highlightBg: "#F3E8FF", highlightBorder: "#C4B5FD", highlightText: "#6B21A8" },
@@ -471,7 +478,7 @@ export function BuildingValuationSummary({
                         textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)'
                       }}
                     >
-                      ₹ {card.value.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      ₹ {fmt(card.value)}
                     </p>
                    
                     <div className="flex items-center justify-between pt-1 border-t border-blue-100">

@@ -35,7 +35,10 @@ export function BuildingPropertyDetailsSection({
   useTypes = [],
   subUseTypes = [],
   isLoadingSubTypes = false,
-}: BuildingPropertyDetailsSectionProps): React.JSX.Element {
+  isLoadingWards = false,
+  onWardFocus,
+  onSubzoneFocus,
+}: BuildingPropertyDetailsSectionProps & { isLoadingWards?: boolean; onWardFocus?: () => void; onSubzoneFocus?: () => void }): React.JSX.Element {
   const t = useTranslations("addAssetForm");
 
   const isLand = formData.valuationType
@@ -82,30 +85,7 @@ export function BuildingPropertyDetailsSection({
           </div>
         </div>
 
-        <SearchSelect
-          label={t("basicInfo.propertyDetails.mouja")}
-          name="mouja"
-          value={formData.mouja}
-          onChange={(name, value) => {
-            handleChange({ target: { name, value } } as any);
-            if (onMoujaChange) {
-              onMoujaChange(value);
-            }
-          }}
-          disabled={formData.isMovableCategory}
-          options={
-            moujas && moujas.length > 0
-              ? moujas.map((m) => {
-                const label = m.moujaName || `Mouja ${m.id}`;
-                return { label, value: String(m.id) };
-              })
-              : []
-          }
-          placeholder={t("basicInfo.propertyDetails.selectMouja")}
-          className="font-semibold text-sm"
-          required={!formData.isMovableCategory}
-          error={showError("mouja" as any) ? (errors as any).mouja : undefined}
-        />
+
 
         <SearchSelect
           label={t("basicInfo.propertyDetails.zone")}
@@ -142,12 +122,10 @@ export function BuildingPropertyDetailsSection({
           name="ward"
           value={formData.ward}
           onChange={(name, value) => handleChange({ target: { name, value } } as any)}
-          disabled={formData.isMovableCategory || !formData.zone}
+          disabled={formData.isMovableCategory || !formData.zone || isLoadingWards}
           options={
             wards && wards.length > 0
-              ? wards
-                .filter((w) => !formData.zone || w.zoneId == null || String(w.zoneId) === String(formData.zone))
-                .map((w) => {
+              ? wards.map((w) => {
                   const label =
                     w.wardName ||
                     w.WardName ||
@@ -155,17 +133,38 @@ export function BuildingPropertyDetailsSection({
                     `Ward ${w.id || ""}`;
                   return { label, value: String(w.id) };
                 })
-              : Array.from({ length: 20 }, (_, i) => ({
-                label: `Ward ${i + 1}`,
-                value: String(i + 1),
-              }))
+              : []
           }
           placeholder={t("basicInfo.propertyDetails.selectWard")}
           className="font-semibold text-sm"
           required={!formData.isMovableCategory}
           error={showError("ward") ? errors.ward : undefined}
+          onInputFocus={onWardFocus}
         />
-
+        <SearchSelect
+          label={t("basicInfo.propertyDetails.mouja")}
+          name="mouja"
+          value={formData.mouja}
+          onChange={(name, value) => {
+            handleChange({ target: { name, value } } as any);
+            if (onMoujaChange) {
+              onMoujaChange(value);
+            }
+          }}
+          disabled={formData.isMovableCategory}
+          options={
+            moujas && moujas.length > 0
+              ? moujas.map((m) => {
+                const label = m.moujaName || `Mouja ${m.id}`;
+                return { label, value: String(m.id) };
+              })
+              : []
+          }
+          placeholder={t("basicInfo.propertyDetails.selectMouja")}
+          className="font-semibold text-sm"
+          required={!formData.isMovableCategory}
+          error={showError("mouja" as any) ? (errors as any).mouja : undefined}
+        />
         <SearchSelect
           label={t("basicInfo.propertyDetails.subzone")}
           name="subzone"
@@ -190,6 +189,7 @@ export function BuildingPropertyDetailsSection({
           className="font-semibold text-sm"
           required={!formData.isMovableCategory}
           error={showError("subzone" as any) ? (errors as any).subzone : undefined}
+          onInputFocus={onSubzoneFocus}
         />
 
         <Input
@@ -199,6 +199,7 @@ export function BuildingPropertyDetailsSection({
           onChange={handleChange}
           placeholder="e.g. CSN-123"
           disabled={formData.isMovableCategory}
+          maxLength={30}
           className="h-8 text-[13px]"
           error={showError("surveyNumber") ? errors.surveyNumber : undefined}
         />
@@ -208,6 +209,7 @@ export function BuildingPropertyDetailsSection({
           value={formData.propertyNumber}
           onChange={handleChange}
           placeholder="e.g. MC/WD15/2024/001"
+          maxLength={30}
           className="h-8 text-[13px]"
           error={showError("propertyNumber") ? errors.propertyNumber : undefined}
         />
@@ -219,6 +221,7 @@ export function BuildingPropertyDetailsSection({
           onChange={handleChange}
           placeholder="e.g. 0"
           disabled={formData.isMovableCategory}
+          maxLength={30}
           className="h-8 text-[13px]"
           error={showError("partitionNo" as any) ? (errors as any).partitionNo : undefined}
         />
@@ -230,6 +233,7 @@ export function BuildingPropertyDetailsSection({
           onChange={handleChange}
           placeholder="e.g. UPIC-123"
           disabled={formData.isMovableCategory}
+          maxLength={30}
           className="h-8 text-[13px]"
           error={showError("upicId" as any) ? (errors as any).upicId : undefined}
         />
@@ -241,6 +245,7 @@ export function BuildingPropertyDetailsSection({
           onChange={handleChange}
           placeholder="e.g. 15"
           disabled={formData.isMovableCategory}
+          maxLength={30}
           className="h-8 text-[13px]"
           error={showError("plotNumber" as any) ? (errors as any).plotNumber : undefined}
         />
@@ -256,6 +261,7 @@ export function BuildingPropertyDetailsSection({
                 placeholder="0.00"
                 type="text"
                 className="h-8 text-[13px]"
+                maxLength={10}
                 required
                 error={showError("length" as any) ? (errors as any).length : undefined}
               />
@@ -267,6 +273,7 @@ export function BuildingPropertyDetailsSection({
                 placeholder="0.00"
                 type="text"
                 className="h-8 text-[13px]"
+                maxLength={10}
                 required
                 error={showError("width" as any) ? (errors as any).width : undefined}
               />
@@ -293,6 +300,7 @@ export function BuildingPropertyDetailsSection({
                     placeholder="0.00"
                     type="text"
                     className="h-8 text-[13px]"
+                    maxLength={10}
                     required
                     error={showError("offset" as any) ? (errors as any).offset : undefined}
                   />

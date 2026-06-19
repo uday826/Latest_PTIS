@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { InventoryCategoryGroup } from "./FurnitureFixtureTypes";
-import { inventoryMeta, formatCurrency } from "./FurnitureFixtureConstants";
+import { inventoryMeta, formatCurrency, formatCurrencyCompact } from "./FurnitureFixtureConstants";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -18,6 +18,8 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
   const toggleCat = (t: string) => setExpandedCats(p => ({ ...p, [t]: !p[t] }));
 
   const grandDep = grandPurchase - grandCV;
+  const grandUnits = groups.reduce((s, g) => s + g.totalUnits, 0);
+
   if (!groups.length) return null;
 
   return (
@@ -60,16 +62,18 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
                     <td className="px-3 py-1.5 text-center font-semibold text-slate-700">
                       {group.totalUnits.toLocaleString("en-IN")}
                     </td>
-                    <td className="px-3 py-1.5 text-center text-slate-400">—</td>
                     <td className="px-3 py-1.5 text-center font-semibold text-slate-700">
-                      {formatCurrency(group.totalPurchaseValue)}
+                      {formatCurrencyCompact(group.totalUnits > 0 ? group.totalPurchaseValue / group.totalUnits : 0)}
+                    </td>
+                    <td className="px-3 py-1.5 text-center font-semibold text-slate-700">
+                      {formatCurrencyCompact(group.totalPurchaseValue)}
                     </td>
                     <td className="px-3 py-1.5 text-center text-red-600 font-medium">
-                      −{formatCurrency(group.totalDepreciation)}
+                      −{formatCurrencyCompact(group.totalDepreciation)}
                       <span className="text-[9px] text-red-400 ml-1">({group.depreciationPercent.toFixed(1)}%)</span>
                     </td>
                     <td className="px-3 py-1.5 text-center font-bold text-blue-700 text-xs">
-                      {formatCurrency(group.totalCapitalValue)}
+                      {formatCurrencyCompact(group.totalCapitalValue)}
                     </td>
                   </tr>
 
@@ -102,18 +106,18 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
                             {batch.quantity.toLocaleString("en-IN")}
                           </td>
                           <td className="px-3 py-1 text-center text-slate-600">
-                            {formatCurrency(batch.unitValue)}
+                            {formatCurrencyCompact(batch.unitValue)}
                           </td>
                           <td className="px-3 py-1 text-center text-slate-600">
-                            {formatCurrency(batch.total)}
+                            {formatCurrencyCompact(batch.total)}
                           </td>
                           <td className="px-3 py-1 text-center text-red-500">
-                            −{formatCurrency(dep)}
+                            −{formatCurrencyCompact(dep)}
                           </td>
                           <td className="px-3 py-1 text-center font-semibold text-emerald-700">
-                            {formatCurrency(totalCV)}
+                            {formatCurrencyCompact(totalCV)}
                             <div className="text-[9px] font-normal text-slate-400">
-                              {formatCurrency(batch.unitCV ?? batch.unitValue)} × {batch.quantity}
+                              {formatCurrencyCompact(batch.unitCV ?? batch.unitValue)} × {batch.quantity}
                             </div>
                           </td>
                         </tr>
@@ -129,17 +133,19 @@ export function InventoryCVGroupTable({ groups, grandPurchase, grandCV }: Props)
             <tr className="border-t-2 border-[#1E40AF] bg-[#0F172A] text-white">
               <td className="px-3 py-1.5 font-bold text-[11px]">{t("inventory.columns.grandTotal")}</td>
               <td className="px-3 py-1.5 text-center font-semibold text-slate-300">
-                {groups.reduce((s, g) => s + g.totalUnits, 0).toLocaleString("en-IN")}
+                {grandUnits.toLocaleString("en-IN")}
               </td>
-              <td className="px-3 py-1.5 text-center text-slate-400">—</td>
               <td className="px-3 py-1.5 text-center font-semibold text-slate-300">
-                {formatCurrency(grandPurchase)}
+                {formatCurrencyCompact(grandUnits > 0 ? grandPurchase / grandUnits : 0)}
+              </td>
+              <td className="px-3 py-1.5 text-center font-semibold text-slate-300">
+                {formatCurrencyCompact(grandPurchase)}
               </td>
               <td className="px-3 py-1.5 text-center font-semibold text-red-300">
-                −{formatCurrency(grandDep)}
+                −{formatCurrencyCompact(grandDep)}
               </td>
               <td className="px-3 py-1.5 text-center font-bold text-xs text-blue-300">
-                {formatCurrency(grandCV)}
+                {formatCurrencyCompact(grandCV)}
               </td>
             </tr>
           </tfoot>

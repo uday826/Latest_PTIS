@@ -125,7 +125,11 @@ export function InventoryFormSection({
           label={addLabels.specifications}
           placeholder={addSpecsPlaceholder}
           value={form.specifications}
-          onChange={(event: any) => updateForm("specifications", event.target.value)}
+          onChange={(event: any) => {
+            let val = event.target.value.replace(/[^a-zA-Z0-9\s.,\-_/()]/g, "");
+            updateForm("specifications", val);
+          }}
+          maxLength={150}
           fullWidth={true}
         />
 
@@ -160,8 +164,13 @@ export function InventoryFormSection({
           label={t("inventory.columns.quantity")}
           type="number"
           min={1}
+          max={100}
           value={form.quantity}
-          onChange={(event: any) => updateForm("quantity", event.target.value)}
+          onChange={(event: any) => {
+            let val = event.target.value;
+            if (val && Number(val) > 100) val = "100";
+            updateForm("quantity", val);
+          }}
           onKeyDown={(e: any) => {
             if (["e", "E", "+", "-", "."].includes(e.key)) {
               e.preventDefault();
@@ -175,8 +184,13 @@ export function InventoryFormSection({
           label={t("inventory.columns.unitValue")}
           type="number"
           min={0}
+          max={999999999999}
           value={form.unitValue}
-          onChange={(event: any) => updateForm("unitValue", event.target.value)}
+          onChange={(event: any) => {
+            let val = String(event.target.value);
+            if (val && val.length > 12) val = val.slice(0, 12);
+            updateForm("unitValue", val);
+          }}
           onKeyDown={(e: any) => {
             if (["e", "E", "+", "-"].includes(e.key)) {
               e.preventDefault();

@@ -128,6 +128,63 @@ export function validateBuildingBasicInfo(
     }
   }
 
+  // Length constraints matching backend validation
+  if (formData.assetName && String(formData.assetName).length > 250) {
+    (errors as any).assetName = "Asset Name cannot exceed 250 characters.";
+  }
+  if ((formData as any).assetNameLocal && String((formData as any).assetNameLocal).length > 250) {
+    (errors as any).assetNameLocal = "Local Name cannot exceed 250 characters.";
+  }
+  if (formData.inChargeName && String(formData.inChargeName).length > 200) {
+    (errors as any).inChargeName = "In Charge Name cannot exceed 200 characters.";
+  }
+  if (formData.inChargeDesignation && String(formData.inChargeDesignation).length > 100) {
+    (errors as any).inChargeDesignation = "Designation cannot exceed 100 characters.";
+  }
+  if (formData.inChargeEmail && String(formData.inChargeEmail).length > 100) {
+    (errors as any).inChargeEmail = "Email cannot exceed 100 characters.";
+  }
+  if (formData.fullAddress && String(formData.fullAddress).length > 500) {
+    (errors as any).fullAddress = "Address cannot exceed 500 characters.";
+  }
+  if (formData.locality && String(formData.locality).length > 200) {
+    (errors as any).locality = "Landmark cannot exceed 200 characters.";
+  }
+  if (formData.propertyNumber && String(formData.propertyNumber).length > 100) {
+    (errors as any).propertyNumber = "Property No cannot exceed 100 characters.";
+  }
+  if (formData.surveyNumber && String(formData.surveyNumber).length > 30) {
+    (errors as any).surveyNumber = "CSN No cannot exceed 30 characters.";
+  }
+  if ((formData as any).partitionNo && String((formData as any).partitionNo).length > 30) {
+    (errors as any).partitionNo = "Partition No cannot exceed 30 characters.";
+  }
+  if ((formData as any).upicId && String((formData as any).upicId).length > 30) {
+    (errors as any).upicId = "UPIC ID cannot exceed 30 characters.";
+  }
+  if ((formData as any).plotNumber && String((formData as any).plotNumber).length > 30) {
+    (errors as any).plotNumber = "Plot Number cannot exceed 30 characters.";
+  }
+  if ((formData as any).length && String((formData as any).length).length > 10) {
+    (errors as any).length = "Length value is too large.";
+  }
+  if ((formData as any).width && String((formData as any).width).length > 10) {
+    (errors as any).width = "Width value is too large.";
+  }
+  if ((formData as any).offset && String((formData as any).offset).length > 10) {
+    (errors as any).offset = "Offset value is too large.";
+  }
+  if (formData.inChargeMobile && String(formData.inChargeMobile).trim() !== "") {
+    if (!/^[6-9]\d{9}$/.test(String(formData.inChargeMobile).trim())) {
+      (errors as any).inChargeMobile = "Contact Number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9.";
+    }
+  }
+  if (formData.pinCode && String(formData.pinCode).trim() !== "") {
+    if (!/^\d{6}$/.test(String(formData.pinCode).trim())) {
+      (errors as any).pinCode = "Pin Code must be exactly 6 digits.";
+    }
+  }
+
   return errors;
 }
 

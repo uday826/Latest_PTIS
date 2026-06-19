@@ -3,7 +3,7 @@
 import React, { useEffect, useCallback, useRef } from "react";
 import { Badge, Card, CardContent, DeleteButton, EditButton, MasterTable, SearchSelect } from "@/components/common";
 import { Package2, Image as ImageIcon, FileText, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import { inventoryMeta, PAGE_SIZE, formatCurrency } from "./FurnitureFixtureConstants";
+import { inventoryMeta, PAGE_SIZE, formatCurrency, formatCurrencyCompact } from "./FurnitureFixtureConstants";
 import { InventoryFormSection } from "./InventoryFormSection";
 import { InventoryEditDrawer } from "./InventoryEditDrawer";
 import { InvoiceDrawer } from "./InvoiceDrawer";
@@ -26,12 +26,7 @@ interface Props {
   initialBatches?: InventoryBatchListResponse | null;
 }
 
-const formatCurrencyCompact = (value: number): string => {
-  if (value >= 1000000) {
-    return `₹${(value / 1000000).toFixed(2).replace(/\.?0+$/, "")}M`;
-  }
-  return formatCurrency(value);
-};
+
 
 interface RowDocumentThumbnailProps {
   row: any;
@@ -398,14 +393,14 @@ export default function FurnitureFixtureClient({ parentAssetId, categories = [],
                 },
                 { key: "itemName", label: t("inventory.columns.itemName") },
                 { key: "modelName", label: t("inventory.columns.modelName"), render: (val) => <span className="font-medium text-blue-700">{String(val ?? "-")}</span> },
-                { key: "specifications", label: t("inventory.columns.specs") },
+                { key: "specifications", label: t("inventory.columns.specs"), render: (val) => <div className="max-w-[200px] truncate" title={String(val ?? "-")}>{String(val ?? "-")}</div> },
                 { key: "purchaseDate", label: t("inventory.columns.purchaseDate"), align: "center" },
                 { key: "owningDepartment", label: t("inventory.columns.owningDept"), render: (val) => <span className="text-slate-600">{String(val ?? "-")}</span> },
                 { key: "condition", label: t("inventory.columns.condition"), align: "center", render: (val) => <Badge variant="default" size="sm" className="border-sky-200 bg-sky-50 text-sky-700">{String(val ?? "-")}</Badge> },
                 { key: "quantity", label: t("inventory.columns.quantity"), align: "center" },
-                { key: "unitValue", label: t("inventory.columns.unitValue"), align: "center", render: (val) => formatCurrency(Number(val ?? 0)) },
-                { key: "total", label: t("inventory.columns.total"), align: "center", render: (val) => <span className="font-semibold text-blue-700">{formatCurrency(Number(val ?? 0))}</span> },
-                { key: "totalCV", label: t("inventory.columns.cv"), align: "center", render: (val) => <span className="font-bold text-emerald-600">{formatCurrency(Number(val ?? 0))}</span> },
+                { key: "unitValue", label: t("inventory.columns.unitValue"), align: "center", render: (val) => formatCurrencyCompact(Number(val ?? 0)) },
+                { key: "total", label: t("inventory.columns.total"), align: "center", render: (val) => <span className="font-semibold text-blue-700">{formatCurrencyCompact(Number(val ?? 0))}</span> },
+                { key: "totalCV", label: t("inventory.columns.cv"), align: "center", render: (val) => <span className="font-bold text-emerald-600">{formatCurrencyCompact(Number(val ?? 0))}</span> },
                 {
                   key: "photoUrl", label: t("inventory.columns.photo"), align: "center", render: (_, row) => (
                     <RowDocumentThumbnail

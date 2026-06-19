@@ -317,3 +317,12 @@ export function formatCurrency(value: number): string {
     .format(value)
     .replace("INR", "₹");
 }
+
+export function formatCurrencyCompact(value: number): string {
+  if (value >= 10000000) {
+    return `₹${(value / 10000000).toFixed(2).replace(/\.?0+$/, "")}Cr`;
+  } else if (value >= 100000) {
+    return `₹${(value / 100000).toFixed(2).replace(/\.?0+$/, "")}L`;
+  }
+  return formatCurrency(value);
+}

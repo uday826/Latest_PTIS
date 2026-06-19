@@ -3,7 +3,7 @@
 import { activateAssetAction, fetchDocumentDefinitionsAction, submitAssetForm, uploadBulkDocumentsAction, uploadDocumentAction, getFallbackModuleIdAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
 import { validateBuildingBasicInfo } from "@/hooks/asset-hooks/building-basic-info/useBuildingBasicInfoFormValidation";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useAssetForm } from "./AssetFormContext";
 import { usePermissionsContext } from "@/lib/providers/PermissionsProvider";
@@ -70,12 +70,19 @@ export function AssetFormFooter() {
   const { screens } = usePermissionsContext();
 
   const [fallbackModuleId, setFallbackModuleId] = useState<number>(0);
+  const hasFetchedRef = React.useRef(false);
 
   useEffect(() => {
+    if (hasFetchedRef.current || fallbackModuleId > 0) return;
+    hasFetchedRef.current = true;
+    
     getFallbackModuleIdAction(pathname).then((id) => {
       if (id > 0) setFallbackModuleId(id);
-    }).catch(console.error);
-  }, [pathname]);
+    }).catch((e) => {
+      console.error(e);
+      hasFetchedRef.current = false; // allow retry on error
+    });
+  }, [pathname, fallbackModuleId]);
 
   // Dynamically derive module ID from user screen permissions
   const currentModuleId = useMemo(() => {

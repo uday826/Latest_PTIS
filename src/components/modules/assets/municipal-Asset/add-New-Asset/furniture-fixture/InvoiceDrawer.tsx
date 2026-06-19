@@ -119,6 +119,7 @@ export function InvoiceDrawer({
                   placeholder="e.g. INV-2024-001"
                   value={invoiceForm.invoiceNumber}
                   onChange={(event) => updateInvoiceForm("invoiceNumber", event.target.value)}
+                  maxLength={50}
                 />
 
                 <Input

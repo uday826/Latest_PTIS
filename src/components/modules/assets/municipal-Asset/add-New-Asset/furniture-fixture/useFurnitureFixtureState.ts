@@ -80,12 +80,19 @@ export function useFurnitureFixtureState(
   const pathname = usePathname();
 
   const [fallbackModuleId, setFallbackModuleId] = useState<number>(0);
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
+    if (hasFetchedRef.current || fallbackModuleId > 0) return;
+    hasFetchedRef.current = true;
+
     getFallbackModuleIdAction(pathname).then((id) => {
       if (id > 0) setFallbackModuleId(id);
-    }).catch(console.error);
-  }, [pathname]);
+    }).catch((e) => {
+      console.error(e);
+      hasFetchedRef.current = false;
+    });
+  }, [pathname, fallbackModuleId]);
 
   // Dynamically derive module ID from user screen permissions
   const currentModuleId = useMemo(() => {
@@ -468,6 +475,19 @@ export function useFurnitureFixtureState(
       return setFormError(`Please fill in the required fields: ${missing.join(", ")}.`);
     }
 
+    if (form.specifications && form.specifications.length > 150) {
+      return setFormError("Specifications cannot exceed 150 characters.");
+    }
+    if (draftInvoice?.invoiceNumber && draftInvoice.invoiceNumber.length > 50) {
+      return setFormError("Invoice Number cannot exceed 50 characters.");
+    }
+    if (Number(form.quantity) > 100) {
+      return setFormError("Quantity cannot exceed 100 units per batch.");
+    }
+    if (String(form.unitValue).length > 12) {
+      return setFormError("Unit Value is too large.");
+    }
+
     if (!parentAssetId) {
       return setFormError("Parent asset ID is missing. Please save basic info first.");
     }
@@ -588,6 +608,19 @@ export function useFurnitureFixtureState(
     if (isSaving) return;
     if (!editForm.type || !editForm.itemName || !editForm.modelName || !editForm.purchaseDate || !editForm.condition || Number(editForm.quantity) <= 0 || Number(editForm.unitValue) <= 0) {
       return setFormError("Please fill in all required fields and positive values.");
+    }
+
+    if (editForm.specifications && editForm.specifications.length > 500) {
+      return setFormError("Specifications cannot exceed 500 characters.");
+    }
+    if (editDraftInvoice?.invoiceNumber && editDraftInvoice.invoiceNumber.length > 100) {
+      return setFormError("Invoice Number cannot exceed 100 characters.");
+    }
+    if (Number(editForm.quantity) > 1000) {
+      return setFormError("Quantity cannot exceed 1000 units per batch.");
+    }
+    if (String(editForm.unitValue).length > 12) {
+      return setFormError("Unit Value is too large.");
     }
 
     // Find the existing row to check if it's registered
