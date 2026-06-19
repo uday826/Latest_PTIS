@@ -3,7 +3,7 @@
 import { Badge, Button, Card, CardContent, Drawer, MasterTable } from '@/components/common';
 import type { AssetChildAssetItem, AssetDetailRecord } from '@/types/municipal-asset/detail-tabs.types';
 import { AlertCircle, Building2, Eye } from 'lucide-react';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import {
@@ -41,6 +41,7 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
   const [pageNumber, setPageNumber] = useState(1);
   const [selectedUnit, setSelectedUnit] = useState<SubUnitRow | null>(null);
   const [mounted, setMounted] = useState(false);
+  const drawerRootRef = useRef<HTMLDivElement>(null);
   useEffect(() => { setMounted(true); }, []);
   const pageSize = 10;
   const totalCount = children.length;
@@ -164,7 +165,7 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
                   getRowKey={(row, index) => String(row.id ?? index)}
                   paginationConfig={{ enabled: false }}
                   emptyText={t('subUnitsTab.noRenterInfo')}
-                  tableClassName="min-w-[800px] table-fixed"
+                  tableClassName="table-fixed w-full min-w-[830px]"
                   containerClassName="border-0 shadow-none"
                 />
               </Card>
@@ -180,7 +181,7 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
                   getRowKey={(row, index) => String(row.id ?? index)}
                   paginationConfig={{ enabled: false }}
                   emptyText={t('subUnitsTab.noRoomInfo')}
-                  tableClassName="min-w-[1000px] table-fixed"
+                  tableClassName="table-fixed w-full min-w-[940px]"
                   containerClassName="border-0 shadow-none"
                 />
               </Card>
@@ -196,7 +197,7 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
                   getRowKey={(row, index) => String(row.id ?? index)}
                   paginationConfig={{ enabled: false }}
                   emptyText={t('subUnitsTab.noFloorInfo')}
-                  tableClassName="min-w-[1100px] table-fixed"
+                  tableClassName="table-fixed w-full min-w-[920px]"
                   containerClassName="border-0 shadow-none"
                 />
               </Card>
@@ -205,8 +206,9 @@ export function SubUnitsTab({ asset }: { asset: AssetDetailRecord }) {
             </div>
           )}
         </Drawer>,
-        document.body
+        drawerRootRef.current!
       )}
+      <div ref={drawerRootRef} className="max-xl:[&_.drawer-instance]:!w-[96vw] max-xl:[&_.drawer-instance]:!max-w-[96vw]" />
     </div>
   );
 }

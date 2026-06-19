@@ -49,8 +49,8 @@ export function AssetRegisterTable({
       paginationConfig={{ enabled: true, showPageSizeSelector: true }}
       headerExtra={controls}
       maxBodyHeightClassName="max-h-[calc(100vh-420px)] min-h-[300px]"
-      containerClassName="rounded-lg"
-      tableClassName="min-w-full table-fixed"
+      containerClassName="rounded-lg w-full overflow-x-auto"
+      tableClassName="table-fixed w-max min-w-full"
       rowClassName={(_, index) => (index % 2 === 0 ? 'bg-white' : 'bg-slate-50')}
       getRowKey={(row, index) => row.id ?? `${row.assetCode}-${index}`}
     />

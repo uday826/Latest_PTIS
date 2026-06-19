@@ -16,7 +16,7 @@ import {
   Search,
 } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { DocumentsTab } from './detail-tabs/DocumentsTab';
 import { FloorDetailsTab } from './detail-tabs/FloorDetailsTab';
@@ -52,20 +52,20 @@ export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: 
     () => (tabs.length > 0 ? tabs : [{ key: 'overview' as const, label: 'Overview' }]),
     [tabs]
   );
-  const [activeTab, setActiveTab] = useState<AssetDetailTabKey>(() => {
-    const initialKey = visibleTabs.find((tab) => tab.key === initialTab)?.key;
-    return initialKey ?? visibleTabs[0].key;
-  });
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const resolvedActiveTab = visibleTabs.some((tab) => tab.key === activeTab) ? activeTab : visibleTabs[0].key;
+  const activeTab = (initialTab && visibleTabs.some((tab) => tab.key === initialTab)
+    ? initialTab
+    : visibleTabs[0].key) as AssetDetailTabKey;
 
   const handleTabChange = (value: AssetDetailTabKey) => {
-    setActiveTab(value);
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', value);
-    router.replace(`${pathname}?${params.toString()}`);
+    startTransition(() => {
+      router.replace(`${pathname}?${params.toString()}`);
+    });
   };
 
   return (
@@ -118,7 +118,7 @@ export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: 
       </div>
 
       <Card variant="bordered" padding="none" className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-t-xl border-b-0">
-        <Tabs value={resolvedActiveTab} onChange={(value) => handleTabChange(value as AssetDetailTabKey)} variant="line" size="md" className="flex min-h-0 flex-1 flex-col">
+        <Tabs value={activeTab} onChange={(value) => handleTabChange(value as AssetDetailTabKey)} variant="line" size="md" className="flex min-h-0 flex-1 flex-col">
           <CardContent className="border-b border-slate-200 px-4 pt-2">
             <Tabs.TabList scrollable className="gap-6">
               {visibleTabs.map((tab) => (

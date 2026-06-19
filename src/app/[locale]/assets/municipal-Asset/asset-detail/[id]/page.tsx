@@ -23,7 +23,7 @@ export default async function AssetDetailPage({
   const initialDocumentId = Array.isArray(resolvedSearchParams.doc)
     ? resolvedSearchParams.doc[0]
     : resolvedSearchParams.doc ?? null;
-  const initialTab = Array.isArray(resolvedSearchParams.tab)
+  const rawTab = Array.isArray(resolvedSearchParams.tab)
     ? resolvedSearchParams.tab[0]
     : resolvedSearchParams.tab ?? null;
   const asset = await fetchAssetMasterById(id);
@@ -44,31 +44,39 @@ export default async function AssetDetailPage({
     }
     : null;
   const detailTabs = assetMeta ? getAssetDetailTabs(assetMeta) : [];
-  const shouldFetchFloors = detailTabs.some((tab) => tab.key === 'floor-details');
-  const shouldFetchChildAssets = detailTabs.some((tab) => tab.key === 'sub-units');
-  const shouldFetchInventory = detailTabs.some((tab) => tab.key === 'furniture-fixtures');
+  
+  // Whitelist and resolve the active tab from detailTabs
+  const activeTab = rawTab && detailTabs.some((tab) => tab.key === rawTab)
+    ? rawTab
+    : (detailTabs[0]?.key ?? 'overview');
 
-  const [documentResult, fieldDefinitionResult, floorResult, inventoryResult] = await Promise.all([
-    fetchAssetDocumentsByAsset(id),
-    fetchAssetFieldDefinitionsByCategoryType(
-      (asset as { assetCategoryId?: number | string; AssetCategoryId?: number | string } | null | undefined)?.assetCategoryId ??
-      (asset as { AssetCategoryId?: number | string } | null | undefined)?.AssetCategoryId,
-      (asset as { assetTypeId?: number | string; AssetTypeId?: number | string } | null | undefined)?.assetTypeId ??
-      (asset as { AssetTypeId?: number | string } | null | undefined)?.AssetTypeId
-    ),
-    shouldFetchFloors ? fetchAssetFloorSummaryByAsset(id) : Promise.resolve({ floorSummary: null, error: null }),
-    shouldFetchInventory ? getInventoryBatchesAction(Number(id)) : Promise.resolve({ success: false, data: null, error: null }),
-  ]);
-
+  let documentResult: { documents: any[]; error: string | null } = { documents: [], error: null };
+  let fieldDefinitionResult: { fieldDefinitions: any[]; error: string | null } = { fieldDefinitions: [], error: null };
+  let floorResult: { floorSummary: any | null; error: string | null } = { floorSummary: null, error: null };
+  let inventoryResult: { success: boolean; data?: any; error?: string } = { success: true, data: undefined, error: undefined };
   let childAssetResult: { childAssets: AssetDetailRecord['childAssets']; totalSubAssets: number; error: string | null } = {
     childAssets: [],
     totalSubAssets: 0,
     error: null,
   };
 
-  if (shouldFetchChildAssets) {
+  if (activeTab === 'overview') {
+    fieldDefinitionResult = await fetchAssetFieldDefinitionsByCategoryType(
+      (asset as { assetCategoryId?: number | string; AssetCategoryId?: number | string } | null | undefined)?.assetCategoryId ??
+      (asset as { AssetCategoryId?: number | string } | null | undefined)?.AssetCategoryId,
+      (asset as { assetTypeId?: number | string; AssetTypeId?: number | string } | null | undefined)?.assetTypeId ??
+      (asset as { AssetTypeId?: number | string } | null | undefined)?.AssetTypeId
+    );
+  } else if (activeTab === 'documents') {
+    documentResult = await fetchAssetDocumentsByAsset(id);
+  } else if (activeTab === 'floor-details') {
+    floorResult = await fetchAssetFloorSummaryByAsset(id);
+  } else if (activeTab === 'sub-units') {
     childAssetResult = await fetchChildAssetsByParent(id);
+  } else if (activeTab === 'furniture-fixtures') {
+    inventoryResult = await getInventoryBatchesAction(Number(id));
   }
+
   const assetDetail = asset
     ? ({
       ...(asset as AssetDetailRecord),
@@ -104,7 +112,7 @@ export default async function AssetDetailPage({
       <AssetDetailView
         asset={assetDetail}
         initialDocumentId={initialDocumentId}
-        initialTab={initialTab}
+        initialTab={activeTab}
         tabs={detailTabs}
       />
     </AssetDetailClientWrapper>
