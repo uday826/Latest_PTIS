@@ -126,12 +126,20 @@ export async function getMakePaymentRecordAction(recordId: string): Promise<Leas
   const demandSummaryRes = await leaseRentPaymentService.getLeaseRentDemandSummary(parsedRecordId);
   if (demandSummaryRes.success && demandSummaryRes.data) {
     const summary = demandSummaryRes.data;
-    baseDetail.currentDemand = summary.totalRent ?? 0;
+    // Split: current finance year vs prior-year arrears ("pending").
+    baseDetail.currentDemand = summary.currentDemand ?? 0;
+    baseDetail.currentPaid = summary.currentPaid ?? 0;
+    baseDetail.currentPenalty = summary.currentPenalty ?? 0;
+    baseDetail.currentGst = summary.currentGst ?? 0;
+    baseDetail.pendingDemand = summary.pendingDemand ?? 0;
+    baseDetail.pendingPaid = summary.pendingPaid ?? 0;
+    baseDetail.pendingPenalty = summary.pendingPenalty ?? 0;
+    baseDetail.pendingGst = summary.pendingGst ?? 0;
     baseDetail.penalty = summary.totalPenalty ?? 0;
     baseDetail.gst = summary.totalGst ?? 0;
     baseDetail.totalPayable = summary.totalDemand ?? 0;
     baseDetail.pendingDue = summary.totalPending ?? 0;
-    baseDetail.financeYear = summary.financeYear ?? currentYear;
+    baseDetail.financeYear = summary.currentFinanceYear ?? summary.financeYear ?? currentYear;
     baseDetail.totalPaid = summary.totalPaid ?? 0;
     baseDetail.totalPending = summary.totalPending ?? 0;
   }
