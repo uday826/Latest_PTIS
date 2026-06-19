@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useMemo } from 'react';
 import {
   ComposedChart,
   Bar,
@@ -10,57 +12,95 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import type { RevenueMonthlyTrend } from '@/types/asset-type/revenue-dashboard.types';
 
-const mockData = [
-  { month: 'Jan', collected: 8.5, pending: 1.2 },
-  { month: 'Feb', collected: 9.0, pending: 0.9 },
-  { month: 'Mar', collected: 9.8, pending: 0.6 },
-  { month: 'Apr', collected: 8.8, pending: 1.1 },
-  { month: 'May', collected: 10.0, pending: 0.8 },
-  { month: 'Jun', collected: 10.5, pending: 0.7 },
-  { month: 'Jul', collected: 9.8, pending: 0.5 },
-  { month: 'Aug', collected: 10.0, pending: 0.7 },
-  { month: 'Sep', collected: 10.5, pending: 0.6 },
-  { month: 'Oct', collected: 10.2, pending: 0.7 },
-  { month: 'Nov', collected: 10.8, pending: 0.6 },
-  { month: 'Dec', collected: 8.8, pending: 2.5 },
-];
+interface ChartPoint {
+  month: string;
+  collected: number;
+  pending: number;
+}
 
-const MonthlyRevenueTrendScreen: React.FC = () => {
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
-          <p className="font-semibold text-gray-800 mb-2">{payload[0].payload.month}</p>
-          <p className="text-blue-600 text-sm">
-            Collected: ₹{payload[0].value}L
-          </p>
-          <p className="text-red-600 text-sm">
-            Pending: ₹{payload[1].value}L
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
+interface MonthlyRevenueTrendProps {
+  data: RevenueMonthlyTrend[];
+  title: string;
+  collectedLabel: string;
+  pendingLabel: string;
+}
+
+/** Rupees -> Lakhs, rounded to one decimal, for the compact axis the design uses. */
+const toLakh = (amount: number): number => Math.round((amount / 100000) * 10) / 10;
+
+/**
+ * Builds a "nice" Y axis (upper bound + evenly spaced ticks) that scales to the data
+ * instead of a fixed ceiling, so real monthly figures are never crushed flat against
+ * an oversized axis. Returns a small default range when there is no data.
+ */
+function buildAxis(maxValue: number): { upper: number; ticks: number[] } {
+  if (maxValue <= 0) return { upper: 1, ticks: [0, 0.25, 0.5, 0.75, 1] };
+
+  const rough = maxValue / 4;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rough)));
+  const normalized = rough / magnitude;
+  const niceFactor = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+  const step = niceFactor * magnitude;
+  const upper = Math.ceil(maxValue / step) * step;
+
+  const ticks: number[] = [];
+  for (let value = 0; value <= upper + step / 2; value += step) {
+    ticks.push(Math.round(value * 100) / 100);
+  }
+  return { upper, ticks };
+}
+
+interface TrendTooltipProps {
+  active?: boolean;
+  payload?: Array<{ value: number; payload: ChartPoint }>;
+  collectedLabel: string;
+  pendingLabel: string;
+}
+
+/** Declared at module scope so it is not re-created on every render of the chart. */
+const TrendTooltip = ({ active, payload, collectedLabel, pendingLabel }: TrendTooltipProps) => {
+  if (!active || !payload || payload.length === 0) return null;
+  return (
+    <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
+      <p className="font-semibold text-gray-800 mb-2">{payload[0].payload.month}</p>
+      <p className="text-blue-600 text-sm">{`${collectedLabel}: ₹${payload[0].value}L`}</p>
+      <p className="text-red-600 text-sm">{`${pendingLabel}: ₹${payload[1]?.value ?? 0}L`}</p>
+    </div>
+  );
+};
+
+const MonthlyRevenueTrendScreen: React.FC<MonthlyRevenueTrendProps> = ({
+  data,
+  title,
+  collectedLabel,
+  pendingLabel,
+}) => {
+  const chartData: ChartPoint[] = useMemo(
+    () =>
+      data.map((point) => ({
+        month: point.monthName,
+        collected: toLakh(point.collected),
+        pending: toLakh(point.pending),
+      })),
+    [data]
+  );
+
+  const maxValue = useMemo(
+    () => chartData.reduce((max, p) => Math.max(max, p.collected, p.pending), 0),
+    [chartData]
+  );
+  const { upper: upperBound, ticks } = useMemo(() => buildAxis(maxValue), [maxValue]);
 
   return (
     <div className="w-full h-full bg-white p-6 rounded-xl shadow-sm">
-      <h2 className="text-xl font-bold text-gray-800 mb-6">
-        Monthly Revenue Collection Trend
-      </h2>
+      <h2 className="text-xl font-bold text-gray-800 mb-6">{title}</h2>
 
       <div className="w-full" style={{ height: '250px' }}>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart
-            data={mockData}
-            margin={{ top: 20, right: 20, bottom: 20, left: 0 }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              vertical={false}
-              stroke="#e5e7eb"
-            />
+          <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
             <XAxis
               dataKey="month"
               axisLine={false}
@@ -73,24 +113,24 @@ const MonthlyRevenueTrendScreen: React.FC = () => {
               tickLine={false}
               tick={{ fill: '#6b7280', fontSize: 12 }}
               tickFormatter={(value) => `₹${value}L`}
-              domain={[0, 12]}
-              ticks={[0, 3, 6, 9, 12]}
+              domain={[0, upperBound]}
+              ticks={ticks}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip
+              content={<TrendTooltip collectedLabel={collectedLabel} pendingLabel={pendingLabel} />}
+            />
             <Legend
               verticalAlign="bottom"
               height={36}
               iconType="circle"
               formatter={(value) => (
-                <span className="text-sm font-medium text-gray-600 ml-2">
-                  {value}
-                </span>
+                <span className="text-sm font-medium text-gray-600 ml-2">{value}</span>
               )}
             />
 
             <Bar
               dataKey="collected"
-              name="Collected"
+              name={collectedLabel}
               fill="url(#colorCollected)"
               radius={[8, 8, 0, 0]}
               barSize={40}
@@ -99,7 +139,7 @@ const MonthlyRevenueTrendScreen: React.FC = () => {
             <Line
               type="monotone"
               dataKey="pending"
-              name="Pending"
+              name={pendingLabel}
               stroke="#dc2626"
               strokeWidth={3}
               dot={{ fill: '#dc2626', r: 5, strokeWidth: 0 }}

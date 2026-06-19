@@ -83,10 +83,15 @@ export async function getLeaseRentDemandsAction(
     const monthIndex = r.demandMonth ?? -1;
     const monthName =
       monthIndex >= 1 && monthIndex <= 12 ? MONTH_NAMES[monthIndex - 1] : String(monthIndex);
+    // Qualify the period with its calendar year so months from different finance years
+    // (e.g. arrears Jan 2026 in FY 2025-26 vs current Apr 2026 in FY 2026-27) stay unique —
+    // the payment screen keys selection by this label.
+    const periodYear = r.demandYear ?? r.financeYear;
+    const monthLabel = periodYear ? `${monthName} ${periodYear}` : monthName;
 
     return {
       id: r.id ?? r.leaseRegistrationId,
-      month: monthName,
+      month: monthLabel,
       financeYear: r.financeYear,
       rent: r.monthlyRentAmount ?? 0,
       penalty: r.penaltyAmount ?? 0,

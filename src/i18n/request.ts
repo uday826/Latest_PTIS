@@ -79,6 +79,7 @@ export default getRequestConfig(async ({ locale }) => {
     gstMasterMessages,
     penaltyRuleMasterMessages,
     roomTypeMasterMessages,
+    revenueDashboardMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -179,6 +180,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/gst-master.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/penalty-rule-master.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/room-type-master.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/revenueDashboard.json`).then((m) => m.default),
   ]);
 
 
@@ -250,6 +252,7 @@ export default getRequestConfig(async ({ locale }) => {
       gstMaster: gstMasterMessages,
       penaltyRuleMaster: penaltyRuleMasterMessages,
       roomTypeMaster: roomTypeMasterMessages,
+      revenueDashboard: revenueDashboardMessages,
     },
   };
 });

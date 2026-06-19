@@ -9,6 +9,8 @@ import {
   Home,
   Car,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import {
   Card,
@@ -17,86 +19,31 @@ import {
   CardTitle,
 } from '@/components/common/Card';
 import { DashboardLayout } from '../DashboardLayout';
-import { DashboardFilters } from '../DashboardFilter';
-import { useState } from 'react';
+import { RevenueFilters } from './RevenueFilters';
 import ZoneWiseDemandCollection from './ZoneWiseDemandCollection';
 import MonthlyRevenueTrendScreen from './MonthlyRevenueTrend';
-import { useRouter } from 'next/navigation';
+import { useRevenueUrlFilters } from '@/hooks/useRevenueUrlFilters';
+import {
+  formatLakh,
+  formatPercent,
+  paletteForIndex,
+} from '@/lib/utils/asset-utils/revenue-format';
+import type {
+  RevenueCategoryDistribution,
+  RevenueDashboardData,
+} from '@/types/asset-type/revenue-dashboard.types';
 
-/* -------------------------------------------------------------------------- */
-/* Mock Data                                                                   */
-/* -------------------------------------------------------------------------- */
-
-const summaryData = {
-  leasedAssets: 29,
-  totalDemand: '₹11.20 L',
-  totalCollection: '₹8.76 L',
-  collectionRate: '78.2%',
+const VALUATION_ICON: Record<string, React.ElementType> = {
+  LAND: MapPin,
+  BUILDING: ShoppingBag,
+  INFRASTRUCTURE: Building2,
+  MOVABLE: Car,
+  GENERIC: Home,
 };
 
-const categoryData = [
-  {
-    id: 'plot-land',
-    title: 'Plot/Land Revenue',
-    icon: MapPin,
-    count: 12,
-    demand: '₹9.3L',
-    collected: '₹7.8L',
-    lease: 7,
-    rent: 5,
-    paid: 9,
-    unpaid: 3,
-    border: 'border-emerald-200',
-    bg: 'bg-emerald-50',
-    iconBg: 'bg-emerald-500',
-  },
-  {
-    id: 'shopping',
-    title: 'Shopping Complex',
-    icon: ShoppingBag,
-    count: 3,
-    demand: '₹0.7L',
-    collected: '₹0.3L',
-    lease: 0,
-    rent: 13,
-    paid: 8,
-    unpaid: 5,
-    border: 'border-blue-200',
-    bg: 'bg-blue-50',
-    iconBg: 'bg-blue-500',
-  },
-  {
-    id: 'quarters',
-    title: 'Municipal Quarters',
-    icon: Home,
-    count: 3,
-    demand: '₹0.2L',
-    collected: '₹0.2L',
-    lease: 0,
-    rent: 3,
-    paid: 3,
-    unpaid: 0,
-    border: 'border-purple-200',
-    bg: 'bg-purple-50',
-    iconBg: 'bg-fuchsia-500',
-  },
-  {
-    id: 'parking',
-    title: 'Parking Revenue',
-    icon: Car,
-    count: 1,
-    demand: '₹0.6L',
-    collected: '₹0.0L',
-    lease: 0,
-    rent: 1,
-    paid: 0,
-    unpaid: 1,
-    border: 'border-orange-200',
-    bg: 'bg-orange-50',
-    iconBg: 'bg-orange-500',
-  },
-];
-
+function iconForCategory(valuationType: string): React.ElementType {
+  return VALUATION_ICON[valuationType?.toUpperCase()] ?? Building2;
+}
 
 function SummaryCard({
   icon: Icon,
@@ -112,10 +59,7 @@ function SummaryCard({
   className?: string;
 }) {
   return (
-    <Card
-      padding="sm"
-      className={`h-full ${className}`}
-    >
+    <Card padding="sm" className={`h-full ${className}`}>
       <CardContent className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Icon className="w-7 h-7" />
@@ -133,77 +77,62 @@ function SummaryCard({
 
 function RevenueCategoryCard({
   item,
+  index,
+  icon: Icon,
+  labels,
   onClick,
 }: {
-  item: (typeof categoryData)[0];
-  onClick?: () => void;
+  item: RevenueCategoryDistribution;
+  index: number;
+  icon: React.ElementType;
+  labels: { demand: string; collected: string; lease: string; rent: string; paid: string; unpaid: string };
+  onClick: () => void;
 }) {
-  const Icon = item.icon;
+  const palette = paletteForIndex(index);
 
   return (
     <Card
       padding="sm"
       onClick={onClick}
-      className={`${item.border} ${item.bg} cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all duration-200`}
+      className={`${palette.border} ${palette.bg} cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all duration-200`}
     >
       <CardContent>
         <div className="flex justify-between">
           <div className="flex gap-3">
-            <div
-              className={`w-9 h-9 rounded-xl ${item.iconBg} flex items-center justify-center`}
-            >
+            <div className={`w-9 h-9 rounded-xl ${palette.iconBg} flex items-center justify-center`}>
               <Icon className="w-5 h-5 text-white" />
             </div>
 
             <div>
-              <p className="font-medium text-sm text-slate-800">
-                {item.title}
-              </p>
-
-              <p className="text-2xl font-bold mt-1 text-slate-900">
-                {item.count}
-              </p>
+              <p className="font-medium text-sm text-slate-800">{item.categoryName}</p>
+              <p className="text-2xl font-bold mt-1 text-slate-900">{item.assetCount}</p>
             </div>
           </div>
 
           <div className="text-right">
-            <p className="text-xs font-medium text-slate-600">
-              Demand
-            </p>
-
-            <p className="text-sm font-semibold text-slate-900">
-              {item.demand}
-            </p>
-
-            <p className="text-sm font-semibold mt-1 text-slate-900">
-              Collected
-            </p>
-
-            <p className="text-sm font-semibold text-green-700">
-              {item.collected}
-            </p>
+            <p className="text-xs font-medium text-slate-600">{labels.demand}</p>
+            <p className="text-sm font-semibold text-slate-900">{formatLakh(item.demand)}</p>
+            <p className="text-sm font-semibold mt-1 text-slate-900">{labels.collected}</p>
+            <p className="text-sm font-semibold text-green-700">{formatLakh(item.collection)}</p>
           </div>
         </div>
 
         <div className="mt-4 border-t border-slate-200 pt-3 flex flex-wrap gap-4 text-xs font-medium text-slate-700">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-purple-500" />
-            Lease {item.lease}
+            {labels.lease} {item.leaseCount}
           </span>
-
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-blue-500" />
-            Rent {item.rent}
+            {labels.rent} {item.rentCount}
           </span>
-
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-green-500" />
-            Paid {item.paid}
+            {labels.paid} {item.paidCount}
           </span>
-
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-red-500" />
-            Unpaid {item.unpaid}
+            {labels.unpaid} {item.unpaidCount}
           </span>
         </div>
       </CardContent>
@@ -211,41 +140,66 @@ function RevenueCategoryCard({
   );
 }
 
-export function RevenueAssetDashboard() {
+interface RevenueAssetDashboardProps {
+  data?: RevenueDashboardData;
+}
 
+export function RevenueAssetDashboard({ data }: RevenueAssetDashboardProps) {
   const router = useRouter();
+  const t = useTranslations('revenueDashboard');
+  const { isPending, setParams } = useRevenueUrlFilters();
 
-  const [selectedZone, setSelectedZone] = useState('all');
-  const [selectedWard, setSelectedWard] = useState('all');
+  if (!data) {
+    return (
+      <DashboardLayout>
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="py-10 text-center text-sm font-medium text-red-700">
+            {t('errors.loadFailed')}
+          </CardContent>
+        </Card>
+      </DashboardLayout>
+    );
+  }
 
-  const zonesList = ['all', 'Zone 1', 'Zone 2', 'Zone 3'];
-  const wardsList = ['all', 'Ward 1', 'Ward 2', 'Ward 3'];
+  const { overview, zones, wards, selectedZoneId, selectedWardId } = data;
+  const { summary } = overview;
+
+  const categoryLabels = {
+    demand: t('cards.demand'),
+    collected: t('cards.collected'),
+    lease: t('cards.lease'),
+    rent: t('cards.rent'),
+    paid: t('cards.paid'),
+    unpaid: t('cards.unpaid'),
+  };
+
+  const openCategory = (categoryId: number) => {
+    router.push(`/assets/dashboard/revenue-dashboard/revenue-records?category=${categoryId}`);
+  };
 
   return (
     <DashboardLayout
+      loading={isPending}
       filters={
-        <DashboardFilters
-          zonesList={zonesList}
-          wardsList={wardsList}
-          activeZone={selectedZone}
-          activeWard={selectedWard}
-          onZoneChange={setSelectedZone}
-          onWardChange={setSelectedWard}
-          allZonesLabel="All Zones"
-          allWardsLabel="All Wards"
-          filtersLabel="Filters"
+        <RevenueFilters
+          zones={zones}
+          wards={wards}
+          selectedZoneId={selectedZoneId}
+          selectedWardId={selectedWardId}
+          onZoneChange={(zoneId) => setParams({ zoneId, wardId: null })}
+          onWardChange={(wardId) => setParams({ wardId })}
+          filtersLabel={t('filters.label')}
+          allZonesLabel={t('filters.allZones')}
+          allWardsLabel={t('filters.allWards')}
         />
       }
     >
       <div className="space-y-4">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">
-            Revenue Management Dashboard
-          </h1>
-
+          <h1 className="text-3xl font-bold text-slate-900">{t('title')}</h1>
           <p className="text-sm text-blue-600 mt-1">
-            Asset Distribution & Revenue Overview - 2025
+            {t('subtitle', { year: overview.year })}
           </p>
         </div>
 
@@ -253,25 +207,25 @@ export function RevenueAssetDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <SummaryCard
             icon={Building2}
-            value={summaryData.leasedAssets}
-            title="Total Leased Assets"
-            subtitle="Properties under lease/rent"
+            value={summary.totalLeasedAssets}
+            title={t('summary.leasedAssets')}
+            subtitle={t('summary.leasedAssetsSub')}
             className="bg-blue-50 border-blue-200 text-blue-700"
           />
-
           <SummaryCard
             icon={IndianRupee}
-            value={summaryData.totalDemand}
-            title="Total Demand"
-            subtitle="Monthly revenue target"
+            value={formatLakh(summary.totalDemand, { decimals: 2, space: true })}
+            title={t('summary.totalDemand')}
+            subtitle={t('summary.totalDemandSub')}
             className="bg-emerald-50 border-emerald-200 text-emerald-700"
           />
-
           <SummaryCard
             icon={TrendingUp}
-            value={summaryData.totalCollection}
-            title="Total Collection"
-            subtitle={`${summaryData.collectionRate} collection rate`}
+            value={formatLakh(summary.totalCollection, { decimals: 2, space: true })}
+            title={t('summary.totalCollection')}
+            subtitle={t('summary.collectionRate', {
+              rate: formatPercent(summary.collectionRatePercent),
+            })}
             className="bg-purple-50 border-purple-200 text-purple-700"
           />
         </div>
@@ -279,41 +233,49 @@ export function RevenueAssetDashboard() {
         {/* Distribution */}
         <Card className="border-emerald-200">
           <CardHeader>
-            <CardTitle className="text-xl">
-              Asset Distribution by Category
-            </CardTitle>
+            <CardTitle className="text-xl">{t('distribution.title')}</CardTitle>
           </CardHeader>
 
           <CardContent>
-            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-4 gap-4">
-              {categoryData.map((item) => (
-                <RevenueCategoryCard
-                  key={item.id}
-                  item={item}
-                  onClick={() =>
-                    router.push(
-                      `/assets/dashboard/revenue-dashboard/revenue-records?category=${item.id}`
-                    )
-                  }
-                />
-              ))}
-            </div>
+            {overview.categoryDistribution.length > 0 ? (
+              <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-4 gap-4">
+                {overview.categoryDistribution.map((item, index) => (
+                  <RevenueCategoryCard
+                    key={item.assetCategoryId}
+                    item={item}
+                    index={index}
+                    icon={iconForCategory(item.valuationType)}
+                    labels={categoryLabels}
+                    onClick={() => openCategory(item.assetCategoryId)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="py-6 text-center text-sm text-slate-500">{t('distribution.empty')}</p>
+            )}
           </CardContent>
         </Card>
 
-        {/* Charts Section - Monthly Trend and Zone-wise */}
+        {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Monthly Revenue Collection Trend */}
           <Card>
             <CardContent className="p-0">
-              <MonthlyRevenueTrendScreen />
+              <MonthlyRevenueTrendScreen
+                data={overview.monthlyTrend}
+                title={t('trend.title')}
+                collectedLabel={t('trend.collected')}
+                pendingLabel={t('trend.pending')}
+              />
             </CardContent>
           </Card>
 
-          {/* Zone-wise Demand & Collection */}
           <Card>
             <CardContent className="p-0">
-              <ZoneWiseDemandCollection />
+              <ZoneWiseDemandCollection
+                data={overview.zoneStats}
+                title={t('zones.title')}
+                totalDemandLabel={t('zones.totalDemand')}
+              />
             </CardContent>
           </Card>
         </div>

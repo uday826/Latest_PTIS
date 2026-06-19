@@ -108,13 +108,15 @@ export function MakePaymentScreen({
   const [isPending, startTransition] = useTransition();
 
   // Fetch the master-table demand list (month/rent/penalty/gst/total) for this lease.
+  // No finance-year filter: the desk must show every pending period — arrears from earlier
+  // finance years alongside the current year — so they can be settled together.
   // The hook gracefully handles missing leaseId by returning an empty list.
   const {
     demands: leaseDemandRows,
     isLoading: isDemandsLoading,
     error: demandsError,
     refetch: refetchDemands,
-  } = useLeaseRentDemands(record.leaseRentRegistrationId, record.financeYear);
+  } = useLeaseRentDemands(record.leaseRentRegistrationId);
 
   const pendingDemandAmount = record.pendingDue;
   const penaltyAmount = record.penalty;
