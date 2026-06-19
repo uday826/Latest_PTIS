@@ -1,0 +1,46 @@
+{
+  "table": {
+    "columns": {
+      "penaltyCode": "दंड कोड",
+      "penaltyName": "दंड नियमाचे नाव",
+      "calculationType": "गणना प्रकार",
+      "penaltyValue": "दंड मूल्य",
+      "gracePeriodDays": "सवलत कालावधी",
+      "status": "स्थिती"
+    }
+  },
+  "form": {
+    "addTitle": "नवीन दंड नियम जोडा",
+    "editTitle": "दंड नियम संपादित करा",
+    "createSubtitle": "नवीन दंड नियम कॉन्फिगरेशन तयार करा",
+    "updateSubtitle": "विद्यमान दंड नियम कॉन्फिगरेशन अपडेट करा",
+    "calculationTypeOptions": {
+      "Percentage": "टक्केवारी",
+      "FlatAmount": "ठराविक रक्कम",
+      "PerDay": "दररोज"
+    },
+    "labels": {
+      "status": "स्थिती",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "penaltyCode": "दंड कोड",
+      "penaltyName": "दंड नियमाचे नाव",
+      "calculationType": "गणना प्रकार",
+      "penaltyValue": "दंड मूल्य",
+      "gracePeriodDays": "सवलत कालावधी (दिवस)",
+      "days": "दिवस"
+    },
+    "placeholders": {
+      "penaltyCode": "उदा., LATERENT_FLAT",
+      "penaltyName": "उदा., लेट रेंट फ्लॅट शुल्क",
+      "calculationType": "गणना प्रकार निवडा",
+      "penaltyValue": "मूल्य प्रविष्ट करा",
+      "gracePeriodDays": "उदा., ५"
+    },
+    "buttons": {
+      "save": "जतन करा",
+      "update": "अपडेट करा",
+      "cancel": "रद्द करा"
+    }
+  }
+}

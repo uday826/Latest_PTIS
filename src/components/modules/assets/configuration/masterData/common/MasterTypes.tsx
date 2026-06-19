@@ -1,6 +1,6 @@
 'use client';
 
-import { Layers, Box, type LucideIcon } from 'lucide-react';
+import { Layers, Box, Calculator, AlertCircle, Home, type LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Card } from '@/components/common/Card';
 import { type MasterTypesProps, type MasterDataType, type MasterId, MASTER_IDS } from '@/types/asset-type/master-data.types';
@@ -13,7 +13,10 @@ const iconMap: Record<string, LucideIcon> = {
   [MASTER_IDS.INVENTORY_NAME]: Layers,
   [MASTER_IDS.INVENTORY_CONDITION]: Layers,
   [MASTER_IDS.OWNERSHIP_TYPE]: Box,
-  [MASTER_IDS.OWNING_DEPARTMENT]: Box
+  [MASTER_IDS.OWNING_DEPARTMENT]: Box,
+  [MASTER_IDS.TAX]: Calculator,
+  [MASTER_IDS.PENALTY]: AlertCircle,
+  [MASTER_IDS.ROOM_TYPE]: Home,
 };
 
 export function MasterTypes({ selected, onSelect, masterTypes }: MasterTypesProps & { masterTypes: MasterDataType[] }) {

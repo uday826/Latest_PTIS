@@ -289,10 +289,12 @@
           "fillRequired": "कृपया सर्व आवश्यक फील्ड भरा",
           "codeRequired": "कोड आवश्यक आहे",
           "codeTooLong15": "कोड १५ वर्णांपेक्षा जास्त नसावा",
+          "codeTooLong50": "कोड ५० वर्णांपेक्षा जास्त नसावा",
           "codeInvalidChars": "कोडमध्ये अवैध वर्ण (केवळ अल्फान्यूमेरिक, अंडरस्कोर आणि हायफनला परवानगी आहे)",
           "codeDuplicate": "हा कोड आधीपासून अस्तित्वात आहे",
           "nameRequired": "नाव आवश्यक आहे",
           "nameTooLong50": "नाव ५० वर्णांपेक्षा जास्त नसावे",
+          "nameTooLong100": "नाव १०० वर्णांपेक्षा जास्त नसावे",
           "nameInvalidChars": "नावामध्ये अवैध वर्ण (केवळ अल्फान्यूमेरिक, स्पेस, अंडरस्कोर आणि हायफनला परवानगी आहे)",
           "nameDuplicate": "हे नाव आधीपासून अस्तित्वात आहे",
           "categoryRequired": "श्रेणी आवश्यक आहे",
@@ -304,7 +306,16 @@
           "duplicateCode": "हा कोड आधीपासून अस्तित्वात आहे",
           "noSpecialCharacters": "इनपुटमध्ये अवैध वर्ण",
           "duplicateName": "हे नाव आधीपासून अस्तित्वात आहे",
-          "maxLength": "कृपया अनुमत वर्णांपेक्षा जास्त प्रविष्ट करू नका"
+          "maxLength": "कृपया अनुमत वर्णांपेक्षा जास्त प्रविष्ट करू नका",
+          "taxPercentageRequired": "कर टक्केवारी आवश्यक आहे",
+          "taxPercentageRange": "कर टक्केवारी 0 ते 100 दरम्यान असणे आवश्यक आहे",
+          "effectiveFromDateRequired": "प्रभावी तारीख आवश्यक आहे",
+          "calculationTypeRequired": "गणना प्रकार आवश्यक आहे",
+          "penaltyValueRequired": "दंड मूल्य आवश्यक आहे",
+          "penaltyValueRange": "दंड मूल्य 0 किंवा अधिक असणे आवश्यक आहे",
+          "penaltyValuePercentageRange": "टक्केवारी गणनेसाठी दंड मूल्य 0 ते 100 दरम्यान असणे आवश्यक आहे",
+          "gracePeriodDaysRequired": "सवलत कालावधी (दिवस) आवश्यक आहे",
+          "gracePeriodDaysRange": "सवलत कालावधी 0 किंवा अधिक असणे आवश्यक आहे"
         }
       },
       "messages": {
@@ -343,6 +354,9 @@
     "ownership-type-master": "मालकी प्रकार",
     "owning-department-master": "मालकी विभाग",
     "inventory-name-master": "इन्व्हेंटरी आयटमचे नाव",
-    "inventory-condition-master": "इन्व्हेंटरी स्थिती"
+    "inventory-condition-master": "इन्व्हेंटरी स्थिती",
+    "gst-master": "जीएसटी मास्टर",
+    "penalty-rule-master": "दंड नियम मास्टर",
+    "room-type-master": "खोली प्रकार मास्टर"
   }
 }

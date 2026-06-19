@@ -14,6 +14,7 @@ interface MasterRecordLayoutProps {
   search: string;
   onSearchChange: (val: string) => void;
   children: React.ReactNode;
+  extraHeaderAction?: React.ReactNode;
 }
 
 import { useTranslations } from 'next-intl';
@@ -27,6 +28,7 @@ export function MasterRecordLayout({
   search,
   onSearchChange,
   children,
+  extraHeaderAction,
 }: MasterRecordLayoutProps) {
   const t = useTranslations('asset.configuration.masterData');
   const mt = useTranslations('asset.masterNames');
@@ -61,11 +63,14 @@ export function MasterRecordLayout({
         title={t('records')}
         icon={List}
         headerAction={
-          <AddButton
-            onClick={onAdd}
-            label={t('addNew', { name: displayMasterName })}
-            className="bg-cyan-600 hover:bg-cyan-700 rounded-md border-0 !h-8 !px-3 py-2"
-          />
+          <div className="flex items-center gap-3">
+            {extraHeaderAction}
+            <AddButton
+              onClick={onAdd}
+              label={t('addNew', { name: displayMasterName })}
+              className="bg-cyan-600 hover:bg-cyan-700 rounded-md border-0 !h-8 !px-3 py-2"
+            />
+          </div>
         }
       >
         {/* Stats Subheader & Search */}

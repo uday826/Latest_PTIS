@@ -23,6 +23,13 @@ import { owningDepartmentService } from '@/lib/api/asset-api/owning-department.s
 import { mapOwnershipTypeToMasterRecord } from '@/lib/api/asset-api/ownership-type-types-guard';
 import { mapOwningDepartmentToMasterRecord } from '@/lib/api/asset-api/owning-department-types-guard';
 
+import { gstMasterService } from '@/lib/api/asset-api/gst-master.service';
+import { penaltyRuleMasterService } from '@/lib/api/asset-api/penalty-rule-master.service';
+import { roomTypeMasterService } from '@/lib/api/asset-api/room-type-master.service';
+import { mapGstToMasterRecord } from '@/lib/api/asset-api/gst-master-types-guard';
+import { mapPenaltyToMasterRecord } from '@/lib/api/asset-api/penalty-rule-master-types-guard';
+import { mapRoomTypeToMasterRecord } from '@/lib/api/asset-api/room-type-master-types-guard';
+
 /** 
  * Registry for all Master Data configurations.
  * Scaling to 90+ masters is as simple as adding a new entry here.
@@ -140,6 +147,27 @@ const MASTER_CONFIG: Record<string, {
     fetch: async (p, s, search) => {
       const res = await owningDepartmentService.getAll({ PageNumber: p, PageSize: s, SearchTerm: search });
       return { ...res, hasPrevious: p > 1, hasNext: p < res.totalPages, items: res.items.map(mapOwningDepartmentToMasterRecord) };
+    }
+  },
+  [MASTER_IDS.TAX]: {
+    name: 'GST Master',
+    fetch: async (p, s, search) => {
+      const res = await gstMasterService.getAll({ PageNumber: p, PageSize: s, SearchTerm: search });
+      return { ...res, hasPrevious: p > 1, hasNext: p < res.totalPages, items: res.items.map(mapGstToMasterRecord) };
+    }
+  },
+  [MASTER_IDS.PENALTY]: {
+    name: 'Penalty Rule Master',
+    fetch: async (p, s, search) => {
+      const res = await penaltyRuleMasterService.getAll({ PageNumber: p, PageSize: s, SearchTerm: search });
+      return { ...res, hasPrevious: p > 1, hasNext: p < res.totalPages, items: res.items.map(mapPenaltyToMasterRecord) };
+    }
+  },
+  [MASTER_IDS.ROOM_TYPE]: {
+    name: 'Room Type Master',
+    fetch: async (p, s, search) => {
+      const res = await roomTypeMasterService.getAll({ PageNumber: p, PageSize: s, SearchTerm: search });
+      return { ...res, hasPrevious: p > 1, hasNext: p < res.totalPages, items: res.items.map(mapRoomTypeToMasterRecord) };
     }
   }
 };

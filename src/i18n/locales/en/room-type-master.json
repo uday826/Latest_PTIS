@@ -1,0 +1,31 @@
+{
+  "table": {
+    "columns": {
+      "roomTypeCode": "Room Type Code",
+      "roomTypeName": "Room Type Name",
+      "status": "Status"
+    }
+  },
+  "form": {
+    "addTitle": "Add New Room Type",
+    "editTitle": "Edit Room Type",
+    "createSubtitle": "Create a new room type configuration",
+    "updateSubtitle": "Update existing room type configuration",
+    "labels": {
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "roomTypeCode": "Room Type Code",
+      "roomTypeName": "Room Type Name"
+    },
+    "placeholders": {
+      "roomTypeCode": "e.g., DELUXE",
+      "roomTypeName": "e.g., Deluxe Room"
+    },
+    "buttons": {
+      "save": "Save",
+      "update": "Update",
+      "cancel": "Cancel"
+    }
+  }
+}

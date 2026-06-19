@@ -76,6 +76,9 @@ export default getRequestConfig(async ({ locale }) => {
     assetDetailMessages,
     revenueManagementMessages,
     addAssetFormMessages,
+    gstMasterMessages,
+    penaltyRuleMasterMessages,
+    roomTypeMasterMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -173,6 +176,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/assetDetail.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/revenueManagement.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/addAssetForm.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/gst-master.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/penalty-rule-master.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/room-type-master.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
 
@@ -241,6 +247,9 @@ export default getRequestConfig(async ({ locale }) => {
       assetDetail: assetDetailMessages,
       revenueManagement: revenueManagementMessages,
       addAssetForm: addAssetFormMessages,
+      gstMaster: gstMasterMessages,
+      penaltyRuleMaster: penaltyRuleMasterMessages,
+      roomTypeMaster: roomTypeMasterMessages,
     },
   };
 });

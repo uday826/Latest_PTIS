@@ -15,6 +15,9 @@ const ROUTE_MAP: Record<string, string> = {
   [MASTER_IDS.INVENTORY_CONDITION]: 'inventory-condition',
   [MASTER_IDS.OWNERSHIP_TYPE]: 'ownership-type',
   [MASTER_IDS.OWNING_DEPARTMENT]: 'owning-department',
+  [MASTER_IDS.TAX]: 'gst-master',
+  [MASTER_IDS.PENALTY]: 'penalty-rule-master',
+  [MASTER_IDS.ROOM_TYPE]: 'room-type-master',
 };
 
 /**

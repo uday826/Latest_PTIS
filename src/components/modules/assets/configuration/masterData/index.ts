@@ -41,3 +41,19 @@ export { OwnershipTypeMasterTable } from './ownership-type-master/OwnershipTypeM
 export { OwningDepartmentMasterView } from './owning-department-master/OwningDepartmentMasterView';
 export { OwningDepartmentMasterForm } from './owning-department-master/OwningDepartmentMasterForm';
 export { OwningDepartmentMasterTable } from './owning-department-master/OwningDepartmentMasterTable';
+
+// GST (TAX) Master
+export { GstMasterView } from './gst-master/GstMasterView';
+export { GstMasterForm } from './gst-master/GstMasterForm';
+export { GstMasterTable } from './gst-master/GstMasterTable';
+
+// Penalty Rule Master
+export { PenaltyRuleMasterView } from './penalty-rule-master/PenaltyRuleMasterView';
+export { PenaltyRuleMasterForm } from './penalty-rule-master/PenaltyRuleMasterForm';
+export { PenaltyRuleMasterTable } from './penalty-rule-master/PenaltyRuleMasterTable';
+
+// Room Type Master
+export { RoomTypeMasterView } from './room-type-master/RoomTypeMasterView';
+export { RoomTypeMasterForm } from './room-type-master/RoomTypeMasterForm';
+export { RoomTypeMasterTable } from './room-type-master/RoomTypeMasterTable';
+

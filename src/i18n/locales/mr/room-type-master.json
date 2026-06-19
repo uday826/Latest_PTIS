@@ -1,0 +1,31 @@
+{
+  "table": {
+    "columns": {
+      "roomTypeCode": "खोली प्रकार कोड",
+      "roomTypeName": "खोली प्रकार नाव",
+      "status": "स्थिती"
+    }
+  },
+  "form": {
+    "addTitle": "नवीन खोली प्रकार जोडा",
+    "editTitle": "खोली प्रकार संपादित करा",
+    "createSubtitle": "नवीन खोली प्रकार कॉन्फिगरेशन तयार करा",
+    "updateSubtitle": "अस्तित्वात असलेले खोली प्रकार कॉन्फिगरेशन अद्यतनित करा",
+    "labels": {
+      "status": "स्थिती",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "roomTypeCode": "खोली प्रकार कोड",
+      "roomTypeName": "खोली प्रकार नाव"
+    },
+    "placeholders": {
+      "roomTypeCode": "उदा. DELUXE",
+      "roomTypeName": "उदा. डिलक्स खोली"
+    },
+    "buttons": {
+      "save": "जतन करा",
+      "update": "अद्यतनित करा",
+      "cancel": "रद्द करा"
+    }
+  }
+}

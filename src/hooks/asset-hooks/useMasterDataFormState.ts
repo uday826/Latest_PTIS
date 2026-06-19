@@ -36,6 +36,12 @@ export function useMasterDataFormState(
     valuationType: editData?.valuationType || '',
     allowUnitRegistration: editData?.allowUnitRegistration ?? false,
     allowRoomRegistration: editData?.allowRoomRegistration ?? false,
+    taxPercentage: editData?.taxPercentage,
+    effectiveFromDate: editData?.effectiveFromDate || '',
+    effectiveToDate: editData?.effectiveToDate || '',
+    calculationType: editData?.calculationType || '',
+    penaltyValue: editData?.penaltyValue,
+    gracePeriodDays: editData?.gracePeriodDays,
   });
 
   const [errors, setErrors] = useState<MasterDataFormErrors>({});
@@ -59,12 +65,24 @@ export function useMasterDataFormState(
       valuationType: editData?.valuationType || '',
       allowUnitRegistration: editData?.allowUnitRegistration ?? false,
       allowRoomRegistration: editData?.allowRoomRegistration ?? false,
+      taxPercentage: editData?.taxPercentage,
+      effectiveFromDate: editData?.effectiveFromDate || '',
+      effectiveToDate: editData?.effectiveToDate || '',
+      calculationType: editData?.calculationType || '',
+      penaltyValue: editData?.penaltyValue,
+      gracePeriodDays: editData?.gracePeriodDays,
     });
     setErrors({});
   }, [editData, selectedGroup]);
 
   const validate = useCallback(() => {
     const errors: MasterDataFormErrors = {};
+
+    const isRelaxedMaster = [
+      MASTER_IDS.TAX,
+      MASTER_IDS.PENALTY,
+      MASTER_IDS.ROOM_TYPE,
+    ].includes(masterId as any);
 
     // 1. Code Validation (Unicode Alphanumeric + Hyphen + Underscore)
     const code = formData.code?.trim() || "";
@@ -76,20 +94,28 @@ export function useMasterDataFormState(
     ] as string[]).includes(masterId);
 
     if (!skipCodeValidation) {
-      if (!code) errors.code = "errors.codeRequired";
-      else if (code.length > 15) errors.code = "errors.codeTooLong15";
-      else if (!/^[\p{L}\p{N}_-]+$/u.test(code)) errors.code = "errors.codeInvalidChars";
-      else if (existingCodes.some(c => c.toLowerCase() === code.toLowerCase() && c.toLowerCase() !== editData?.id?.toLowerCase())) {
+      const maxCodeLength = isRelaxedMaster ? 50 : 15;
+      if (!code) {
+        errors.code = "errors.codeRequired";
+      } else if (code.length > maxCodeLength) {
+        errors.code = isRelaxedMaster ? "errors.codeTooLong50" : "errors.codeTooLong15";
+      } else if (!/^[\p{L}\p{N}_-]+$/u.test(code)) {
+        errors.code = "errors.codeInvalidChars";
+      } else if (existingCodes.some(c => c.toLowerCase() === code.toLowerCase() && c.toLowerCase() !== editData?.id?.toLowerCase())) {
         errors.code = "errors.codeDuplicate";
       }
     }
 
     // 2. Name Validation (Unicode Alphanumeric + Spaces + Hyphen + Underscore)
     const name = formData.name?.trim() || "";
-    if (!name) errors.name = "errors.nameRequired";
-    else if (name.length > 50) errors.name = "errors.nameTooLong50";
-    else if (!/^[\p{L}\p{N}\s_-]+$/u.test(name)) errors.name = "errors.nameInvalidChars";
-    else if (existingNames.some(n => n.toLowerCase() === name.toLowerCase() && n.toLowerCase() !== editData?.name?.toLowerCase())) {
+    const maxNameLength = isRelaxedMaster ? 100 : 50;
+    if (!name) {
+      errors.name = "errors.nameRequired";
+    } else if (name.length > maxNameLength) {
+      errors.name = isRelaxedMaster ? "errors.nameTooLong100" : "errors.nameTooLong50";
+    } else if (!/^[\p{L}\p{N}\s_-]+$/u.test(name)) {
+      errors.name = "errors.nameInvalidChars";
+    } else if (existingNames.some(n => n.toLowerCase() === name.toLowerCase() && n.toLowerCase() !== editData?.name?.toLowerCase())) {
       errors.name = "errors.nameDuplicate";
     }
 
@@ -108,6 +134,40 @@ export function useMasterDataFormState(
     const desc = formData.description?.trim() || "";
     if (desc.length > 500) errors.description = "errors.descriptionTooLong";
     else if (desc && !/^[\p{L}\p{N}\s_-]+$/u.test(desc)) errors.description = "errors.descInvalidChars";
+
+    // 5. GST (TAX) master specific validations
+    if (masterId === MASTER_IDS.TAX) {
+      if (formData.taxPercentage == null || isNaN(Number(formData.taxPercentage))) {
+        errors.taxPercentage = "errors.taxPercentageRequired";
+      } else if (Number(formData.taxPercentage) < 0 || Number(formData.taxPercentage) > 100) {
+        errors.taxPercentage = "errors.taxPercentageRange";
+      }
+
+      if (!formData.effectiveFromDate) {
+        errors.effectiveFromDate = "errors.effectiveFromDateRequired";
+      }
+    }
+
+    // 6. Penalty Rule master specific validations
+    if (masterId === MASTER_IDS.PENALTY) {
+      if (!formData.calculationType) {
+        errors.calculationType = "errors.calculationTypeRequired";
+      }
+
+      if (formData.penaltyValue == null || isNaN(Number(formData.penaltyValue))) {
+        errors.penaltyValue = "errors.penaltyValueRequired";
+      } else if (Number(formData.penaltyValue) < 0) {
+        errors.penaltyValue = "errors.penaltyValueRange";
+      } else if (formData.calculationType === 'Percentage' && Number(formData.penaltyValue) > 100) {
+        errors.penaltyValue = "errors.penaltyValuePercentageRange";
+      }
+
+      if (formData.gracePeriodDays == null || isNaN(Number(formData.gracePeriodDays))) {
+        errors.gracePeriodDays = "errors.gracePeriodDaysRequired";
+      } else if (Number(formData.gracePeriodDays) < 0) {
+        errors.gracePeriodDays = "errors.gracePeriodDaysRange";
+      }
+    }
 
     return errors;
   }, [formData, masterId, existingCodes, existingNames, editData?.id, editData?.name]);
@@ -157,6 +217,12 @@ export function useMasterDataFormState(
       conditionFactor: formData.conditionFactor,
       allowUnitRegistration: formData.allowUnitRegistration,
       allowRoomRegistration: formData.allowRoomRegistration,
+      taxPercentage: formData.taxPercentage,
+      effectiveFromDate: formData.effectiveFromDate,
+      effectiveToDate: formData.effectiveToDate || null,
+      calculationType: formData.calculationType,
+      penaltyValue: formData.penaltyValue,
+      gracePeriodDays: formData.gracePeriodDays,
     }, onClose);
   };
 

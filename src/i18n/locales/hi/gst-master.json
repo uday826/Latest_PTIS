@@ -1,0 +1,38 @@
+{
+  "table": {
+    "columns": {
+      "taxCode": "कर कोड",
+      "taxName": "कर नाम",
+      "taxPercentage": "कर प्रतिशत",
+      "effectiveFromDate": "प्रभावी दिनांक से",
+      "effectiveToDate": "प्रभावी दिनांक तक",
+      "status": "स्थिति"
+    }
+  },
+  "form": {
+    "addTitle": "नया जीएसटी मास्टर जोड़ें",
+    "editTitle": "जीएसटी मास्टर संपादित करें",
+    "createSubtitle": "एक नया जीएसटी दर कॉन्फ़िगरेशन बनाएं",
+    "updateSubtitle": "मौजूदा जीएसटी दर कॉन्फ़िगरेशन अपडेट करें",
+    "labels": {
+      "status": "स्थिति",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "taxCode": "कर कोड",
+      "taxName": "कर नाम",
+      "taxPercentage": "कर प्रतिशत",
+      "effectiveFromDate": "प्रभावी दिनांक से",
+      "effectiveToDate": "प्रभावी दिनांक तक"
+    },
+    "placeholders": {
+      "taxCode": "उदा., GST18",
+      "taxName": "उदा., मानक जीएसटी 18%",
+      "taxPercentage": "उदा., 18"
+    },
+    "buttons": {
+      "save": "सहेजें",
+      "update": "अपडेट करें",
+      "cancel": "रद्द करें"
+    }
+  }
+}

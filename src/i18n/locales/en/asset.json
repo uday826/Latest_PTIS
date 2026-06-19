@@ -289,10 +289,12 @@
           "fillRequired": "Please fill all required fields",
           "codeRequired": "Code is required",
           "codeTooLong15": "Code must not exceed 15 characters",
+          "codeTooLong50": "Code must not exceed 50 characters",
           "codeInvalidChars": "Invalid characters in code (Only alphanumeric, underscore and hyphen allowed)",
           "codeDuplicate": "This code already exists",
           "nameRequired": "Name is required",
           "nameTooLong50": "Name must not exceed 50 characters",
+          "nameTooLong100": "Name must not exceed 100 characters",
           "nameInvalidChars": "Invalid characters in name (Only alphanumeric, spaces, underscore and hyphen allowed)",
           "nameDuplicate": "This name already exists",
           "categoryRequired": "Category is required",
@@ -304,7 +306,16 @@
           "duplicateCode": "This code already exists",
           "noSpecialCharacters": "Invalid characters in input",
           "duplicateName": "This name already exists",
-          "maxLength": "Please enter no more than the allowed number of characters"
+          "maxLength": "Please enter no more than the allowed number of characters",
+          "taxPercentageRequired": "Tax percentage is required",
+          "taxPercentageRange": "Tax percentage must be between 0 and 100",
+          "effectiveFromDateRequired": "Effective from date is required",
+          "calculationTypeRequired": "Calculation type is required",
+          "penaltyValueRequired": "Penalty value is required",
+          "penaltyValueRange": "Penalty value must be greater than or equal to 0",
+          "penaltyValuePercentageRange": "Penalty value must be between 0 and 100 for percentage calculation",
+          "gracePeriodDaysRequired": "Grace period days is required",
+          "gracePeriodDaysRange": "Grace period days must be greater than or equal to 0"
         }
       },
       "messages": {
@@ -343,6 +354,9 @@
     "ownership-type-master": "Ownership Type",
     "owning-department-master": "Owning Department",
     "inventory-name-master": "Inventory Item Name",
-    "inventory-condition-master": "Inventory Condition"
+    "inventory-condition-master": "Inventory Condition",
+    "gst-master": "GST Master",
+    "penalty-rule-master": "Penalty Rule Master",
+    "room-type-master": "Room Type Master"
   }
 }

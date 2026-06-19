@@ -1,0 +1,46 @@
+{
+  "table": {
+    "columns": {
+      "penaltyCode": "Penalty Code",
+      "penaltyName": "Penalty Name",
+      "calculationType": "Calculation Type",
+      "penaltyValue": "Penalty Value",
+      "gracePeriodDays": "Grace Period",
+      "status": "Status"
+    }
+  },
+  "form": {
+    "addTitle": "Add New Penalty Rule",
+    "editTitle": "Edit Penalty Rule",
+    "createSubtitle": "Create a new penalty rule configuration",
+    "updateSubtitle": "Update existing penalty rule configuration",
+    "calculationTypeOptions": {
+      "Percentage": "Percentage",
+      "FlatAmount": "Flat Amount",
+      "PerDay": "Per Day"
+    },
+    "labels": {
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "penaltyCode": "Penalty Code",
+      "penaltyName": "Penalty Name",
+      "calculationType": "Calculation Type",
+      "penaltyValue": "Penalty Value",
+      "gracePeriodDays": "Grace Period Days",
+      "days": "Days"
+    },
+    "placeholders": {
+      "penaltyCode": "e.g., LATERENT_FLAT",
+      "penaltyName": "e.g., Late Rent Flat Fee",
+      "calculationType": "Select calculation type",
+      "penaltyValue": "Enter value",
+      "gracePeriodDays": "e.g., 5"
+    },
+    "buttons": {
+      "save": "Save",
+      "update": "Update",
+      "cancel": "Cancel"
+    }
+  }
+}

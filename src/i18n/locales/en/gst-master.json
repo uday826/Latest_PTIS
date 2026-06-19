@@ -1,0 +1,38 @@
+{
+  "table": {
+    "columns": {
+      "taxCode": "Tax Code",
+      "taxName": "Tax Name",
+      "taxPercentage": "Tax Percentage",
+      "effectiveFromDate": "Effective From Date",
+      "effectiveToDate": "Effective To Date",
+      "status": "Status"
+    }
+  },
+  "form": {
+    "addTitle": "Add New GST Master",
+    "editTitle": "Edit GST Master",
+    "createSubtitle": "Create a new GST rate configuration",
+    "updateSubtitle": "Update existing GST rate configuration",
+    "labels": {
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "taxCode": "Tax Code",
+      "taxName": "Tax Name",
+      "taxPercentage": "Tax Percentage",
+      "effectiveFromDate": "Effective From Date",
+      "effectiveToDate": "Effective To Date"
+    },
+    "placeholders": {
+      "taxCode": "e.g., GST18",
+      "taxName": "e.g., Standard GST 18%",
+      "taxPercentage": "e.g., 18"
+    },
+    "buttons": {
+      "save": "Save",
+      "update": "Update",
+      "cancel": "Cancel"
+    }
+  }
+}

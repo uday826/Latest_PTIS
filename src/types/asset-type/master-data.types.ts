@@ -13,6 +13,9 @@ export const MASTER_IDS = {
   INVENTORY_CONDITION: 'inventory-condition-master',
   OWNERSHIP_TYPE: 'ownership-type-master',
   OWNING_DEPARTMENT: 'owning-department-master',
+  TAX: 'gst-master',
+  PENALTY: 'penalty-rule-master',
+  ROOM_TYPE: 'room-type-master',
 } as const;
 
 export type MasterId = typeof MASTER_IDS[keyof typeof MASTER_IDS];
@@ -44,6 +47,12 @@ export type MasterDataRecord = {
   valuationType?: string;
   allowUnitRegistration?: boolean;
   allowRoomRegistration?: boolean;
+  taxPercentage?: number;
+  effectiveFromDate?: string;
+  effectiveToDate?: string | null;
+  calculationType?: string;
+  penaltyValue?: number;
+  gracePeriodDays?: number;
 };
 
 export type MasterDataGroup = {
@@ -109,6 +118,11 @@ export interface MasterDataFormErrors {
   description?: string;
   depreciationRate?: string;
   conditionFactor?: string;
+  taxPercentage?: string;
+  effectiveFromDate?: string;
+  calculationType?: string;
+  penaltyValue?: string;
+  gracePeriodDays?: string;
 }
 
 export interface MasterTypesProps {

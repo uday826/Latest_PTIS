@@ -227,4 +227,64 @@ export const buildOwningDepartmentUpdatePayload = (record: MasterDataRecord, id:
   updatedBy: userId,
 });
 
+// GST Master
+export const buildGstCreatePayload = (record: MasterDataRecord, userId: number = 0) => ({
+  taxCode: (record.id || '').trim(),
+  taxName: record.name.trim(),
+  taxPercentage: record.taxPercentage ?? 0,
+  effectiveFromDate: record.effectiveFromDate || new Date().toISOString().split('T')[0],
+  effectiveToDate: record.effectiveToDate || null,
+  isActive: record.status === 'Active',
+  createdBy: userId,
+});
+
+export const buildGstUpdatePayload = (record: MasterDataRecord, id: number, userId: number = 0) => ({
+  id: id,
+  taxCode: (record.id || '').trim(),
+  taxName: record.name.trim(),
+  taxPercentage: record.taxPercentage ?? 0,
+  effectiveFromDate: record.effectiveFromDate || new Date().toISOString().split('T')[0],
+  effectiveToDate: record.effectiveToDate || null,
+  isActive: record.status === 'Active',
+  updatedBy: userId,
+});
+
+// Penalty Rule Master
+export const buildPenaltyCreatePayload = (record: MasterDataRecord, userId: number = 0) => ({
+  penaltyCode: (record.id || '').trim(),
+  penaltyName: record.name.trim(),
+  calculationType: record.calculationType || 'FlatAmount',
+  penaltyValue: record.penaltyValue ?? 0,
+  gracePeriodDays: record.gracePeriodDays ?? 0,
+  isActive: record.status === 'Active',
+  createdBy: userId,
+});
+
+export const buildPenaltyUpdatePayload = (record: MasterDataRecord, id: number, userId: number = 0) => ({
+  id: id,
+  penaltyCode: (record.id || '').trim(),
+  penaltyName: record.name.trim(),
+  calculationType: record.calculationType || 'FlatAmount',
+  penaltyValue: record.penaltyValue ?? 0,
+  gracePeriodDays: record.gracePeriodDays ?? 0,
+  isActive: record.status === 'Active',
+  updatedBy: userId,
+});
+
+// Room Type Master
+export const buildRoomTypeCreatePayload = (record: MasterDataRecord, userId: number = 0) => ({
+  roomTypeCode: (record.id || '').trim(),
+  roomTypeName: record.name.trim(),
+  isActive: record.status === 'Active',
+  createdBy: userId,
+});
+
+export const buildRoomTypeUpdatePayload = (record: MasterDataRecord, id: number, userId: number = 0) => ({
+  id: id,
+  roomTypeCode: (record.id || '').trim(),
+  roomTypeName: record.name.trim(),
+  isActive: record.status === 'Active',
+  updatedBy: userId,
+});
+
 

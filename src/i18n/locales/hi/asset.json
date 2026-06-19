@@ -289,10 +289,12 @@
           "fillRequired": "कृपया सभी अनिवार्य फ़ील्ड भरें",
           "codeRequired": "कोड आवश्यक है",
           "codeTooLong15": "कोड 15 वर्णों से अधिक नहीं होना चाहिए",
+          "codeTooLong50": "कोड 50 वर्णों से अधिक नहीं होना चाहिए",
           "codeInvalidChars": "कोड में अमान्य वर्ण (केवल अल्फ़ान्यूमेरिक, अंडरस्कोर और हाइफ़न की अनुमति है)",
           "codeDuplicate": "यह कोड पहले से मौजूद है",
           "nameRequired": "नाम आवश्यक है",
           "nameTooLong50": "नाम 50 वर्णों से अधिक नहीं होना चाहिए",
+          "nameTooLong100": "नाम 100 वर्णों से अधिक नहीं होना चाहिए",
           "nameInvalidChars": "नाम में अमान्य वर्ण (केवल अल्फ़ान्यूमेरिक, स्पेस, अंडरस्कोर और हाइफ़न की अनुमति है)",
           "nameDuplicate": "यह नाम पहले से मौजूद है",
           "categoryRequired": "श्रेणी आवश्यक है",
@@ -304,7 +306,16 @@
           "duplicateCode": "यह कोड पहले से मौजूद है",
           "noSpecialCharacters": "इनपुट में अमान्य वर्ण",
           "duplicateName": "यह नाम पहले से मौजूद है",
-          "maxLength": "कृपया अनुमत वर्णों से अधिक दर्ज न करें"
+          "maxLength": "कृपया अनुमत वर्णों से अधिक दर्ज न करें",
+          "taxPercentageRequired": "कर प्रतिशत आवश्यक है",
+          "taxPercentageRange": "कर प्रतिशत 0 और 100 के बीच होना चाहिए",
+          "effectiveFromDateRequired": "प्रभावी दिनांक आवश्यक है",
+          "calculationTypeRequired": "गणना का प्रकार आवश्यक है",
+          "penaltyValueRequired": "जुर्माना मूल्य आवश्यक है",
+          "penaltyValueRange": "जुर्माना मूल्य 0 या अधिक होना चाहिए",
+          "penaltyValuePercentageRange": "प्रतिशत गणना के लिए जुर्माना मूल्य 0 और 100 के बीच होना चाहिए",
+          "gracePeriodDaysRequired": "छूट अवधि (दिनों में) आवश्यक है",
+          "gracePeriodDaysRange": "छूट की अवधि 0 या अधिक होनी चाहिए"
         }
       },
       "messages": {
@@ -343,6 +354,9 @@
     "ownership-type-master": "स्वामित्व प्रकार",
     "owning-department-master": "स्वामित्व विभाग",
     "inventory-name-master": "इन्वेंटरी आइटम नाम",
-    "inventory-condition-master": "इन्वेंटरी स्थिति"
+    "inventory-condition-master": "इन्वेंटरी स्थिति",
+    "gst-master": "जीएसटी मास्टर",
+    "penalty-rule-master": "जुर्माना नियम मास्टर",
+    "room-type-master": "कमरा प्रकार मास्टर"
   }
 }
