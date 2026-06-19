@@ -10,18 +10,26 @@ export const dynamic = 'force-dynamic';
  * - Video ONLY plays when navigating to Asset Management from home page
  */
 
-import { fetchDashboardDataAction } from '@/app/[locale]/assets/dashboard/master-dashboard/actions';
+import { fetchInitialDashboardAction, fetchFilteredAction } from '@/app/[locale]/assets/dashboard/master-dashboard/actions';
 import { AssetMasterDashboard } from '@/components/modules/assets/dashboard/master-dashboard/AssetMasterDashboard';
 import { authService } from '@/lib/api/auth.service';
 import { cookies } from 'next/headers';
 
-export default async function AssetMasterDashboardPage() {
+interface PageProps {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function AssetMasterDashboardPage({ searchParams }: PageProps) {
     const cookieStore = await cookies();
     let districtName = cookieStore.get('ulb_name')?.value || '';
 
+    const sp = await searchParams;
+    const zone = typeof sp?.zone === 'string' ? sp.zone : 'all';
+    const ward = typeof sp?.ward === 'string' ? sp.ward : 'all';
+
     // Fetch initial data concurrently on the server
     const [dashboardRes, ulbRes] = await Promise.all([
-        fetchDashboardDataAction(),
+        (zone === 'all' && ward === 'all') ? fetchInitialDashboardAction() : fetchFilteredAction(zone, ward),
         districtName ? Promise.resolve(null) : authService.getUlbConfig().catch(() => null),
     ]);
 
@@ -36,14 +44,31 @@ export default async function AssetMasterDashboardPage() {
         districtName = ''; // ULB name unavailable; let the component render a generic label
     }
 
-    const initialDashboardData = dashboardRes.success ? dashboardRes.data : undefined;
+    const initialData = dashboardRes && !(dashboardRes as any).error ? dashboardRes : {
+        stats: {
+            totalAssets: { value: '0', change: '', backInfo: [] },
+            totalValue: { value: '₹0Cr', change: '', backInfo: [] },
+            monetized: { value: '0', change: '', backInfo: [] },
+            encroachments: { value: '0', change: '', backInfo: [] },
+            maintenance: { value: '0', change: '', backInfo: [] },
+            auctions: { value: '0', change: '', backInfo: [] },
+            acquisitions: { value: '0', change: '', backInfo: [] },
+        },
+        filteredAssets: [],
+        categories: [],
+        zoneDistribution: [],
+        acquisitionsList: [],
+        auctionsList: [],
+        allZones: [],
+        allWards: [],
+    };
 
     return (
         <>
             <div className="p-2 bg-slate-50/50 overflow-y-auto custom-scrollbar">
                 <div className="mx-auto w-full max-w-[99%]">
                     <AssetMasterDashboard
-                        initialDashboardData={initialDashboardData}
+                        initialData={initialData as any}
                         selectedDistrict={districtName}
                     />
                 </div>

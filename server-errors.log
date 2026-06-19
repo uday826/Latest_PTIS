@@ -1,0 +1,77 @@
+[2026-06-18T14:04:40.790Z] SAVE FAILED
+Request Payload:
+{
+  "authorityId": 1,
+  "organizationId": 1,
+  "departmentId": 1,
+  "assetNo": null,
+  "assetName": "Odysseus Rosario",
+  "assetCategoryId": 1,
+  "assetTypeId": 12,
+  "parentAssetId": null,
+  "hierarchyLevel": 0,
+  "hierarchyPath": "",
+  "address": "Ut totam et quam acc",
+  "wardId": 13,
+  "zoneId": 2,
+  "subZoneId": 621,
+  "moujaId": 5,
+  "latitude": null,
+  "longitude": null,
+  "csn": "1124444444444444444444444444444444444444444444444",
+  "typeOfUseId": null,
+  "subTypeOfUseId": null,
+  "builtUpAreaSqMeter": null,
+  "carpetAreaSqMeter": null,
+  "landAreaSqMeter": 121,
+  "totalLength": 11,
+  "averageWidth": 11,
+  "hasLift": false,
+  "purchaseValue": null,
+  "purchaseDate": null,
+  "marketValue": null,
+  "marketValueDate": null,
+  "capitalValue": null,
+  "lastCVCalculationDate": null,
+  "currentBookValue": null,
+  "depreciationRate": null,
+  "ownershipType": "Government Transferred",
+  "status": "Active",
+  "occupancyStatus": null,
+  "isRevenueGenerating": false,
+  "operationalControl": null,
+  "assetCondition": "Good",
+  "inChargeName": "Shana Burris",
+  "inChargeDesignation": "Recusandae Voluptat",
+  "inChargeMobile": "9879898989",
+  "inChargeEmail": "piqywoxasu@mailinator.com",
+  "locality": "Amet velit Nam elig",
+  "pinCode": "444444",
+  "partitionNo": "Sed aut labore magna",
+  "upicId": "Pariatur Qui tempor",
+  "propertyNo": "464",
+  "assetLocalName": "उदयसीस रोसारिओ",
+  "isActive": false,
+  "createdBy": 1,
+  "fieldValues": []
+}
+
+Field Definitions API Response:
+{
+  "success": true,
+  "statusCode": 200,
+  "data": {
+    "items": [],
+    "totalCount": 0,
+    "pageNumber": 1,
+    "pageSize": 100,
+    "totalPages": 0,
+    "hasPrevious": false,
+    "hasNext": false
+  }
+}
+
+Response Error:
+"{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.1\",\"title\":\"One or more validation errors occurred.\",\"status\":400,\"errors\":{\"CSN\":[\"AssetMaster_CSN_MaxLen_30\"]},\"traceId\":\"00-be6bf8c50c00db82041aad5bd89cc393-8b923dcbe7e49879-00\"}"
+============================================================
+

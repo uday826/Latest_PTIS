@@ -20,8 +20,7 @@ export function DashboardAcquisition({ acquisitionsList, auctionsList, onAuction
   const mounted = useSyncExternalStore(subscribe, () => true, () => false);
 
   const { acquisitionsByZone, totals } = useMemo(() => {
-    const defaultZones = ['North', 'South', 'East', 'West'];
-    const activeZones = Array.from(new Set([...defaultZones, ...acquisitionsList.map(i => i.zone)])).filter(Boolean);
+    const activeZones = Array.from(new Set(acquisitionsList.map(i => i.zone))).filter(Boolean);
     const zoneMap = activeZones.reduce((acc, z) => {
       acc[z] = { zone: z, count: 0, amount: 0, disputes: 0, pending: 0, complete: 0 };
       return acc;

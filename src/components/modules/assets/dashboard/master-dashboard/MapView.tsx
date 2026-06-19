@@ -432,7 +432,7 @@ export function MapView({ assets, selectedAsset, onAssetClick, activeFilters, ca
                   </div>
                   <div className="mt-2 rounded-md bg-green-50 px-2 py-1.5 text-center">
                     <p className="text-[10px] text-gray-500">Asset Value</p>
-                    <p className="text-sm font-bold text-green-600">₹ {asset.valueLakhs.toLocaleString('en-IN')} L</p>
+                    <p className="text-sm font-bold text-green-600">₹ {(asset.valueLakhs || 0).toLocaleString('en-IN')} L</p>
                   </div>
                 </div>
               </Popup>

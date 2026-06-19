@@ -1,4 +1,5 @@
 import { LucideIcon } from 'lucide-react';
+import type { AssetDashboardTypeByCategory, AssetDashboardAssetByType } from './asset-dashboard-api.types';
 
 export interface DashboardBackInfoItem { label: string; value: string; category?: string; }
 export interface DashboardCategoryItem { id: string; name: string; count: number; value: number; color: string; description: string; categoryId?: number; }
@@ -12,6 +13,7 @@ export interface DashboardAuctionBidItem {
 export interface DashboardStats {
   totalAssets: { value: string; change: string; backInfo: DashboardBackInfoItem[] };
   totalValue: { value: string; change: string; backInfo: DashboardBackInfoItem[] };
+  monetized: { value: string; change: string; backInfo: DashboardBackInfoItem[] };
   encroachments: { value: string; change: string; backInfo: DashboardBackInfoItem[] };
   maintenance: { value: string; change: string; backInfo: DashboardBackInfoItem[] };
   auctions: { value: string; change: string; backInfo: DashboardBackInfoItem[] };
@@ -85,10 +87,16 @@ export type DashboardMapAssetType = {
 };
 
 export type DashboardMapComponentProps = {
-  categories: Array<{ id: string; name: string; count: number; value: number }>; assets: DashboardMapAssetType[];
+  categories: Array<{ id: string; name: string; count: number; value: number; categoryId?: number }>; assets: DashboardMapAssetType[];
   selectedAsset?: DashboardMapAssetType | null; selectedDistrict: string;
   onCategoryClick: (ids: string[]) => void; onAssetClick: (asset: DashboardMapAssetType | null) => void;
   activeFilters: string[];
+  /** Key that changes when zone/ward filters change, triggering cache reset */
+  filterKey?: string;
+  /** Lazy-load asset-type breakdown for a category (called once per category on first expand) */
+  onLoadTypesByCategory?: (categoryId: number | null) => Promise<AssetDashboardTypeByCategory[]>;
+  /** Lazy-load individual assets for an asset type (called once per type on first drill-down) */
+  onLoadAssetsByType?: (assetTypeId: number) => Promise<AssetDashboardAssetByType[]>;
 };
 
 export interface AssetSummaryData {

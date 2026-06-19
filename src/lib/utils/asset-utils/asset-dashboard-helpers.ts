@@ -1,7 +1,7 @@
-import { BarChart3, MapPin, Activity, IndianRupee, Wrench, ShieldAlert } from 'lucide-react';
+import { BarChart3, MapPin, Activity, IndianRupee, Wrench, ShieldAlert, Coins } from 'lucide-react';
 import type { DashboardStats, DashboardDataPayload, MunicipalAsset, DashboardCategoryItem } from '@/types/asset-type/asset-dashboard.types';
 
-export const ICONS = { BarChart3, MapPin, Activity, IndianRupee, Wrench, ShieldAlert };
+export const ICONS = { BarChart3, MapPin, Activity, IndianRupee, Wrench, ShieldAlert, Coins };
 
 /** Normalises any value to a trimmed lowercase string for comparison */
 export const normKey = (v: unknown) => String(v ?? '').trim().toLowerCase();
@@ -60,6 +60,10 @@ export const mapSummaryToStats = (s?: Record<string, unknown> | null, categories
   const maintenanceVal = Number(s?.maintenanceDue ?? s?.maintenanceAssets ?? s?.maintenanceCount ?? 0);
   const auctionsVal = Number(s?.activeAuctions ?? s?.totalAuctions ?? s?.auctionCount ?? 0);
   const acquisitionsVal = Number(s?.assetAcquisition ?? s?.totalAcquisitions ?? s?.acquisitionCount ?? 0);
+  // Defaulting to 0 for monetized assets if not present
+  const monetizedVal = Number((s as any)?.monetizedAssetsCount ?? 0);
+  const leasedVal = Number((s as any)?.activeLeasedAssetsCount ?? 0);
+  const rentedVal = Number((s as any)?.activeRentedAssetsCount ?? 0);
 
   const assetsBack = (categories || []).map(cat => {
     const c = cat as Record<string, unknown>;
@@ -91,6 +95,14 @@ export const mapSummaryToStats = (s?: Record<string, unknown> | null, categories
       value: fmtRupee(totalValueVal),
       change: '',
       backInfo: valuesBack,
+    },
+    monetized: {
+      value: monetizedVal.toLocaleString('en-IN'),
+      change: '',
+      backInfo: [
+        { label: 'Leased', value: leasedVal.toLocaleString('en-IN') },
+        { label: 'Rented', value: rentedVal.toLocaleString('en-IN') },
+      ],
     },
     encroachments: {
       value: encroachmentsVal.toString(),
@@ -135,63 +147,4 @@ export const mapSummaryToStats = (s?: Record<string, unknown> | null, categories
   };
 };
 
-export function deriveDashboardData(baseData: DashboardDataPayload, selectedZone: string, selectedWard: string, drillDownCategories: string[]): DashboardDataPayload {
-  const zoneKey = normKey(selectedZone), isAllZone = zoneKey === 'all' || zoneKey === 'all zones';
-  const wardKey = normKey(selectedWard), isAllWard = wardKey === 'all' || wardKey === 'all wards';
-  const drillDownKeys = drillDownCategories.map(normKey);
 
-  const filteredAssets = baseData.filteredAssets.filter(asset => 
-    (isAllZone || asset.zone === selectedZone) && 
-    (isAllWard || asset.ward === selectedWard) && 
-    (drillDownKeys.length === 0 || drillDownKeys.includes(normKey(asset.category)))
-  );
-
-  const totalAssetsValue = filteredAssets.reduce((sum, asset) => sum + asset.valueLakhs, 0);
-  const encroachedCount = filteredAssets.filter(asset => {
-    const enc = asset.encroachment as Record<string, unknown> | null | undefined;
-    return !!enc?.hasEncroachment;
-  }).length;
-  const maintenanceCount = filteredAssets.filter(asset => asset.status === 'Needs Repair' || asset.status === 'Critical').length;
-
-  const categories = baseData.categories.map(category => {
-    const catAssets = filteredAssets.filter(asset => normKey(asset.category) === normKey(category.id));
-    return { ...category, count: catAssets.length, value: catAssets.reduce((sum, asset) => sum + asset.valueLakhs, 0) };
-  });
-
-  const zoneCounts = filteredAssets.reduce((acc, asset) => { acc[asset.zone] = (acc[asset.zone] || 0) + 1; return acc; }, {} as Record<string, number>);
-
-  return {
-    ...baseData,
-    stats: {
-      totalAssets: { value: filteredAssets.length.toLocaleString('en-IN'), change: baseData.stats.totalAssets.change, backInfo: buildCatBack(filteredAssets) },
-      totalValue: { value: fmtRupee(totalAssetsValue), change: baseData.stats.totalValue.change, backInfo: buildValBack(filteredAssets) },
-      encroachments: {
-        value: encroachedCount.toString(), change: baseData.stats.encroachments.change,
-        backInfo: [
-          { label: 'Active Cases', value: encroachedCount.toString(), category: 'Active Encroachments' },
-          { label: 'Resolved', value: Math.max(0, filteredAssets.length - encroachedCount).toString() },
-          { label: 'Legal Action', value: Math.floor(encroachedCount * 0.6).toString() },
-          { label: 'Under Review', value: Math.floor(encroachedCount * 0.4).toString() },
-        ],
-      },
-      maintenance: {
-        value: maintenanceCount.toString(), change: baseData.stats.maintenance.change,
-        backInfo: [
-          { label: 'Critical', value: filteredAssets.filter(a => a.status === 'Critical').length.toString() },
-          { label: 'Needs Repair', value: filteredAssets.filter(a => a.status === 'Needs Repair').length.toString() },
-          { label: 'Scheduled', value: baseData.stats.maintenance.backInfo[2]?.value ?? '0' },
-          { label: 'Budget Allocated', value: baseData.stats.maintenance.backInfo[3]?.value ?? 'Rs. 0L' },
-        ],
-      },
-      auctions: {
-        value: baseData.stats.auctions.value, change: baseData.stats.auctions.change,
-        backInfo: baseData.stats.auctions.backInfo,
-      },
-      acquisitions: {
-        value: baseData.stats.acquisitions.value, change: baseData.stats.acquisitions.change,
-        backInfo: baseData.stats.acquisitions.backInfo,
-      },
-    },
-    filteredAssets, categories, zoneDistribution: Object.entries(zoneCounts).map(([name, value]) => ({ name, value })),
-  };
-}

@@ -115,6 +115,7 @@ export function DashboardStats({ stats, icons, onCategoryClick }: DashboardStats
   const cards = [
     { titleKey: 'totalAssets',      title: 'Total Assets',      value: stats.totalAssets.value,   change: stats.totalAssets.change,   icon: icons.BarChart3,   gradient: 'bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700',   backInfo: stats.totalAssets.backInfo },
     { titleKey: 'totalValue',       title: 'Total Value',       value: stats.totalValue.value,    change: stats.totalValue.change,    icon: icons.IndianRupee, gradient: 'bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700', backInfo: stats.totalValue.backInfo },
+    { titleKey: 'monetizedAssets',  title: 'Monetized Assets',  value: stats.monetized.value,     change: stats.monetized.change,     icon: icons.Coins,       gradient: 'bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600', backInfo: stats.monetized.backInfo },
     { titleKey: 'encroachments',    title: 'Encroachments',     value: stats.encroachments.value, change: stats.encroachments.change, icon: icons.ShieldAlert, gradient: 'bg-gradient-to-br from-red-500 via-rose-600 to-red-700',           backInfo: stats.encroachments.backInfo },
     { titleKey: 'maintenanceDue',   title: 'Maintenance Due',   value: stats.maintenance.value,   change: stats.maintenance.change,   icon: icons.Wrench,      gradient: 'bg-gradient-to-br from-purple-500 via-violet-600 to-purple-700', backInfo: stats.maintenance.backInfo },
     { titleKey: 'activeAuctions',   title: 'Active Auctions',   value: stats.auctions.value,      change: stats.auctions.change,      icon: icons.Activity,    gradient: 'bg-gradient-to-br from-amber-500 via-orange-600 to-yellow-700', backInfo: stats.auctions.backInfo },
@@ -122,7 +123,7 @@ export function DashboardStats({ stats, icons, onCategoryClick }: DashboardStats
   ];
 
   return (
-    <div className="mb-4 grid grid-cols-1 gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4 md:gap-6 lg:grid-cols-3 xl:grid-cols-6">
+    <div className="mb-4 grid grid-cols-1 gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4 md:gap-6 lg:grid-cols-4 xl:grid-cols-7">
       {cards.map((card, index) => (
         <MotionCard
           key={card.titleKey} variant="default" padding="none" className="border-0 bg-transparent shadow-none"
