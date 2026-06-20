@@ -152,6 +152,7 @@ export interface ManageRentersPageData {
   pageSize: number;
   totalCount: number;
   totalPages: number;
+  searchTerm: string;
   assetCategoryId: number | null;
   assetTypeId: number | null;
   zoneId: number | null;

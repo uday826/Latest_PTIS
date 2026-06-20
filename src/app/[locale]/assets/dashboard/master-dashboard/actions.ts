@@ -231,3 +231,4 @@ export async function fetchAssetsByTypeAction(assetTypeId: number, zoneNo?: stri
     return { error: error instanceof Error ? error.message : "Failed to fetch assets" };
   }
 }
+

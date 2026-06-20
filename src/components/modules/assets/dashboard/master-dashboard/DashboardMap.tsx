@@ -95,6 +95,7 @@ export function DashboardMap({
     }
   }, [onLoadTypesByCategory]);
 
+
   // ---------------------------------------------------------------------------
   // Sections (left panel) – uses API types if loaded, else uses count from cat
   // ---------------------------------------------------------------------------
