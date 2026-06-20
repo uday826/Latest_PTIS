@@ -7,10 +7,18 @@ import { IconOnlyActionButton } from '@/components/common/ActionButtons';
 import type { AssetRegisterRow } from '@/types/municipal-asset-register.types';
 import { formatMoney } from './registerMappers';
 
-export function renderTruncatedText(value?: string) {
+export function formatMoneyInLakhs(value: string) {
+  if (!value || value === '-') return '-';
+  const num = Number(value);
+  if (Number.isNaN(num)) return value;
+  const lakhVal = num / 100000;
+  return `${lakhVal.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} Lakh`;
+}
+
+export function renderTruncatedText(value?: string, maxWidthClass: string = 'max-w-[120px]') {
   const text = value || '-';
   return (
-    <span className="block max-w-full whitespace-normal wrap-break-word leading-5" title={text}>
+    <span className={`truncate block ${maxWidthClass} leading-5`} title={text}>
       {text}
     </span>
   );
@@ -52,7 +60,7 @@ export function getRegisterColumns(
         </div>
       ),
     },
-    { key: 'assetTypeName', label: t('Asset_Type') || 'Asset Type', width: '100px', align: 'center', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined) },
+    { key: 'assetTypeName', label: t('Asset_Type') || 'Asset Type', width: '100px', align: 'center', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined, 'max-w-[90px]') },
     {
       key: 'departmentName',
       label: t('Owning_Department') || 'Owning Department',
@@ -60,9 +68,9 @@ export function getRegisterColumns(
       align: 'center',
       headerClassName: 'whitespace-nowrap text-center',
       cellClassName: 'align-middle text-center',
-      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
+      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined, 'max-w-[110px]'),
     },
-    { key: 'capitalValue', label: t('Capital_Value') || 'Capital Value', width: '100px', align: 'center', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoney(row.capitalValue) },
+    { key: 'capitalValue', label: t('Capital_Value') || 'Capital Value', width: '110px', align: 'center', headerClassName: 'whitespace-nowrap text-center', cellClassName: 'align-middle text-center', render: (_, row) => formatMoneyInLakhs(row.capitalValue) },
     {
       key: 'ownershipType',
       label: t('Ownership_Type') || 'Ownership Type',
@@ -70,7 +78,7 @@ export function getRegisterColumns(
       align: 'center',
       headerClassName: 'whitespace-nowrap text-center',
       cellClassName: 'align-middle text-center',
-      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
+      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined, 'max-w-[90px]'),
     },
     {
       key: 'status',
@@ -89,11 +97,11 @@ export function getRegisterColumns(
     {
       key: 'address',
       label: t('Address') || 'Address',
-      width: '130px',
-      align: 'center',
-      headerClassName: 'whitespace-nowrap text-center',
-      cellClassName: 'align-middle text-center',
-      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined),
+      width: '180px',
+      align: 'left',
+      headerClassName: 'whitespace-nowrap text-left',
+      cellClassName: 'align-middle text-left',
+      render: (value) => renderTruncatedText(typeof value === 'string' ? value : undefined, 'max-w-[170px]'),
     },
     {
       key: 'id',

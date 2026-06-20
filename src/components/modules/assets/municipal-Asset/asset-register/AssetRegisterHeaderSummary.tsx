@@ -20,7 +20,14 @@ export function AssetRegisterHeaderSummary({
         />
         <DashboardCard
           label={translate('Capital_Value') || 'Capital Value'}
-          value={`\u20B9${totalCapitalValue.toLocaleString('en-IN')}`}
+          value={
+            totalCapitalValue === 0
+              ? '₹0 Cr'
+              : `\u20B9${(totalCapitalValue / 10000000).toLocaleString('en-IN', {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2,
+                })} Cr`
+          }
           valueColor="text-emerald-600"
           icon={<Coins className="h-5 w-5" />}
           iconBg="bg-emerald-50 text-emerald-600 border-emerald-100"

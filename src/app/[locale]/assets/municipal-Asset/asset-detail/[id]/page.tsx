@@ -5,6 +5,7 @@ import {
   fetchAssetFloorSummaryByAsset,
   fetchAssetMasterById,
   fetchChildAssetsByParent,
+  fetchAssetPhotosAndPlansByAsset,
 } from '@/app/[locale]/assets/municipal-Asset/asset-detail/actions';
 import { Card, CardContent } from '@/components/common';
 import { AssetDetailClientWrapper } from '@/components/modules/assets/municipal-Asset/AssetDetailClientWrapper';
@@ -59,14 +60,20 @@ export default async function AssetDetailPage({
     totalSubAssets: 0,
     error: null,
   };
+  let photosAndPlansResult: { documents: any[]; error: string | null } = { documents: [], error: null };
 
   if (activeTab === 'overview') {
-    fieldDefinitionResult = await fetchAssetFieldDefinitionsByCategoryType(
-      (asset as { assetCategoryId?: number | string; AssetCategoryId?: number | string } | null | undefined)?.assetCategoryId ??
-      (asset as { AssetCategoryId?: number | string } | null | undefined)?.AssetCategoryId,
-      (asset as { assetTypeId?: number | string; AssetTypeId?: number | string } | null | undefined)?.assetTypeId ??
-      (asset as { AssetTypeId?: number | string } | null | undefined)?.AssetTypeId
-    );
+    const [fieldDefRes, photosPlansRes] = await Promise.all([
+      fetchAssetFieldDefinitionsByCategoryType(
+        (asset as { assetCategoryId?: number | string; AssetCategoryId?: number | string } | null | undefined)?.assetCategoryId ??
+        (asset as { AssetCategoryId?: number | string } | null | undefined)?.AssetCategoryId,
+        (asset as { assetTypeId?: number | string; AssetTypeId?: number | string } | null | undefined)?.assetTypeId ??
+        (asset as { AssetTypeId?: number | string } | null | undefined)?.AssetTypeId
+      ),
+      fetchAssetPhotosAndPlansByAsset(id),
+    ]);
+    fieldDefinitionResult = fieldDefRes;
+    photosAndPlansResult = photosPlansRes;
   } else if (activeTab === 'documents') {
     documentResult = await fetchAssetDocumentsByAsset(id);
   } else if (activeTab === 'floor-details') {
@@ -90,6 +97,8 @@ export default async function AssetDetailPage({
       childAssetsError: childAssetResult.error,
       inventoryData: inventoryResult.success ? inventoryResult.data ?? null : null,
       inventoryError: inventoryResult.success ? null : inventoryResult.error ?? null,
+      photosAndPlans: photosAndPlansResult.documents,
+      photosAndPlansError: photosAndPlansResult.error,
     } satisfies AssetDetailRecord)
     : null;
 

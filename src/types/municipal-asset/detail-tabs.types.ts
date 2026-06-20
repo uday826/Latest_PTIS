@@ -32,12 +32,29 @@ export type AssetDetailRecord = {
   createdDate?: string | null;
   updatedDate?: string | null;
   hasLift?: boolean | null;
+  isRevenueGenerating?: boolean | null;
   latitude?: number | string | null;
   longitude?: number | string | null;
   authorityId?: number | string | null;
   landAreaSqMeter?: number | string | null;
   builtUpAreaSqMeter?: number | string | null;
   carpetAreaSqMeter?: number | string | null;
+  propertyNo?: string | null;
+  partitionNo?: string | null;
+  upicId?: string | null;
+  assetWardNo?: string | null;
+  inChargeName?: string | null;
+  inChargeDesignation?: string | null;
+  inChargeMobile?: string | null;
+  inChargeEmail?: string | null;
+  locality?: string | null;
+  pinCode?: string | null;
+  totalLength?: number | string | null;
+  averageWidth?: number | string | null;
+  departmentName?: string | null;
+  authorityName?: string | null;
+  organizationName?: string | null;
+  moujaName?: string | null;
   fieldValues?: Array<{
     id?: number | string;
     fieldDefinitionId?: number | string | null;
@@ -57,6 +74,8 @@ export type AssetDetailRecord = {
   documentsError?: string | null;
   inventoryData?: InventoryBatchListResponse | null;
   inventoryError?: string | null;
+  photosAndPlans?: AssetDocumentListItem[];
+  photosAndPlansError?: string | null;
 };
 
 export type AssetDetailTabKey =
@@ -265,4 +284,6 @@ export type AssetDocumentListItem = {
   uploadedDate?: string | null;
   fileSize?: number | string | null;
   status?: string | null;
+  documentGuid?: string | null;
+  bindingPurpose?: string | null;
 };

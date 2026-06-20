@@ -121,6 +121,8 @@ function normalizeAssetDocument(raw: unknown): AssetDocumentListItem | null {
     uploadedDate: pickFirstString(item, ["uploadedDate", "UploadedDate", "createdDate", "CreatedDate", "createdOn", "CreatedOn"]),
     fileSize: (item.fileSize ?? item.FileSize ?? item.size ?? item.Size) as number | string | null | undefined,
     status: pickFirstString(item, ["status", "Status", "documentStatus", "DocumentStatus"]),
+    documentGuid: pickFirstString(item, ["documentGuid", "DocumentGuid"]),
+    bindingPurpose: pickFirstString(item, ["bindingPurpose", "BindingPurpose"]),
   };
 }
 

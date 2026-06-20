@@ -84,20 +84,25 @@ export function AssetDetailView({ asset, initialDocumentId, initialTab, tabs }: 
           </Button>
           <div className="min-w-0">
             <h1 className="truncate text-xl font-bold leading-tight text-slate-900">{textOrBlank(asset.assetName)}</h1>
-            <p className="truncate text-sm font-medium text-blue-500">
-              {[asset.assetTypeName, asset.zoneName, asset.wardName].filter(Boolean).join(' - ')}
-            </p>
           </div>
         </div>
       </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
         <Card variant="default" padding="sm" className="group relative min-h-22 overflow-hidden border-blue-200 shadow-sm">
           <div className="absolute left-0 top-0 h-full w-1 bg-blue-500" />
           <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Info className="h-3 w-3 text-blue-500" /> {t('overviewTab.assetNo')}</p>
           <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.assetNo)}</p>
+        </Card>
+        <Card variant="default" padding="sm" className="min-h-22 border-slate-200 shadow-sm">
+          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><ClipboardList className="h-3 w-3 text-blue-500" /> {t('overviewTab.upicId', { defaultValue: 'UPIC ID' })}</p>
+          <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.upicId)}</p>
+        </Card>
+        <Card variant="default" padding="sm" className="min-h-22 border-slate-200 shadow-sm">
+          <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><ClipboardList className="h-3 w-3 text-blue-500" /> {t('overviewTab.propertyNo', { defaultValue: 'Property Number' })}</p>
+          <p className="mt-1 text-sm font-bold text-slate-800">{textOrBlank(asset.propertyNo)}</p>
         </Card>
         <Card variant="default" padding="sm" className="min-h-22 border-slate-200 shadow-sm">
           <p className="flex items-center gap-1 text-[10px] font-bold text-slate-500"><Map className="h-3 w-3 text-blue-500" /> {t('overviewTab.zone')}</p>
