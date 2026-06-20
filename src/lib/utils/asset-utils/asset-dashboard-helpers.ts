@@ -147,4 +147,33 @@ export const mapSummaryToStats = (s?: Record<string, unknown> | null, categories
   };
 };
 
+// ─── ACTION HELPERS FOR SERVER ACTIONS ───────────────────────────────────────
+import type { AssetDashboardSummaryDto, AssetDashboardCategoryCount, AssetDashboardLocation } from '@/types/asset-type/asset-dashboard-api.types';
 
+export function getActionErrorMessage(e: unknown): string { return e instanceof Error && e.message ? e.message : 'Error fetching data.'; }
+export const nNum = (v: unknown) => Number(v ?? 0);
+export const chgStr = (v: number, s = '') => v === 0 ? '' : `${v > 0 ? '+' : ''}${v.toFixed(1)}${s} vs last period`;
+
+export function actionBuildStats(dto: AssetDashboardSummaryDto, cats: DashboardCategoryItem[]): DashboardStats {
+  const cr = nNum(dto.totalValue) / 1e7, cC = dto.assetCountCardDetails ?? [], vC = dto.assetValueCardDetails ?? [];
+  return {
+    totalAssets: { value: nNum(dto.totalAssets).toLocaleString('en-IN'), change: chgStr(nNum(dto.percentageChange), '%'), backInfo: cC.length ? cC.map((c) => ({ label: c.category, value: String(c.count), category: String(c.category).trim().toLowerCase() })) : cats.map(c => ({ label: c.name, value: String(c.count), category: c.id })) },
+    totalValue: { value: `₹${cr >= 1 ? cr.toFixed(0) + 'Cr' : (nNum(dto.totalValue) / 1e5).toFixed(1) + 'L'}`, change: chgStr(nNum(dto.valueChange)), backInfo: vC.length ? vC.map((c) => ({ label: c.title, value: c.value })) : cats.map(c => ({ label: `${c.name} Value`, value: c.value > 0 ? `₹${(c.value / 1e7).toFixed(0)}Cr` : '₹0Cr' })) },
+    monetized: { value: nNum(dto.monetizedAssetsCount).toLocaleString('en-IN'), change: '', backInfo: [{ label: 'Leased', value: nNum(dto.activeLeasedAssetsCount).toLocaleString('en-IN') }, { label: 'Rented', value: nNum(dto.activeRentedAssetsCount).toLocaleString('en-IN') }] },
+    encroachments: { value: String(nNum(dto.encroachments)), change: chgStr(nNum(dto.encroachmentChange)), backInfo: [] },
+    maintenance: { value: String(nNum(dto.maintenanceDue)), change: chgStr(nNum(dto.maintenanceChange)), backInfo: [] },
+    auctions: { value: String(nNum(dto.activeAuctions)), change: chgStr(nNum(dto.auctionChange)), backInfo: [] },
+    acquisitions: { value: String(nNum(dto.assetAcquisition)), change: chgStr(nNum(dto.acquisitionChange)), backInfo: [] },
+  };
+}
+
+export function actionMapCat(dto: AssetDashboardCategoryCount): DashboardCategoryItem {
+  const n = String(dto.category ?? '');
+  return { id: n.trim().toLowerCase() || String(dto.id ?? ''), categoryId: Number(dto.id ?? 0), name: n || `Category ${dto.id}`, count: Number(dto.count ?? 0), value: Number(dto.totalValue ?? 0), color: '#3B82F6', description: '' };
+}
+
+export function actionMapLoc(dto: AssetDashboardLocation, z?: string, w?: string): MunicipalAsset {
+  return { id: String(dto.id || Math.random()), name: dto.name || dto.assetNo || `Asset ${dto.id}`, category: (dto.categoryName || 'building').trim().toLowerCase() as any, subCategory: dto.categoryName || '', location: 'Municipal Area', zone: z && z !== 'all' ? z : '', ward: w && w !== 'all' ? w : '', latitude: Number(dto.latitude) || 0, longitude: Number(dto.longitude) || 0, status: dto.status || 'Active', health: 0, lastInspection: '', valueLakhs: dto.marketValue ? dto.marketValue / 1e5 : 0, usage: '', marketValue: dto.marketValue || 0, encroachment: { hasEncroachment: false } };
+}
+
+export const ACTION_EMPTY_STATS: DashboardStats = { totalAssets: { value: '0', change: '', backInfo: [] }, totalValue: { value: '₹0Cr', change: '', backInfo: [] }, monetized: { value: '0', change: '', backInfo: [] }, encroachments: { value: '0', change: '', backInfo: [] }, maintenance: { value: '0', change: '', backInfo: [] }, auctions: { value: '0', change: '', backInfo: [] }, acquisitions: { value: '0', change: '', backInfo: [] } };

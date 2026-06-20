@@ -1,0 +1,31 @@
+{
+  "table": {
+    "columns": {
+      "description": "विवरण",
+      "searchSequence": "खोज अनुक्रम",
+      "status": "स्थिति"
+    }
+  },
+  "form": {
+    "addTitle": "नया उपयोग उप-प्रकार जोड़ें",
+    "editTitle": "उपयोग उप-प्रकार संपादित करें",
+    "createSubtitle": "एक नया उपयोग उप-प्रकार कॉन्फ़िगरेशन बनाएं",
+    "updateSubtitle": "मौजूदा उपयोग उप-प्रकार कॉन्फ़िगरेशन अपडेट करें",
+    "labels": {
+      "status": "स्थिति",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "description": "विवरण",
+      "searchSequence": "खोज अनुक्रम"
+    },
+    "placeholders": {
+      "description": "जैसे, खुदरा दुकान",
+      "searchSequence": "जैसे, 1"
+    },
+    "buttons": {
+      "save": "सहेजें",
+      "update": "अपडेट करें",
+      "cancel": "रद्द करें"
+    }
+  }
+}

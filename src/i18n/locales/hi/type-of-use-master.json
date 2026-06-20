@@ -1,0 +1,34 @@
+{
+  "table": {
+    "columns": {
+      "typeOfUseCode": "उपयोग प्रकार कोड",
+      "description": "विवरण",
+      "groupId": "समूह आईडी",
+      "status": "स्थिति"
+    }
+  },
+  "form": {
+    "addTitle": "नया उपयोग प्रकार जोड़ें",
+    "editTitle": "उपयोग प्रकार संपादित करें",
+    "createSubtitle": "एक नया उपयोग प्रकार कॉन्फ़िगरेशन बनाएं",
+    "updateSubtitle": "मौजूदा उपयोग प्रकार कॉन्फ़िगरेशन अपडेट करें",
+    "labels": {
+      "status": "स्थिति",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "typeOfUseCode": "उपयोग प्रकार कोड",
+      "description": "विवरण",
+      "groupId": "समूह आईडी"
+    },
+    "placeholders": {
+      "typeOfUseCode": "जैसे, COM01",
+      "description": "जैसे, व्यावसायिक",
+      "groupId": "जैसे, 1"
+    },
+    "buttons": {
+      "save": "सहेजें",
+      "update": "अपडेट करें",
+      "cancel": "रद्द करें"
+    }
+  }
+}

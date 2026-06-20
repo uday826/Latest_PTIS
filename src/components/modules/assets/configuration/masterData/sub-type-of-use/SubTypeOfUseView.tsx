@@ -3,15 +3,17 @@
 import type { MasterDataCommonProps } from '@/types/asset-type/master-data.types';
 import { MasterDataLayout } from '../common/MasterDataLayout';
 import { MasterTypes } from '../common/MasterTypes';
-import { RoomTypeMasterTable } from './RoomTypeMasterTable';
+import { GroupFilter } from '../common/GroupFilter';
+import { SubTypeOfUseTable } from './SubTypeOfUseTable';
 
-export function RoomTypeMasterView(props: MasterDataCommonProps) {
+export function SubTypeOfUseView(props: MasterDataCommonProps) {
   const {
     master,
     selectedMaster,
     selectedGroup,
     isPending,
     onSelectMaster,
+    onSelectGroup,
     masterTypes,
     onDelete,
     onSave,
@@ -27,8 +29,17 @@ export function RoomTypeMasterView(props: MasterDataCommonProps) {
           masterTypes={masterTypes}
         />
       }
+      groupFilter={
+        <GroupFilter
+          groups={master?.groups || []}
+          selected={selectedGroup}
+          onSelect={onSelectGroup}
+          masterId={selectedMaster}
+          title="Type of Use"
+        />
+      }
       recordsTable={
-        <RoomTypeMasterTable
+        <SubTypeOfUseTable
           master={master}
           selectedGroup={selectedGroup}
           onDelete={onDelete}

@@ -4,6 +4,7 @@
 
 export interface RoomTypeMasterItem {
   id: number;
+  assetTypeId: number;
   roomTypeCode: string;
   roomTypeName: string;
   isActive: boolean;
@@ -17,6 +18,7 @@ export interface RoomTypeMasterListParams {
   SearchTerm?: string;
   RoomTypeCode?: string;
   RoomTypeName?: string;
+  AssetTypeId?: number;
 }
 
 export interface RoomTypeMasterListResponse {

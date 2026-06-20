@@ -1,0 +1,25 @@
+export interface TypeOfUseMasterItem {
+  id: number;
+  assetTypeId: number;
+  typeOfUseCode: string;
+  typeOfUseGroupId: number;
+  description: string;
+  isActive: boolean;
+}
+
+export type TypeOfUseMasterPayload = Omit<TypeOfUseMasterItem, 'id'>;
+
+export interface TypeOfUseMasterListParams {
+  PageNumber?: number;
+  PageSize?: number;
+  SearchTerm?: string;
+  AssetTypeId?: number;
+}
+
+export interface TypeOfUseMasterListResponse {
+  items: TypeOfUseMasterItem[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}

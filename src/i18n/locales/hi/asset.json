@@ -314,8 +314,11 @@
           "penaltyValueRequired": "जुर्माना मूल्य आवश्यक है",
           "penaltyValueRange": "जुर्माना मूल्य 0 या अधिक होना चाहिए",
           "penaltyValuePercentageRange": "प्रतिशत गणना के लिए जुर्माना मूल्य 0 और 100 के बीच होना चाहिए",
-          "gracePeriodDaysRequired": "छूट अवधि (दिनों में) आवश्यक है",
-          "gracePeriodDaysRange": "छूट की अवधि 0 या अधिक होनी चाहिए"
+          "gracePeriodDaysRequired": "अनुग्रह अवधि के दिन आवश्यक हैं",
+          "gracePeriodDaysRange": "अनुग्रह अवधि के दिन 0 से अधिक या उसके बराबर होने चाहिए",
+          "groupIdRequired": "समूह आवश्यक है",
+          "typeOfUseRequired": "उपयोग का प्रकार आवश्यक है",
+          "searchSequenceRequired": "खोज अनुक्रम आवश्यक है"
         }
       },
       "messages": {
@@ -357,6 +360,8 @@
     "inventory-condition-master": "इन्वेंटरी स्थिति",
     "gst-master": "जीएसटी मास्टर",
     "penalty-rule-master": "जुर्माना नियम मास्टर",
-    "room-type-master": "कमरा प्रकार मास्टर"
+    "room-type-master": "कमरा प्रकार मास्टर",
+    "type-of-use-master": "Type Of Use Master",
+    "sub-type-of-use-master": "Sub Type Of Use Master"
   }
 }

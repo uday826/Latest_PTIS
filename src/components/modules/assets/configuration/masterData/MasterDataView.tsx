@@ -9,6 +9,7 @@ import type { ComponentType } from 'react';
 
 const ROUTE_MAP: Record<string, string> = {
   [MASTER_IDS.TYPE]: 'asset-type',
+  [MASTER_IDS.CATEGORY]: 'asset-category-master',
   [MASTER_IDS.INVENTORY_CATEGORY]: 'inventory-category',
   [MASTER_IDS.INVENTORY_MODEL]: 'inventory-model',
   [MASTER_IDS.INVENTORY_NAME]: 'inventory-name',
@@ -18,6 +19,8 @@ const ROUTE_MAP: Record<string, string> = {
   [MASTER_IDS.TAX]: 'gst-master',
   [MASTER_IDS.PENALTY]: 'penalty-rule-master',
   [MASTER_IDS.ROOM_TYPE]: 'room-type-master',
+  [MASTER_IDS.TYPE_OF_USE]: 'type-of-use',
+  [MASTER_IDS.SUB_TYPE_OF_USE]: 'sub-type-of-use',
 };
 
 /**

@@ -24,6 +24,7 @@ export interface DashboardDataPayload {
   stats: DashboardStats; filteredAssets: MunicipalAsset[]; categories: DashboardCategoryItem[];
   zoneDistribution: DashboardZoneDistributionItem[]; acquisitionsList: LandAcquisition[]; auctionsList: DashboardAuctionBidItem[];
   allZones: string[]; allWards: { wardNo: string; zoneNo: string; }[];
+  initialTypes?: AssetDashboardTypeByCategory[];
 }
 
 export interface MunicipalAsset {

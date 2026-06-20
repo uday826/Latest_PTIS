@@ -1,0 +1,34 @@
+{
+  "table": {
+    "columns": {
+      "typeOfUseCode": "वापर प्रकार कोड",
+      "description": "वर्णन",
+      "groupId": "गट आयडी",
+      "status": "स्थिती"
+    }
+  },
+  "form": {
+    "addTitle": "नवीन वापर प्रकार जोडा",
+    "editTitle": "वापर प्रकार संपादित करा",
+    "createSubtitle": "नवीन वापर प्रकार कॉन्फिगरेशन तयार करा",
+    "updateSubtitle": "अस्तित्वात असलेले वापर प्रकार कॉन्फिगरेशन अद्यतनित करा",
+    "labels": {
+      "status": "स्थिती",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "typeOfUseCode": "वापर प्रकार कोड",
+      "description": "वर्णन",
+      "groupId": "गट आयडी"
+    },
+    "placeholders": {
+      "typeOfUseCode": "उदा. COM01",
+      "description": "उदा. व्यावसायिक",
+      "groupId": "उदा. 1"
+    },
+    "buttons": {
+      "save": "जतन करा",
+      "update": "अद्यतनित करा",
+      "cancel": "रद्द करा"
+    }
+  }
+}

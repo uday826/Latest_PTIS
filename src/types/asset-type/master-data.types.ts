@@ -16,6 +16,8 @@ export const MASTER_IDS = {
   TAX: 'gst-master',
   PENALTY: 'penalty-rule-master',
   ROOM_TYPE: 'room-type-master',
+  TYPE_OF_USE: 'type-of-use-master',
+  SUB_TYPE_OF_USE: 'sub-type-of-use-master',
 } as const;
 
 export type MasterId = typeof MASTER_IDS[keyof typeof MASTER_IDS];
@@ -123,6 +125,8 @@ export interface MasterDataFormErrors {
   calculationType?: string;
   penaltyValue?: string;
   gracePeriodDays?: string;
+  departmentId?: string;
+  displayOrder?: string;
 }
 
 export interface MasterTypesProps {

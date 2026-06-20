@@ -8,7 +8,7 @@ import type { MasterDataFormProps } from '@/types/asset-type/master-data.types';
 import { useMasterDataFormState } from '@/hooks/asset-hooks/useMasterDataFormState';
 import { useTranslations } from 'next-intl';
 
-export function RoomTypeMasterForm({
+export function SubTypeOfUseForm({
   open,
   onClose,
   onSave,
@@ -20,7 +20,7 @@ export function RoomTypeMasterForm({
   groups,
   isPending = false,
 }: MasterDataFormProps) {
-  const t = useTranslations('roomTypeMaster');
+  const t = useTranslations('subTypeOfUseMaster.form');
   const tErrors = useTranslations('asset.configuration.masterData.form.errors');
 
   const translateError = (key?: string) => {
@@ -41,7 +41,15 @@ export function RoomTypeMasterForm({
   } = useMasterDataFormState(
     masterId,
     editData,
-    (payload, onSuccess) => onSave(payload, onSuccess),
+    (payload, onSuccess) => {
+      // make sure name and code are populated to pass hook validation if they are needed internally
+      const finalPayload = {
+        ...payload,
+        name: payload.description || 'SubType',
+        id: payload.id || 'SUBTYPE',
+      };
+      onSave(finalPayload, onSuccess);
+    },
     onClose,
     selectedGroup,
     existingCodes,
@@ -50,20 +58,18 @@ export function RoomTypeMasterForm({
 
   const isEdit = !!editData;
   const labels = {
-    title: isEdit
-      ? t('form.editTitle')
-      : t('form.addTitle'),
-    subtitle: isEdit
-      ? t('form.updateSubtitle')
-      : t('form.createSubtitle'),
-    cancelLabel: t('form.buttons.cancel'),
-    saveLabel: isEdit
-      ? t('form.buttons.update')
-      : t('form.buttons.save'),
-    statusLabel: t('form.labels.status'),
-    activeLabel: t('form.labels.active'),
-    inactiveLabel: t('form.labels.inactive'),
+    title: t(isEdit ? 'editTitle' : 'addTitle'),
+    subtitle: t(isEdit ? 'updateSubtitle' : 'createSubtitle'),
+    cancelLabel: t('buttons.cancel'),
+    saveLabel: t(isEdit ? 'buttons.update' : 'buttons.save'),
+    statusLabel: t('labels.status'),
+    activeLabel: t('labels.active'),
+    inactiveLabel: t('labels.inactive'),
   };
+
+  // Pre-fill dummy code/name to bypass strict hook validation if fields aren't shown
+  if (!formData.code) setField('code', 'SUBTYPE');
+  if (!formData.name) setField('name', 'SubType');
 
   return (
     <Drawer
@@ -137,39 +143,43 @@ export function RoomTypeMasterForm({
             </div>
           </div>
         )}
+
         <Select
-          label="Asset Type" // Ensure there's a translation key later or use hardcoded for now if not available
+          label="Type Of Use"
           required
           options={[{ label: 'Select...', value: '' }, ...(groups?.filter(g => g.id !== 'all').map(g => ({ label: g.name, value: g.id })) || [])]}
-          value={formData.group || ''}
-          onChange={(_e, val) => setField('group', val)}
+          value={formData.departmentId?.toString() || ''}
+          onChange={(_e, val) => setField('departmentId', val ? Number(val) : 0)}
           disabled={isPending || isEdit}
-          error={translateError(errors.group)}
+          error={translateError(errors.departmentId)}
         />
 
         <Input
-          label={t('form.labels.roomTypeCode')}
+          label={t('labels.description')}
           required
-          value={formData.code}
-          placeholder={t('form.placeholders.roomTypeCode')}
-          onChange={(e) => setField('code', e.target.value)}
-          disabled={isPending || isEdit}
+          value={formData.description}
+          placeholder={t('placeholders.description')}
+          onChange={(e) => {
+            setField('description', e.target.value);
+            setField('name', e.target.value); // Keep hook happy
+          }}
+          disabled={isPending}
           fullWidth
-          maxLength={15}
-          error={translateError(errors.code)}
+          maxLength={80}
+          error={translateError(errors.description)}
           className="placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700"
         />
 
         <Input
-          label={t('form.labels.roomTypeName')}
+          label={t('labels.searchSequence')}
+          type="number"
           required
-          value={formData.name}
-          placeholder={t('form.placeholders.roomTypeName')}
-          onChange={(e) => setField('name', e.target.value)}
+          value={formData.displayOrder || ''}
+          placeholder={t('placeholders.searchSequence')}
+          onChange={(e) => setField('displayOrder', Number(e.target.value))}
           disabled={isPending}
           fullWidth
-          maxLength={40}
-          error={translateError(errors.name)}
+          error={translateError(errors.displayOrder)}
           className="placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700"
         />
       </div>

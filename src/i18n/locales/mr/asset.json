@@ -315,7 +315,10 @@
           "penaltyValueRange": "दंड मूल्य 0 किंवा अधिक असणे आवश्यक आहे",
           "penaltyValuePercentageRange": "टक्केवारी गणनेसाठी दंड मूल्य 0 ते 100 दरम्यान असणे आवश्यक आहे",
           "gracePeriodDaysRequired": "सवलत कालावधी (दिवस) आवश्यक आहे",
-          "gracePeriodDaysRange": "सवलत कालावधी 0 किंवा अधिक असणे आवश्यक आहे"
+          "gracePeriodDaysRange": "सवलत कालावधी 0 किंवा अधिक असणे आवश्यक आहे",
+          "groupIdRequired": "गट आवश्यक आहे",
+          "typeOfUseRequired": "वापराचा प्रकार आवश्यक आहे",
+          "searchSequenceRequired": "शोध क्रम आवश्यक आहे"
         }
       },
       "messages": {
@@ -357,6 +360,8 @@
     "inventory-condition-master": "इन्व्हेंटरी स्थिती",
     "gst-master": "जीएसटी मास्टर",
     "penalty-rule-master": "दंड नियम मास्टर",
-    "room-type-master": "खोली प्रकार मास्टर"
+    "room-type-master": "खोली प्रकार मास्टर",
+    "type-of-use-master": "Type Of Use Master",
+    "sub-type-of-use-master": "Sub Type Of Use Master"
   }
 }

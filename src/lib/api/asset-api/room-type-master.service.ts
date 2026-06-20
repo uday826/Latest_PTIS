@@ -26,6 +26,7 @@ export const roomTypeMasterService = {
       if (params?.SearchTerm) q.set('SearchTerm', params.SearchTerm);
       if (params?.RoomTypeCode) q.set('RoomTypeCode', params.RoomTypeCode);
       if (params?.RoomTypeName) q.set('RoomTypeName', params.RoomTypeName);
+      if (params?.AssetTypeId) q.set('AssetTypeId', params.AssetTypeId.toString());
 
       const queryString = q.toString();
       const res = await apiClient.get<RoomTypeMasterListResponse>(

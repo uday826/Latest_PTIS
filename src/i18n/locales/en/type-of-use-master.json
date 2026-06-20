@@ -1,0 +1,34 @@
+{
+  "table": {
+    "columns": {
+      "typeOfUseCode": "Type Of Use Code",
+      "description": "Description",
+      "groupId": "Group ID",
+      "status": "Status"
+    }
+  },
+  "form": {
+    "addTitle": "Add Type Of Use",
+    "editTitle": "Edit Type Of Use",
+    "createSubtitle": "Create a new Type Of Use configuration",
+    "updateSubtitle": "Update existing Type Of Use configuration",
+    "labels": {
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "typeOfUseCode": "Type Of Use Code",
+      "description": "Description",
+      "groupId": "Group ID"
+    },
+    "placeholders": {
+      "typeOfUseCode": "e.g., COM01",
+      "description": "e.g., Commercial",
+      "groupId": "e.g., 1"
+    },
+    "buttons": {
+      "save": "Save",
+      "update": "Update",
+      "cancel": "Cancel"
+    }
+  }
+}

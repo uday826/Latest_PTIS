@@ -8,7 +8,7 @@ import type { MasterDataFormProps } from '@/types/asset-type/master-data.types';
 import { useMasterDataFormState } from '@/hooks/asset-hooks/useMasterDataFormState';
 import { useTranslations } from 'next-intl';
 
-export function RoomTypeMasterForm({
+export function TypeOfUseForm({
   open,
   onClose,
   onSave,
@@ -20,7 +20,7 @@ export function RoomTypeMasterForm({
   groups,
   isPending = false,
 }: MasterDataFormProps) {
-  const t = useTranslations('roomTypeMaster');
+  const t = useTranslations('typeOfUseMaster.form');
   const tErrors = useTranslations('asset.configuration.masterData.form.errors');
 
   const translateError = (key?: string) => {
@@ -50,19 +50,13 @@ export function RoomTypeMasterForm({
 
   const isEdit = !!editData;
   const labels = {
-    title: isEdit
-      ? t('form.editTitle')
-      : t('form.addTitle'),
-    subtitle: isEdit
-      ? t('form.updateSubtitle')
-      : t('form.createSubtitle'),
-    cancelLabel: t('form.buttons.cancel'),
-    saveLabel: isEdit
-      ? t('form.buttons.update')
-      : t('form.buttons.save'),
-    statusLabel: t('form.labels.status'),
-    activeLabel: t('form.labels.active'),
-    inactiveLabel: t('form.labels.inactive'),
+    title: t(isEdit ? 'editTitle' : 'addTitle'),
+    subtitle: t(isEdit ? 'updateSubtitle' : 'createSubtitle'),
+    cancelLabel: t('buttons.cancel'),
+    saveLabel: t(isEdit ? 'buttons.update' : 'buttons.save'),
+    statusLabel: t('labels.status'),
+    activeLabel: t('labels.active'),
+    inactiveLabel: t('labels.inactive'),
   };
 
   return (
@@ -137,8 +131,9 @@ export function RoomTypeMasterForm({
             </div>
           </div>
         )}
+        
         <Select
-          label="Asset Type" // Ensure there's a translation key later or use hardcoded for now if not available
+          label="Asset Type"
           required
           options={[{ label: 'Select...', value: '' }, ...(groups?.filter(g => g.id !== 'all').map(g => ({ label: g.name, value: g.id })) || [])]}
           value={formData.group || ''}
@@ -148,28 +143,43 @@ export function RoomTypeMasterForm({
         />
 
         <Input
-          label={t('form.labels.roomTypeCode')}
+          label={t('labels.typeOfUseCode')}
           required
           value={formData.code}
-          placeholder={t('form.placeholders.roomTypeCode')}
-          onChange={(e) => setField('code', e.target.value)}
+          placeholder={t('placeholders.typeOfUseCode')}
+          onChange={(e) => {
+            setField('code', e.target.value);
+            setField('name', e.target.value); // Sync name since it's required internally
+          }}
           disabled={isPending || isEdit}
           fullWidth
-          maxLength={15}
+          maxLength={20}
           error={translateError(errors.code)}
           className="placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700"
         />
 
         <Input
-          label={t('form.labels.roomTypeName')}
+          label={t('labels.description')}
           required
-          value={formData.name}
-          placeholder={t('form.placeholders.roomTypeName')}
-          onChange={(e) => setField('name', e.target.value)}
+          value={formData.description}
+          placeholder={t('placeholders.description')}
+          onChange={(e) => setField('description', e.target.value)}
           disabled={isPending}
           fullWidth
-          maxLength={40}
-          error={translateError(errors.name)}
+          maxLength={80}
+          error={translateError(errors.description)}
+          className="placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700"
+        />
+
+        <Input
+          label={t('labels.groupId')}
+          required
+          type="number"
+          value={formData.departmentId || ''}
+          placeholder={t('placeholders.groupId')}
+          onChange={(e) => setField('departmentId', Number(e.target.value))}
+          disabled={isPending}
+          fullWidth
           className="placeholder:!text-slate-500 placeholder:!text-[13px] !text-[13px] !text-slate-700"
         />
       </div>

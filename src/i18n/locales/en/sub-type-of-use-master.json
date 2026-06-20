@@ -1,0 +1,31 @@
+{
+  "table": {
+    "columns": {
+      "description": "Description",
+      "searchSequence": "Search Sequence",
+      "status": "Status"
+    }
+  },
+  "form": {
+    "addTitle": "Add Sub Type Of Use",
+    "editTitle": "Edit Sub Type Of Use",
+    "createSubtitle": "Create a new Sub Type Of Use configuration",
+    "updateSubtitle": "Update existing Sub Type Of Use configuration",
+    "labels": {
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "description": "Description",
+      "searchSequence": "Search Sequence"
+    },
+    "placeholders": {
+      "description": "e.g., Retail Store",
+      "searchSequence": "e.g., 1"
+    },
+    "buttons": {
+      "save": "Save",
+      "update": "Update",
+      "cancel": "Cancel"
+    }
+  }
+}

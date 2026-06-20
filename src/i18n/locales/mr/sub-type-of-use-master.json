@@ -1,0 +1,31 @@
+{
+  "table": {
+    "columns": {
+      "description": "वर्णन",
+      "searchSequence": "शोध अनुक्रम",
+      "status": "स्थिती"
+    }
+  },
+  "form": {
+    "addTitle": "नवीन वापर उप-प्रकार जोडा",
+    "editTitle": "वापर उप-प्रकार संपादित करा",
+    "createSubtitle": "नवीन वापर उप-प्रकार कॉन्फिगरेशन तयार करा",
+    "updateSubtitle": "अस्तित्वात असलेले वापर उप-प्रकार कॉन्फिगरेशन अद्यतनित करा",
+    "labels": {
+      "status": "स्थिती",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "description": "वर्णन",
+      "searchSequence": "शोध अनुक्रम"
+    },
+    "placeholders": {
+      "description": "उदा. किरकोळ दुकान",
+      "searchSequence": "उदा. 1"
+    },
+    "buttons": {
+      "save": "जतन करा",
+      "update": "अद्यतनित करा",
+      "cancel": "रद्द करा"
+    }
+  }
+}
