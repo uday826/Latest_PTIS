@@ -197,14 +197,14 @@ export function MapPickerComponent({ isOpen, onClose, onSelect, initialLat, init
 
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) return;
-    
+
     setIsSearching(true);
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`
       );
       const data = await response.json();
-      
+
       if (data && data.length > 0) {
         const newPos: [number, number] = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
         setPosition(newPos);
@@ -316,11 +316,10 @@ export function MapPickerComponent({ isOpen, onClose, onSelect, initialLat, init
               <button
                 key={type}
                 onClick={() => setMapType(type)}
-                className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all ${
-                  mapType === type
+                className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all ${mapType === type
                     ? "bg-blue-600 text-white"
                     : "bg-white/95 text-slate-700 hover:bg-slate-50"
-                }`}
+                  }`}
               >
                 {type === "satellite" && <Satellite className="size-3.5" />}
                 {type === "hybrid" && <Layers className="size-3.5" />}

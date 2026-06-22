@@ -39,20 +39,20 @@ export default async function DefinitionsPage({ searchParams }: PageProps): Prom
   const viewAll = params.viewAll === 'true';
 
   // 1. Fetch all categories
-  const categoriesRes = await getAssetCategoriesAction(1, 1000);
+  const categoriesRes = await getAssetCategoriesAction(1, 10);
 
   // 2. Fetch types (all types if viewAll is active, otherwise only for categoryId)
   const typesRes = viewAll
-    ? await getAssetTypesAction(1, 1000, null)
+    ? await getAssetTypesAction(1, 10, null)
     : (categoryId
-      ? await getAssetTypesAction(1, 1000, categoryId)
+      ? await getAssetTypesAction(1, 10, categoryId)
       : { success: true, items: [], totalCount: 0 });
 
   // 3. Fetch field definitions (all field definitions if viewAll is active, otherwise for selected category & type)
   const fieldsRes = viewAll
-    ? await getFieldDefinitionsAction(undefined, undefined, 1, 1000)
+    ? await getFieldDefinitionsAction(undefined, undefined, 1, 10)
     : ((categoryId && typeId)
-      ? await getFieldDefinitionsAction(categoryId, typeId, 1, 1000)
+      ? await getFieldDefinitionsAction(categoryId, typeId, 1, 10)
       : { success: true, items: [], totalCount: 0 });
 
   // 4. Fetch document definitions directly via server service (not via Server Action)

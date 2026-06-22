@@ -14,7 +14,8 @@ import {
   type InventoryBatchDetail,
   type InventoryBatchListResponse
 } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
-import { uploadBulkDocumentsAction, getFallbackModuleIdAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
+import { uploadBulkDocumentsAction, getFallbackModuleIdAction, fetchUploadedDocumentsAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions";
+import { uploadInventoryBatchDocumentAction, deleteInventoryBatchDocumentAction } from "@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions";
 import { usePermissionsContext } from "@/lib/providers/PermissionsProvider";
 import { usePathname } from "next/navigation";
 
@@ -131,8 +132,6 @@ export function useFurnitureFixtureState(
     if (resolvedModuleId === 1004 && fallbackModuleId > 0 && fallbackModuleId !== 1004) {
       resolvedModuleId = fallbackModuleId;
     }
-
-    console.log("Dynamically determined ModuleId:", resolvedModuleId, "Screens available:", screens?.length);
 
     return resolvedModuleId;
   }, [screens, pathname, fallbackModuleId]);
@@ -528,7 +527,7 @@ export function useFurnitureFixtureState(
 
       // Upload Documents
       const batchData = result.data;
-      if (batchData && batchData.units && batchData.units.length > 0) {
+      if (batchData && (batchData.batchId || batchData.id || (batchData.units && batchData.units.length > 0))) {
         const photoFile = form.photoFile;
         const invoiceFile = draftInvoice?.invoiceFile;
         if (photoFile || invoiceFile) {
@@ -541,45 +540,39 @@ export function useFurnitureFixtureState(
             } catch (e) { }
           }
 
-          const fd = new FormData();
-          fd.append("AssetId", String(parentAssetId));
-          fd.append("ModuleId", String(finalModuleId || 1004));
-          fd.append("UploadedByUserId", "1");
-          fd.append("IsAdHoc", "true");
+          const batchId = batchData.batchId || batchData.id || batchData.units?.[0]?.inventoryBatchId;
 
-          const metadata: any[] = [];
-
-          if (photoFile) {
-            const uniqueName = `photo_${photoFile.name}`;
-            const renamedFile = new File([photoFile], uniqueName, { type: photoFile.type });
-            fd.append("Files", renamedFile);
-            metadata.push({
-              fileName: uniqueName,
-              documentType: "photo",
-              documentTitle: "Inventory Batch Photo",
-              documentDefinitionId: 0
-            });
-          }
-
-          if (invoiceFile) {
-            const uniqueName = `invoice_${invoiceFile.name}`;
-            const renamedFile = new File([invoiceFile], uniqueName, { type: invoiceFile.type });
-            fd.append("Files", renamedFile);
-            metadata.push({
-              fileName: uniqueName,
-              documentType: "invoice",
-              documentTitle: "Inventory Batch Invoice",
-              documentDefinitionId: 0
-            });
-          }
-
-          fd.append("FileMetadataJson", JSON.stringify(metadata));
+          const uploadSingle = async (file: File, isPhoto: boolean) => {
+            const fd = new FormData();
+            const uniqueName = `${isPhoto ? 'photo' : 'invoice'}_${file.name}`;
+            const renamedFile = new File([file], uniqueName, { type: file.type });
+            fd.append("File", renamedFile);
+            fd.append("InventoryBatchId", String(batchId));
+            fd.append("ModuleId", String(finalModuleId || 1004));
+            fd.append("UploadedByUserId", "1");
+            if (!isPhoto && draftInvoice?.invoiceNumber) {
+              fd.append("InvoiceNumber", draftInvoice.invoiceNumber);
+            }
+            if (!isPhoto && draftInvoice?.invoiceDate) {
+              fd.append("InvoiceDate", new Date(draftInvoice.invoiceDate).toISOString());
+            }
+            return await uploadInventoryBatchDocumentAction(fd);
+          };
 
           try {
-            const uploadResult = await uploadBulkDocumentsAction(fd);
-            if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
-              const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
-              toast.error(`Document upload failed for batch: ${detailedError}`);
+            let photoSuccess = true;
+            let invoiceSuccess = true;
+            if (photoFile) {
+              const res = await uploadSingle(photoFile, true);
+              if (!res.success) photoSuccess = false;
+            }
+            if (invoiceFile) {
+              const res = await uploadSingle(invoiceFile, false);
+              if (!res.success) invoiceSuccess = false;
+            }
+
+            if (!photoSuccess || !invoiceSuccess) {
+              toast.error(`Some documents failed to upload. Please check and try again.`);
             } else {
               toast.success(`Batch documents uploaded successfully!`);
             }
@@ -588,7 +581,6 @@ export function useFurnitureFixtureState(
           }
         }
       }
-
 
       // Reload fresh data from server
       await reloadDataFromServer();
@@ -720,47 +712,50 @@ export function useFurnitureFixtureState(
               } catch (e) { }
             }
 
-            const fd = new FormData();
-            fd.append("AssetId", String(parentAssetId));
-            fd.append("ModuleId", String(finalModuleId || 1004));
-            fd.append("UploadedByUserId", "1");
-            fd.append("IsAdHoc", "true");
-
-            const metadata: any[] = [];
-
-            if (photoFile) {
-              const uniqueName = `photo_${photoFile.name}`;
-              const renamedFile = new File([photoFile], uniqueName, { type: photoFile.type });
-              fd.append("Files", renamedFile);
-              metadata.push({
-                fileName: uniqueName,
-                documentType: "photo",
-                documentTitle: "Inventory Batch Photo",
-                documentDefinitionId: 0
-              });
-            }
-            if (invoiceFile) {
-              const uniqueName = `invoice_${invoiceFile.name}`;
-              const renamedFile = new File([invoiceFile], uniqueName, { type: invoiceFile.type });
-              fd.append("Files", renamedFile);
-              metadata.push({
-                fileName: uniqueName,
-                documentType: "invoice",
-                documentTitle: "Inventory Batch Invoice",
-                documentDefinitionId: 0
-              });
-            }
-            fd.append("FileMetadataJson", JSON.stringify(metadata));
-            try {
-              const uploadResult = await uploadBulkDocumentsAction(fd);
-              if (!uploadResult.success || (uploadResult.data && uploadResult.data.failureCount > 0)) {
-                const detailedError = uploadResult.data?.failedUploads?.[0]?.errorMessage || uploadResult.error || "Unknown error";
-                toast.error(`Document upload failed for batch: ${detailedError}`);
-              } else {
-                toast.success(`Batch documents updated successfully!`);
+            const uploadSingle = async (file: File, isPhoto: boolean) => {
+              const fd = new FormData();
+              const uniqueName = `${isPhoto ? 'photo' : 'invoice'}_${file.name}`;
+              const renamedFile = new File([file], uniqueName, { type: file.type });
+              fd.append("File", renamedFile);
+              fd.append("InventoryBatchId", String(existingRow.batchId));
+              fd.append("ModuleId", String(finalModuleId || 1004));
+              fd.append("UploadedByUserId", "1");
+              if (!isPhoto && editDraftInvoice?.invoiceNumber) {
+                fd.append("InvoiceNumber", editDraftInvoice.invoiceNumber);
               }
-            } catch (e: any) {
-              toast.error(`Document upload exception: ${e.message}`);
+              if (!isPhoto && editDraftInvoice?.invoiceDate) {
+                fd.append("InvoiceDate", new Date(editDraftInvoice.invoiceDate).toISOString());
+              }
+              return await uploadInventoryBatchDocumentAction(fd);
+            };
+
+            // If a new photo or invoice is provided, we clear existing documents and re-upload both if we can,
+            // but since there's no way to delete only one document, we'll just upload the new ones.
+            // The backend should handle duplicate overwrites if we use the same batchId.
+            if (photoFile) {
+              try {
+                const uploadResult = await uploadSingle(photoFile, true);
+                if (!uploadResult.success) {
+                  toast.error(`Photo upload failed: ${uploadResult.error || "Unknown error"}`);
+                } else {
+                  toast.success(`Photo updated successfully!`);
+                }
+              } catch (e: any) {
+                toast.error(`Photo upload exception: ${e.message}`);
+              }
+            }
+
+            if (invoiceFile) {
+              try {
+                const uploadResult = await uploadSingle(invoiceFile, false);
+                if (!uploadResult.success) {
+                  toast.error(`Invoice upload failed: ${uploadResult.error || "Unknown error"}`);
+                } else {
+                  toast.success(`Invoice updated successfully!`);
+                }
+              } catch (e: any) {
+                toast.error(`Invoice upload exception: ${e.message}`);
+              }
             }
           }
         }
@@ -801,6 +796,15 @@ export function useFurnitureFixtureState(
         if (row?.batchId && row?.isRegistered) {
           setIsSaving(true);
           try {
+            // Delete associated documents first
+            if (row.photoName || row.invoice?.invoiceFileName) {
+              try {
+                await deleteInventoryBatchDocumentAction(row.batchId);
+              } catch (e) {
+                console.error("Failed to delete associated documents", e);
+              }
+            }
+
             const result = await deleteInventoryBatchAction(row.batchId);
 
             if (!result.success) {
@@ -966,27 +970,34 @@ export function useFurnitureFixtureState(
     }
 
     // If registered, fetch from API
-    const assetId = row.registeredUnits?.[0]?.assetId;
-    if (!assetId) {
-      return toast.error("Asset ID not found for this row.");
+    const batchId = row.batchId;
+    if (!batchId) {
+      return toast.error("Batch ID not found for this row.");
     }
 
     try {
       // Use Server Actions to securely fetch documents and avoid CORS/Auth issues
-      const { fetchUploadedDocumentsAction, fetchDocumentFileAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions");
+      const { getInventoryBatchDocumentsAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions");
+      const { fetchDocumentFileAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/actions");
 
-      const docResponse = await fetchUploadedDocumentsAction(assetId, true, true);
+      const docResponse = await getInventoryBatchDocumentsAction(batchId);
       if (!docResponse.success || !docResponse.data) {
         return toast.error(docResponse.error || docResponse.message || "Failed to fetch documents");
       }
 
-      const documents = docResponse.data;
+      const documents = docResponse.data as any[];
       let targetDoc = null;
 
       if (type === 'photo' && row.photoName) {
-        targetDoc = documents.find((d: any) => d.fileName === row.photoName || d.fileName === `photo_${row.photoName}`);
+        targetDoc = documents.find((d: any) =>
+          d.fileName === row.photoName || d.fileName === `photo_${row.photoName}` ||
+          d.originalFileName === row.photoName || d.originalFileName === `photo_${row.photoName}`
+        );
       } else if (type === 'invoice' && row.invoice?.invoiceFileName) {
-        targetDoc = documents.find((d: any) => d.fileName === row.invoice!.invoiceFileName || d.fileName === `invoice_${row.invoice!.invoiceFileName}`);
+        targetDoc = documents.find((d: any) =>
+          d.fileName === row.invoice!.invoiceFileName || d.fileName === `invoice_${row.invoice!.invoiceFileName}` ||
+          d.originalFileName === row.invoice!.invoiceFileName || d.originalFileName === `invoice_${row.invoice!.invoiceFileName}`
+        );
       }
 
       if (!targetDoc) {

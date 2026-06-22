@@ -460,25 +460,25 @@ export async function submitAssetForm(formData: AssetFormData) {
         const wrappers = ["items", "Items", "data", "Data", "record", "Record", "result", "Result"];
         for (const w of wrappers) {
           if (obj[w] && typeof obj[w] === "object") {
-             if (Array.isArray(obj[w]) && obj[w].length > 0) {
-                 found = checkDirect(obj[w][0]);
-                 if (found) return found;
-             } else {
-                 found = checkDirect(obj[w]);
-                 if (found) return found;
-             }
+            if (Array.isArray(obj[w]) && obj[w].length > 0) {
+              found = checkDirect(obj[w][0]);
+              if (found) return found;
+            } else {
+              found = checkDirect(obj[w]);
+              if (found) return found;
+            }
           }
         }
         return null;
       };
 
       const debugLog = `=== [${new Date().toISOString()}] ===\n` +
-                       `=== API REQUEST ===\n${JSON.stringify(apiRequest, null, 2)}\n` +
-                       `=== BACKEND RESPONSE ===\n${JSON.stringify(resData, null, 2)}\n` +
-                       `=== EXTRACTED ===\n${getAssetIdSafe(resData) || (isUpdate ? parsedId : null)}\n\n`;
+        `=== API REQUEST ===\n${JSON.stringify(apiRequest, null, 2)}\n` +
+        `=== BACKEND RESPONSE ===\n${JSON.stringify(resData, null, 2)}\n` +
+        `=== EXTRACTED ===\n${getAssetIdSafe(resData) || (isUpdate ? parsedId : null)}\n\n`;
       try {
         require("fs").appendFileSync("create-asset-debug.log", debugLog);
-      } catch (e) {}
+      } catch (e) { }
 
       console.log("=== API REQUEST ===", JSON.stringify(apiRequest, null, 2));
       console.log("=== BACKEND RESPONSE ===", JSON.stringify(resData, null, 2));

@@ -45,10 +45,10 @@ function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnail
     }
 
     if (row.isRegistered) {
-      const assetId = row.registeredUnits?.[0]?.assetId;
+      const batchId = row.batchId;
       const targetName = type === 'photo' ? row.photoName : row.invoice?.invoiceFileName;
 
-      if (!assetId || !targetName) {
+      if (!batchId || !targetName) {
         setSrc(null);
         return;
       }
@@ -57,15 +57,24 @@ function RowDocumentThumbnail({ row, type, handlePreview }: RowDocumentThumbnail
       const load = async () => {
         try {
           setLoading(true);
-          const docResponse = await fetchUploadedDocumentsAction(assetId, true, true);
+          // Import this action dynamically or add it to imports at top
+          const { getInventoryBatchDocumentsAction } = await import("@/app/[locale]/assets/municipal-Asset/add-New-Asset/furniture-fixture/actions");
+          const docResponse = await getInventoryBatchDocumentsAction(batchId);
           if (!active) return;
           if (docResponse.success && docResponse.data) {
             const documents = docResponse.data;
-            const targetDoc = documents.find((d: any) =>
-              d.fileName === targetName ||
-              d.fileName === `photo_${targetName}` ||
-              d.fileName === `invoice_${targetName}`
-            );
+            let targetDoc;
+            if (type === 'photo' && row.photoName) {
+              targetDoc = documents.find((d: any) => 
+                d.fileName === row.photoName || d.fileName === `photo_${row.photoName}` ||
+                d.originalFileName === row.photoName || d.originalFileName === `photo_${row.photoName}`
+              );
+            } else if (type === 'invoice' && row.invoice?.invoiceFileName) {
+              targetDoc = documents.find((d: any) => 
+                d.fileName === row.invoice!.invoiceFileName || d.fileName === `invoice_${row.invoice!.invoiceFileName}` ||
+                d.originalFileName === row.invoice!.invoiceFileName || d.originalFileName === `invoice_${row.invoice!.invoiceFileName}`
+              );
+            }
             if (targetDoc) {
               const fileRes = await fetchDocumentFileAction(targetDoc.id);
               if (!active) return;

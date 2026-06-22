@@ -1,6 +1,52 @@
 "use server";
 
 import { apiClient } from "@/services/api.service";
+import {
+  uploadInventoryBatchDocument,
+  deleteInventoryBatchDocument,
+  getInventoryBatchDocuments
+} from "@/lib/api/asset/inventory-document.server.service";
+
+// ...
+
+/**
+ * Uploads a document for an inventory batch.
+ */
+export const uploadInventoryBatchDocumentAction = async (formData: FormData) => {
+  try {
+    return await uploadInventoryBatchDocument(formData);
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to upload inventory batch document" };
+  }
+};
+
+/**
+ * Deletes all documents for an existing inventory batch.
+ */
+export const deleteInventoryBatchDocumentAction = async (inventoryBatchId: number) => {
+  try {
+    return await deleteInventoryBatchDocument(inventoryBatchId);
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete inventory batch documents" };
+  }
+};
+
+/**
+ * Fetches documents for an inventory batch.
+ */
+export const getInventoryBatchDocumentsAction = async (inventoryBatchId: number) => {
+  try {
+    const res = await getInventoryBatchDocuments(inventoryBatchId);
+    if (res.success && res.data) {
+      const raw = res.data as any;
+      const arrayData = Array.isArray(raw) ? raw : (raw.items || raw.data || []);
+      return { ...res, data: arrayData };
+    }
+    return res;
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to fetch inventory batch documents" };
+  }
+};
 
 // Types for inventory responses
 export interface InventoryUnitResponse {
@@ -194,7 +240,7 @@ export async function saveSingleInventoryBatchAction(item: any): Promise<{
 }> {
   try {
     const response = await apiClient.post<any>("/asset-management/AssetInventory/batch", item);
-    
+
     if (response.success && response.data) {
       return { success: true, data: response.data };
     }
@@ -220,7 +266,7 @@ export async function saveInventoryBatchAction(payload: { items: any[] }) {
     for (const item of payload.items) {
       try {
         const response = await apiClient.post<any>("/asset-management/AssetInventory/batch", item);
-        
+
         if (response.success && response.data) {
           results.push(response.data);
         } else {
@@ -306,3 +352,36 @@ export async function calculateMovableCVAction(
     };
   }
 }
+
+/**
+ * Uploads bulk inventory documents.
+ */
+export const uploadBulkInventoryDocumentsAction = async (formData: FormData) => {
+  try {
+    return await uploadBulkInventoryDocuments(formData);
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to upload bulk inventory documents" };
+  }
+};
+
+/**
+ * Replaces an existing inventory document.
+ */
+export const replaceInventoryDocumentAction = async (id: number, formData: FormData) => {
+  try {
+    return await replaceInventoryDocument(id, formData);
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to replace inventory document" };
+  }
+};
+
+/**
+ * Deletes an existing inventory document.
+ */
+export const deleteInventoryDocumentAction = async (id: number) => {
+  try {
+    return await deleteInventoryDocument(id);
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete inventory document" };
+  }
+};
