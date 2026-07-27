@@ -56,81 +56,40 @@ export default function middleware(request: NextRequest) {
   const { locale, pathWithoutLocale } = localeAndPathWithoutLocale(pathname);
   const isServerActionRequest = request.method === 'POST' && request.headers.has('next-action');
 
-  // Next.js Server Actions expect a specific RSC response shape.
-  // Redirecting these POST requests from middleware causes client-side
-  // "unexpected response" errors in fetchServerAction.
   if (isServerActionRequest) {
     return NextResponse.next();
   }
 
-  const accessToken = request.cookies.get(AUTH_COOKIES.AUTH_TOKEN)?.value;
-  const refreshToken = request.cookies.get(AUTH_COOKIES.REFRESH_TOKEN)?.value;
-  const sessionExpiresAt = request.cookies.get(AUTH_COOKIES.SESSION_EXPIRES_AT)?.value;
-  const sessionState = getSessionValidityFromTokens(
-    accessToken,
-    refreshToken,
-    sessionExpiresAt
-  );
-  const isLoggedIn = sessionState === 'active';
-  const sessionExpired = sessionState === 'expired';
+  const isPropertyDetails = pathWithoutLocale === '/property-details' || pathWithoutLocale.startsWith('/property-details/');
+  
+  if (isPropertyDetails) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-pathname', pathname);
+    requestHeaders.set('x-is-auth-or-home', 'true');
 
-  const isLoginRoute = pathWithoutLocale === '/login' || pathWithoutLocale.startsWith('/login/');
-  const sessionExpiredLogin =
-    isLoginRoute &&
-    request.nextUrl.searchParams.get('error') === SESSION_EXPIRED_LOGIN_ERROR;
-
-  if (isLoginRoute && isLoggedIn && !sessionExpiredLogin) {
-    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
-  }
-
-  if (pathWithoutLocale === '/') {
-    if (!isLoggedIn) {
-      return redirectToLogin(request, locale, sessionExpired);
+    const intlResponse = intlMiddleware(request);
+    
+    if (intlResponse.headers.has('location')) {
+      return intlResponse;
     }
-    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+
+    const response = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+    intlResponse.headers.forEach((value, key) => {
+      response.headers.set(key, value);
+    });
+    intlResponse.cookies.getAll().forEach((cookie) => {
+      response.cookies.set(cookie);
+    });
+    response.headers.set('x-pathname', pathname);
+    response.headers.set('x-is-auth-or-home', 'true');
+
+    return response;
   }
 
-  if (!isLoginRoute && !isLoggedIn) {
-    return redirectToLogin(request, locale, sessionExpired);
-  }
-
-  const isAuthOrHome =
-    pathWithoutLocale === '/' ||
-    pathWithoutLocale === '/home' ||
-    pathWithoutLocale.startsWith('/home/') ||
-    pathWithoutLocale === '/login' ||
-    pathWithoutLocale.startsWith('/login/');
-
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-pathname', pathname);
-  requestHeaders.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
-
-  const intlResponse = intlMiddleware(request);
-
-  if (intlResponse.headers.has('location')) {
-    if (sessionExpired || sessionExpiredLogin || (isLoginRoute && !isLoggedIn)) {
-      clearAuthCookiesOnResponse(intlResponse);
-    }
-    return intlResponse;
-  }
-
-  const response = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
-  intlResponse.headers.forEach((value, key) => {
-    response.headers.set(key, value);
-  });
-  intlResponse.cookies.getAll().forEach((cookie) => {
-    response.cookies.set(cookie);
-  });
-  response.headers.set('x-pathname', pathname);
-  response.headers.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
-
-  if (isLoginRoute && (!isLoggedIn || sessionExpired || sessionExpiredLogin)) {
-    clearAuthCookiesOnResponse(response);
-  }
-
-  return response;
+  // Redirect everything else to /property-details
+  return NextResponse.redirect(new URL(`/${locale}/property-details`, request.url));
 }
 
 export const config = {

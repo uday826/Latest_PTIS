@@ -1,0 +1,243 @@
+"use client";
+
+import React, { useState } from 'react';
+import { Copy, MapPin, Camera, Star, Info, Ruler } from 'lucide-react';
+
+export default function PropertySummary({ onHoverImg, onClickImg }: { onHoverImg?: (url: string | null) => void; onClickImg?: (url: string) => void }) {
+  const [copied, setCopied] = useState(false);
+  const [description, setDescription] = useState('निवासी');
+  const [isEditingDesc, setIsEditingDesc] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText('UPIC-270465-2024-000123');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4 flex flex-wrap xl:flex-nowrap items-center gap-4 font-sans w-full transition-all hover:shadow-lg relative overflow-visible z-30">
+      
+      {/* Background visual accent */}
+      <div className="absolute top-0 left-0 w-1.5 h-full bg-[#1e2b58] rounded-l-xl pointer-events-none" />
+
+      {/* 1. Image Section (Restored Large Size) */}
+      <div 
+        onMouseEnter={() => onHoverImg && onHoverImg("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")}
+        onMouseLeave={() => onHoverImg && onHoverImg(null)}
+        onClick={() => onClickImg && onClickImg("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")}
+        className="relative w-40 h-28 shrink-0 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:border-blue-300 transition-colors"
+      >
+        <img 
+          src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&auto=format&fit=crop" 
+          alt="Property" 
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-125 cursor-zoom-in"
+        />
+        <button className="absolute bottom-1 right-1 bg-black/60 p-1.5 rounded text-white hover:bg-black/85 transition-colors cursor-pointer" title="Update photo">
+          <Camera size={12} />
+        </button>
+      </div>
+
+      {/* 2. Property ID / UPIC & Holder Block */}
+      <div className="min-w-[190px] space-y-2 shrink-0">
+        <div>
+          <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Property ID / UPIC</div>
+          <div className="flex items-center gap-1.5 mt-0.5 relative">
+            <span className="font-extrabold text-gray-800 text-sm tracking-wide select-all">UPIC-270465-2024-000123</span>
+            <button 
+              onClick={handleCopy}
+              className="p-1 hover:bg-gray-100 rounded text-blue-600 transition-colors cursor-pointer" 
+              title="Copy UPIC"
+            >
+              <Copy size={13} />
+            </button>
+            
+            {/* Copied tooltip */}
+            {copied && (
+              <span className="absolute left-full ml-2 bg-green-600 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow z-50 animate-bounce">
+                Copied!
+              </span>
+            )}
+          </div>
+          <div className="mt-1 flex items-center">
+            <span className="bg-green-50 text-green-700 border border-green-200 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" /> Active Property
+            </span>
+          </div>
+        </div>
+
+        <div className="space-y-1 text-xs">
+          <div className="flex items-center gap-1">
+            <span className="text-gray-400 font-semibold w-24">Property Desc:</span>
+            {isEditingDesc ? (
+              <input 
+                type="text" 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)}
+                onBlur={() => setIsEditingDesc(false)}
+                onKeyDown={(e) => e.key === 'Enter' && setIsEditingDesc(false)}
+                className="border border-blue-200 rounded px-1 text-xs font-bold text-red-600 outline-none w-20"
+                autoFocus
+              />
+            ) : (
+              <span 
+                onClick={() => setIsEditingDesc(true)}
+                className="font-bold text-red-600 cursor-pointer hover:bg-red-50 px-1 rounded transition-colors" 
+                title="Click to edit"
+              >
+                {description}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-gray-400 font-semibold w-24">Prop Holder:</span>
+            <span className="font-bold text-gray-700 uppercase tracking-wide">MATOSHREE</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Specifications Middle Columns (Label-on-top, value-below layout, no horizontal borders) */}
+      <div className="flex-[2] grid grid-cols-3 gap-x-4 gap-y-2 min-w-[320px] text-[10px] shrink-0 leading-tight">
+        {/* Column 1 */}
+        <div className="space-y-2">
+          <div>
+            <div className="text-gray-400 font-semibold uppercase tracking-wider text-[9px]">Division</div>
+            <div className="font-bold text-gray-800 text-xs mt-0.5">मौजिवडा मानपाडा</div>
+          </div>
+          <div>
+            <div className="text-gray-400 font-semibold uppercase tracking-wider text-[9px]">Mouja Name</div>
+            <div className="font-bold text-gray-800 text-xs mt-0.5">Kopri</div>
+          </div>
+          <div>
+            <div className="text-gray-400 font-semibold uppercase tracking-wider text-[9px]">Category</div>
+            <div className="font-bold text-gray-800 text-xs mt-0.5">Individual</div>
+          </div>
+        </div>
+
+        {/* Column 2 */}
+        <div className="space-y-2">
+          <div>
+            <div className="text-gray-400 font-semibold uppercase tracking-wider text-[9px]">Survey No.</div>
+            <div className="font-bold text-gray-800 text-xs mt-0.5">CSNO05A</div>
+          </div>
+          <div>
+            <div className="text-gray-400 font-semibold uppercase tracking-wider text-[9px]">SubZone No.</div>
+            <div className="font-bold text-gray-800 text-xs mt-0.5">-</div>
+          </div>
+          <div>
+            <div className="text-gray-400 font-semibold uppercase tracking-wider text-[9px]">Flat / Shop No.</div>
+            <div className="font-bold text-gray-800 text-xs mt-0.5">-</div>
+          </div>
+        </div>
+
+        {/* Column 3 */}
+        <div className="space-y-2">
+          <div>
+            <div className="text-gray-400 font-semibold uppercase tracking-wider text-[9px]">Plot No.</div>
+            <div className="font-bold text-gray-800 text-xs mt-0.5">55</div>
+          </div>
+          <div>
+            <div className="text-gray-400 font-semibold uppercase tracking-wider text-[9px]">Wing</div>
+            <div className="font-bold text-gray-800 text-xs mt-0.5">-</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Areas Column Layout (ruler icons, stacked label/value) */}
+      <div className="min-w-[170px] shrink-0 space-y-2.5 border-l border-gray-150 pl-4 xl:border-r xl:pr-4">
+        {/* Plot Area */}
+        <div className="flex items-start gap-2 group relative">
+          <div className="bg-blue-50 p-1.5 rounded-full mt-0.5 shrink-0">
+            <Ruler size={13} className="text-blue-500" />
+          </div>
+          <div>
+            <div className="text-[9px] text-gray-450 font-bold uppercase tracking-wider">Plot Area (ft/mtr)</div>
+            <div className="font-extrabold text-xs text-[#1e2b58] mt-0.5">4305.60 / 400.00</div>
+          </div>
+          <div className="absolute left-0 top-full mt-1 bg-gray-900 text-white text-[9px] rounded px-2 py-0.5 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity font-semibold z-50 whitespace-nowrap shadow-lg">
+            4,305.60 Sq.Ft ≈ 400.00 Sq.Mtr
+          </div>
+        </div>
+
+        {/* Carpet Area */}
+        <div className="flex items-start gap-2 group relative">
+          <div className="bg-green-50 p-1.5 rounded-full mt-0.5 shrink-0">
+            <Ruler size={13} className="text-green-500" />
+          </div>
+          <div>
+            <div className="text-[9px] text-gray-450 font-bold uppercase tracking-wider">Carpet Area (ft/mtr)</div>
+            <div className="font-extrabold text-xs text-[#1e2b58] mt-0.5">538.20 / 50.00</div>
+          </div>
+          <div className="absolute left-0 top-full mt-1 bg-gray-900 text-white text-[9px] rounded px-2 py-0.5 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity font-semibold z-50 whitespace-nowrap shadow-lg">
+            538.20 Sq.Ft ≈ 50.00 Sq.Mtr
+          </div>
+        </div>
+
+        {/* Built-up Area */}
+        <div className="flex items-start gap-2 group relative">
+          <div className="bg-orange-50 p-1.5 rounded-full mt-0.5 shrink-0">
+            <Ruler size={13} className="text-orange-500" />
+          </div>
+          <div>
+            <div className="text-[9px] text-gray-450 font-bold uppercase tracking-wider">Built-up Area (ft/mtr)</div>
+            <div className="font-extrabold text-xs text-[#1e2b58] mt-0.5">538.20 / 50.00</div>
+          </div>
+          <div className="absolute left-0 top-full mt-1 bg-gray-900 text-white text-[9px] rounded px-2 py-0.5 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity font-semibold z-50 whitespace-nowrap shadow-lg">
+            538.20 Sq.Ft ≈ 50.00 Sq.Mtr
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Ratings & Score Right Block (Mockup exact style) */}
+      <div className="flex gap-3 shrink-0">
+        {/* Star Rating Card */}
+        <div className="border border-gray-150 rounded-xl p-2.5 flex flex-col justify-between bg-white w-40 relative group shadow-sm transition-all duration-300">
+          <div className="text-[9px] text-gray-400 font-bold uppercase tracking-wider flex items-center gap-1 select-none">
+            Property Star Rating <Info size={11} className="text-gray-400 cursor-help" />
+          </div>
+          <div className="flex items-center justify-between mt-3">
+            <div className="flex text-yellow-500 gap-0.5">
+              <Star size={14} fill="currentColor" className="stroke-yellow-500" />
+              <Star size={14} fill="currentColor" className="stroke-yellow-500" />
+              <Star size={14} fill="currentColor" className="stroke-yellow-500" />
+              <Star size={14} fill="currentColor" className="stroke-yellow-500" />
+              <Star size={14} fill="currentColor" className="stroke-yellow-500" />
+            </div>
+            <div className="text-gray-800 font-extrabold text-base flex items-baseline">
+              <span>6</span>
+              <span className="text-[10px] text-gray-400 font-semibold ml-0.5">/7</span>
+            </div>
+          </div>
+          <div className="text-[#2563eb] text-[9px] font-bold uppercase tracking-wider text-center mt-3">
+            Excellent Property
+          </div>
+        </div>
+
+        {/* Health Score Card */}
+        <div className="border border-gray-150 rounded-xl p-2.5 flex flex-col justify-between bg-white w-48 relative group shadow-sm transition-all duration-300">
+          <div className="text-[9px] text-gray-400 font-bold uppercase tracking-wider select-none">
+            Property Health Score
+          </div>
+          <div className="flex items-center gap-3 mt-2.5">
+            {/* Circle progress */}
+            <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
+              <svg className="w-12 h-12 transform -rotate-90">
+                <circle cx="24" cy="24" r="18" stroke="#e5e7eb" strokeWidth="4" fill="transparent" />
+                <circle cx="24" cy="24" r="18" stroke="#10b981" strokeWidth="4" fill="transparent" strokeDasharray="113" strokeDashoffset="9" strokeLinecap="round" />
+              </svg>
+              <div className="absolute font-extrabold text-[10px] text-gray-800">92%</div>
+            </div>
+
+            {/* Stats right */}
+            <div className="flex-1 flex flex-col justify-center leading-none">
+              <div className="font-extrabold text-sm text-gray-800">92%</div>
+              <div className="text-green-600 text-[10px] font-bold mt-1">Excellent</div>
+              <button className="text-[#2563eb] text-[9px] font-bold mt-2 hover:underline text-left cursor-pointer border border-[#2563eb]/20 rounded px-1.5 py-0.5 bg-blue-50/30 w-fit">
+                View Details
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
