@@ -17,12 +17,12 @@ export default function PropertyDetailsPage() {
     <div className="flex flex-col h-screen bg-[#f0f2f5] overflow-hidden font-sans">
       {/* Topbar at the top, full-width */}
       <Topbar />
-      
+
       {/* Sidebar + MainContent below */}
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar 
-          isCollapsed={isCollapsed} 
-          setIsCollapsed={setIsCollapsed} 
+        <Sidebar
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
           activeMenu={activeMenu}
           setActiveMenu={setActiveMenu}
         />

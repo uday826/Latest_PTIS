@@ -75,7 +75,7 @@ export default function MainContent() {
           </div>
 
           {/* Tabs Navigation Bar */}
-          <div className="flex border-b border-[#1e2b58] font-bold text-xs text-[#1e2b58] shrink-0 select-none items-end gap-1.5 mt-1 pb-[1px]">
+          <div className="flex border-b border-[#002fbe] font-bold text-xs text-[#002fbe] shrink-0 select-none items-end gap-1.5 mt-1 pb-[1px]">
             <Tab active={activeTab === 'property'} onClick={() => setActiveTab('property')} icon={<FolderOpen size={13} />} label="Property Details" />
             <Tab active={activeTab === 'kyc'} onClick={() => setActiveTab('kyc')} icon={<UserCheck size={13} />} label="KYC Details" />
             <Tab active={activeTab === 'society'} onClick={() => setActiveTab('society')} icon={<Users size={13} />} label="Society Details" />
@@ -94,15 +94,15 @@ export default function MainContent() {
                 {/* Floor / Component Details Header & Buttons */}
                 <div className="flex items-center justify-between pb-1 shrink-0 select-none">
                   <div className="flex items-center gap-1.5">
-                    <h3 className="font-extrabold text-[#1e2b58] text-[11px] uppercase tracking-wider">Floor / Component Details</h3>
+                    <h3 className="font-extrabold text-[#002fbe] text-[11px] uppercase tracking-wider">Floor / Component Details</h3>
                     <span className="text-gray-400 text-[10px] font-semibold">(6 Components)</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <button className="flex items-center gap-1 px-2.5 py-1 border border-blue-200 bg-white hover:bg-blue-50 text-[#2563eb] text-[9.5px] font-bold rounded cursor-pointer transition-colors shadow-xs">
+                    <button className="flex items-center gap-1 px-2.5 py-1 border border-blue-250 bg-white hover:bg-blue-50 text-[#002fbe] text-[9.5px] font-bold rounded cursor-pointer transition-colors shadow-xs">
                       <Plus size={11} />
                       <span>Add Floor</span>
                     </button>
-                    <button className="flex items-center gap-1 px-2.5 py-1 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-[9.5px] font-bold rounded cursor-pointer transition-colors shadow-xs">
+                    <button className="flex items-center gap-1 px-2.5 py-1 border border-gray-200 bg-white hover:bg-gray-50 text-[#002fbe] text-[9.5px] font-bold rounded cursor-pointer transition-colors shadow-xs">
                       <Plus size={11} />
                       <span>More</span>
                     </button>
@@ -113,7 +113,7 @@ export default function MainContent() {
                 <div className="overflow-x-auto border border-gray-200 rounded-lg shrink-0">
                   {activeSubTab === 'rateable' && (
                     <table className="w-full text-[10px] text-center border-collapse animate-fadeIn bg-white">
-                      <thead className="bg-[#1e2b58] text-white font-extrabold whitespace-nowrap">
+                      <thead className="bg-[#002fbe] text-white font-extrabold whitespace-nowrap">
                         <tr>
                           <th className="py-2.5 px-1.5 font-extrabold text-white w-7 border-r border-white/10 text-[8.5px] uppercase">#</th>
                           <th className="py-2.5 px-1.5 w-10 border-r border-white/10 text-[8.5px] uppercase">Photo</th>
@@ -291,20 +291,19 @@ export default function MainContent() {
                   )}
                 </div>
 
-
                 {/* 6 Cards (Area, RV, CV, Tax, Collection, Addl Revenue) */}
                 <div className="grid grid-cols-6 gap-3 shrink-0 select-none">
                   {/* Card 1: Area Comparison */}
-                  <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm flex items-center gap-2.5">
-                    <div className="bg-[#eff6ff] w-9 h-9 rounded-xl flex items-center justify-center text-[#3b82f6] shrink-0">
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex items-center gap-2.5">
+                    <div className="bg-[#eff6ff] w-9 h-9 rounded-xl flex items-center justify-center text-[#002fbe] shrink-0">
                       <FileText size={14} />
                     </div>
                     <div className="flex-1 text-[9px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#1e2b58] mb-0.5 truncate">Area Comparison (ft/mtr)</div>
-                      <div className="space-y-0.5 text-[8.5px] font-semibold text-gray-500">
-                        <div>OLD: <span className="font-bold text-gray-700">400.00 m²</span></div>
-                        <div>NEW: <span className="font-bold text-gray-800">440.00 m²</span></div>
-                        <div className="text-[#10b981] font-bold flex items-center gap-0.5 mt-0.5">
+                      <div className="font-extrabold text-[#002fbe] mb-0.5 truncate">Area Comparison (ft/mtr)</div>
+                      <div className="space-y-0.5 text-[8.5px] font-bold text-gray-600">
+                        <div>OLD: <span className="font-black text-gray-900">400.00 m²</span></div>
+                        <div>NEW: <span className="font-black text-gray-950">440.00 m²</span></div>
+                        <div className="text-[#10b981] font-extrabold flex items-center gap-0.5 mt-0.5">
                           <span className="text-[10px]">↑</span>
                           <span>40.00 m² (10%)</span>
                         </div>
@@ -313,16 +312,16 @@ export default function MainContent() {
                   </div>
 
                   {/* Card 2: Rateable Value (RV) */}
-                  <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm flex items-center gap-2.5">
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex items-center gap-2.5">
                     <div className="bg-[#f5f3ff] w-9 h-9 rounded-xl flex items-center justify-center text-[#8b5cf6] shrink-0">
                       <UserCheck size={14} />
                     </div>
                     <div className="flex-1 text-[9px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#1e2b58] mb-0.5 truncate">Rateable Value (RV)</div>
-                      <div className="space-y-0.5 text-[8.5px] font-semibold text-gray-500">
-                        <div>OLD: <span className="font-bold text-gray-700">₹ 16,20,000</span></div>
-                        <div>NEW: <span className="font-bold text-gray-800">₹ 18,45,000</span></div>
-                        <div className="text-[#10b981] font-bold flex items-center gap-0.5 mt-0.5">
+                      <div className="font-extrabold text-[#002fbe] mb-0.5 truncate">Rateable Value (RV)</div>
+                      <div className="space-y-0.5 text-[8.5px] font-bold text-gray-600">
+                        <div>OLD: <span className="font-black text-gray-900">₹ 16,20,000</span></div>
+                        <div>NEW: <span className="font-black text-gray-950">₹ 18,45,000</span></div>
+                        <div className="text-[#10b981] font-extrabold flex items-center gap-0.5 mt-0.5">
                           <span className="text-[10px]">↑</span>
                           <span>₹ 2,25,000 (13.89%)</span>
                         </div>
@@ -331,16 +330,16 @@ export default function MainContent() {
                   </div>
 
                   {/* Card 3: Capital Value (CV) */}
-                  <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm flex items-center gap-2.5">
-                    <div className="bg-[#eff6ff] w-9 h-9 rounded-xl flex items-center justify-center text-[#3b82f6] shrink-0">
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex items-center gap-2.5">
+                    <div className="bg-[#eff6ff] w-9 h-9 rounded-xl flex items-center justify-center text-[#002fbe] shrink-0">
                       <Home size={14} />
                     </div>
                     <div className="flex-1 text-[9px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#1e2b58] mb-0.5 truncate">Capital Value (CV)</div>
-                      <div className="space-y-0.5 text-[8.5px] font-semibold text-gray-500">
-                        <div>OLD: <span className="font-bold text-gray-700">₹ 32,40,000</span></div>
-                        <div>NEW: <span className="font-bold text-gray-800">₹ 36,90,000</span></div>
-                        <div className="text-[#10b981] font-bold flex items-center gap-0.5 mt-0.5">
+                      <div className="font-extrabold text-[#002fbe] mb-0.5 truncate">Capital Value (CV)</div>
+                      <div className="space-y-0.5 text-[8.5px] font-bold text-gray-600">
+                        <div>OLD: <span className="font-black text-gray-900">₹ 32,40,000</span></div>
+                        <div>NEW: <span className="font-black text-gray-955">₹ 36,90,000</span></div>
+                        <div className="text-[#10b981] font-extrabold flex items-center gap-0.5 mt-0.5">
                           <span className="text-[10px]">↑</span>
                           <span>₹ 4,50,000 (13.89%)</span>
                         </div>
@@ -349,16 +348,16 @@ export default function MainContent() {
                   </div>
 
                   {/* Card 4: Tax (Current) */}
-                  <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm flex items-center gap-2.5">
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex items-center gap-2.5">
                     <div className="bg-[#ecfdf5] w-9 h-9 rounded-xl flex items-center justify-center text-[#10b981] shrink-0">
                       <Percent size={14} />
                     </div>
                     <div className="flex-1 text-[9px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#1e2b58] mb-0.5 truncate">Tax (Current)</div>
-                      <div className="space-y-0.5 text-[8.5px] font-semibold text-gray-500">
-                        <div>OLD: <span className="font-bold text-gray-700">₹ 16,500</span></div>
-                        <div>NEW: <span className="font-bold text-gray-800">₹ 18,752</span></div>
-                        <div className="text-[#10b981] font-bold flex items-center gap-0.5 mt-0.5">
+                      <div className="font-extrabold text-[#002fbe] mb-0.5 truncate">Tax (Current)</div>
+                      <div className="space-y-0.5 text-[8.5px] font-bold text-gray-600">
+                        <div>OLD: <span className="font-black text-gray-900">₹ 16,500</span></div>
+                        <div>NEW: <span className="font-black text-gray-955">₹ 18,752</span></div>
+                        <div className="text-[#10b981] font-extrabold flex items-center gap-0.5 mt-0.5">
                           <span className="text-[10px]">↑</span>
                           <span>₹ 2,252 (13.65%)</span>
                         </div>
@@ -367,55 +366,55 @@ export default function MainContent() {
                   </div>
 
                   {/* Card 5: Collection */}
-                  <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm flex items-center gap-2.5">
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex items-center gap-2.5">
                     <div className="bg-[#fef2f2] w-9 h-9 rounded-xl flex items-center justify-center text-[#ef4444] shrink-0">
                       <Wallet size={14} />
                     </div>
                     <div className="flex-1 text-[9px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#1e2b58] mb-0.5 truncate">Collection</div>
-                      <div className="space-y-0.5 text-[8.5px] font-semibold text-gray-500">
-                        <div>Paid: <span className="font-bold text-gray-700">₹ 12,456</span></div>
-                        <div className="text-red-550 font-bold">Outstanding: <span className="text-[#ef4444]">₹ 6,296</span></div>
+                      <div className="font-extrabold text-[#002fbe] mb-0.5 truncate">Collection</div>
+                      <div className="space-y-0.5 text-[8.5px] font-bold text-gray-600">
+                        <div>Paid: <span className="font-black text-gray-900">₹ 12,456</span></div>
+                        <div className="text-red-600 font-extrabold">Outstanding: <span className="text-[#ef4444] font-black">₹ 6,296</span></div>
                       </div>
                     </div>
                   </div>
 
                   {/* Card 6: Additional Revenue */}
-                  <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm flex flex-col justify-center pl-3">
-                    <div className="font-extrabold text-[#1e2b58] text-[10px] mb-0.5 truncate">Additional Revenue</div>
-                    <div className="text-gray-450 text-[8.5px] font-semibold truncate mb-0.5">This Assessment</div>
-                    <div className="font-extrabold text-[13.5px] text-[#2563eb] leading-tight">₹ 1,12,892</div>
-                    <div className="text-gray-400 text-[7.5px] font-bold truncate mt-0.5">(Tax + Penalty + Interest)</div>
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex flex-col justify-center pl-3">
+                    <div className="font-extrabold text-[#002fbe] text-[10px] mb-0.5 truncate">Additional Revenue</div>
+                    <div className="text-gray-600 text-[8.5px] font-bold truncate mb-0.5">This Assessment</div>
+                    <div className="font-black text-[13.5px] text-[#002fbe] leading-tight">₹ 1,12,892</div>
+                    <div className="text-gray-500 text-[7.5px] font-bold truncate mt-0.5">(Tax + Penalty + Interest)</div>
                   </div>
                 </div>
 
                 {/* Headwise Taxes Comparison Card */}
-                <div className="bg-white border border-gray-200 rounded-lg p-2.5 flex flex-col shrink-0 select-none mt-1 shadow-sm relative">
+                <div className="bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col shrink-0 select-none mt-1 shadow-md relative">
                   <div className="flex items-center justify-between pb-1.5 border-b border-gray-100 mb-1.5">
                     <div className="flex items-center gap-1.5">
-                      <h3 className="font-extrabold text-[#1e2b58] text-[9.5px] uppercase tracking-wider">Headwise Taxes Comparison</h3>
+                      <h3 className="font-extrabold text-[#002fbe] text-[9.5px] uppercase tracking-wider">Headwise Taxes Comparison</h3>
                       <span className="text-gray-400 text-[8.5px] font-semibold">(All Floors Total)</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-gray-400 font-semibold text-[8px]">All figures in INR</span>
                     </div>
                   </div>
-                  <div className="relative border border-gray-200 rounded-md overflow-hidden bg-white">
+                  <div className="relative border border-[#002fbe]/20 rounded-md overflow-hidden bg-white">
                     <div className="overflow-x-auto">
                       <table className="w-full text-[10px] text-center border-collapse">
-                        <thead className="bg-[#eff6ff]/70 border-b border-gray-200 text-[#1e2b58] font-bold whitespace-nowrap">
+                        <thead className="bg-[#002fbe] border-b border-gray-200 text-white font-bold whitespace-nowrap">
                           <tr>
-                            <th className="py-2 px-2 text-left sticky left-0 bg-[#eff6ff] border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Taxes</th>
-                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">General Tax</th>
-                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">State Education Tax</th>
-                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Tree Cess</th>
-                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Special Water Cess</th>
-                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Road Cess</th>
-                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Fire Cess</th>
-                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Light Cess</th>
-                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Water Benefit Cess</th>
-                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Sewage Disposal Cess</th>
-                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Special Education Tax</th>
+                            <th className="py-2 px-2 text-left sticky left-0 bg-[#002fbe] border-r border-white/10 uppercase text-[8.5px] font-extrabold text-white">Taxes</th>
+                            <th className="py-2 px-2 border-r border-white/10 uppercase text-[8.5px] font-extrabold">General Tax</th>
+                            <th className="py-2 px-2 border-r border-white/10 uppercase text-[8.5px] font-extrabold">State Education Tax</th>
+                            <th className="py-2 px-2 border-r border-white/10 uppercase text-[8.5px] font-extrabold">Tree Cess</th>
+                            <th className="py-2 px-2 border-r border-white/10 uppercase text-[8.5px] font-extrabold">Special Water Cess</th>
+                            <th className="py-2 px-2 border-r border-white/10 uppercase text-[8.5px] font-extrabold">Road Cess</th>
+                            <th className="py-2 px-2 border-r border-white/10 uppercase text-[8.5px] font-extrabold">Fire Cess</th>
+                            <th className="py-2 px-2 border-r border-white/10 uppercase text-[8.5px] font-extrabold">Light Cess</th>
+                            <th className="py-2 px-2 border-r border-white/10 uppercase text-[8.5px] font-extrabold">Water Benefit Cess</th>
+                            <th className="py-2 px-2 border-r border-white/10 uppercase text-[8.5px] font-extrabold">Sewage Disposal Cess</th>
+                            <th className="py-2 px-2 uppercase text-[8.5px] font-extrabold">Special Education Tax</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-150 font-medium text-[#1e2b58] whitespace-nowrap bg-white text-center">
@@ -490,10 +489,10 @@ export default function MainContent() {
 
                   {/* Left Column (3/5 width): AI Property Inspector & Validation Status */}
                   <div className="col-span-3 grid grid-cols-2 gap-3 overflow-hidden">
-                    <div className="bg-white border border-gray-200 rounded-lg p-2.5 flex flex-col justify-between shadow-xs select-none">
+                    <div className="bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md select-none">
                       <div>
                         <div className="flex items-center justify-between border-b border-gray-100 pb-1 mb-1.5">
-                          <h3 className="font-extrabold text-[#1e2b58] text-[9.5px] uppercase tracking-wider">AI Property Inspector</h3>
+                          <h3 className="font-extrabold text-[#002fbe] text-[9.5px] uppercase tracking-wider">AI Property Inspector</h3>
                           <span className="text-gray-400 text-[8.5px] font-bold">Issues Found (8)</span>
                         </div>
                         <ul className="space-y-1.5 text-[8.5px] font-semibold">
@@ -509,10 +508,10 @@ export default function MainContent() {
                       </div>
                       <button className="w-full mt-2 py-1.5 bg-[#edf2ff] hover:bg-[#dbeafe] border border-[#3b82f6]/20 text-[#3b82f6] font-extrabold text-[9px] rounded-lg transition-all text-center cursor-pointer shadow-xs">View All Report</button>
                     </div>
-                    <div className="bg-white border border-gray-200 rounded-lg p-2.5 flex flex-col justify-between shadow-xs select-none">
+                    <div className="bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md select-none">
                       <div>
                         <div className="flex items-center justify-between border-b border-gray-100 pb-1 mb-2">
-                          <h3 className="font-extrabold text-[#1e2b58] text-[9.5px] uppercase tracking-wider">Validation Status <span className="text-gray-400 font-semibold text-[8px]">(9/11)</span></h3>
+                          <h3 className="font-extrabold text-[#002fbe] text-[9.5px] uppercase tracking-wider">Validation Status <span className="text-gray-400 font-semibold text-[8px]">(9/11)</span></h3>
                         </div>
                         <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-[8.5px]">
                           <div className="space-y-1.5">
@@ -528,7 +527,7 @@ export default function MainContent() {
                             <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><FileEdit size={10} className="text-blue-600" /><span>Mutation</span></span><span className="text-orange-500 font-bold">Pending</span></div>
                             <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><Link2 size={10} className="text-blue-600" /><span>BPMS</span></span><span className="text-green-600 font-bold">Linked</span></div>
                             <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><UserCheck size={10} className="text-blue-600" /><span>Email</span></span><span className="text-green-600 font-bold">Verified</span></div>
-                            <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><Wallet size={10} className="text-blue-600" /><span>Bank</span></span><span className="text-green-600 font-bold">Verified</span></div>
+<div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><Wallet size={10} className="text-blue-600" /><span>Bank</span></span><span className="text-green-600 font-bold">Verified</span></div>
                           </div>
                         </div>
                       </div>
@@ -537,36 +536,35 @@ export default function MainContent() {
 
                   {/* Right Column (2/5 width): Service & Facility Availability + Timeline */}
                   <div className="col-span-2 flex flex-col gap-2.5 overflow-hidden">
-                    <div className="flex-1 bg-white border border-gray-200 rounded-lg p-2.5 flex flex-col justify-between shadow-xs select-none">
+                    <div className="flex-1 bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md select-none">
                       <div className="flex items-center justify-between border-b border-gray-100 pb-1 mb-2 shrink-0">
-                        <h3 className="font-extrabold text-[#1e2b58] text-[9.5px] uppercase tracking-wider">Service & Facility Availability <span className="text-gray-400 font-semibold text-[8px]">(7/8)</span></h3>
+                        <h3 className="font-extrabold text-[#002fbe] text-[9.5px] uppercase tracking-wider">Service & Facility Availability <span className="text-gray-400 font-semibold text-[8px]">(7/8)</span></h3>
                       </div>
                       <div className="flex-1 flex flex-col justify-center my-auto">
                         <div className="relative flex items-center justify-between px-1.5 py-1 text-[7.5px]">
-                          <div className="absolute top-[10px] left-3.5 right-3.5 h-[1.5px] bg-green-500 -z-10"></div>
-                          <div className="absolute top-[10px] left-[55%] right-[20%] h-[1.5px] bg-red-500 -z-10"></div>
+                          <div className="absolute top-[10px] left-[6.25%] right-[6.25%] h-[2px] bg-[#10b981] z-0"></div>
                           {[
                             { l: 'Water', s: '✓' }, { l: 'Road', s: '✓' }, { l: 'Drainage', s: '✓' }, { l: 'Street Light', s: '✓' },
-                            { l: 'Fire', s: '✓' }, { l: 'Garden', s: '✗', red: true }, { l: 'Sewer', s: '✓' }, { l: 'Solid Waste', s: '✓' }
+                            { l: 'Fire', s: '✓' }, { l: 'Garden', s: '✕', red: true }, { l: 'Sewer', s: '✓' }, { l: 'Solid Waste', s: '✓' }
                           ].map((v, i) => (
-                            <div key={i} className="flex flex-col items-center gap-1.5 flex-1">
-                              <div className={`w-5 h-5 rounded-full ${v.red ? 'bg-red-500 text-white' : 'bg-[#10b981] text-white'} flex items-center justify-center font-bold text-[9px] shadow-sm`}>{v.s}</div>
-                              <span className="text-[#1e2b58] font-bold text-[7px]">{v.l}</span>
+                            <div key={i} className="flex flex-col items-center gap-1.5 flex-1 relative z-10">
+                              <div className={`w-5 h-5 rounded-full ${v.red ? 'bg-red-600 text-white' : 'bg-[#10b981] text-white'} flex items-center justify-center font-bold text-[10px] shadow-sm`}>{v.s}</div>
+                              <span className="text-[#002fbe] font-bold text-[7.5px] bg-white px-0.5 mt-0.5">{v.l}</span>
                             </div>
                           ))}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex-1 bg-white border border-gray-200 rounded-lg p-2.5 flex flex-col justify-between shadow-xs select-none">
+                    <div className="flex-1 bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md select-none">
                       <div className="flex items-center justify-between border-b border-gray-100 pb-1 mb-1.5 shrink-0">
-                        <h3 className="font-extrabold text-[#1e2b58] text-[9.5px] uppercase tracking-wider">Property Timeline</h3>
-                        <Clock size={11} className="text-gray-400" />
+                        <h3 className="font-extrabold text-[#002fbe] text-[9.5px] uppercase tracking-wider">Property Timeline</h3>
+                        <Clock size={11} className="text-[#002fbe]" />
                       </div>
                       <div className="flex-1 flex flex-col justify-center my-auto">
                         <div className="relative flex items-center justify-between px-1.5 py-1 text-[7px]">
-                          <div className="absolute top-[8px] left-3 right-3 h-[1.5px] bg-green-500 -z-10"></div>
-                          <div className="absolute top-[8px] right-3 w-[25%] h-[1.5px] border-t border-dashed border-gray-300 -z-10 bg-white"></div>
+                          <div className="absolute top-[8px] left-[6.25%] w-[62.5%] h-[2px] bg-[#10b981] z-0"></div>
+                          <div className="absolute top-[8px] left-[68.75%] right-[6.25%] h-[2px] bg-slate-300 z-0"></div>
                           <TimelineStep label="Geo Sequencing" date="15-Jan-2024" active />
                           <TimelineStep label="Survey" date="10-Feb-2024" active />
                           <TimelineStep label="Verification" date="20-Feb-2024" active />
@@ -577,10 +575,10 @@ export default function MainContent() {
                           <TimelineStep label="Appeal" date="Pending" isPending />
                         </div>
                       </div>
-                      <div className="flex gap-4 mt-2 justify-center text-[7px] font-bold text-gray-500 shrink-0">
-                        <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500" /><span>Completed</span></div>
-                        <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /><span>In Progress</span></div>
-                        <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-gray-350" /><span>Pending</span></div>
+                      <div className="flex gap-4 mt-2 justify-center text-[7px] font-bold text-[#002fbe] shrink-0">
+                        <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" /><span>Completed</span></div>
+                        <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-600" /><span>In Progress</span></div>
+                        <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-slate-400" /><span>Pending</span></div>
                       </div>
                     </div>
                   </div>
@@ -598,31 +596,31 @@ export default function MainContent() {
         </div>
 
         {/* Right Column: Photos Card + Map Stack */}
-        <div className="w-64 shrink-0 flex flex-col gap-2.5 pb-1">
-          <div className="flex gap-2.5 shrink-0 select-none">
-            <div onMouseEnter={() => handleHoverImage("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")} onMouseLeave={() => handleHoverImage(null)} className="flex-1 bg-white border border-gray-200 rounded-lg p-2 flex flex-col justify-between shadow-sm group hover:border-blue-300 transition-colors cursor-pointer">
-              <div className="text-[10px] font-bold text-[#1e2b58] mb-1 uppercase tracking-wider">Property Photo</div>
-              <div className="overflow-hidden rounded h-16 w-full relative">
+        <div className="w-[270px] shrink-0 flex flex-col gap-2 overflow-y-auto no-scrollbar pb-1">
+          <div className="flex gap-2 shrink-0 select-none">
+            <div onMouseEnter={() => handleHoverImage("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")} onMouseLeave={() => handleHoverImage(null)} className="flex-1 bg-white border border-[#002fbe]/25 rounded-lg p-1.5 flex flex-col justify-between shadow-md group hover:border-[#002fbe] transition-colors cursor-pointer">
+              <div className="text-[9px] font-extrabold text-[#002fbe] mb-1 uppercase tracking-wider">Property Photo</div>
+              <div className="overflow-hidden rounded h-14 w-full relative">
                 <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=200&auto=format&fit=crop" className="w-full h-full object-cover rounded transition-transform duration-500 group-hover:scale-150" alt="Property" onClick={() => openPreview("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")} />
               </div>
             </div>
-            <div onMouseEnter={() => handleHoverImage("/blueprint_plan.png")} onMouseLeave={() => handleHoverImage(null)} className="flex-1 bg-white border border-gray-200 rounded-lg p-2 flex flex-col justify-between shadow-sm group hover:border-blue-300 transition-colors cursor-pointer">
-              <div className="text-[10px] font-bold text-[#1e2b58] mb-1 uppercase tracking-wider">Photo Plan</div>
-              <div className="overflow-hidden rounded h-16 w-full relative bg-gray-50 flex items-center justify-center border border-dashed border-gray-200">
+            <div onMouseEnter={() => handleHoverImage("/blueprint_plan.png")} onMouseLeave={() => handleHoverImage(null)} className="flex-1 bg-white border border-[#002fbe]/25 rounded-lg p-1.5 flex flex-col justify-between shadow-md group hover:border-[#002fbe] transition-colors cursor-pointer">
+              <div className="text-[9px] font-extrabold text-[#002fbe] mb-1 uppercase tracking-wider">Photo Plan</div>
+              <div className="overflow-hidden rounded h-14 w-full relative bg-gray-50 flex items-center justify-center border border-dashed border-gray-200">
                 <img src="/blueprint_plan.png" className="w-full h-full object-contain rounded transition-transform duration-500 group-hover:scale-150" alt="Blueprint Plan" onClick={() => openPreview("/blueprint_plan.png")} />
               </div>
             </div>
           </div>
           <div onMouseEnter={() => handleHoverImage("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop")} onMouseLeave={() => handleHoverImage(null)}>
-            <MapBox title="GIS / Satellite View" height="h-24" imgUrl="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=400&auto=format&fit=crop" onZoom={() => openPreview("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop")} />
+            <MapBox title="GIS / Satellite View" height="h-[84px]" imgUrl="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=400&auto=format&fit=crop" onZoom={() => openPreview("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop")} />
           </div>
           <div onMouseEnter={() => handleHoverImage("https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=800&auto=format&fit=crop")} onMouseLeave={() => handleHoverImage(null)}>
-            <MapBox title="Street View" height="h-24" imgUrl="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=400&auto=format&fit=crop" onZoom={() => openPreview("https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=800&auto=format&fit=crop")} />
+            <MapBox title="Street View" height="h-[84px]" imgUrl="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=400&auto=format&fit=crop" onZoom={() => openPreview("https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=800&auto=format&fit=crop")} />
           </div>
           <div>
             <ChangeDetectionBox 
               title="Change Detection" 
-              height="h-24" 
+              height="h-[84px]" 
               beforeImg="https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=400&auto=format&fit=crop" 
               afterImg="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=400&auto=format&fit=crop" 
               beforeImgZoom="https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=800&auto=format&fit=crop"
@@ -674,7 +672,7 @@ function StatusBadge({ icon, title, status, statusColor, isBlue }: any) {
         {icon}
       </div>
       <div>
-        <div className="text-[9px] text-[#1e2b58] font-bold leading-none">{title}</div>
+        <div className="text-[9px] text-[#002fbe] font-bold leading-none">{title}</div>
         <div className={`text-[9.5px] font-extrabold mt-0.5 leading-none ${statusColor || 'text-green-600'}`}>{status}</div>
       </div>
     </div>
@@ -685,8 +683,7 @@ function Tab({ icon, label, active, onClick }: any) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-4 py-2 rounded-t-lg transition-all cursor-pointer text-[10px] font-bold ${active ? 'bg-[#1e2b58] text-white' : 'hover:bg-gray-100/50 bg-transparent text-[#1e2b58]'}`}
-      style={{ marginBottom: '-2px' }}
+      className={`flex items-center gap-1.5 px-4 py-2 rounded-t-lg transition-all cursor-pointer text-[10px] font-bold border-t border-l border-r relative z-10 -mb-[1px] ${active ? 'bg-[#002fbe] text-white border-[#002fbe]' : 'hover:bg-gray-100 bg-white border-gray-200 text-[#002fbe]'}`}
     >
       {icon}
       <span>{label}</span>
@@ -696,16 +693,16 @@ function Tab({ icon, label, active, onClick }: any) {
 
 function ComparisonCard({ icon, title, oldVal, newVal, change }: any) {
   return (
-    <div className="border border-gray-200 rounded-lg py-1.5 px-2.5 bg-white shadow-sm flex items-start gap-2 flex-1">
+    <div className="border border-[#002fbe]/25 rounded-lg py-1.5 px-2.5 bg-white shadow-md flex items-start gap-2 flex-1">
       <div className="bg-gray-50 p-1 rounded-full border border-gray-100 mt-0.5">
         {icon}
       </div>
       <div className="flex-1 text-[10px] leading-tight">
-        <div className="font-extrabold text-gray-700 mb-0.5">{title}</div>
+        <div className="font-extrabold text-[#002fbe] mb-0.5">{title}</div>
         <div className="flex justify-between items-end">
           <div className="space-y-0.5">
-            <div className="text-gray-450 font-semibold">OLD: <span className="font-bold text-gray-800">{oldVal}</span></div>
-            <div className="text-gray-450 font-semibold">NEW: <span className="font-bold text-gray-805">{newVal}</span></div>
+            <div className="text-gray-600 font-bold">OLD: <span className="font-black text-gray-900">{oldVal}</span></div>
+            <div className="text-gray-600 font-bold">NEW: <span className="font-black text-gray-950">{newVal}</span></div>
           </div>
           {change && <div>{change}</div>}
         </div>
@@ -716,8 +713,8 @@ function ComparisonCard({ icon, title, oldVal, newVal, change }: any) {
 
 function InfoList({ title, items }: any) {
   return (
-    <div className="flex-1 min-w-0 bg-white border border-gray-200 rounded-lg p-2 shadow-xs">
-      <div className="font-bold text-[#1e2b58] mb-1.5 uppercase tracking-wider truncate border-b border-gray-100 pb-1">{title}</div>
+    <div className="flex-1 min-w-0 bg-white border border-[#002fbe]/25 rounded-lg p-2 shadow-xs">
+      <div className="font-bold text-[#002fbe] mb-1.5 uppercase tracking-wider truncate border-b border-gray-100 pb-1">{title}</div>
       <ul className="space-y-1">
         {items.map((it: any, idx: number) => (
           <div key={idx} className="flex flex-col text-[8.5px] leading-none mb-1">
@@ -732,16 +729,12 @@ function InfoList({ title, items }: any) {
 
 function TimelineStep({ label, date, active, isPending }: any) {
   return (
-    <div className="flex flex-col items-center gap-1 z-10 flex-1 min-w-0">
-      <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center bg-white ${active ? 'border-green-500 text-green-500 bg-green-50' : 'border-gray-300 text-gray-400 bg-gray-50'}`}>
-        {active ? (
-          <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-        ) : isPending ? (
-          <div className="w-1.5 h-1.5 bg-gray-300 rounded-full" />
-        ) : null}
+    <div className="flex flex-col items-center gap-1 relative z-10 flex-1 min-w-0">
+      <div className={`w-4 h-4 rounded-full flex items-center justify-center text-white font-extrabold shadow-sm ${active ? 'bg-[#10b981]' : 'bg-slate-400'}`}>
+        {active ? '✓' : '?'}
       </div>
-      <div className="text-center font-bold text-[8px] text-gray-700 truncate w-full leading-none">{label}</div>
-      <div className="text-center text-[7px] text-gray-450 truncate w-full mt-0.5">{date}</div>
+      <div className="text-center font-extrabold text-[8px] text-[#002fbe] truncate w-full leading-none mt-1">{label}</div>
+      <div className="text-center font-bold text-[7px] text-[#002fbe] truncate w-full mt-0.5">{date}</div>
     </div>
   );
 }
@@ -783,8 +776,8 @@ function ActionButton({ icon, label, bg, text, borderClass }: any) {
 
 function MapBox({ title, height, imgUrl, onZoom }: any) {
   return (
-    <div className="bg-white border border-gray-200 rounded overflow-hidden flex flex-col group shadow-sm hover:border-blue-300 transition-colors">
-      <div className="px-2 py-1 font-bold text-[#1e2b58] text-[9px] bg-gray-50 border-b border-gray-100 uppercase tracking-wider">{title}</div>
+    <div className="bg-white border border-[#002fbe]/25 rounded-lg overflow-hidden flex flex-col group shadow-md hover:border-[#002fbe] transition-colors">
+      <div className="px-2 py-1 font-extrabold text-[#002fbe] text-[9px] bg-gray-50 border-b border-gray-100 uppercase tracking-wider">{title}</div>
       <div className={`w-full ${height} bg-gray-200 relative overflow-hidden`}>
         <img
           src={imgUrl}
@@ -824,11 +817,11 @@ function ChangeDetectionBox({ title, height, beforeImg, afterImg, beforeImgZoom,
 
   return (
     <div 
-      className="bg-white border border-gray-200 rounded overflow-hidden flex flex-col group shadow-sm hover:border-blue-300 transition-colors relative"
+      className="bg-white border border-[#002fbe]/25 rounded-lg overflow-hidden flex flex-col group shadow-md hover:border-[#002fbe] transition-colors relative"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="px-2 py-1 font-bold text-[#1e2b58] text-[9px] bg-gray-50 border-b border-gray-100 uppercase tracking-wider flex justify-between items-center">
+      <div className="px-2 py-1 font-extrabold text-[#002fbe] text-[9px] bg-gray-50 border-b border-gray-100 uppercase tracking-wider flex justify-between items-center">
         <span>{title}</span>
         <span className="text-[7.5px] bg-blue-50 text-blue-600 px-1 py-0.25 rounded font-normal">Drag to compare</span>
       </div>

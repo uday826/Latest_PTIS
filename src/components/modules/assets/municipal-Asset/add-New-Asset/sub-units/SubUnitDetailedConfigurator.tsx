@@ -693,7 +693,7 @@ export function SubUnitDetailedConfigurator({
       </div>
 
       {/* ── Body ── */}
-      <div className="flex-1 overflow-y-auto p-3 custom-scrollbar relative [&_input:not(.boxed-digit-input)]:!h-7 [&_input:not(.boxed-digit-input)]:!text-[11px] [&_input:not(.boxed-digit-input)]:!rounded-md [&_input:not(.boxed-digit-input)]:!px-2 [&_label]:text-[11px] [&_label]:mb-1 [&_label]:!font-bold [&_span[id$=-label]]:text-[11px] [&_span[id$=-label]]:!font-bold [&_span.text-gray-700]:!font-bold [&_button[role=combobox]]:!px-2 [&_button[role=combobox]]:!h-7 [&_button[role=combobox]]:!text-[11px] [&_button[role=combobox]]:!rounded-md [&_button[role=combobox]_span]:!text-[11px]">
+      <div className="flex-1 overflow-y-auto p-3 custom-scrollbar relative sub-unit-configurator-container">
         {loading && (
           <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-50 flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">

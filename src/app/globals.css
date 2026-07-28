@@ -83,3 +83,39 @@ input::-ms-clear {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Sub-Unit Configurator Custom Container Styles */
+.sub-unit-configurator-container input:not(.boxed-digit-input) {
+  height: 1.75rem !important; /* !h-7 */
+  font-size: 11px !important; /* !text-[11px] */
+  border-radius: 0.375rem !important; /* !rounded-md */
+  padding-left: 0.5rem !important; /* !px-2 */
+  padding-right: 0.5rem !important;
+}
+
+.sub-unit-configurator-container label {
+  font-size: 11px; /* text-[11px] */
+  margin-bottom: 0.25rem; /* mb-1 */
+  font-weight: 700 !important; /* !font-bold */
+}
+
+.sub-unit-configurator-container span[id$="-label"] {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.sub-unit-configurator-container span.text-gray-700 {
+  font-weight: 700 !important;
+}
+
+.sub-unit-configurator-container button[role="combobox"] {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+  height: 1.75rem !important;
+  font-size: 11px !important;
+  border-radius: 0.375rem !important;
+}
+
+.sub-unit-configurator-container button[role="combobox"] span {
+  font-size: 11px !important;
+}
