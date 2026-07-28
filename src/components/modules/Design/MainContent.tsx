@@ -2,14 +2,14 @@
 
 import React, { useState } from 'react';
 import PropertySummary from './PropertySummary';
-import { 
-  CheckCircle2, 
-  Map, 
-  Wallet, 
-  UserCheck, 
-  Droplet, 
-  ShieldCheck, 
-  Briefcase, 
+import {
+  CheckCircle2,
+  Map,
+  Wallet,
+  UserCheck,
+  Droplet,
+  ShieldCheck,
+  Briefcase,
   Link2,
   FileText,
   Users,
@@ -51,624 +51,589 @@ export default function MainContent() {
   const openPreview = (url: string) => {
     setSelectedImg(url);
   };
-
   return (
-    <div className="flex-1 h-full overflow-hidden bg-transparent p-2.5 font-sans text-gray-800 relative z-10 flex flex-col gap-2">
-      
+    <div className="flex-1 h-full overflow-hidden bg-transparent p-0 font-sans text-gray-800 relative z-10 flex flex-col gap-2">
+
       <PropertySummary onHoverImg={(url) => handleHoverImage(url, 'left')} onClickImg={openPreview} />
 
       {/* Unified Two-Column Layout (Zero scrolling, tight dimensions for perfect vertical fit) */}
       <div className="flex-1 min-h-0 flex gap-2.5 overflow-hidden">
-        
+
         {/* Left Column: Badges, Tabs, and Tab Content Card */}
         <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
-          
+
           {/* Status Badges Row (Tighter padding for zero scrolling) */}
           <div className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm text-xs flex flex-wrap items-center justify-between gap-y-1.5 shrink-0 select-none">
-            <StatusBadge icon={<Map size={13} />} title="GIS Verified" status="Verified" statusColor="text-green-600" />
-            <StatusBadge icon={<FileText size={13} />} title="Assessment" status="Approved" statusColor="text-green-600" />
-            <StatusBadge icon={<Wallet size={13} />} title="Collection Status" status="Paid" statusColor="text-green-600" />
-            <StatusBadge icon={<UserCheck size={13} />} title="KYC Status" status="Verified" statusColor="text-green-600" />
-            <StatusBadge icon={<Droplet size={13} />} title="Water Connection" status="Active" statusColor="text-blue-600" isBlue />
-            <StatusBadge icon={<ShieldCheck size={13} />} title="Fire NOC" status="Valid" statusColor="text-green-600" />
-            <StatusBadge icon={<Briefcase size={13} />} title="Trade License" status="Active" statusColor="text-green-600" />
-            <StatusBadge icon={<Link2 size={13} />} title="BPMS Linked" status="Yes" statusColor="text-green-600" />
+            <StatusBadge icon={<Map size={13} className="text-green-600" />} title="GIS Verified" status="Verified" statusColor="text-green-600" />
+            <StatusBadge icon={<FileText size={13} className="text-green-600" />} title="Assessment" status="Approved" statusColor="text-green-600" />
+            <StatusBadge icon={<Wallet size={13} className="text-green-600" />} title="Collection Status" status="Paid" statusColor="text-green-600" />
+            <StatusBadge icon={<UserCheck size={13} className="text-green-600" />} title="KYC Status" status="Verified" statusColor="text-green-600" />
+            <StatusBadge icon={<Droplet size={13} className="text-blue-600" />} title="Water Connection" status="Active" statusColor="text-green-600" isBlue />
+            <StatusBadge icon={<ShieldCheck size={13} className="text-green-600" />} title="Fire NOC" status="Valid" statusColor="text-green-600" />
+            <StatusBadge icon={<Briefcase size={13} className="text-green-600" />} title="Trade License" status="Active" statusColor="text-green-600" />
+            <StatusBadge icon={<Link2 size={13} className="text-green-600" />} title="BPMS Linked" status="Yes" statusColor="text-green-600" />
           </div>
 
-          {/* Tabs Navigation Bar (Tighter padding) */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden flex font-semibold text-xs text-gray-600 shadow-sm shrink-0">
-            <Tab active={activeTab === 'property'} onClick={() => setActiveTab('property')} icon={<FolderOpen size={14} />} label="Property Details" />
-            <Tab active={activeTab === 'kyc'} onClick={() => setActiveTab('kyc')} icon={<UserCheck size={14} />} label="KYC Details" />
-            <Tab active={activeTab === 'society'} onClick={() => setActiveTab('society')} icon={<Users size={14} />} label="Society Details" />
-            <Tab active={activeTab === 'building'} onClick={() => setActiveTab('building')} icon={<Building size={14} />} label="Building Permission" />
-            <Tab active={activeTab === 'discount'} onClick={() => setActiveTab('discount')} icon={<Percent size={14} />} label="% Discount & Social Data" />
-            <Tab active={activeTab === 'old'} onClick={() => setActiveTab('old')} icon={<History size={14} />} label="Old Details" />
+          {/* Tabs Navigation Bar */}
+          <div className="flex border-b border-[#1e2b58] font-bold text-xs text-[#1e2b58] shrink-0 select-none items-end gap-1.5 mt-1 pb-[1px]">
+            <Tab active={activeTab === 'property'} onClick={() => setActiveTab('property')} icon={<FolderOpen size={13} />} label="Property Details" />
+            <Tab active={activeTab === 'kyc'} onClick={() => setActiveTab('kyc')} icon={<UserCheck size={13} />} label="KYC Details" />
+            <Tab active={activeTab === 'society'} onClick={() => setActiveTab('society')} icon={<Users size={13} />} label="Society Details" />
+            <Tab active={activeTab === 'building'} onClick={() => setActiveTab('building')} icon={<Building size={13} />} label="Building Permission" />
+            <Tab active={activeTab === 'discount'} onClick={() => setActiveTab('discount')} icon={<Percent size={13} />} label="Discount & Social Data" />
+            <Tab active={activeTab === 'old'} onClick={() => setActiveTab('old')} icon={<History size={13} />} label="Old Details" />
           </div>
 
-          {/* Tab Content Panel (100% Zero scrolling, tightly spaced contents) */}
-          <div className="flex-1 min-h-0 bg-white border border-gray-200 rounded-lg p-2.5 shadow-sm flex flex-col overflow-hidden gap-2">
-            
+          {/* Tab Content Panel (100% Scrollable on compact resolution) */}
+          <div className="flex-1 min-h-0 bg-white border border-gray-200 rounded-lg p-2.5 shadow-sm flex flex-col overflow-y-auto no-scrollbar gap-2">
+
             {/* PANEL 1: Property Details */}
             {activeTab === 'property' && (
-              <div className="flex-1 flex flex-col justify-between overflow-hidden gap-2 transition-all duration-300 animate-fadeIn">
-                
-                {/* Sub-tabs as rounded pills */}
-                <div className="flex gap-2 text-[10px] pb-1 shrink-0 select-none">
-                  <button 
-                    onClick={() => setActiveSubTab('rateable')} 
-                    className={`font-bold cursor-pointer px-3.5 py-1 rounded-full transition-all border ${activeSubTab === 'rateable' ? 'bg-[#7c3aed] text-white border-transparent' : 'bg-white text-gray-500 hover:text-gray-800 border-gray-200'}`}
-                  >
-                    Rateable
-                  </button>
-                  <button 
-                    onClick={() => setActiveSubTab('capital')} 
-                    className={`font-bold cursor-pointer px-3.5 py-1 rounded-full transition-all border ${activeSubTab === 'capital' ? 'bg-[#7c3aed] text-white border-transparent' : 'bg-white text-gray-500 hover:text-gray-800 border-gray-200'}`}
-                  >
-                    Capital
-                  </button>
-                  <button 
-                    onClick={() => setActiveSubTab('dual')} 
-                    className={`font-bold cursor-pointer px-3.5 py-1 rounded-full transition-all border ${activeSubTab === 'dual' ? 'bg-[#7c3aed] text-white border-transparent' : 'bg-white text-gray-500 hover:text-gray-800 border-gray-200'}`}
-                  >
-                    Dual Method
-                  </button>
-                  <button 
-                    onClick={() => setActiveSubTab('reassessment')} 
-                    className={`font-bold cursor-pointer px-3.5 py-1 rounded-full transition-all border ${activeSubTab === 'reassessment' ? 'bg-[#7c3aed] text-white border-transparent' : 'bg-white text-gray-500 hover:text-gray-800 border-gray-200'}`}
-                  >
-                    Reassessment
-                  </button>
+              <div className="flex flex-col gap-2 transition-all duration-300 animate-fadeIn">
+
+                {/* Floor / Component Details Header & Buttons */}
+                <div className="flex items-center justify-between pb-1 shrink-0 select-none">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-extrabold text-[#1e2b58] text-[11px] uppercase tracking-wider">Floor / Component Details</h3>
+                    <span className="text-gray-400 text-[10px] font-semibold">(6 Components)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button className="flex items-center gap-1 px-2.5 py-1 border border-blue-200 bg-white hover:bg-blue-50 text-[#2563eb] text-[9.5px] font-bold rounded cursor-pointer transition-colors shadow-xs">
+                      <Plus size={11} />
+                      <span>Add Floor</span>
+                    </button>
+                    <button className="flex items-center gap-1 px-2.5 py-1 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-[9.5px] font-bold rounded cursor-pointer transition-colors shadow-xs">
+                      <Plus size={11} />
+                      <span>More</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Sub Tab Table (Extremely compact py-0.5) */}
-                <div className="overflow-x-auto border border-gray-200 rounded-md shrink-0">
+                <div className="overflow-x-auto border border-gray-200 rounded-lg shrink-0">
                   {activeSubTab === 'rateable' && (
-                    <table className="w-full text-[11px] text-left animate-fadeIn">
-                      <thead className="bg-[#1e2b58] text-white">
+                    <table className="w-full text-[10px] text-center border-collapse animate-fadeIn bg-white">
+                      <thead className="bg-[#1e2b58] text-white font-extrabold whitespace-nowrap">
                         <tr>
-                          <th className="py-1 px-1.5 w-16 text-center"><SlidersHorizontal size={12} className="inline text-white" /></th>
-                          <th className="py-1 px-1.5 uppercase tracking-wider text-[9px] font-bold">Taxable</th>
-                          <th className="py-1 px-1.5 uppercase tracking-wider text-[9px] font-bold">Floor</th>
-                          <th className="py-1 px-1.5 uppercase tracking-wider text-[9px] font-bold">Son Year</th>
-                          <th className="py-1 px-1.5 uppercase tracking-wider text-[9px] font-bold">Asst Year</th>
-                          <th className="py-1 px-1.5 uppercase tracking-wider text-[9px] font-bold">Con Type</th>
-                          <th className="py-1 px-1.5 uppercase tracking-wider text-[9px] font-bold">Use</th>
-                          <th className="py-1 px-1.5 uppercase tracking-wider text-[9px] font-bold">Sub Type of Use</th>
-                          <th className="py-1 px-1.5 uppercase tracking-wider text-[9px] font-bold text-center">No of Rooms</th>
-                          <th className="py-1 px-1.5 uppercase tracking-wider text-[9px] font-bold">Carpet Area (ft/mtr)</th>
-                          <th className="py-1 px-1.5 uppercase tracking-wider text-[9px] font-bold">Builtup Area (ft/mtr)</th>
-                          <th className="py-1 px-1.5 uppercase tracking-wider text-[9px] font-bold text-center">Actions</th>
+                          <th className="py-2.5 px-1.5 font-extrabold text-white w-7 border-r border-white/10 text-[8.5px] uppercase">#</th>
+                          <th className="py-2.5 px-1.5 w-10 border-r border-white/10 text-[8.5px] uppercase">Photo</th>
+                          <th className="py-2.5 px-1.5 w-10 border-r border-white/10 text-[8.5px] uppercase">GIS</th>
+                          <th className="py-2.5 px-1.5 w-12 border-r border-white/10 text-[8.5px] uppercase">Doc ID</th>
+                          <th className="py-2.5 px-1.5 w-14 border-r border-white/10 font-bold uppercase tracking-wider text-[8.5px]">Taxable</th>
+                          <th className="py-2.5 px-1.5 w-24 border-r border-white/10 font-bold uppercase tracking-wider text-[8.5px]">Floor</th>
+                          <th className="py-2.5 px-1.5 w-20 border-r border-white/10 font-bold uppercase tracking-wider text-[8.5px]">Use</th>
+                          <th className="py-2.5 px-1.5 w-28 border-r border-white/10 font-bold uppercase tracking-wider text-[8.5px]">Sub Type</th>
+                          <th className="py-2.5 px-1.5 w-16 border-r border-white/10 font-bold uppercase tracking-wider text-[8.5px]">Rooms / Units</th>
+                          <th className="py-2.5 px-1.5 w-32 border-r border-white/10 font-bold uppercase tracking-wider text-[8.5px]">Carpet Area (ft/mtr)</th>
+                          <th className="py-2.5 px-1.5 w-32 border-r border-white/10 font-bold uppercase tracking-wider text-[8.5px]">Built-up Area (ft/mtr)</th>
+                          <th className="py-2.5 px-1.5 w-32 border-r border-white/10 font-bold uppercase tracking-wider text-[8.5px]">Rateable Value (₹)</th>
+                          <th className="py-2.5 px-1.5 w-32 border-r border-white/10 font-bold uppercase tracking-wider text-[8.5px]">Tax (Current) (₹)</th>
+                          <th className="py-2.5 px-1.5 w-20 font-bold uppercase tracking-wider text-[8.5px]">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100 bg-white">
-                        <tr className="hover:bg-gray-50">
-                          <td className="py-1 px-1.5 flex items-center justify-center gap-1.5 text-gray-400">
-                            <FileEdit size={11} className="text-blue-500 cursor-pointer" />
-                            <Camera size={11} className="text-gray-400 cursor-pointer" />
-                            <MapPin size={11} className="text-blue-500 cursor-pointer" />
-                            <AlertTriangle size={11} className="text-red-500 cursor-pointer" />
-                          </td>
-                          <td className="py-1 px-1.5 text-red-500 font-bold">No</td>
-                          <td className="py-1 px-1.5 font-medium text-gray-750">Open Plot</td>
-                          <td className="py-1 px-1.5 text-gray-600">-</td>
-                          <td className="py-1 px-1.5 text-gray-600">2026</td>
-                          <td className="py-1 px-1.5 text-gray-600">2026</td>
-                          <td className="py-1 px-1.5 text-gray-600">op</td>
-                          <td className="py-1 px-1.5 text-blue-900 font-bold">खुला भूखंड</td>
-                          <td className="py-1 px-1.5 text-gray-600 text-center">-</td>
-                          <td className="py-1 px-1.5 text-gray-600 text-center">0</td>
-                          <td className="py-1 px-1.5 font-bold text-gray-800">4305.60 / 400.00</td>
-                          <td className="py-1 px-1.5 text-center text-gray-400 cursor-pointer"><MoreVertical size={12} className="mx-auto" /></td>
+                      <tbody className="font-medium text-gray-700 whitespace-nowrap bg-white text-center">
+                        {/* Row 1 */}
+                        <tr className="hover:bg-gray-50/50 border-b border-gray-200">
+                          <td className="py-2 px-2 text-gray-400 font-bold border-r border-gray-200">1</td>
+                          <td className="py-2 px-2 border-r border-gray-200"><Camera size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 border-r border-gray-200"><MapPin size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 border-r border-gray-200"><FileText size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 text-red-500 font-extrabold border-r border-gray-200 text-[9.5px]">No</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold border-r border-gray-200 text-[9.5px]">Open Plot</td>
+                          <td className="py-2 px-2 text-gray-400 font-extrabold border-r border-gray-200 text-[9.5px]">-</td>
+                          <td className="py-2 px-2 text-gray-400 font-extrabold border-r border-gray-200 text-[9.5px]">-</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">0</td>
+                          <td className="py-2 px-2 font-extrabold text-gray-600 border-r border-gray-200 text-[9.5px]">0.00 / 0.00</td>
+                          <td className="py-2 px-2 font-extrabold text-gray-600 border-r border-gray-200 text-[9.5px]">0.00 / 0.00</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">0</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">0</td>
+                          <td className="py-2 px-2 border-r border-gray-200 text-center"><span className="bg-gray-100 text-gray-400 rounded px-2.5 py-0.5 text-[8.5px] font-extrabold border border-gray-200">NA</span></td>
                         </tr>
-                        <tr className="hover:bg-gray-50">
-                          <td className="py-1 px-1.5 flex items-center justify-center gap-1.5 text-gray-400">
-                            <FileEdit size={11} className="text-blue-500 cursor-pointer" />
-                            <Camera size={11} className="text-gray-400 cursor-pointer" />
-                            <MapPin size={11} className="text-blue-500 cursor-pointer" />
-                            <CheckCircle2 size={11} className="text-green-500 cursor-pointer" />
-                          </td>
-                          <td className="py-1 px-1.5 text-green-600 font-bold">Yes</td>
-                          <td className="py-1 px-1.5 font-medium text-gray-750">-</td>
-                          <td className="py-1 px-1.5 text-gray-600">-</td>
-                          <td className="py-1 px-1.5 text-gray-600">2026</td>
-                          <td className="py-1 px-1.5 text-gray-600">2026</td>
-                          <td className="py-1 px-1.5 text-gray-600">op</td>
-                          <td className="py-1 px-1.5 text-blue-900 font-bold">निवासी</td>
-                          <td className="py-1 px-1.5 text-gray-600 text-center">-</td>
-                          <td className="py-1 px-1.5 text-gray-600 text-center">0</td>
-                          <td className="py-1 px-1.5 font-bold text-gray-800">538.20 / 50.00</td>
-                          <td className="py-1 px-1.5 text-center text-gray-400 cursor-pointer"><MoreVertical size={12} className="mx-auto" /></td>
+                        {/* Row 2 */}
+                        <tr className="hover:bg-gray-50/50 border-b border-gray-200">
+                          <td className="py-2 px-2 text-gray-400 font-bold border-r border-gray-200">2</td>
+                          <td className="py-2 px-2 border-r border-gray-200"><Camera size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 border-r border-gray-200"><MapPin size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 border-r border-gray-200"><FileText size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 text-green-600 font-extrabold border-r border-gray-200 text-[9.5px]">Yes</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold border-r border-gray-200 text-[9.5px]">Ground Floor</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold font-sans border-r border-gray-200 text-[9.5px]">व्यवसायिक</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold border-r border-gray-200 text-[9.5px]">Shop</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">2</td>
+                          <td className="py-2 px-2 font-extrabold text-gray-600 border-r border-gray-200 text-[9.5px]">120.50 / 11.20</td>
+                          <td className="py-2 px-2 font-extrabold text-gray-600 border-r border-gray-200 text-[9.5px]">135.75 / 12.62</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">₹ 1,20,500</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">₹ 18,752</td>
+                          <td className="py-2 px-2 border-r border-gray-200 text-center"><span className="bg-[#ecfdf5] text-[#10b981] rounded px-2.5 py-0.5 text-[8.5px] font-extrabold border border-[#10b981]/20">Verified</span></td>
+                        </tr>
+                        {/* Row 3 */}
+                        <tr className="hover:bg-gray-50/50 border-b border-gray-200">
+                          <td className="py-2 px-2 text-gray-400 font-bold border-r border-gray-200">3</td>
+                          <td className="py-2 px-2 border-r border-gray-200"><Camera size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 border-r border-gray-200"><MapPin size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 border-r border-gray-200"><FileText size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 text-green-600 font-extrabold border-r border-gray-200 text-[9.5px]">Yes</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold border-r border-gray-200 text-[9.5px]">First Floor</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold font-sans border-r border-gray-200 text-[9.5px]">निवासी</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold border-r border-gray-200 text-[9.5px]">Residential</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">5</td>
+                          <td className="py-2 px-2 font-extrabold text-gray-600 border-r border-gray-200 text-[9.5px]">138.75 / 12.89</td>
+                          <td className="py-2 px-2 font-extrabold text-gray-600 border-r border-gray-200 text-[9.5px]">155.40 / 14.43</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">₹ 1,38,750</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">₹ 21,456</td>
+                          <td className="py-2 px-2 border-r border-gray-200 text-center"><span className="bg-[#ecfdf5] text-[#10b981] rounded px-2.5 py-0.5 text-[8.5px] font-extrabold border border-[#10b981]/20">Verified</span></td>
+                        </tr>
+                        {/* Row 4 */}
+                        <tr className="hover:bg-gray-50/50 border-b border-gray-200">
+                          <td className="py-2 px-2 text-gray-400 font-bold border-r border-gray-200">4</td>
+                          <td className="py-2 px-2 border-r border-gray-200"><Camera size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 border-r border-gray-200"><MapPin size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 border-r border-gray-200"><FileText size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 text-green-600 font-extrabold border-r border-gray-200 text-[9.5px]">Yes</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold border-r border-gray-200 text-[9.5px]">Second Floor</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold font-sans border-r border-gray-200 text-[9.5px]">निवासी</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold border-r border-gray-200 text-[9.5px]">Residential</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">5</td>
+                          <td className="py-2 px-2 font-extrabold text-gray-600 border-r border-gray-200 text-[9.5px]">138.75 / 12.89</td>
+                          <td className="py-2 px-2 font-extrabold text-gray-600 border-r border-gray-200 text-[9.5px]">155.40 / 14.43</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">₹ 1,38,750</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">₹ 21,456</td>
+                          <td className="py-2 px-2 border-r border-gray-200 text-center"><span className="bg-[#ecfdf5] text-[#10b981] rounded px-2.5 py-0.5 text-[8.5px] font-extrabold border border-[#10b981]/20">Verified</span></td>
+                        </tr>
+                        {/* Row 5 */}
+                        <tr className="hover:bg-gray-50/50 border-b border-gray-200">
+                          <td className="py-2 px-2 text-gray-400 font-bold border-r border-gray-200">5</td>
+                          <td className="py-2 px-2 border-r border-gray-200"><Camera size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 border-r border-gray-200"><MapPin size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 border-r border-gray-200"><FileText size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 text-green-600 font-extrabold border-r border-gray-200 text-[9.5px]">Yes</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold border-r border-gray-200 text-[9.5px]">Third Floor</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold font-sans border-r border-gray-200 text-[9.5px]">निवासी</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold border-r border-gray-200 text-[9.5px]">Residential</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">5</td>
+                          <td className="py-2 px-2 font-extrabold text-gray-600 border-r border-gray-200 text-[9.5px]">138.75 / 12.89</td>
+                          <td className="py-2 px-2 font-extrabold text-gray-600 border-r border-gray-200 text-[9.5px]">155.40 / 14.43</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">₹ 1,38,750</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">₹ 21,456</td>
+                          <td className="py-2 px-2 border-r border-gray-200 text-center"><span className="bg-[#ecfdf5] text-[#10b981] rounded px-2.5 py-0.5 text-[8.5px] font-extrabold border border-[#10b981]/20">Verified</span></td>
+                        </tr>
+                        {/* Row 6 */}
+                        <tr className="hover:bg-gray-50/50">
+                          <td className="py-2 px-2 text-gray-400 font-bold border-r border-gray-200">6</td>
+                          <td className="py-2 px-2 border-r border-gray-200"><Camera size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 border-r border-gray-200"><MapPin size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 border-r border-gray-200"><FileText size={13} className="text-blue-600 inline cursor-pointer" /></td>
+                          <td className="py-2 px-2 text-green-600 font-extrabold border-r border-gray-200 text-[9.5px]">Yes</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold border-r border-gray-200 text-[9.5px]">Terrace Floor</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold font-sans border-r border-gray-200 text-[9.5px]">छत</td>
+                          <td className="py-2 px-2 text-[#1e2b58] font-extrabold border-r border-gray-200 text-[9.5px]">Terrace</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">0</td>
+                          <td className="py-2 px-2 font-extrabold text-gray-600 border-r border-gray-200 text-[9.5px]">0.00 / 0.00</td>
+                          <td className="py-2 px-2 font-extrabold text-gray-600 border-r border-gray-200 text-[9.5px]">21.25 / 1.97</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">₹ 21,250</td>
+                          <td className="py-2 px-2 font-extrabold text-[#1e2b58] border-r border-gray-200 text-[9.5px]">₹ 1,620</td>
+                          <td className="py-2 px-2 border-r border-gray-200 text-center"><span className="bg-[#ecfdf5] text-[#10b981] rounded px-2.5 py-0.5 text-[8.5px] font-extrabold border border-[#10b981]/20">Verified</span></td>
                         </tr>
                       </tbody>
                     </table>
                   )}
                   {activeSubTab === 'capital' && (
-                    <table className="w-full text-[11px] text-left animate-fadeIn">
-                      <thead className="bg-[#1e2b58] text-white">
+                    <table className="w-full text-[10px] text-center border-collapse animate-fadeIn bg-white">
+                      <thead className="bg-[#1e2b58] text-white font-extrabold border-b border-gray-200 whitespace-nowrap">
                         <tr>
-                          <th className="py-1 px-1.5 w-10 text-center"><Home size={12} className="inline" /></th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">Taxable</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">Use</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">Carpet</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">Builtup</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">Cap Value</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">Rate</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">Amount</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold text-center">Actions</th>
+                          <th className="py-1.5 px-1.5 w-10 text-center font-bold">#</th>
+                          <th className="py-1.5 px-1.5 text-left font-bold uppercase tracking-wider text-[8.5px]">Use</th>
+                          <th className="py-1.5 px-1.5 text-right font-bold uppercase tracking-wider text-[8.5px]">RV (₹)</th>
+                          <th className="py-1.5 px-1.5 text-[#1e2b58] font-bold text-right">RV Tax (₹)</th>
+                          <th className="py-1.5 px-1.5 text-right font-bold uppercase tracking-wider text-[8.5px]">CV (₹)</th>
+                          <th className="py-1.5 px-1.5 text-right font-bold uppercase tracking-wider text-[8.5px]">CV Tax (₹)</th>
+                          <th className="py-1.5 px-1.5 text-right font-bold uppercase tracking-wider text-[8.5px]">Calculated (Higher) (₹)</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100">
+                      <tbody className="divide-y divide-gray-150 font-medium text-gray-700 bg-white whitespace-nowrap">
                         <tr className="hover:bg-gray-50">
-                          <td className="py-1 px-1.5 text-center text-gray-400"><FileEdit size={11} className="text-blue-500 cursor-pointer inline" /></td>
-                          <td className="py-1 px-1.5 text-red-500 font-semibold">No</td>
-                          <td className="py-1 px-1.5 text-red-600 font-semibold">खुला भूखंड</td>
-                          <td className="py-1 px-1.5">4305.60 m²</td>
-                          <td className="py-1 px-1.5">4305.60 m²</td>
-                          <td className="py-1 px-1.5">₹12,50,000</td>
-                          <td className="py-1 px-1.5">0.5%</td>
-                          <td className="py-1 px-1.5 font-bold text-green-600">₹6,250</td>
-                          <td className="py-1 px-1.5 text-center"><MoreVertical size={12} className="mx-auto" /></td>
+                          <td className="py-1.5 px-1.5 text-center font-bold text-gray-500">1</td>
+                          <td className="py-1.5 px-1.5 text-blue-900 font-bold text-left">खुला भूखंड</td>
+                          <td className="py-1.5 px-1.5 text-right">₹6,000</td>
+                          <td className="py-1.5 px-1.5 font-bold text-right text-green-600">₹900</td>
+                          <td className="py-1.5 px-1.5 text-right">₹4,50,000</td>
+                          <td className="py-1.5 px-1.5 text-right">₹1,350</td>
+                          <td className="py-1.5 px-1.5 font-bold text-green-600 text-right">₹1,350</td>
                         </tr>
                       </tbody>
                     </table>
                   )}
                   {activeSubTab === 'dual' && (
-                    <table className="w-full text-[11px] text-left animate-fadeIn">
-                      <thead className="bg-[#1e2b58] text-white">
+                    <table className="w-full text-[10px] text-center border-collapse animate-fadeIn bg-white">
+                      <thead className="bg-[#1e2b58] text-white font-extrabold border-b border-gray-200 whitespace-nowrap">
                         <tr>
-                          <th className="py-1 px-1.5 w-10 text-center"><FileEdit size={11} className="inline text-white" /></th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">Use</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">RV</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">RV Tax</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">CV</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">CV Tax</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] font-bold">Calculated (Higher)</th>
+                          <th className="py-1.5 px-1.5 w-10 text-center font-bold">#</th>
+                          <th className="py-1.5 px-1.5 text-left font-bold uppercase tracking-wider text-[8.5px]">Use</th>
+                          <th className="py-1.5 px-1.5 text-right font-bold uppercase tracking-wider text-[8.5px]">RV (₹)</th>
+                          <th className="py-1.5 px-1.5 text-right font-bold uppercase tracking-wider text-[8.5px]">RV Tax (₹)</th>
+                          <th className="py-1.5 px-1.5 text-right font-bold uppercase tracking-wider text-[8.5px]">CV (₹)</th>
+                          <th className="py-1.5 px-1.5 text-right font-bold uppercase tracking-wider text-[8.5px]">CV Tax (₹)</th>
+                          <th className="py-1.5 px-1.5 text-right font-bold uppercase tracking-wider text-[8.5px]">Calculated (Higher) (₹)</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y divide-gray-150 font-medium text-gray-700 bg-white whitespace-nowrap">
                         <tr className="hover:bg-gray-50">
-                          <td className="py-1 px-1.5 text-center"><FileEdit size={11} className="text-blue-500 inline" /></td>
-                          <td className="py-1 px-1.5 text-red-600 font-semibold">निवासी</td>
-                          <td className="py-1 px-1.5">₹6,000</td>
-                          <td className="py-1 px-1.5">₹900</td>
-                          <td className="py-1 px-1.5">₹4,50,000</td>
-                          <td className="py-1 px-1.5">₹1,350</td>
-                          <td className="py-1 px-1.5 font-bold text-green-600">₹1,350</td>
+                          <td className="py-1.5 px-1.5 text-center font-bold text-gray-500">1</td>
+                          <td className="py-1.5 px-1.5 text-blue-900 font-bold text-left">निवासी</td>
+                          <td className="py-1.5 px-1.5 text-right">₹6,000</td>
+                          <td className="py-1.5 px-1.5 text-right">₹900</td>
+                          <td className="py-1.5 px-1.5 text-right">₹4,50,000</td>
+                          <td className="py-1.5 px-1.5 text-right">₹1,350</td>
+                          <td className="py-1.5 px-1.5 font-bold text-green-600 text-right">₹1,350</td>
                         </tr>
                       </tbody>
                     </table>
                   )}
                 </div>
 
-                {/* Add Component Button Row */}
-                <div className="shrink-0 flex justify-start -mt-0.5">
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-blue-200 bg-blue-50/10 hover:bg-blue-50/50 text-[#2563eb] text-[10px] font-bold rounded cursor-pointer transition-colors shadow-xs">
-                    <Plus size={12} />
-                    <span>Add New Component</span>
-                  </button>
-                </div>
 
-                {/* 6 Cards (Tax, Collection, Penalty separated side-by-side as original layout) */}
-                <div className="grid grid-cols-6 gap-2 shrink-0 select-none">
-                  <ComparisonCard 
-                    icon={<Map size={14} className="text-blue-500" />} 
-                    title="Area Comparison" 
-                    oldVal="400.00 m²" 
-                    newVal="400.00 m²" 
-                    change={<span className="text-green-500 flex items-center font-extrabold text-[10.5px]"><ArrowUp size={11} className="mr-0.5" /> 0 m²</span>}
-                  />
-                  <ComparisonCard 
-                    icon={<RefreshCcw className="text-purple-500" size={14} />} 
-                    title="Change of Use" 
-                    oldVal="N/A" 
-                    newVal={<span className="text-purple-600 font-bold">Mix</span>} 
-                  />
-                  <ComparisonCard 
-                    icon={<ShieldCheck className="text-amber-500" size={14} />} 
-                    title="Rateable Value (RV)" 
-                    oldVal="₹0" 
-                    newVal="₹0" 
-                  />
-                  <ComparisonCard 
-                    icon={<FileText className="text-green-500" size={14} />} 
-                    title="Tax" 
-                    oldVal="₹0" 
-                    newVal="₹0" 
-                  />
-                  <div className="border border-gray-200 rounded-lg py-1.5 px-2.5 bg-white shadow-sm flex items-start gap-2 flex-1">
-                    <div className="bg-blue-50 p-1 rounded-full shadow-xs border border-blue-100/50 mt-0.5 shrink-0">
-                      <Wallet className="text-blue-500" size={13} />
+                {/* 6 Cards (Area, RV, CV, Tax, Collection, Addl Revenue) */}
+                <div className="grid grid-cols-6 gap-3 shrink-0 select-none">
+                  {/* Card 1: Area Comparison */}
+                  <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm flex items-center gap-2.5">
+                    <div className="bg-[#eff6ff] w-9 h-9 rounded-xl flex items-center justify-center text-[#3b82f6] shrink-0">
+                      <FileText size={14} />
                     </div>
-                    <div className="flex-1 text-[10px] leading-tight min-w-0">
-                      <div className="font-extrabold text-gray-700 mb-0.5 truncate">Collection</div>
-                      <div className="space-y-0.5 text-[9px]">
-                        <div className="text-gray-400 font-semibold">Paid: <span className="font-bold text-gray-800">₹0</span></div>
-                        <div className="text-red-500 font-semibold">Outstanding: <span className="font-bold">₹0</span></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="border border-gray-200 rounded-lg py-1.5 px-2.5 bg-white shadow-sm flex items-start gap-2 flex-1">
-                    <div className="bg-red-50 p-1 rounded-full shadow-xs border border-red-100/50 mt-0.5 shrink-0">
-                      <AlertTriangle className="text-red-500" size={13} />
-                    </div>
-                    <div className="flex-1 text-[10px] leading-tight min-w-0">
-                      <div className="font-extrabold text-gray-700 mb-0.5 truncate">Penalty</div>
-                      <div className="space-y-0.5 text-[9px]">
-                        <div className="text-gray-400 font-semibold">Penalty: <span className="font-bold text-gray-800">₹0</span></div>
-                        <div className="text-gray-450 font-semibold">Interest: <span className="font-bold text-gray-800">₹0</span></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* TAX DETAILS Section (Compact height) */}
-                <div className="shrink-0">
-                  <h3 className="font-bold text-[#1e2b58] text-[10px] mb-1.5 uppercase tracking-wider">TAX DETAILS</h3>
-                  <div className="overflow-x-auto border border-gray-200 rounded-md">
-                    <table className="w-full text-[10px] text-center">
-                      <thead className="bg-[#1e2b58] text-white font-semibold">
-                        <tr>
-                          <th className="py-1 px-1.5 uppercase text-[9px]">Taxes</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px]">General Tax</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px]">Tree Cess</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px]">Special Water Cess</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px]">Road Cess</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px]">Fire Cess</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px]">Light Cess</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px]">Water Benefit Cess</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px]">Sewage Disposal Cess</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px]">Special Education Tax</th>
-                          <th className="py-1 px-1.5 uppercase text-[9px] bg-[#1e2b58]">Total Tax</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr className="bg-white">
-                          <td className="py-1.5 px-1.5 font-bold text-gray-700 bg-gray-50 border-r border-gray-200">NET TAX</td>
-                          
-                          <td className="py-1 px-1.5 text-center">
-                            <div className="font-extrabold text-[10px] text-gray-800">0</div>
-                            <div className="flex flex-col items-center mt-0.5">
-                              <div className="w-10 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="w-0 h-full bg-blue-500 rounded-full" />
-                              </div>
-                              <span className="text-[7.5px] text-gray-400 font-semibold mt-0.5">0%</span>
-                            </div>
-                          </td>
-
-                          <td className="py-1 px-1.5 text-center">
-                            <div className="font-extrabold text-[10px] text-gray-800">0</div>
-                            <div className="flex flex-col items-center mt-0.5">
-                              <div className="w-10 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="w-0 h-full bg-blue-500 rounded-full" />
-                              </div>
-                              <span className="text-[7.5px] text-gray-400 font-semibold mt-0.5">0%</span>
-                            </div>
-                          </td>
-
-                          <td className="py-1 px-1.5 text-center">
-                            <div className="font-extrabold text-[10px] text-gray-800">0</div>
-                            <div className="flex flex-col items-center mt-0.5">
-                              <div className="w-10 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="w-0 h-full bg-blue-500 rounded-full" />
-                              </div>
-                              <span className="text-[7.5px] text-gray-400 font-semibold mt-0.5">0%</span>
-                            </div>
-                          </td>
-
-                          <td className="py-1 px-1.5 text-center">
-                            <div className="font-extrabold text-[10px] text-gray-800">0</div>
-                            <div className="flex flex-col items-center mt-0.5">
-                              <div className="w-10 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="w-0 h-full bg-blue-500 rounded-full" />
-                              </div>
-                              <span className="text-[7.5px] text-gray-400 font-semibold mt-0.5">0%</span>
-                            </div>
-                          </td>
-
-                          <td className="py-1 px-1.5 text-center">
-                            <div className="font-extrabold text-[10px] text-gray-800">0</div>
-                            <div className="flex flex-col items-center mt-0.5">
-                              <div className="w-10 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="w-0 h-full bg-blue-500 rounded-full" />
-                              </div>
-                              <span className="text-[7.5px] text-gray-400 font-semibold mt-0.5">0%</span>
-                            </div>
-                          </td>
-
-                          <td className="py-1 px-1.5 text-center">
-                            <div className="font-extrabold text-[10px] text-gray-800">0</div>
-                            <div className="flex flex-col items-center mt-0.5">
-                              <div className="w-10 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="w-0 h-full bg-blue-500 rounded-full" />
-                              </div>
-                              <span className="text-[7.5px] text-gray-400 font-semibold mt-0.5">0%</span>
-                            </div>
-                          </td>
-
-                          <td className="py-1 px-1.5 text-center">
-                            <div className="font-extrabold text-[10px] text-gray-800">0</div>
-                            <div className="flex flex-col items-center mt-0.5">
-                              <div className="w-10 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="w-0 h-full bg-blue-500 rounded-full" />
-                              </div>
-                              <span className="text-[7.5px] text-gray-400 font-semibold mt-0.5">0%</span>
-                            </div>
-                          </td>
-
-                          <td className="py-1 px-1.5 text-center">
-                            <div className="font-extrabold text-[10px] text-gray-800">0</div>
-                            <div className="flex flex-col items-center mt-0.5">
-                              <div className="w-10 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="w-0 h-full bg-blue-500 rounded-full" />
-                              </div>
-                              <span className="text-[7.5px] text-gray-400 font-semibold mt-0.5">0%</span>
-                            </div>
-                          </td>
-
-                          <td className="py-1 px-1.5 text-center">
-                            <div className="font-extrabold text-[10px] text-gray-800">0</div>
-                            <div className="flex flex-col items-center mt-0.5">
-                              <div className="w-10 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="w-0 h-full bg-blue-500 rounded-full" />
-                              </div>
-                              <span className="text-[7.5px] text-gray-400 font-semibold mt-0.5">0%</span>
-                            </div>
-                          </td>
-
-                          <td className="py-1 px-1.5 text-center bg-gray-50 border-l border-gray-200">
-                            <div className="font-extrabold text-[10px] text-blue-600">0</div>
-                            <div className="flex flex-col items-center mt-0.5">
-                              <div className="w-10 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="w-0 h-full bg-blue-500 rounded-full" />
-                              </div>
-                              <span className="text-[7.5px] text-gray-400 font-semibold mt-0.5">0%</span>
-                            </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Bottom Row Grid (Spans Info Blocks on Left + Timeline & Actions on Right) */}
-                <div className="flex-1 min-h-0 grid grid-cols-5 gap-3 overflow-hidden">
-                  
-                  {/* Left Column (3/5 width): Info Blocks + Validation Status */}
-                  <div className="col-span-3 flex flex-col justify-between gap-2.5 overflow-hidden">
-                    {/* 5 Info Blocks (Tight list spacing) */}
-                    <div className="grid grid-cols-5 gap-2 text-[9.5px] leading-tight">
-                      <InfoList title="Construction Information" items={[
-                        { label: 'Construction Year', value: '2026' },
-                        { label: 'Assessment Year', value: '2028' },
-                        { label: 'Construction Type', value: 'op' },
-                        { label: 'Quality of Construction', value: 'Good' },
-                        { label: 'Building Structure', value: 'RCC' },
-                      ]} />
-                      <InfoList title="Usage Details" items={[
-                        { label: 'Use', value: 'निवासी' },
-                        { label: 'Sub Type of Use', value: '-' },
-                        { label: 'No. of Rooms', value: '0' },
-                        { label: 'Wall Thickness', value: '9 Inch' },
-                        { label: 'Floor Height', value: '10.0 Ft.' },
-                      ]} />
-                      <InfoList title="Occupancy Status" items={[
-                        { label: 'Occupancy', value: 'Self Occupied' },
-                        { label: 'Occupancy Type', value: 'Residential' },
-                        { label: 'Usage Status', value: 'Active' },
-                        { label: 'Present Since', value: '01-Apr-2024' },
-                      ]} />
-                      <InfoList title="Status Information" items={[
-                        { label: 'Property Status', value: <span className="bg-green-100 text-green-700 font-bold px-1 rounded text-[8.5px] uppercase">Active</span> },
-                        { label: 'Last Survey Date', value: '10 Jun 2024' },
-                        { label: 'Last Updated On', value: '10 Jun 2024' },
-                        { label: 'Updated By', value: 'Surveyor 01' },
-                      ]} />
-                      <div className="border border-amber-200 rounded bg-amber-50/20 p-2 text-[9px] flex flex-col justify-between shadow-xs">
-                        <div>
-                          <div className="font-bold text-[#1e2b58] mb-1.5 uppercase tracking-wider">AI Property Inspector</div>
-                          <ul className="space-y-1 font-semibold text-[8px]">
-                            <li className="flex items-center gap-0.5 text-amber-600 truncate">
-                              <AlertTriangle size={9} className="text-amber-500" /> Poss Comm Use
-                            </li>
-                            <li className="flex items-center gap-0.5 text-amber-600 truncate">
-                              <AlertTriangle size={9} className="text-amber-500" /> Area Diff Found
-                            </li>
-                            <li className="flex items-center gap-0.5 text-amber-600 truncate">
-                              <AlertTriangle size={9} className="text-amber-500" /> Parking Missing
-                            </li>
-                            <li className="flex items-center gap-0.5 text-red-600 truncate">
-                              <AlertTriangle size={9} className="text-red-500" /> Fire NOC Expired
-                            </li>
-                            <li className="flex items-center gap-0.5 text-amber-600 truncate">
-                              <AlertTriangle size={9} className="text-amber-500" /> Dupl Water Conn
-                            </li>
-                          </ul>
+                    <div className="flex-1 text-[9px] leading-tight min-w-0">
+                      <div className="font-extrabold text-[#1e2b58] mb-0.5 truncate">Area Comparison (ft/mtr)</div>
+                      <div className="space-y-0.5 text-[8.5px] font-semibold text-gray-500">
+                        <div>OLD: <span className="font-bold text-gray-700">400.00 m²</span></div>
+                        <div>NEW: <span className="font-bold text-gray-800">440.00 m²</span></div>
+                        <div className="text-[#10b981] font-bold flex items-center gap-0.5 mt-0.5">
+                          <span className="text-[10px]">↑</span>
+                          <span>40.00 m² (10%)</span>
                         </div>
-                        <button className="text-[#2563eb] text-[8px] font-bold mt-1.5 hover:underline text-center w-full pt-1 border-t border-gray-100 cursor-pointer">
-                          View AI Report
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Validation Status Block */}
-                    <div className="border-t border-gray-150 pt-2 shrink-0">
-                      <div className="text-[10px] font-bold text-gray-800 mb-1.5 uppercase tracking-wider">Validation Status</div>
-                      <div className="flex justify-between gap-1.5 text-[9px] font-semibold text-gray-600">
-                         <ValStatus icon={<Camera size={11} />} label="Photo" status="Valid" />
-                         <ValStatus icon={<Map size={11} />} label="GIS" status="Verified" />
-                         <ValStatus icon={<UserCheck size={11} />} label="Aadhaar" status="Verified" />
-                         <ValStatus icon={<UserCheck size={11} />} label="Mobile" status="Verified" />
-                         <ValStatus icon={<FileText size={11} />} label="Docs" status="Complete" />
-                         <ValStatus icon={<Droplet size={11} />} label="Water" status="Not Linked" warn />
-                         <ValStatus icon={<ShieldCheck size={11} />} label="Fire" status="Expired" danger />
-                         <ValStatus icon={<FileEdit size={11} />} label="Mutation" status="Pending" warn />
-                         <ValStatus icon={<Link2 size={11} />} label="BPMS" status="Linked" />
                       </div>
                     </div>
                   </div>
 
-                  {/* Right Column (2/5 width): Timeline + Quick Actions */}
-                  <div className="col-span-2 flex flex-col justify-between gap-2 overflow-hidden border-l border-gray-150 pl-3">
-                    
-                    {/* Property Timeline */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-2 shadow-xs shrink-0">
-                      <div className="flex items-center justify-between text-[10px] font-bold text-[#1e2b58] mb-1.5 uppercase tracking-wider">
-                        <span>Property Timeline</span>
+                  {/* Card 2: Rateable Value (RV) */}
+                  <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm flex items-center gap-2.5">
+                    <div className="bg-[#f5f3ff] w-9 h-9 rounded-xl flex items-center justify-center text-[#8b5cf6] shrink-0">
+                      <UserCheck size={14} />
+                    </div>
+                    <div className="flex-1 text-[9px] leading-tight min-w-0">
+                      <div className="font-extrabold text-[#1e2b58] mb-0.5 truncate">Rateable Value (RV)</div>
+                      <div className="space-y-0.5 text-[8.5px] font-semibold text-gray-500">
+                        <div>OLD: <span className="font-bold text-gray-700">₹ 16,20,000</span></div>
+                        <div>NEW: <span className="font-bold text-gray-800">₹ 18,45,000</span></div>
+                        <div className="text-[#10b981] font-bold flex items-center gap-0.5 mt-0.5">
+                          <span className="text-[10px]">↑</span>
+                          <span>₹ 2,25,000 (13.89%)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 3: Capital Value (CV) */}
+                  <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm flex items-center gap-2.5">
+                    <div className="bg-[#eff6ff] w-9 h-9 rounded-xl flex items-center justify-center text-[#3b82f6] shrink-0">
+                      <Home size={14} />
+                    </div>
+                    <div className="flex-1 text-[9px] leading-tight min-w-0">
+                      <div className="font-extrabold text-[#1e2b58] mb-0.5 truncate">Capital Value (CV)</div>
+                      <div className="space-y-0.5 text-[8.5px] font-semibold text-gray-500">
+                        <div>OLD: <span className="font-bold text-gray-700">₹ 32,40,000</span></div>
+                        <div>NEW: <span className="font-bold text-gray-800">₹ 36,90,000</span></div>
+                        <div className="text-[#10b981] font-bold flex items-center gap-0.5 mt-0.5">
+                          <span className="text-[10px]">↑</span>
+                          <span>₹ 4,50,000 (13.89%)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 4: Tax (Current) */}
+                  <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm flex items-center gap-2.5">
+                    <div className="bg-[#ecfdf5] w-9 h-9 rounded-xl flex items-center justify-center text-[#10b981] shrink-0">
+                      <Percent size={14} />
+                    </div>
+                    <div className="flex-1 text-[9px] leading-tight min-w-0">
+                      <div className="font-extrabold text-[#1e2b58] mb-0.5 truncate">Tax (Current)</div>
+                      <div className="space-y-0.5 text-[8.5px] font-semibold text-gray-500">
+                        <div>OLD: <span className="font-bold text-gray-700">₹ 16,500</span></div>
+                        <div>NEW: <span className="font-bold text-gray-800">₹ 18,752</span></div>
+                        <div className="text-[#10b981] font-bold flex items-center gap-0.5 mt-0.5">
+                          <span className="text-[10px]">↑</span>
+                          <span>₹ 2,252 (13.65%)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 5: Collection */}
+                  <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm flex items-center gap-2.5">
+                    <div className="bg-[#fef2f2] w-9 h-9 rounded-xl flex items-center justify-center text-[#ef4444] shrink-0">
+                      <Wallet size={14} />
+                    </div>
+                    <div className="flex-1 text-[9px] leading-tight min-w-0">
+                      <div className="font-extrabold text-[#1e2b58] mb-0.5 truncate">Collection</div>
+                      <div className="space-y-0.5 text-[8.5px] font-semibold text-gray-500">
+                        <div>Paid: <span className="font-bold text-gray-700">₹ 12,456</span></div>
+                        <div className="text-red-550 font-bold">Outstanding: <span className="text-[#ef4444]">₹ 6,296</span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 6: Additional Revenue */}
+                  <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm flex flex-col justify-center pl-3">
+                    <div className="font-extrabold text-[#1e2b58] text-[10px] mb-0.5 truncate">Additional Revenue</div>
+                    <div className="text-gray-450 text-[8.5px] font-semibold truncate mb-0.5">This Assessment</div>
+                    <div className="font-extrabold text-[13.5px] text-[#2563eb] leading-tight">₹ 1,12,892</div>
+                    <div className="text-gray-400 text-[7.5px] font-bold truncate mt-0.5">(Tax + Penalty + Interest)</div>
+                  </div>
+                </div>
+
+                {/* Headwise Taxes Comparison Card */}
+                <div className="bg-white border border-gray-200 rounded-lg p-2.5 flex flex-col shrink-0 select-none mt-1 shadow-sm relative">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-gray-100 mb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="font-extrabold text-[#1e2b58] text-[9.5px] uppercase tracking-wider">Headwise Taxes Comparison</h3>
+                      <span className="text-gray-400 text-[8.5px] font-semibold">(All Floors Total)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400 font-semibold text-[8px]">All figures in INR</span>
+                    </div>
+                  </div>
+                  <div className="relative border border-gray-200 rounded-md overflow-hidden bg-white">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-[10px] text-center border-collapse">
+                        <thead className="bg-[#eff6ff]/70 border-b border-gray-200 text-[#1e2b58] font-bold whitespace-nowrap">
+                          <tr>
+                            <th className="py-2 px-2 text-left sticky left-0 bg-[#eff6ff] border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Taxes</th>
+                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">General Tax</th>
+                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">State Education Tax</th>
+                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Tree Cess</th>
+                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Special Water Cess</th>
+                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Road Cess</th>
+                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Fire Cess</th>
+                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Light Cess</th>
+                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Water Benefit Cess</th>
+                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Sewage Disposal Cess</th>
+                            <th className="py-2 px-2 border-r border-gray-200 uppercase text-[8.5px] font-extrabold">Special Education Tax</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-150 font-medium text-[#1e2b58] whitespace-nowrap bg-white text-center">
+                          <tr className="hover:bg-gray-50/50">
+                            <td className="py-2.5 px-2 text-left sticky left-0 bg-[#fbfbfb] border-r border-gray-200 font-extrabold">
+                              <span className="bg-[#edf2ff] text-[#3b82f6] border border-[#3b82f6]/20 font-extrabold px-2.5 py-0.5 rounded-full text-[8.5px] inline-block">Old Taxes</span>
+                            </td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 font-bold">0</td>
+                          </tr>
+                          <tr className="hover:bg-gray-50/50">
+                            <td className="py-2.5 px-2 text-left sticky left-0 bg-white border-r border-gray-200 font-extrabold">
+                              <span className="bg-[#edf2ff] text-[#3b82f6] border border-[#3b82f6]/20 font-extrabold px-2.5 py-0.5 rounded-full text-[8.5px] inline-block">RV Taxes</span>
+                            </td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">33,480</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">6,480</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">1,080</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">2,160</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">6,480</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">1,080</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">10,800</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">18,360</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">15,120</td>
+                            <td className="py-2.5 px-2 font-bold">3,240</td>
+                          </tr>
+                          <tr className="hover:bg-gray-50/50">
+                            <td className="py-2.5 px-2 text-left sticky left-0 bg-[#fbfbfb] border-r border-gray-200 font-extrabold">
+                              <span className="bg-[#f5f3ff] text-[#8b5cf6] border border-[#8b5cf6]/20 font-extrabold px-2.5 py-0.5 rounded-full text-[8.5px] inline-block">CV Taxes</span>
+                            </td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">1,53,47,12,291</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">41,80,17,898</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">27,86,78,598</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">27,86,78,598</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">27,86,78,598</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">27,86,78,598</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">27,86,78,598</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">34,83,48,248</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">34,83,48,248</td>
+                            <td className="py-2.5 px-2 font-bold">27,86,78,598</td>
+                          </tr>
+                          <tr className="hover:bg-gray-50/50">
+                            <td className="py-2.5 px-2 text-left sticky left-0 bg-white border-r border-gray-200 font-extrabold">
+                              <span className="bg-[#fef2f2] text-[#ef4444] border border-[#ef4444]/20 font-extrabold px-2.5 py-0.5 rounded-full text-[8.5px] inline-block">Retain U.S. 129</span>
+                            </td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 border-r border-gray-200 font-bold">0</td>
+                            <td className="py-2.5 px-2 font-bold">0</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Row Grid (Spans AI Inspector & Validation Status on Left + Service Availability & Timeline on Right) */}
+                <div className="shrink-0 grid grid-cols-5 gap-3 mt-1">
+
+                  {/* Left Column (3/5 width): AI Property Inspector & Validation Status */}
+                  <div className="col-span-3 grid grid-cols-2 gap-3 overflow-hidden">
+                    <div className="bg-white border border-gray-200 rounded-lg p-2.5 flex flex-col justify-between shadow-xs select-none">
+                      <div>
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-1 mb-1.5">
+                          <h3 className="font-extrabold text-[#1e2b58] text-[9.5px] uppercase tracking-wider">AI Property Inspector</h3>
+                          <span className="text-gray-400 text-[8.5px] font-bold">Issues Found (8)</span>
+                        </div>
+                        <ul className="space-y-1.5 text-[8.5px] font-semibold">
+                          <li className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-700"><AlertTriangle size={10} className="text-orange-500 fill-orange-50" /><span>Possible Commercial Use</span></span><span className="bg-[#fef2f2] text-[#ef4444] border border-[#ef4444]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">High</span></li>
+                          <li className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-700"><AlertTriangle size={10} className="text-orange-500 fill-orange-50" /><span>Area Difference Found</span></span><span className="bg-[#fef2f2] text-[#ef4444] border border-[#ef4444]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">High</span></li>
+                          <li className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-700"><AlertTriangle size={10} className="text-amber-500 fill-amber-50" /><span>Parking Provision Missing</span></span><span className="bg-[#fff7ed] text-[#f97316] border border-[#f97316]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">Medium</span></li>
+                          <li className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-700"><AlertTriangle size={10} className="text-amber-500 fill-amber-50" /><span>Fire NOC Expired</span></span><span className="bg-[#fff7ed] text-[#f97316] border border-[#f97316]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">Medium</span></li>
+                          <li className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-700"><AlertTriangle size={10} className="text-blue-500 fill-blue-50" /><span>Duplicate Water Connection</span></span><span className="bg-[#ecfdf5] text-[#10b981] border border-[#10b981]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">Low</span></li>
+                          <li className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-700"><AlertTriangle size={10} className="text-blue-500 fill-blue-50" /><span>Occupancy Change Detected</span></span><span className="bg-[#ecfdf5] text-[#10b981] border border-[#10b981]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">Low</span></li>
+                          <li className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-700"><AlertTriangle size={10} className="text-blue-500 fill-blue-50" /><span>Boundary Wall Missing</span></span><span className="bg-[#ecfdf5] text-[#10b981] border border-[#10b981]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">Low</span></li>
+                          <li className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-700"><AlertTriangle size={10} className="text-blue-500 fill-blue-50" /><span>Taxpayer Mobile Not Verified</span></span><span className="bg-[#ecfdf5] text-[#10b981] border border-[#10b981]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">Low</span></li>
+                        </ul>
+                      </div>
+                      <button className="w-full mt-2 py-1.5 bg-[#edf2ff] hover:bg-[#dbeafe] border border-[#3b82f6]/20 text-[#3b82f6] font-extrabold text-[9px] rounded-lg transition-all text-center cursor-pointer shadow-xs">View All Report</button>
+                    </div>
+                    <div className="bg-white border border-gray-200 rounded-lg p-2.5 flex flex-col justify-between shadow-xs select-none">
+                      <div>
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-1 mb-2">
+                          <h3 className="font-extrabold text-[#1e2b58] text-[9.5px] uppercase tracking-wider">Validation Status <span className="text-gray-400 font-semibold text-[8px]">(9/11)</span></h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-[8.5px]">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-650"><Camera size={10} className="text-blue-600" /><span>Photo</span></span><span className="text-green-600 font-bold">Valid</span></div>
+                            <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><Map size={10} className="text-blue-600" /><span>GIS</span></span><span className="text-green-600 font-bold">Verified</span></div>
+                            <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><UserCheck size={10} className="text-blue-600" /><span>Aadhaar</span></span><span className="text-green-600 font-bold">Verified</span></div>
+                            <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><UserCheck size={10} className="text-blue-600" /><span>Mobile</span></span><span className="text-green-600 font-bold">Verified</span></div>
+                            <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><FileText size={10} className="text-blue-600" /><span>Documents</span></span><span className="text-green-600 font-bold">Verified</span></div>
+                          </div>
+                          <div className="space-y-1.5 border-l border-gray-100 pl-2">
+                            <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><Droplet size={10} className="text-blue-600" /><span>Water</span></span><span className="text-orange-500 font-bold">Not Linked</span></div>
+                            <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><ShieldCheck size={10} className="text-blue-600" /><span>Fire</span></span><span className="text-red-500 font-bold">Expired</span></div>
+                            <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><FileEdit size={10} className="text-blue-600" /><span>Mutation</span></span><span className="text-orange-500 font-bold">Pending</span></div>
+                            <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><Link2 size={10} className="text-blue-600" /><span>BPMS</span></span><span className="text-green-600 font-bold">Linked</span></div>
+                            <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><UserCheck size={10} className="text-blue-600" /><span>Email</span></span><span className="text-green-600 font-bold">Verified</span></div>
+                            <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><Wallet size={10} className="text-blue-600" /><span>Bank</span></span><span className="text-green-600 font-bold">Verified</span></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column (2/5 width): Service & Facility Availability + Timeline */}
+                  <div className="col-span-2 flex flex-col gap-2.5 overflow-hidden">
+                    <div className="flex-1 bg-white border border-gray-200 rounded-lg p-2.5 flex flex-col justify-between shadow-xs select-none">
+                      <div className="flex items-center justify-between border-b border-gray-100 pb-1 mb-2 shrink-0">
+                        <h3 className="font-extrabold text-[#1e2b58] text-[9.5px] uppercase tracking-wider">Service & Facility Availability <span className="text-gray-400 font-semibold text-[8px]">(7/8)</span></h3>
+                      </div>
+                      <div className="flex-1 flex flex-col justify-center my-auto">
+                        <div className="relative flex items-center justify-between px-1.5 py-1 text-[7.5px]">
+                          <div className="absolute top-[10px] left-3.5 right-3.5 h-[1.5px] bg-green-500 -z-10"></div>
+                          <div className="absolute top-[10px] left-[55%] right-[20%] h-[1.5px] bg-red-500 -z-10"></div>
+                          {[
+                            { l: 'Water', s: '✓' }, { l: 'Road', s: '✓' }, { l: 'Drainage', s: '✓' }, { l: 'Street Light', s: '✓' },
+                            { l: 'Fire', s: '✓' }, { l: 'Garden', s: '✗', red: true }, { l: 'Sewer', s: '✓' }, { l: 'Solid Waste', s: '✓' }
+                          ].map((v, i) => (
+                            <div key={i} className="flex flex-col items-center gap-1.5 flex-1">
+                              <div className={`w-5 h-5 rounded-full ${v.red ? 'bg-red-500 text-white' : 'bg-[#10b981] text-white'} flex items-center justify-center font-bold text-[9px] shadow-sm`}>{v.s}</div>
+                              <span className="text-[#1e2b58] font-bold text-[7px]">{v.l}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 bg-white border border-gray-200 rounded-lg p-2.5 flex flex-col justify-between shadow-xs select-none">
+                      <div className="flex items-center justify-between border-b border-gray-100 pb-1 mb-1.5 shrink-0">
+                        <h3 className="font-extrabold text-[#1e2b58] text-[9.5px] uppercase tracking-wider">Property Timeline</h3>
                         <Clock size={11} className="text-gray-400" />
                       </div>
-                      <div className="relative flex items-center justify-between px-1 pt-1.5 pb-1 text-[7.5px] select-none">
-                        {/* Timeline background lines */}
-                        <div className="absolute top-[12px] left-4 right-4 h-[1.5px] bg-green-500 -z-10"></div>
-                        <div className="absolute top-[12px] right-4 w-[12%] h-[1.5px] border-t border-dashed border-gray-300 -z-10"></div>
-                        
-                        <TimelineStep label="Geo Sequencing" date="15-Jan-2024" active />
-                        <TimelineStep label="Survey" date="18-Jan-2024" active />
-                        <TimelineStep label="Verification" date="20-Feb-2024" active />
-                        <TimelineStep label="Assessment" date="01-Apr-2024" active />
-                        <TimelineStep label="Approval" date="18-Apr-2024" active />
-                        <TimelineStep label="Bill Gen." date="20-Apr-2024" active />
-                        <TimelineStep label="Collection" date="08-May-2024" active />
-                        <TimelineStep label="Mutation" date="Pending" isPending />
+                      <div className="flex-1 flex flex-col justify-center my-auto">
+                        <div className="relative flex items-center justify-between px-1.5 py-1 text-[7px]">
+                          <div className="absolute top-[8px] left-3 right-3 h-[1.5px] bg-green-500 -z-10"></div>
+                          <div className="absolute top-[8px] right-3 w-[25%] h-[1.5px] border-t border-dashed border-gray-300 -z-10 bg-white"></div>
+                          <TimelineStep label="Geo Sequencing" date="15-Jan-2024" active />
+                          <TimelineStep label="Survey" date="10-Feb-2024" active />
+                          <TimelineStep label="Verification" date="20-Feb-2024" active />
+                          <TimelineStep label="Assessment" date="01-Apr-2024" active />
+                          <TimelineStep label="Approval" date="20-Apr-2024" active />
+                          <TimelineStep label="Collection" date="05-May-2024" active />
+                          <TimelineStep label="Mutation" date="Pending" isPending />
+                          <TimelineStep label="Appeal" date="Pending" isPending />
+                        </div>
+                      </div>
+                      <div className="flex gap-4 mt-2 justify-center text-[7px] font-bold text-gray-500 shrink-0">
+                        <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500" /><span>Completed</span></div>
+                        <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /><span>In Progress</span></div>
+                        <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-gray-350" /><span>Pending</span></div>
                       </div>
                     </div>
-
-                    {/* Quick Actions (Mockup exact styling) */}
-                    <div className="flex-1 flex flex-col justify-end gap-1.5 shrink-0 mt-1">
-                       <div className="text-[10px] font-bold text-gray-800 uppercase tracking-wider">Quick Actions</div>
-                       <div className="grid grid-cols-2 gap-1.5 text-[9px] select-none">
-                         <ActionButton icon={<FileEdit size={11} className="text-blue-500" />} label="Edit Property" bg="bg-blue-50/50" text="text-blue-700" borderClass="border border-blue-100" />
-                         <ActionButton icon={<Printer size={11} className="text-green-500" />} label="Print Property Card" bg="bg-green-50/50" text="text-green-700" borderClass="border border-green-100" />
-                         <ActionButton icon={<FileText size={11} className="text-purple-500" />} label="View Demand" bg="bg-purple-50/50" text="text-purple-700" borderClass="border border-purple-100" />
-                         <ActionButton icon={<Wallet size={11} className="text-orange-500" />} label="View Collection" bg="bg-orange-50/50" text="text-orange-700" borderClass="border border-orange-100" />
-                         <ActionButton icon={<AlertTriangle size={11} className="text-red-500" />} label="Generate Notice" bg="bg-red-50/50" text="text-red-700" borderClass="border border-red-100" />
-                         <ActionButton icon={<History size={11} className="text-blue-500" />} label="Property History" bg="bg-blue-50/50" text="text-blue-700" borderClass="border border-blue-100" />
-                         <ActionButton icon={<Download size={11} className="text-green-500" />} label="Download GIS" bg="bg-green-50/50" text="text-green-700" borderClass="border border-green-100" />
-                         
-                         <button className="flex items-center justify-between px-2.5 py-1.5 rounded text-[9.5px] font-bold border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 cursor-pointer shadow-xs">
-                           <span>More Actions</span> <ChevronDown size={11} />
-                         </button>
-                       </div>
-                    </div>
-
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-            {/* Panel 2-6 definitions kept intact but overflow controlled */}
-            {activeTab === 'kyc' && (
-              <div className="flex-1 overflow-hidden transition-all duration-300 animate-fadeIn text-xs">
-                <div className="flex items-center justify-between border-b border-gray-150 pb-2 mb-3">
-                  <h3 className="font-bold text-[#1e2b58]">KYC Verification</h3>
-                  <span className="bg-green-150 text-green-800 text-[10px] px-2 py-0.5 rounded-full font-bold">COMPLETED</span>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-gray-50/50 p-3 border border-gray-150 rounded">
-                    <div className="font-bold text-gray-800 mb-1">Aadhaar</div>
-                    <div className="text-[10px] text-gray-500">Status: <span className="text-green-600 font-bold">LINKED</span></div>
                   </div>
                 </div>
               </div>
             )}
+
+            {/* Panel 2-6 definitions */}
+            {activeTab === 'kyc' && <div className="p-3 text-xs text-gray-500">KYC Details loaded.</div>}
             {activeTab === 'society' && <div className="p-3 text-xs text-gray-500">Society Details loaded.</div>}
             {activeTab === 'building' && <div className="p-3 text-xs text-gray-500">Building Permission loaded.</div>}
             {activeTab === 'discount' && <div className="p-3 text-xs text-gray-500">Discounts & Social concessions.</div>}
             {activeTab === 'old' && <div className="p-3 text-xs text-gray-500">Historical records loaded.</div>}
-
           </div>
-
         </div>
 
-        {/* Right Column: Photos Card + Map Stack (Scrolls internally if height is constrained) */}
-        <div className="w-64 shrink-0 flex flex-col gap-2.5 overflow-y-auto no-scrollbar h-full pb-1">
-          
-          {/* Photos Row (Side-by-side) */}
+        {/* Right Column: Photos Card + Map Stack */}
+        <div className="w-64 shrink-0 flex flex-col gap-2.5 pb-1">
           <div className="flex gap-2.5 shrink-0 select-none">
-            {/* Property Photo Box */}
-            <div 
-              onMouseEnter={() => handleHoverImage("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")}
-              onMouseLeave={() => handleHoverImage(null)}
-              className="flex-1 bg-white border border-gray-200 rounded-lg p-2 flex flex-col justify-between shadow-sm group hover:border-blue-300 transition-colors cursor-pointer"
-            >
+            <div onMouseEnter={() => handleHoverImage("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")} onMouseLeave={() => handleHoverImage(null)} className="flex-1 bg-white border border-gray-200 rounded-lg p-2 flex flex-col justify-between shadow-sm group hover:border-blue-300 transition-colors cursor-pointer">
               <div className="text-[10px] font-bold text-[#1e2b58] mb-1 uppercase tracking-wider">Property Photo</div>
               <div className="overflow-hidden rounded h-16 w-full relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=200&auto=format&fit=crop" 
-                  className="w-full h-full object-cover rounded transition-transform duration-500 group-hover:scale-150" 
-                  alt="Property" 
-                  onClick={() => openPreview("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")}
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 flex items-center justify-center transition-all duration-300">
-                  <Maximize2 size={14} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=200&auto=format&fit=crop" className="w-full h-full object-cover rounded transition-transform duration-500 group-hover:scale-150" alt="Property" onClick={() => openPreview("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")} />
               </div>
             </div>
-
-            {/* Photo Plan */}
-            <div 
-              onMouseEnter={() => handleHoverImage("/blueprint_plan.png")}
-              onMouseLeave={() => handleHoverImage(null)}
-              className="flex-1 bg-white border border-gray-200 rounded-lg p-2 flex flex-col justify-between shadow-sm group hover:border-blue-300 transition-colors cursor-pointer"
-            >
+            <div onMouseEnter={() => handleHoverImage("/blueprint_plan.png")} onMouseLeave={() => handleHoverImage(null)} className="flex-1 bg-white border border-gray-200 rounded-lg p-2 flex flex-col justify-between shadow-sm group hover:border-blue-300 transition-colors cursor-pointer">
               <div className="text-[10px] font-bold text-[#1e2b58] mb-1 uppercase tracking-wider">Photo Plan</div>
               <div className="overflow-hidden rounded h-16 w-full relative bg-gray-50 flex items-center justify-center border border-dashed border-gray-200">
-                <img 
-                  src="/blueprint_plan.png" 
-                  className="w-full h-full object-contain rounded transition-transform duration-500 group-hover:scale-150" 
-                  alt="Blueprint Plan" 
-                  onClick={() => openPreview("/blueprint_plan.png")}
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 flex items-center justify-center transition-all duration-300">
-                  <Maximize2 size={14} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+                <img src="/blueprint_plan.png" className="w-full h-full object-contain rounded transition-transform duration-500 group-hover:scale-150" alt="Blueprint Plan" onClick={() => openPreview("/blueprint_plan.png")} />
               </div>
             </div>
           </div>
-
-          {/* GIS Map Card */}
-          <div 
-            onMouseEnter={() => handleHoverImage("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop")}
-            onMouseLeave={() => handleHoverImage(null)}
-          >
-            <MapBox 
-              title="GIS / Satellite View" 
-              height="h-24" 
-              imgUrl="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=400&auto=format&fit=crop" 
-              onZoom={() => openPreview("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop")}
-            />
+          <div onMouseEnter={() => handleHoverImage("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop")} onMouseLeave={() => handleHoverImage(null)}>
+            <MapBox title="GIS / Satellite View" height="h-24" imgUrl="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=400&auto=format&fit=crop" onZoom={() => openPreview("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop")} />
           </div>
-          
-          {/* Interactive Before/After Change Detection Slider Card */}
-          <div 
-            onMouseEnter={() => handleHoverImage("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop")}
-            onMouseLeave={() => handleHoverImage(null)}
-          >
+          <div onMouseEnter={() => handleHoverImage("https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=800&auto=format&fit=crop")} onMouseLeave={() => handleHoverImage(null)}>
+            <MapBox title="Street View" height="h-24" imgUrl="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=400&auto=format&fit=crop" onZoom={() => openPreview("https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=800&auto=format&fit=crop")} />
+          </div>
+          <div>
             <ChangeDetectionBox 
               title="Change Detection" 
-              height="h-24"
-              beforeImg="https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=400&auto=format&fit=crop" 
-              afterImg="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=400&auto=format&fit=crop" 
-              onZoom={() => openPreview("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop")}
-            />
-          </div>
-
-          {/* Actual Street View Road Image */}
-          <div 
-            onMouseEnter={() => handleHoverImage("https://images.unsplash.com/photo-1566837945700-30057527ade0?q=80&w=800&auto=format&fit=crop")}
-            onMouseLeave={() => handleHoverImage(null)}
-          >
-            <MapBox 
-              title="Street View" 
               height="h-24" 
-              imgUrl="https://images.unsplash.com/photo-1566837945700-30057527ade0?q=80&w=400&auto=format&fit=crop" 
-              onZoom={() => openPreview("https://images.unsplash.com/photo-1566837945700-30057527ade0?q=80&w=800&auto=format&fit=crop")}
+              beforeImg="https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=400&auto=format&fit=crop" 
+              afterImg="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=400&auto=format&fit=crop" 
+              beforeImgZoom="https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=800&auto=format&fit=crop"
+              afterImgZoom="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop"
+              onHover={(url: string | null) => handleHoverImage(url)}
+              onZoom={() => openPreview("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop")} 
             />
           </div>
-
         </div>
-
       </div>
+
 
       {/* Floating Hover Zoom Portal */}
       {hoveredImg && (
@@ -685,7 +650,7 @@ export default function MainContent() {
 
       {/* Cool Hover Zoom Backdrop / Modal overlay */}
       {selectedImg && (
-        <div 
+        <div
           onClick={() => setSelectedImg(null)}
           className="fixed inset-0 bg-black/75 flex items-center justify-center z-[999] cursor-zoom-out animate-fadeIn font-sans"
         >
@@ -695,7 +660,6 @@ export default function MainContent() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
@@ -703,15 +667,15 @@ export default function MainContent() {
 /* Helper Components */
 
 function StatusBadge({ icon, title, status, statusColor, isBlue }: any) {
-  const bgClass = isBlue ? 'bg-blue-50 text-blue-500' : 'bg-green-50 text-green-500';
+  const bgClass = isBlue ? 'bg-blue-50 text-blue-650' : 'bg-green-50 text-green-650';
   return (
-    <div className="flex items-center gap-2 pr-4 border-r border-gray-150 last:border-0 last:pr-0 shrink-0 flex-1 justify-center">
-      <div className={`p-1.5 rounded-full flex items-center justify-center ${bgClass}`}>
+    <div className="flex items-center gap-2 pr-4 border-r border-gray-200 last:border-0 last:pr-0 shrink-0 flex-1 justify-center">
+      <div className={`p-1.5 rounded-full flex items-center justify-center ${bgClass} w-7 h-7`}>
         {icon}
       </div>
       <div>
-        <div className="text-[8.5px] text-gray-400 font-bold uppercase leading-none">{title}</div>
-        <div className={`text-[10px] font-extrabold mt-1 leading-none ${statusColor}`}>{status}</div>
+        <div className="text-[9px] text-[#1e2b58] font-bold leading-none">{title}</div>
+        <div className={`text-[9.5px] font-extrabold mt-0.5 leading-none ${statusColor || 'text-green-600'}`}>{status}</div>
       </div>
     </div>
   );
@@ -719,9 +683,10 @@ function StatusBadge({ icon, title, status, statusColor, isBlue }: any) {
 
 function Tab({ icon, label, active, onClick }: any) {
   return (
-    <button 
+    <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-4 py-2.5 border-r border-gray-200 transition-all cursor-pointer text-[10.5px] font-bold ${active ? 'bg-[#1e2b58] text-white' : 'hover:bg-gray-50 bg-white text-gray-600'}`}
+      className={`flex items-center gap-1.5 px-4 py-2 rounded-t-lg transition-all cursor-pointer text-[10px] font-bold ${active ? 'bg-[#1e2b58] text-white' : 'hover:bg-gray-100/50 bg-transparent text-[#1e2b58]'}`}
+      style={{ marginBottom: '-2px' }}
     >
       {icon}
       <span>{label}</span>
@@ -784,7 +749,7 @@ function TimelineStep({ label, date, active, isPending }: any) {
 function ValStatus({ icon, label, status, warn, danger }: any) {
   let statusColor = 'text-green-600';
   let statusIcon = <CheckCircle2 size={10} className="text-green-500 shrink-0" />;
-  
+
   if (warn) {
     statusColor = 'text-amber-600';
     statusIcon = <AlertTriangle size={10} className="text-amber-500 shrink-0" />;
@@ -821,10 +786,10 @@ function MapBox({ title, height, imgUrl, onZoom }: any) {
     <div className="bg-white border border-gray-200 rounded overflow-hidden flex flex-col group shadow-sm hover:border-blue-300 transition-colors">
       <div className="px-2 py-1 font-bold text-[#1e2b58] text-[9px] bg-gray-50 border-b border-gray-100 uppercase tracking-wider">{title}</div>
       <div className={`w-full ${height} bg-gray-200 relative overflow-hidden`}>
-        <img 
-          src={imgUrl} 
-          className="w-full h-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-150 cursor-pointer" 
-          alt={title} 
+        <img
+          src={imgUrl}
+          className="w-full h-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-150 cursor-pointer"
+          alt={title}
           onClick={onZoom}
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 flex items-center justify-center transition-all duration-300">
@@ -839,39 +804,60 @@ function MapBox({ title, height, imgUrl, onZoom }: any) {
 }
 
 // Custom interactive Before/After comparison slider box for Change Detection
-function ChangeDetectionBox({ title, height, beforeImg, afterImg, onZoom }: any) {
+function ChangeDetectionBox({ title, height, beforeImg, afterImg, beforeImgZoom, afterImgZoom, onHover, onZoom }: any) {
   const [sliderPos, setSliderPos] = useState(50);
-  
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = (x / rect.width) * 100;
+    if (percentage < sliderPos) {
+      onHover(afterImgZoom);
+    } else {
+      onHover(beforeImgZoom);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    onHover(null);
+  };
+
   return (
-    <div className="bg-white border border-gray-200 rounded overflow-hidden flex flex-col group shadow-sm hover:border-blue-300 transition-colors relative">
+    <div 
+      className="bg-white border border-gray-200 rounded overflow-hidden flex flex-col group shadow-sm hover:border-blue-300 transition-colors relative"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
       <div className="px-2 py-1 font-bold text-[#1e2b58] text-[9px] bg-gray-50 border-b border-gray-100 uppercase tracking-wider flex justify-between items-center">
         <span>{title}</span>
         <span className="text-[7.5px] bg-blue-50 text-blue-600 px-1 py-0.25 rounded font-normal">Drag to compare</span>
       </div>
-      
+
       <div className={`w-full ${height} bg-gray-200 relative overflow-hidden select-none`}>
         {/* Before Image (Forest field) */}
-        <img 
-          src={beforeImg} 
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none" 
-          alt="Before" 
+        <img
+          src={beforeImg}
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          alt="Before"
         />
-        <div className="absolute bottom-1.5 left-1.5 bg-black/60 text-[7.5px] font-bold text-white px-1 py-0.5 rounded z-20 pointer-events-none uppercase tracking-wider">
-          Before
-        </div>
 
         {/* After Image Overlay (Clipped by slider position width) */}
         <div className="absolute inset-0 overflow-hidden z-10 pointer-events-none" style={{ width: `${sliderPos}%` }}>
           {/* Keep fixed width matching the map card width (256px / 16rem) to prevent distortion */}
-          <img 
-            src={afterImg} 
-            className="absolute inset-0 w-[256px] h-[96px] object-cover max-w-none pointer-events-none" 
+          <img
+            src={afterImg}
+            className="absolute inset-0 w-[256px] h-[96px] object-cover max-w-none pointer-events-none"
             style={{ width: '256px', height: '96px' }}
-            alt="After" 
+            alt="After"
           />
-          <div className="absolute bottom-1.5 right-1.5 bg-blue-600/80 text-[7.5px] font-bold text-white px-1 py-0.5 rounded z-20 pointer-events-none uppercase tracking-wider whitespace-nowrap" style={{ right: `${100 - sliderPos}%` }}>
-            After
-          </div>
+        </div>
+
+        {/* Static Labels overlaying the images (Z-20, pointer-events-none) */}
+        <div className="absolute bottom-1.5 left-1.5 bg-[#3b82f6]/95 text-[7px] font-bold text-white px-1 py-0.5 rounded z-20 pointer-events-none uppercase tracking-wider">
+          After
+        </div>
+        <div className="absolute bottom-1.5 right-1.5 bg-black/60 text-[7px] font-bold text-white px-1 py-0.5 rounded z-20 pointer-events-none uppercase tracking-wider">
+          Before
         </div>
 
         {/* Vertical divider line */}
@@ -882,13 +868,13 @@ function ChangeDetectionBox({ title, height, beforeImg, afterImg, onZoom }: any)
         </div>
 
         {/* Transparent Range slider overlaid to capture mouse drag events */}
-        <input 
-          type="range" 
-          min="0" 
-          max="100" 
-          value={sliderPos} 
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={sliderPos}
           onChange={(e) => setSliderPos(Number(e.target.value))}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30" 
+          className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
         />
       </div>
     </div>

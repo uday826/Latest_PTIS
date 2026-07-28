@@ -24,7 +24,7 @@ export default function Topbar() {
 
   return (
     <header ref={containerRef} className="h-16 bg-[#1e2b58] flex items-center justify-between px-6 text-white font-sans shrink-0 z-50 shadow-md relative">
-      
+
       {/* Left: TMC Logo and Brand */}
       <div className="flex items-center gap-3">
         {/* TMC Logo */}
@@ -40,8 +40,8 @@ export default function Topbar() {
       {/* Center: Search Bar */}
       <div className="flex-1 max-w-xl ml-auto mr-16 flex items-center gap-2.5">
         <div className="relative flex items-center flex-1 bg-white rounded-md text-gray-800 overflow-hidden shadow-inner border border-gray-200">
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Search Property No., Owner, Mobile, UPIC..."
             className="w-full py-2 pl-4 pr-10 text-xs outline-none placeholder-gray-400 font-medium bg-transparent"
           />
@@ -56,10 +56,10 @@ export default function Topbar() {
 
       {/* Right Side Icons */}
       <div className="flex items-center gap-6 relative">
-        
+
         {/* Red Notification Icon */}
         <div className="relative">
-          <div 
+          <div
             onClick={() => toggleDropdown('redBell')}
             className="relative cursor-pointer text-gray-200 hover:text-white transition-colors p-1"
           >
@@ -68,7 +68,7 @@ export default function Topbar() {
               12
             </span>
           </div>
-          
+
           {/* Red Bell Dropdown */}
           {activeDropdown === 'redBell' && (
             <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50 text-gray-800 animate-fadeIn">
@@ -87,10 +87,10 @@ export default function Topbar() {
             </div>
           )}
         </div>
-        
+
         {/* Green Notification Icon */}
         <div className="relative">
-          <div 
+          <div
             onClick={() => toggleDropdown('greenBell')}
             className="relative cursor-pointer text-gray-200 hover:text-white transition-colors p-1"
           >
@@ -121,7 +121,7 @@ export default function Topbar() {
 
         {/* Profile User Button */}
         <div className="relative">
-          <div 
+          <div
             onClick={() => toggleDropdown('profile')}
             className="flex items-center gap-3 pl-4 border-l border-white/15 cursor-pointer select-none group"
           >
@@ -141,7 +141,7 @@ export default function Topbar() {
                 <p className="font-bold text-gray-900">admin scipl</p>
                 <p className="text-[10px] text-gray-500 font-medium">admin@thane.gov.in</p>
               </div>
-              
+
               <a href="#" className="flex items-center gap-2.5 px-4 py-2 text-xs hover:bg-gray-50 text-gray-700 transition-colors">
                 <User size={14} className="text-gray-400" />
                 <span>My Profile</span>
@@ -154,9 +154,9 @@ export default function Topbar() {
                 <Shield size={14} className="text-gray-400" />
                 <span>Security Settings</span>
               </a>
-              
+
               <div className="border-t border-gray-100 my-1"></div>
-              
+
               <button className="flex items-center gap-2.5 w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors font-semibold cursor-pointer">
                 <LogOut size={14} />
                 <span>Logout</span>
