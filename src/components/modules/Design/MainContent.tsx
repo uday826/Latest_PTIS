@@ -638,14 +638,14 @@ export default function MainContent() {
                         <div className="absolute top-[7px] left-[62.5%] w-[18.75%] h-[1px] bg-blue-600 z-0"></div>
                         <div className="absolute top-[7px] left-[81.25%] right-[6.25%] h-[1px] bg-slate-300 z-0"></div>
 
-                        <TimelineStep label="Geo Seq" date="15-Jan" active />
-                        <TimelineStep label="Survey" date="10-Feb" active />
-                        <TimelineStep label="Verify" date="20-Feb" active />
-                        <TimelineStep label="Assess" date="01-Apr" active />
-                        <TimelineStep label="Approval" date="20-Apr" active />
-                        <TimelineStep label="Collection" date="05-May" active />
-                        <TimelineStep label="Mutation" date="In Progress" isInProgress />
-                        <TimelineStep label="Appeal" date="Pending" isPending />
+                        <TimelineStep id="geoSequencing" label="Geo Seq" date="15-Jan" active onClick={handleTimelineNodeClick} isSelected={selectedTimelineStage === 'geoSequencing'} />
+                        <TimelineStep id="survey" label="Survey" date="10-Feb" active onClick={handleTimelineNodeClick} isSelected={selectedTimelineStage === 'survey'} />
+                        <TimelineStep id="verification" label="Verify" date="20-Feb" active onClick={handleTimelineNodeClick} isSelected={selectedTimelineStage === 'verification'} />
+                        <TimelineStep id="assessment" label="Assess" date="01-Apr" active onClick={handleTimelineNodeClick} isSelected={selectedTimelineStage === 'assessment'} />
+                        <TimelineStep id="approval" label="Approval" date="20-Apr" active onClick={handleTimelineNodeClick} isSelected={selectedTimelineStage === 'approval'} />
+                        <TimelineStep id="collection" label="Collection" date="05-May" active onClick={handleTimelineNodeClick} isSelected={selectedTimelineStage === 'collection'} />
+                        <TimelineStep id="mutation" label="Mutation" date="In Progress" isInProgress onClick={handleTimelineNodeClick} isSelected={selectedTimelineStage === 'mutation'} />
+                        <TimelineStep id="appeal" label="Appeal" date="Pending" isPending onClick={handleTimelineNodeClick} isSelected={selectedTimelineStage === 'appeal'} />
                       </div>
                     </div>
 
@@ -1003,25 +1003,37 @@ function InfoList({ title, items }: any) {
   );
 }
 
-function TimelineStep({ label, date, active, isInProgress, isPending }: any) {
+function TimelineStep({ id, label, date, active, isInProgress, isPending, onClick, isSelected }: any) {
   let circleBg = 'bg-slate-400';
   let symbol = '?';
+  let statusText = 'Pending';
   if (active) {
     circleBg = 'bg-[#10b981]';
     symbol = '✓';
+    statusText = 'Completed';
   } else if (isInProgress) {
     circleBg = 'bg-blue-600';
     symbol = '●';
+    statusText = 'In Progress';
   }
 
   return (
-    <div className="flex flex-col items-center gap-0.5 relative z-10 flex-1 min-w-0">
-      <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-white font-extrabold shadow-sm ${circleBg} text-[8px]`}>
+    <button
+      id={`timeline-node-${id}`}
+      onClick={(e) => onClick(id, e)}
+      aria-label={`View ${label} details (${statusText})`}
+      aria-expanded={isSelected}
+      aria-controls={isSelected ? `timeline-popup-${id}` : undefined}
+      className={`flex flex-col items-center gap-0.5 relative z-10 flex-1 min-w-0 cursor-pointer outline-none group focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded transition-all ${
+        isSelected ? 'scale-105' : 'hover:scale-105'
+      }`}
+    >
+      <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-white font-extrabold shadow-sm transition-all ${circleBg} text-[8px] group-hover:brightness-95 group-active:scale-90`}>
         {symbol}
       </div>
-      <div className="text-center font-extrabold text-[7.5px] text-[#002fbe] truncate w-full leading-none mt-0.5">{label}</div>
+      <div className="text-center font-extrabold text-[7.5px] text-[#002fbe] truncate w-full leading-none mt-0.5 group-hover:underline">{label}</div>
       <div className="text-center font-bold text-[6.5px] text-gray-500 truncate w-full leading-none mt-0.5">{date}</div>
-    </div>
+    </button>
   );
 }
 
