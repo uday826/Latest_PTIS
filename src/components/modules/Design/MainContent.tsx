@@ -37,7 +37,15 @@ import {
 } from 'lucide-react';
 import ActionViews from './ActionViews';
 
-export default function MainContent({ activeAction = null, setActiveAction = () => {} }: { activeAction?: string | null; setActiveAction?: (action: string | null) => void } = {}) {
+export default function MainContent({ 
+  activeAction = null, 
+  setActiveAction = () => {}, 
+  activeValuationModel = 'rv' 
+}: { 
+  activeAction?: string | null; 
+  setActiveAction?: (action: string | null) => void; 
+  activeValuationModel?: 'rv' | 'cvm' | 'dual' 
+} = {}) {
   const [activeTab, setActiveTab] = useState<'property' | 'kyc' | 'society' | 'building' | 'discount' | 'old'>('property');
   const [selectedTimelineStage, setSelectedTimelineStage] = useState<string | null>(null);
   const [timelinePopupOpen, setTimelinePopupOpen] = useState(false);
@@ -694,19 +702,45 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
                     </div>
                   </div>
 
-                  {/* Card 2: Rateable Value */}
+                  {/* Card 2: Valuation Method */}
                   <div className="border border-[#002fbe]/20 rounded-xl p-2 bg-white shadow-sm grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0 h-full">
                     <div className="bg-[#f5f3ff] w-8 h-8 rounded-lg grid place-items-center text-[#8b5cf6] shrink-0">
                       <UserCheck size={15} />
                     </div>
                     <div className="leading-tight min-w-0">
-                      <div className="font-semibold text-[#002fbe] mb-0.5 leading-tight summary-card-title">Rateable Value (RV)</div>
+                      <div className="font-semibold text-[#002fbe] mb-0.5 leading-tight summary-card-title">
+                        {activeValuationModel === 'rv' && "Rateable Value (RV)"}
+                        {activeValuationModel === 'cvm' && "Capital Value (CVM)"}
+                        {activeValuationModel === 'dual' && "Valuation Comparison"}
+                      </div>
                       <div className="space-y-0.5 text-gray-500 font-medium summary-card-label">
-                        <div>OLD: <span className="font-semibold text-gray-700 summary-card-primary-value whitespace-nowrap">₹16,20,000</span></div>
-                        <div>NEW: <span className="font-semibold text-[#002fbe] summary-card-primary-value whitespace-nowrap">₹18,45,000</span></div>
-                        <div className="text-[#10b981] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
-                          <span>↑ 13.89%</span>
-                        </div>
+                        {activeValuationModel === 'rv' && (
+                          <>
+                            <div>OLD: <span className="font-semibold text-gray-700 summary-card-primary-value whitespace-nowrap">₹16,20,000</span></div>
+                            <div>NEW: <span className="font-semibold text-[#002fbe] summary-card-primary-value whitespace-nowrap">₹18,45,000</span></div>
+                            <div className="text-[#10b981] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                              <span>↑ 13.89%</span>
+                            </div>
+                          </>
+                        )}
+                        {activeValuationModel === 'cvm' && (
+                          <>
+                            <div>OLD: <span className="font-semibold text-gray-700 summary-card-primary-value whitespace-nowrap">₹1,62,00,000</span></div>
+                            <div>NEW: <span className="font-semibold text-[#002fbe] summary-card-primary-value whitespace-nowrap">₹1,84,50,000</span></div>
+                            <div className="text-[#10b981] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                              <span>↑ 13.89%</span>
+                            </div>
+                          </>
+                        )}
+                        {activeValuationModel === 'dual' && (
+                          <>
+                            <div>RV: <span className="font-semibold text-gray-700 summary-card-primary-value whitespace-nowrap">₹18.45 L</span></div>
+                            <div>CVM: <span className="font-semibold text-[#002fbe] summary-card-primary-value whitespace-nowrap">₹1.85 Cr</span></div>
+                            <div className="text-blue-600 font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                              <span>Ratio: 10x</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -719,11 +753,33 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
                     <div className="leading-tight min-w-0">
                       <div className="font-semibold text-[#002fbe] mb-0.5 leading-tight summary-card-title">Tax (Current)</div>
                       <div className="space-y-0.5 text-gray-500 font-medium summary-card-label">
-                        <div>OLD: <span className="font-semibold text-gray-700 summary-card-primary-value whitespace-nowrap">₹16,500</span></div>
-                        <div>NEW: <span className="font-semibold text-[#002fbe] summary-card-primary-value whitespace-nowrap">₹18,752</span></div>
-                        <div className="text-[#10b981] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
-                          <span>↑ 13.65%</span>
-                        </div>
+                        {activeValuationModel === 'rv' && (
+                          <>
+                            <div>OLD: <span className="font-semibold text-gray-700 summary-card-primary-value whitespace-nowrap">₹16,500</span></div>
+                            <div>NEW: <span className="font-semibold text-[#002fbe] summary-card-primary-value whitespace-nowrap">₹18,752</span></div>
+                            <div className="text-[#10b981] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                              <span>↑ 13.65%</span>
+                            </div>
+                          </>
+                        )}
+                        {activeValuationModel === 'cvm' && (
+                          <>
+                            <div>OLD: <span className="font-semibold text-gray-700 summary-card-primary-value whitespace-nowrap">₹14,200</span></div>
+                            <div>NEW: <span className="font-semibold text-[#002fbe] summary-card-primary-value whitespace-nowrap">₹16,450</span></div>
+                            <div className="text-[#10b981] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                              <span>↑ 15.85%</span>
+                            </div>
+                          </>
+                        )}
+                        {activeValuationModel === 'dual' && (
+                          <>
+                            <div>RV: <span className="font-semibold text-gray-700 summary-card-primary-value whitespace-nowrap">₹18,752</span></div>
+                            <div>CVM: <span className="font-semibold text-[#002fbe] summary-card-primary-value whitespace-nowrap">₹16,450</span></div>
+                            <div className="text-red-500 font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                              <span>Diff: -12.3%</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -736,11 +792,33 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
                     <div className="leading-tight min-w-0">
                       <div className="font-semibold text-[#002fbe] mb-0.5 leading-tight summary-card-title">Collection</div>
                       <div className="space-y-0.5 text-gray-500 font-medium summary-card-label">
-                        <div>Paid: <span className="font-semibold text-green-600 summary-card-primary-value whitespace-nowrap">₹12,456</span></div>
-                        <div className="text-red-500">O/S: <span className="font-semibold text-[#ef4444] summary-card-primary-value whitespace-nowrap">₹6,296</span></div>
-                        <div className="text-[#002fbe] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
-                          <span>Total: ₹18,752</span>
-                        </div>
+                        {activeValuationModel === 'rv' && (
+                          <>
+                            <div>Paid: <span className="font-semibold text-green-600 summary-card-primary-value whitespace-nowrap">₹12,456</span></div>
+                            <div className="text-red-500">O/S: <span className="font-semibold text-[#ef4444] summary-card-primary-value whitespace-nowrap">₹6,296</span></div>
+                            <div className="text-[#002fbe] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                              <span>Total: ₹18,752</span>
+                            </div>
+                          </>
+                        )}
+                        {activeValuationModel === 'cvm' && (
+                          <>
+                            <div>Paid: <span className="font-semibold text-green-600 summary-card-primary-value whitespace-nowrap">₹11,000</span></div>
+                            <div className="text-red-500">O/S: <span className="font-semibold text-[#ef4444] summary-card-primary-value whitespace-nowrap">₹5,450</span></div>
+                            <div className="text-[#002fbe] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                              <span>Total: ₹16,450</span>
+                            </div>
+                          </>
+                        )}
+                        {activeValuationModel === 'dual' && (
+                          <>
+                            <div>RV Paid: <span className="font-semibold text-green-600 summary-card-primary-value whitespace-nowrap">₹12,456</span></div>
+                            <div>CVM Paid: <span className="font-semibold text-[#ef4444] summary-card-primary-value whitespace-nowrap">₹11,000</span></div>
+                            <div className="text-[#002fbe] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                              <span>Diff: -11.7%</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -754,10 +832,20 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
                       <div className="font-semibold text-[#002fbe] mb-0.5 leading-tight summary-card-title">Additional Revenue</div>
                       <div className="text-gray-500 font-medium summary-card-label">This Assessment</div>
                       <div className="flex flex-wrap items-baseline gap-1 mt-0.5">
-                        <span className="font-semibold text-[#002fbe] leading-none summary-card-primary-value whitespace-nowrap">₹1,12,892</span>
-                        <span className="text-[#10b981] font-semibold summary-card-growth shrink-0 whitespace-nowrap">↑ 12.4%</span>
+                        <span className="font-semibold text-[#002fbe] leading-none summary-card-primary-value whitespace-nowrap">
+                          {activeValuationModel === 'rv' && "₹1,12,892"}
+                          {activeValuationModel === 'cvm' && "₹98,540"}
+                          {activeValuationModel === 'dual' && "₹1,12,892"}
+                        </span>
+                        <span className="text-[#10b981] font-semibold summary-card-growth shrink-0 whitespace-nowrap">
+                          {activeValuationModel === 'rv' && "↑ 12.4%"}
+                          {activeValuationModel === 'cvm' && "↑ 11.2%"}
+                          {activeValuationModel === 'dual' && "↑ 12.4%"}
+                        </span>
                       </div>
-                      <div className="text-gray-400 font-medium mt-0.5 text-[8px] lg:text-[9px] whitespace-nowrap">(Tax+Pen+Int)</div>
+                      <div className="text-gray-400 font-medium mt-0.5 text-[8px] lg:text-[9px] whitespace-nowrap">
+                        {activeValuationModel === 'dual' ? "(RV vs CVM)" : "(Tax+Pen+Int)"}
+                      </div>
                     </div>
                   </div>
 
