@@ -449,16 +449,16 @@ export default function MainContent() {
               </div>
                 <div className="summary-timeline-row grid grid-cols-1 md:grid-cols-2 gap-2 shrink-0 select-none items-stretch">
                   {/* Card 1: Area Comparison */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-1.5 bg-white shadow-md flex items-center gap-1.5 min-w-0">
-                    <div className="bg-[#eff6ff] w-7 h-7 rounded-lg flex items-center justify-center text-[#002fbe] shrink-0">
-                      <FileText size={12} />
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md flex items-center gap-2.5 min-w-0">
+                    <div className="bg-[#eff6ff] w-9 h-9 rounded-full flex items-center justify-center text-[#002fbe] shrink-0">
+                      <FileText size={18} />
                     </div>
-                    <div className="flex-1 text-[8px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] mb-0.5 truncate">Area Comparison</div>
-                      <div className="space-y-0.5 text-[7.5px] font-bold text-gray-600">
-                        <div>OLD: <span className="font-black text-gray-900">400.00 m²</span></div>
-                        <div>NEW: <span className="font-black text-gray-955">440.00 m²</span></div>
-                        <div className="text-[#10b981] font-extrabold flex items-center gap-0.5">
+                    <div className="flex-grow text-[9.5px] leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] text-[10.5px] uppercase tracking-wider mb-1 truncate">Area Comparison</div>
+                      <div className="space-y-0.5 text-gray-500 font-bold">
+                        <div>OLD: <span className="font-black text-gray-800 text-[10px]">400.00 m²</span></div>
+                        <div>NEW: <span className="font-black text-[#002fbe] text-[10.5px]">440.00 m²</span></div>
+                        <div className="text-[#10b981] font-black text-[9.5px] flex items-center gap-0.5 mt-0.5">
                           <span>↑ 40 m² (10%)</span>
                         </div>
                       </div>
@@ -466,16 +466,16 @@ export default function MainContent() {
                   </div>
 
                   {/* Card 2: Rateable Value */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-1.5 bg-white shadow-md flex items-center gap-1.5 min-w-0">
-                    <div className="bg-[#f5f3ff] w-7 h-7 rounded-lg flex items-center justify-center text-[#8b5cf6] shrink-0">
-                      <UserCheck size={12} />
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md flex items-center gap-2.5 min-w-0">
+                    <div className="bg-[#f5f3ff] w-9 h-9 rounded-full flex items-center justify-center text-[#8b5cf6] shrink-0">
+                      <UserCheck size={18} />
                     </div>
-                    <div className="flex-1 text-[8px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] mb-0.5 truncate">Rateable Value (RV)</div>
-                      <div className="space-y-0.5 text-[7.5px] font-bold text-gray-600">
-                        <div>OLD: <span className="font-black text-gray-900">₹ 16,20,000</span></div>
-                        <div>NEW: <span className="font-black text-gray-950">₹ 18,45,000</span></div>
-                        <div className="text-[#10b981] font-extrabold flex items-center gap-0.5">
+                    <div className="flex-grow text-[9.5px] leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] text-[10.5px] uppercase tracking-wider mb-1 truncate">Rateable Value (RV)</div>
+                      <div className="space-y-0.5 text-gray-500 font-bold">
+                        <div>OLD: <span className="font-black text-gray-800 text-[10px]">₹ 16,20,000</span></div>
+                        <div>NEW: <span className="font-black text-[#002fbe] text-[10.5px]">₹ 18,45,000</span></div>
+                        <div className="text-[#10b981] font-black text-[9.5px] flex items-center gap-0.5 mt-0.5">
                           <span>↑ 13.89%</span>
                         </div>
                       </div>
@@ -483,16 +483,16 @@ export default function MainContent() {
                   </div>
 
                   {/* Card 3: Capital Value */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-1.5 bg-white shadow-md flex items-center gap-1.5 min-w-0">
-                    <div className="bg-[#eff6ff] w-7 h-7 rounded-lg flex items-center justify-center text-[#002fbe] shrink-0">
-                      <Home size={12} />
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md flex items-center gap-2.5 min-w-0">
+                    <div className="bg-[#eff6ff] w-9 h-9 rounded-full flex items-center justify-center text-[#002fbe] shrink-0">
+                      <Home size={18} />
                     </div>
-                    <div className="flex-1 text-[8px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] mb-0.5 truncate">Capital Value (CV)</div>
-                      <div className="space-y-0.5 text-[7.5px] font-bold text-gray-600">
-                        <div>OLD: <span className="font-black text-gray-900">₹ 32,40,000</span></div>
-                        <div>NEW: <span className="font-black text-gray-955">₹ 36,90,000</span></div>
-                        <div className="text-[#10b981] font-extrabold flex items-center gap-0.5">
+                    <div className="flex-grow text-[9.5px] leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] text-[10.5px] uppercase tracking-wider mb-1 truncate">Capital Value (CV)</div>
+                      <div className="space-y-0.5 text-gray-500 font-bold">
+                        <div>OLD: <span className="font-black text-gray-800 text-[10px]">₹ 32,40,000</span></div>
+                        <div>NEW: <span className="font-black text-[#002fbe] text-[10.5px]">₹ 36,90,000</span></div>
+                        <div className="text-[#10b981] font-black text-[9.5px] flex items-center gap-0.5 mt-0.5">
                           <span>↑ 13.89%</span>
                         </div>
                       </div>
@@ -500,16 +500,16 @@ export default function MainContent() {
                   </div>
 
                   {/* Card 4: Tax (Current) */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-1.5 bg-white shadow-md flex items-center gap-1.5 min-w-0">
-                    <div className="bg-[#ecfdf5] w-7 h-7 rounded-lg flex items-center justify-center text-[#10b981] shrink-0">
-                      <Percent size={12} />
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md flex items-center gap-2.5 min-w-0">
+                    <div className="bg-[#ecfdf5] w-9 h-9 rounded-full flex items-center justify-center text-[#10b981] shrink-0">
+                      <Percent size={18} />
                     </div>
-                    <div className="flex-1 text-[8px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] mb-0.5 truncate">Tax (Current)</div>
-                      <div className="space-y-0.5 text-[7.5px] font-bold text-gray-600">
-                        <div>OLD: <span className="font-black text-gray-900">₹ 16,500</span></div>
-                        <div>NEW: <span className="font-black text-gray-955">₹ 18,752</span></div>
-                        <div className="text-[#10b981] font-extrabold flex items-center gap-0.5">
+                    <div className="flex-grow text-[9.5px] leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] text-[10.5px] uppercase tracking-wider mb-1 truncate">Tax (Current)</div>
+                      <div className="space-y-0.5 text-gray-500 font-bold">
+                        <div>OLD: <span className="font-black text-gray-800 text-[10px]">₹ 16,500</span></div>
+                        <div>NEW: <span className="font-black text-[#002fbe] text-[10.5px]">₹ 18,752</span></div>
+                        <div className="text-[#10b981] font-black text-[9.5px] flex items-center gap-0.5 mt-0.5">
                           <span>↑ 13.65%</span>
                         </div>
                       </div>
@@ -517,28 +517,33 @@ export default function MainContent() {
                   </div>
 
                   {/* Card 5: Collection */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-1.5 bg-white shadow-md flex items-center gap-1.5 min-w-0">
-                    <div className="bg-[#fef2f2] w-7 h-7 rounded-lg flex items-center justify-center text-[#ef4444] shrink-0">
-                      <Wallet size={12} />
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md flex items-center gap-2.5 min-w-0">
+                    <div className="bg-[#fef2f2] w-9 h-9 rounded-full flex items-center justify-center text-[#ef4444] shrink-0">
+                      <Wallet size={18} />
                     </div>
-                    <div className="flex-1 text-[8px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] mb-0.5 truncate">Collection</div>
-                      <div className="space-y-0.5 text-[7.5px] font-bold text-gray-600">
-                        <div>Paid: <span className="font-black text-gray-900">₹ 12,456</span></div>
-                        <div className="text-red-650 font-extrabold">O/S: <span className="text-[#ef4444] font-black">₹ 6,296</span></div>
+                    <div className="flex-grow text-[9.5px] leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] text-[10.5px] uppercase tracking-wider mb-1 truncate">Collection</div>
+                      <div className="space-y-0.5 font-bold">
+                        <div className="text-gray-500">Paid: <span className="font-black text-green-600 text-[10.5px]">₹ 12,456</span></div>
+                        <div className="text-red-500">O/S: <span className="font-black text-[#ef4444] text-[10.5px]">₹ 6,296</span></div>
                       </div>
                     </div>
                   </div>
 
                   {/* Card 6: Additional Revenue */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-1.5 bg-white shadow-md flex flex-col justify-center min-w-0">
-                    <div className="font-extrabold text-[#002fbe] text-[8px] mb-0.5 truncate">Additional Revenue</div>
-                    <div className="text-gray-400 text-[6.5px] font-bold truncate">This Assessment</div>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span className="font-black text-[11px] text-[#002fbe] leading-none">₹ 1,12,892</span>
-                      <span className="text-[#10b981] font-black text-[7px] flex items-center shrink-0">↑ 12.4%</span>
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md flex items-center gap-2.5 min-w-0">
+                    <div className="bg-[#eff6ff] w-9 h-9 rounded-full flex items-center justify-center text-[#002fbe] shrink-0">
+                      <Briefcase size={18} />
                     </div>
-                    <div className="text-gray-400 text-[6px] truncate mt-0.5">(Tax+Pen+Int)</div>
+                    <div className="flex-grow text-[9.5px] leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] text-[10.5px] uppercase tracking-wider mb-0.5 truncate">Additional Revenue</div>
+                      <div className="text-gray-500 text-[8px] font-bold truncate">This Assessment</div>
+                      <div className="flex items-baseline gap-1 mt-0.5">
+                        <span className="font-black text-[12.5px] text-[#002fbe] leading-none">₹ 1,12,892</span>
+                        <span className="text-[#10b981] font-black text-[9px] shrink-0">↑ 12.4%</span>
+                      </div>
+                      <div className="text-gray-400 text-[7px] font-semibold truncate mt-0.5">(Tax+Pen+Int)</div>
+                    </div>
                   </div>
 
                   {/* Card 7: Property Timeline */}
