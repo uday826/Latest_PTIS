@@ -29,6 +29,8 @@ import {
   Printer,
   Download,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   FolderOpen,
   SlidersHorizontal
@@ -50,6 +52,54 @@ export default function MainContent() {
 
   const openPreview = (url: string) => {
     setSelectedImg(url);
+  };
+
+  // Horizontal Scroll Controls for Floor Details Table
+  const tableRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [showScrollControls, setShowScrollControls] = useState(false);
+
+  const updateScrollState = React.useCallback(() => {
+    const el = tableRef.current;
+    if (el) {
+      const hasOverflow = el.scrollWidth > el.clientWidth;
+      setShowScrollControls(hasOverflow);
+      setCanScrollLeft(el.scrollLeft > 2);
+      setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const el = tableRef.current;
+    if (el) {
+      updateScrollState();
+      el.addEventListener('scroll', updateScrollState);
+      window.addEventListener('resize', updateScrollState);
+
+      const observer = new MutationObserver(updateScrollState);
+      observer.observe(el, { childList: true, subtree: true });
+
+      return () => {
+        el.removeEventListener('scroll', updateScrollState);
+        window.removeEventListener('resize', updateScrollState);
+        observer.disconnect();
+      };
+    }
+  }, [activeTab, activeSubTab, updateScrollState]);
+
+  const scrollLeft = () => {
+    const el = tableRef.current;
+    if (el) {
+      el.scrollBy({ left: -200, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    const el = tableRef.current;
+    if (el) {
+      el.scrollBy({ left: 200, behavior: 'smooth' });
+    }
   };
   return (
     <div className="flex-1 h-full overflow-hidden bg-transparent p-0 font-sans text-gray-800 relative z-10 flex flex-col gap-2">
@@ -119,20 +169,11 @@ export default function MainContent() {
                     <h3 className="font-extrabold text-[#002fbe] text-[11px] uppercase tracking-wider">Floor / Component Details</h3>
                     <span className="text-gray-400 text-[10px] font-semibold">(6 Components)</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <button className="flex items-center gap-1 px-2.5 py-1 border border-blue-250 bg-white hover:bg-blue-50 text-[#002fbe] text-[9.5px] font-bold rounded cursor-pointer transition-colors shadow-xs">
-                      <Plus size={11} />
-                      <span>Add Floor</span>
-                    </button>
-                    <button className="flex items-center gap-1 px-2.5 py-1 border border-gray-200 bg-white hover:bg-gray-50 text-[#002fbe] text-[9.5px] font-bold rounded cursor-pointer transition-colors shadow-xs">
-                      <Plus size={11} />
-                      <span>More</span>
-                    </button>
-                  </div>
                 </div>
 
                 {/* Sub Tab Table (Extremely compact py-0.5) */}
-                <div className="overflow-x-auto overflow-y-auto max-h-[168px] border border-gray-200 rounded-lg shrink-0 relative table-scroll-container">
+                <div className="relative flex items-stretch gap-1.5 w-full shrink-0">
+                  <div ref={tableRef} className="overflow-x-auto overflow-y-auto max-h-[168px] border border-gray-200 rounded-lg relative table-scroll-container flex-grow">
                   {activeSubTab === 'rateable' && (
                     <table className="w-full text-[10px] text-center border-collapse animate-fadeIn bg-white table-auto">
                       <thead className="bg-[#002fbe] text-white font-extrabold whitespace-nowrap sticky top-0 z-20">
@@ -375,6 +416,37 @@ export default function MainContent() {
                     </table>
                   )}
                 </div>
+
+                {/* Right-side Slim Control Strip for Table Scrolling */}
+                {showScrollControls && (
+                  <div className="flex flex-col gap-1 justify-center items-center shrink-0 w-8 border border-gray-200 rounded-lg bg-gray-50/50 p-1">
+                    <button
+                      onClick={scrollLeft}
+                      disabled={!canScrollLeft}
+                      className={`w-6 h-6 flex items-center justify-center rounded-md border text-center transition-all cursor-pointer ${
+                        canScrollLeft
+                          ? 'bg-white text-[#002fbe] border-blue-200 hover:bg-blue-50 active:scale-95 shadow-sm'
+                          : 'bg-gray-100/50 text-gray-300 border-gray-200 cursor-not-allowed'
+                      }`}
+                      title="Scroll Left"
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
+                    <button
+                      onClick={scrollRight}
+                      disabled={!canScrollRight}
+                      className={`w-6 h-6 flex items-center justify-center rounded-md border text-center transition-all cursor-pointer ${
+                        canScrollRight
+                          ? 'bg-white text-[#002fbe] border-blue-200 hover:bg-blue-50 active:scale-95 shadow-sm'
+                          : 'bg-gray-100/50 text-gray-300 border-gray-200 cursor-not-allowed'
+                      }`}
+                      title="Scroll Right"
+                    >
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
                 <div className="summary-timeline-row grid grid-cols-1 md:grid-cols-2 gap-2 shrink-0 select-none items-stretch">
                   {/* Card 1: Area Comparison */}
                   <div className="border border-[#002fbe]/25 rounded-xl p-1.5 bg-white shadow-md flex items-center gap-1.5 min-w-0">
