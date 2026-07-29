@@ -216,8 +216,8 @@ export default function PropertySummary({
         </div>
       </div>
 
-      {/* Card 2: Property Grade & Index */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4.5 flex flex-col justify-between w-[220px] shrink-0 relative group">
+      {/* Unified Card 2: Property Performance Summary */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3.5 flex flex-col justify-between w-full sm:w-[450px] shrink-0 relative group">
         {/* local linear gradient definition for half star */}
         <svg width="0" height="0" className="absolute">
           <defs>
@@ -228,64 +228,83 @@ export default function PropertySummary({
           </defs>
         </svg>
 
-        <div className="text-[13px] text-[#002fbe] font-extrabold select-none leading-none">
-          Property Grade & Index
+        {/* Card Title */}
+        <div className="text-[13.5px] text-[#002fbe] font-bold select-none leading-none mb-2.5 border-b border-gray-100 pb-2">
+          PROPERTY PERFORMANCE SUMMARY
         </div>
-        <div className="flex text-orange-500 gap-1 mt-2.5 justify-start">
-          <Star size={22} fill="#f97316" className="stroke-orange-500" />
-          <Star size={22} fill="#f97316" className="stroke-orange-500" />
-          <Star size={22} fill="#f97316" className="stroke-orange-500" />
-          <Star size={22} fill="#f97316" className="stroke-orange-500" />
-          <Star size={22} fill="url(#star-half-orange)" className="stroke-orange-500" />
-          <Star size={22} fill="transparent" className="stroke-gray-300" />
-        </div>
-        <div className="text-[#002fbe] font-black text-[36px] flex items-baseline leading-none mt-2.5 select-all font-sans">
-          <span>6.2</span>
-          <span className="text-[15px] text-[#002fbe] font-extrabold ml-1.5">/ 7</span>
-        </div>
-        <div className="text-green-600 text-[11.5px] font-extrabold tracking-wide mt-2.5">
-          A+ Grade • Excellent Property
-        </div>
-      </div>
 
-      {/* Card 3: Health Score */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4.5 flex flex-col justify-between w-[250px] shrink-0 relative group">
-        <div className="text-[13px] text-[#002fbe] font-extrabold select-none leading-none">
-          Health Score
-        </div>
-        <div className="flex items-center gap-4 mt-3 flex-grow">
-          {/* Circle progress - Enlarged & Aligned */}
-          <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
-            <svg width="80" height="80" viewBox="0 0 80 80" className="transform -rotate-90">
-              <circle cx="40" cy="40" r="32" stroke="#10b981" strokeWidth="6.5" strokeOpacity="0.2" fill="transparent" />
-              <circle 
-                cx="40" 
-                cy="40" 
-                r="32" 
-                stroke="#047857" 
-                strokeWidth="6.5" 
-                fill="transparent" 
-                strokeDasharray="201.1" 
-                strokeDashoffset="16.1" 
-                strokeLinecap="round" 
-                className="transition-all duration-1000 ease-out"
-              />
-            </svg>
-            <div className="absolute font-black text-[15px] text-[#002fbe] select-none">92%</div>
-          </div>
-
-          {/* Stats right */}
-          <div className="flex-1 flex flex-col justify-center leading-none pl-1">
+        {/* Two Columns Grid/Flexbox Layout */}
+        <div className="flex flex-col sm:flex-row items-stretch gap-4 flex-grow">
+          {/* Left Column: Property Grade (approx 48%) */}
+          <div className="w-full sm:w-[48%] flex flex-col justify-between pr-2.5 sm:border-r sm:border-gray-200">
             <div>
-              <div className="font-black text-[25px] text-[#002fbe] select-all">92%</div>
-              <div className="text-green-600 text-[12px] font-extrabold mt-1 select-none flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                Excellent
+              <div className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider leading-none">
+                Property Grade
+              </div>
+              <div className="flex text-orange-500 gap-0.5 mt-2 justify-start">
+                <Star size={16} fill="#f97316" className="stroke-orange-500" />
+                <Star size={16} fill="#f97316" className="stroke-orange-500" />
+                <Star size={16} fill="#f97316" className="stroke-orange-500" />
+                <Star size={16} fill="#f97316" className="stroke-orange-500" />
+                <Star size={16} fill="url(#star-half-orange)" className="stroke-orange-500" />
+                <Star size={16} fill="transparent" className="stroke-gray-300" />
+              </div>
+              <div className="text-[#002fbe] font-extrabold text-[26px] flex items-baseline leading-none mt-2 select-all font-sans">
+                <span>6.2</span>
+                <span className="text-[13px] text-[#002fbe] font-semibold ml-1">/ 7</span>
               </div>
             </div>
-            <button className="text-[#002fbe] text-[9.5px] font-extrabold mt-2 hover:bg-[#002fbe] hover:text-white transition-all text-center cursor-pointer border border-[#002fbe] rounded-lg px-2.5 py-1 bg-white w-fit shadow-2xs select-none">
-              View Details
-            </button>
+            <div className="mt-2.5">
+              <div className="text-green-600 text-[12px] font-bold leading-tight">
+                A+ Grade
+              </div>
+              <div className="text-gray-500 text-[10.5px] font-medium leading-tight mt-0.5">
+                Excellent Property
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Health Score (approx 52%) */}
+          <div className="w-full sm:w-[52%] flex flex-col justify-between pl-0 sm:pl-1">
+            <div className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider leading-none">
+              Health Score
+            </div>
+            
+            <div className="flex items-center gap-3.5 mt-1.5 flex-grow">
+              {/* Circle progress - Compact */}
+              <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
+                <svg width="64" height="64" viewBox="0 0 64 64" className="transform -rotate-90">
+                  <circle cx="32" cy="32" r="25" stroke="#10b981" strokeWidth="5" strokeOpacity="0.2" fill="transparent" />
+                  <circle 
+                    cx="32" 
+                    cy="32" 
+                    r="25" 
+                    stroke="#047857" 
+                    strokeWidth="5" 
+                    fill="transparent" 
+                    strokeDasharray="157.1" 
+                    strokeDashoffset="12.6" 
+                    strokeLinecap="round" 
+                    className="transition-all duration-1000 ease-out"
+                  />
+                </svg>
+                <div className="absolute font-black text-[13px] text-[#002fbe] select-none">92%</div>
+              </div>
+
+              {/* Stats right */}
+              <div className="flex-1 flex flex-col justify-center leading-none">
+                <div>
+                  <div className="font-extrabold text-[24px] text-[#002fbe] select-all">92%</div>
+                  <div className="text-green-600 text-[11px] font-bold mt-1.5 select-none flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                    Excellent
+                  </div>
+                </div>
+                <button className="text-[#002fbe] text-[9.5px] font-bold mt-2.5 hover:bg-[#002fbe] hover:text-white transition-all text-center cursor-pointer border border-[#002fbe] rounded-lg px-2 py-0.5 bg-white w-fit shadow-2xs select-none">
+                  View Details
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
