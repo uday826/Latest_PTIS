@@ -267,7 +267,7 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
         @media (min-width: 1024px) {
           .summary-timeline-row {
             display: grid !important;
-            grid-template-columns: repeat(6, minmax(70px, 1fr)) minmax(290px, 2.5fr) !important;
+            grid-template-columns: repeat(5, minmax(100px, 1.1fr)) minmax(380px, 3.5fr) !important;
           }
         }
       `}} />
@@ -604,18 +604,18 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
                   </div>
                 )}
               </div>
-                <div className="summary-timeline-row grid grid-cols-1 md:grid-cols-2 gap-2 shrink-0 select-none items-stretch">
+                <div className="summary-timeline-row grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 shrink-0 select-none items-stretch">
                   {/* Card 1: Area Comparison */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex items-center gap-1.5 min-w-0">
-                    <div className="bg-[#eff6ff] w-7.5 h-7.5 rounded-full flex items-center justify-center text-[#002fbe] shrink-0">
-                      <FileText size={15} />
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md flex items-center gap-2 min-w-0">
+                    <div className="bg-[#eff6ff] w-9 h-9 rounded-full flex items-center justify-center text-[#002fbe] shrink-0">
+                      <FileText size={18} />
                     </div>
-                    <div className="flex-grow text-[9px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] text-[8.5px] uppercase tracking-wider mb-0.5 leading-tight">Area Comparison</div>
-                      <div className="space-y-0.5 text-gray-500 font-bold text-[8px]">
-                        <div>OLD: <span className="font-black text-gray-800 text-[9px] whitespace-nowrap">400.00 m²</span></div>
-                        <div>NEW: <span className="font-black text-[#002fbe] text-[9.5px] whitespace-nowrap">440.00 m²</span></div>
-                        <div className="text-[#10b981] font-black text-[8.5px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                    <div className="flex-grow leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] text-[11px] lg:text-[12px] uppercase tracking-wider mb-0.5 leading-tight">Area Comparison</div>
+                      <div className="space-y-0.5 text-gray-500 font-bold text-[9.5px] lg:text-[10px]">
+                        <div>OLD: <span className="font-extrabold text-gray-800 text-[11px] lg:text-[12px] whitespace-nowrap">400.00 m²</span></div>
+                        <div>NEW: <span className="font-extrabold text-[#002fbe] text-[12px] lg:text-[13px] whitespace-nowrap">440.00 m²</span></div>
+                        <div className="text-[#10b981] font-extrabold text-[10.5px] lg:text-[11.5px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                           <span>↑ 40 m² (10%)</span>
                         </div>
                       </div>
@@ -623,94 +623,77 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
                   </div>
 
                   {/* Card 2: Rateable Value */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex items-center gap-1.5 min-w-0">
-                    <div className="bg-[#f5f3ff] w-7.5 h-7.5 rounded-full flex items-center justify-center text-[#8b5cf6] shrink-0">
-                      <UserCheck size={15} />
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md flex items-center gap-2 min-w-0">
+                    <div className="bg-[#f5f3ff] w-9 h-9 rounded-full flex items-center justify-center text-[#8b5cf6] shrink-0">
+                      <UserCheck size={18} />
                     </div>
-                    <div className="flex-grow text-[9px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] text-[8.5px] uppercase tracking-wider mb-0.5 leading-tight">Rateable Value (RV)</div>
-                      <div className="space-y-0.5 text-gray-500 font-bold text-[8px]">
-                        <div>OLD: <span className="font-black text-gray-800 text-[9px] whitespace-nowrap">₹16,20,000</span></div>
-                        <div>NEW: <span className="font-black text-[#002fbe] text-[9.5px] whitespace-nowrap">₹18,45,000</span></div>
-                        <div className="text-[#10b981] font-black text-[8.5px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                    <div className="flex-grow leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] text-[11px] lg:text-[12px] uppercase tracking-wider mb-0.5 leading-tight">Rateable Value (RV)</div>
+                      <div className="space-y-0.5 text-gray-500 font-bold text-[9.5px] lg:text-[10px]">
+                        <div>OLD: <span className="font-extrabold text-gray-800 text-[11px] lg:text-[12px] whitespace-nowrap">₹16,20,000</span></div>
+                        <div>NEW: <span className="font-extrabold text-[#002fbe] text-[12px] lg:text-[13px] whitespace-nowrap">₹18,45,000</span></div>
+                        <div className="text-[#10b981] font-extrabold text-[10.5px] lg:text-[11.5px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                           <span>↑ 13.89%</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card 3: Capital Value */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex items-center gap-1.5 min-w-0">
-                    <div className="bg-[#eff6ff] w-7.5 h-7.5 rounded-full flex items-center justify-center text-[#002fbe] shrink-0">
-                      <Home size={15} />
+                  {/* Card 3: Tax (Current) */}
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md flex items-center gap-2 min-w-0">
+                    <div className="bg-[#ecfdf5] w-9 h-9 rounded-full flex items-center justify-center text-[#10b981] shrink-0">
+                      <Percent size={18} />
                     </div>
-                    <div className="flex-grow text-[9px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] text-[8.5px] uppercase tracking-wider mb-0.5 leading-tight">Capital Value (CV)</div>
-                      <div className="space-y-0.5 text-gray-500 font-bold text-[8px]">
-                        <div>OLD: <span className="font-black text-gray-800 text-[9px] whitespace-nowrap">₹32,40,000</span></div>
-                        <div>NEW: <span className="font-black text-[#002fbe] text-[9.5px] whitespace-nowrap">₹36,90,000</span></div>
-                        <div className="text-[#10b981] font-black text-[8.5px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
-                          <span>↑ 13.89%</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card 4: Tax (Current) */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex items-center gap-1.5 min-w-0">
-                    <div className="bg-[#ecfdf5] w-7.5 h-7.5 rounded-full flex items-center justify-center text-[#10b981] shrink-0">
-                      <Percent size={15} />
-                    </div>
-                    <div className="flex-grow text-[9px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] text-[8.5px] uppercase tracking-wider mb-0.5 leading-tight">Tax (Current)</div>
-                      <div className="space-y-0.5 text-gray-500 font-bold text-[8px]">
-                        <div>OLD: <span className="font-black text-gray-800 text-[9px] whitespace-nowrap">₹16,500</span></div>
-                        <div>NEW: <span className="font-black text-[#002fbe] text-[9.5px] whitespace-nowrap">₹18,752</span></div>
-                        <div className="text-[#10b981] font-black text-[8.5px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                    <div className="flex-grow leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] text-[11px] lg:text-[12px] uppercase tracking-wider mb-0.5 leading-tight">Tax (Current)</div>
+                      <div className="space-y-0.5 text-gray-500 font-bold text-[9.5px] lg:text-[10px]">
+                        <div>OLD: <span className="font-extrabold text-gray-800 text-[11px] lg:text-[12px] whitespace-nowrap">₹16,500</span></div>
+                        <div>NEW: <span className="font-extrabold text-[#002fbe] text-[12px] lg:text-[13px] whitespace-nowrap">₹18,752</span></div>
+                        <div className="text-[#10b981] font-extrabold text-[10.5px] lg:text-[11.5px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                           <span>↑ 13.65%</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card 5: Collection */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex items-center gap-1.5 min-w-0">
-                    <div className="bg-[#fef2f2] w-7.5 h-7.5 rounded-full flex items-center justify-center text-[#ef4444] shrink-0">
-                      <Wallet size={15} />
+                  {/* Card 4: Collection */}
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md flex items-center gap-2 min-w-0">
+                    <div className="bg-[#fef2f2] w-9 h-9 rounded-full flex items-center justify-center text-[#ef4444] shrink-0">
+                      <Wallet size={18} />
                     </div>
-                    <div className="flex-grow text-[9px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] text-[8.5px] uppercase tracking-wider mb-0.5 leading-tight">Collection</div>
-                      <div className="space-y-0.5 text-gray-500 font-bold text-[8px]">
-                        <div>Paid: <span className="font-black text-green-600 text-[9.5px] whitespace-nowrap">₹12,456</span></div>
-                        <div className="text-red-500">O/S: <span className="font-black text-[#ef4444] text-[9.5px] whitespace-nowrap">₹6,296</span></div>
-                        <div className="text-[#002fbe] font-black text-[8.5px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                    <div className="flex-grow leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] text-[11px] lg:text-[12px] uppercase tracking-wider mb-0.5 leading-tight">Collection</div>
+                      <div className="space-y-0.5 text-gray-500 font-bold text-[9.5px] lg:text-[10px]">
+                        <div>Paid: <span className="font-extrabold text-green-600 text-[12px] lg:text-[13px] whitespace-nowrap">₹12,456</span></div>
+                        <div className="text-red-500">O/S: <span className="font-extrabold text-[#ef4444] text-[12px] lg:text-[13px] whitespace-nowrap">₹6,296</span></div>
+                        <div className="text-[#002fbe] font-extrabold text-[10.5px] lg:text-[11.5px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                           <span>Total: ₹18,752</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card 6: Additional Revenue */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex items-center gap-1.5 min-w-0">
-                    <div className="bg-[#eff6ff] w-7.5 h-7.5 rounded-full flex items-center justify-center text-[#002fbe] shrink-0">
-                      <Briefcase size={15} />
+                  {/* Card 5: Additional Revenue */}
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md flex items-center gap-2 min-w-0">
+                    <div className="bg-[#eff6ff] w-9 h-9 rounded-full flex items-center justify-center text-[#002fbe] shrink-0">
+                      <Briefcase size={18} />
                     </div>
-                    <div className="flex-grow text-[9px] leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] text-[8.5px] uppercase tracking-wider mb-0.5 leading-tight">Additional Revenue</div>
-                      <div className="text-gray-500 text-[7.5px] font-bold">This Assessment</div>
-                      <div className="flex items-baseline gap-0.5 mt-0.5 whitespace-nowrap">
-                        <span className="font-black text-[11px] text-[#002fbe] leading-none">₹1,12,892</span>
-                        <span className="text-[#10b981] font-black text-[8px] shrink-0">↑ 12.4%</span>
+                    <div className="flex-grow leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] text-[11px] lg:text-[12px] uppercase tracking-wider mb-0.5 leading-tight">Additional Revenue</div>
+                      <div className="text-gray-500 text-[9.5px] lg:text-[10px] font-bold">This Assessment</div>
+                      <div className="flex items-baseline gap-1 mt-0.5 whitespace-nowrap">
+                        <span className="font-extrabold text-[13px] lg:text-[14px] text-[#002fbe] leading-none">₹1,12,892</span>
+                        <span className="text-[#10b981] font-extrabold text-[10px] lg:text-[11px] shrink-0">↑ 12.4%</span>
                       </div>
-                      <div className="text-gray-400 text-[6.5px] font-semibold mt-0.5">(Tax+Pen+Int)</div>
+                      <div className="text-gray-400 text-[8px] lg:text-[8.5px] font-semibold mt-0.5">(Tax+Pen+Int)</div>
                     </div>
                   </div>
 
-                  {/* Card 7: Property Timeline */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-1.5 bg-white shadow-md flex flex-col justify-between select-none col-span-1 md:col-span-2 lg:col-span-1 min-w-0">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-0.5 shrink-0">
-                      <span className="font-extrabold text-[#002fbe] text-[8px] uppercase tracking-wider">Property Timeline</span>
-                      <Clock size={10} className="text-[#002fbe]" />
+                  {/* Card 6: Property Timeline */}
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex flex-col justify-between select-none col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-1 min-w-0">
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-1 shrink-0">
+                      <span className="font-extrabold text-[#002fbe] text-[11px] lg:text-[12px] uppercase tracking-wider">Property Timeline</span>
+                      <Clock size={12} className="text-[#002fbe]" />
                     </div>
                     
                     <div className="flex-1 flex flex-col justify-center my-1">
