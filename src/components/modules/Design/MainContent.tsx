@@ -49,19 +49,34 @@ export default function MainContent() {
   const [aiReportPopupOpen, setAiReportPopupOpen] = useState(false);
   const [aiReportPopupPosition, setAiReportPopupPosition] = useState<{ top: number; left: number } | null>(null);
   const [aiReportLoading, setAiReportLoading] = useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   const handleViewReportClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     let left = rect.left + rect.width / 2 - 180;
     let top = rect.bottom + 8;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    if (left < 16) left = 16;
-    if (left + 360 > viewportWidth - 16) {
-      left = viewportWidth - 360 - 16;
-    }
-    if (top + 280 > viewportHeight - 16) {
-      top = rect.top - 280 - 8;
+    const containerEl = containerRef.current;
+    if (containerEl) {
+      const containerRect = containerEl.getBoundingClientRect();
+      left = rect.left - containerRect.left + rect.width / 2 - 180;
+      top = rect.bottom - containerRect.top + 8;
+      if (left < 16) left = 16;
+      if (left + 360 > containerRect.width - 16) {
+        left = containerRect.width - 360 - 16;
+      }
+      if (top + 285 > containerRect.height - 16) {
+        top = rect.top - containerRect.top - 285 - 8;
+      }
+    } else {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      if (left < 16) left = 16;
+      if (left + 360 > viewportWidth - 16) {
+        left = viewportWidth - 360 - 16;
+      }
+      if (top + 280 > viewportHeight - 16) {
+        top = rect.top - 280 - 8;
+      }
     }
 
     setAiReportPopupPosition({ top, left });
@@ -103,14 +118,28 @@ export default function MainContent() {
     const rect = event.currentTarget.getBoundingClientRect();
     let left = rect.left + rect.width / 2 - 180;
     let top = rect.bottom + 8;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    if (left < 16) left = 16;
-    if (left + 360 > viewportWidth - 16) {
-      left = viewportWidth - 360 - 16;
-    }
-    if (top + 280 > viewportHeight - 16) {
-      top = rect.top - 280 - 8;
+    const containerEl = containerRef.current;
+    if (containerEl) {
+      const containerRect = containerEl.getBoundingClientRect();
+      left = rect.left - containerRect.left + rect.width / 2 - 180;
+      top = rect.bottom - containerRect.top + 8;
+      if (left < 16) left = 16;
+      if (left + 360 > containerRect.width - 16) {
+        left = containerRect.width - 360 - 16;
+      }
+      if (top + 285 > containerRect.height - 16) {
+        top = rect.top - containerRect.top - 285 - 8;
+      }
+    } else {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      if (left < 16) left = 16;
+      if (left + 360 > viewportWidth - 16) {
+        left = viewportWidth - 360 - 16;
+      }
+      if (top + 280 > viewportHeight - 16) {
+        top = rect.top - 280 - 8;
+      }
     }
 
     setPopupPosition({ top, left });
@@ -218,7 +247,7 @@ export default function MainContent() {
     }
   };
   return (
-    <div className="flex-1 h-full overflow-hidden bg-transparent p-0 font-sans text-gray-800 relative z-10 flex flex-col gap-2">
+    <div ref={containerRef} className="flex-1 h-full overflow-hidden bg-transparent p-0 font-sans text-gray-800 relative z-10 flex flex-col gap-2">
       <style dangerouslySetInnerHTML={{__html: `
         .table-scroll-container::-webkit-scrollbar {
           width: 6px;
@@ -966,7 +995,7 @@ export default function MainContent() {
           {/* Popover Card */}
           <div
             id="ai-report-popup"
-            className="fixed z-50 timeline-popup bg-white border border-[#002fbe]/25 rounded-xl shadow-2xl p-3 w-[360px] animate-fadeIn flex flex-col gap-2.5 font-sans"
+            className="absolute z-50 timeline-popup bg-white border border-[#002fbe]/25 rounded-xl shadow-2xl p-3 w-[360px] animate-fadeIn flex flex-col gap-2.5 font-sans"
             style={{
               left: aiReportPopupPosition ? `${aiReportPopupPosition.left}px` : '50%',
               top: aiReportPopupPosition ? `${aiReportPopupPosition.top}px` : '50%',
@@ -1089,7 +1118,7 @@ export default function MainContent() {
             {/* Popover Card */}
             <div
               id={`timeline-popup-${selectedTimelineStage}`}
-              className="fixed z-50 timeline-popup bg-white border border-[#002fbe]/25 rounded-xl shadow-2xl p-3 w-[360px] animate-fadeIn flex flex-col gap-2.5 font-sans"
+              className="absolute z-50 timeline-popup bg-white border border-[#002fbe]/25 rounded-xl shadow-2xl p-3 w-[360px] animate-fadeIn flex flex-col gap-2.5 font-sans"
               style={{
                 left: popupPosition ? `${popupPosition.left}px` : '50%',
                 top: popupPosition ? `${popupPosition.top}px` : '50%',
