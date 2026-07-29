@@ -13,6 +13,8 @@ export default function PropertyDetailsPage() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeMenu, setActiveMenu] = useState('property-details');
 
+  const [activeAction, setActiveAction] = useState<string | null>(null);
+
   return (
     <div className="flex flex-col h-screen bg-[#f0f2f5] overflow-hidden font-sans">
       {/* Topbar at the top, full-width */}
@@ -29,10 +31,10 @@ export default function PropertyDetailsPage() {
         {activeMenu === 'property-details' && (
           <div className="flex-1 min-h-0 flex flex-col p-2.5 gap-2 overflow-hidden">
             <div className="flex-1 min-h-0">
-              <MainContent />
+              <MainContent activeAction={activeAction} setActiveAction={setActiveAction} />
             </div>
             <div className="shrink-0 select-none">
-              <FooterActionBar />
+              <FooterActionBar activeAction={activeAction} setActiveAction={setActiveAction} />
             </div>
           </div>
         )}

@@ -1,16 +1,20 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Copy, Camera, Star, Ruler, BarChart2 } from 'lucide-react';
+import { Copy, Camera, Star, Ruler, BarChart2, ChevronLeft } from 'lucide-react';
 
 export default function PropertySummary({
   activeTab = 'property',
   onHoverImg,
-  onClickImg
+  onClickImg,
+  activeAction = null,
+  setActiveAction = () => {}
 }: {
   activeTab?: string;
   onHoverImg?: (url: string | null) => void;
   onClickImg?: (url: string) => void;
+  activeAction?: string | null;
+  setActiveAction?: (action: string | null) => void;
 }) {
   const [copied, setCopied] = useState(false);
   const [description, setDescription] = useState('निवासी');
@@ -30,12 +34,24 @@ export default function PropertySummary({
         {/* Background visual accent */}
         <div className="absolute top-0 left-0 w-1.5 h-full bg-[#002fbe] rounded-l-xl pointer-events-none" />
 
+        {activeAction && (
+          <button 
+            onClick={() => setActiveAction(null)}
+            className="absolute top-2.5 left-3.5 flex items-center gap-1 px-2.5 py-1 rounded bg-[#eff6ff] hover:bg-blue-150/15 border border-blue-250 text-[#002fbe] font-extrabold text-[8.5px] uppercase tracking-wider shadow-2xs cursor-pointer transition-all z-30"
+          >
+            <ChevronLeft size={11} className="shrink-0" />
+            <span>Back</span>
+          </button>
+        )}
+
         {/* 1. Image Section */}
         <div
           onMouseEnter={() => onHoverImg && onHoverImg("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")}
           onMouseLeave={() => onHoverImg && onHoverImg(null)}
           onClick={() => onClickImg && onClickImg("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")}
-          className="relative w-36 h-24 shrink-0 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:border-blue-300 transition-colors bg-gray-50"
+          className={`relative w-36 h-24 shrink-0 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:border-blue-300 transition-colors bg-gray-50 transition-all ${
+            activeAction ? 'mt-6' : ''
+          }`}
         >
           <img
             src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&auto=format&fit=crop"
@@ -48,7 +64,7 @@ export default function PropertySummary({
         </div>
 
         {/* 2. Property ID / UPIC & Holder Block */}
-        <div className="min-w-[210px] space-y-2 shrink-0">
+        <div className={`min-w-[210px] space-y-2 shrink-0 transition-all ${activeAction ? 'mt-6' : ''}`}>
           <div>
             <div className="text-[10px] text-[#002fbe] uppercase tracking-wider font-extrabold">Property ID / UPIC</div>
             <div className="flex items-center gap-1.5 mt-0.5 relative">
@@ -113,7 +129,7 @@ export default function PropertySummary({
         </div>
 
         {/* 3. Specifications Middle Columns */}
-        <div className="flex-[2.5] grid grid-cols-3 gap-x-4 gap-y-2 min-w-[320px] text-[10px] shrink-0 leading-tight">
+        <div className={`flex-[2.5] grid grid-cols-3 gap-x-4 gap-y-2 min-w-[320px] text-[10px] shrink-0 leading-tight transition-all ${activeAction ? 'mt-6' : ''}`}>
           {/* Column 1 */}
           <div className="space-y-2.5">
             <div>
@@ -164,7 +180,7 @@ export default function PropertySummary({
         </div>
 
         {/* 4. Areas Column Layout */}
-        <div className="min-w-[175px] shrink-0 space-y-2">
+        <div className={`min-w-[175px] shrink-0 space-y-2 transition-all ${activeAction ? 'mt-6' : ''}`}>
           {/* Plot Area */}
           <div className="flex items-center gap-2 group relative">
             <div className="bg-blue-50 p-1.5 rounded-md mt-0.5 shrink-0 border border-blue-100/55">
@@ -201,46 +217,73 @@ export default function PropertySummary({
       </div>
 
       {/* Card 2: Property Grade & Index */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col justify-between w-[220px] shrink-0 relative group">
-        <div className="text-[11px] text-[#002fbe] font-extrabold uppercase tracking-wider select-none">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4.5 flex flex-col justify-between w-[220px] shrink-0 relative group">
+        {/* local linear gradient definition for half star */}
+        <svg width="0" height="0" className="absolute">
+          <defs>
+            <linearGradient id="star-half-orange" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="50%" stopColor="#f97316" />
+              <stop offset="50%" stopColor="#e5e7eb" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <div className="text-[13px] text-[#002fbe] font-extrabold select-none leading-none">
           Property Grade & Index
         </div>
-        <div className="flex text-orange-500 gap-1 mt-2.5">
-          <Star size={20} fill="currentColor" className="stroke-orange-500" />
-          <Star size={20} fill="currentColor" className="stroke-orange-500" />
-          <Star size={20} fill="currentColor" className="stroke-orange-500" />
-          <Star size={20} fill="currentColor" className="stroke-orange-500" />
-          <Star size={20} className="text-gray-300" />
+        <div className="flex text-orange-500 gap-1 mt-2.5 justify-start">
+          <Star size={22} fill="#f97316" className="stroke-orange-500" />
+          <Star size={22} fill="#f97316" className="stroke-orange-500" />
+          <Star size={22} fill="#f97316" className="stroke-orange-500" />
+          <Star size={22} fill="#f97316" className="stroke-orange-500" />
+          <Star size={22} fill="url(#star-half-orange)" className="stroke-orange-500" />
+          <Star size={22} fill="transparent" className="stroke-gray-300" />
         </div>
-        <div className="text-[#002fbe] font-extrabold text-[24px] flex items-baseline leading-none mt-2.5">
+        <div className="text-[#002fbe] font-black text-[36px] flex items-baseline leading-none mt-2.5 select-all font-sans">
           <span>6.2</span>
-          <span className="text-[12px] text-gray-400 font-bold ml-1">/ 7</span>
+          <span className="text-[15px] text-[#002fbe] font-extrabold ml-1.5">/ 7</span>
         </div>
-        <div className="text-green-600 text-[9.5px] font-extrabold uppercase tracking-wider mt-2.5">
+        <div className="text-green-600 text-[11.5px] font-extrabold tracking-wide mt-2.5">
           A+ Grade • Excellent Property
         </div>
       </div>
 
       {/* Card 3: Health Score */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col justify-between w-[250px] shrink-0 relative group">
-        <div className="text-[11px] text-[#002fbe] font-extrabold uppercase tracking-wider select-none">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4.5 flex flex-col justify-between w-[250px] shrink-0 relative group">
+        <div className="text-[13px] text-[#002fbe] font-extrabold select-none leading-none">
           Health Score
         </div>
-        <div className="flex items-center gap-4 mt-2.5">
-          {/* Circle progress */}
-          <div className="relative w-18 h-18 flex items-center justify-center shrink-0">
-            <svg className="w-18 h-18 transform -rotate-90">
-              <circle cx="36" cy="36" r="28" stroke="#e5e7eb" strokeWidth="5" fill="transparent" />
-              <circle cx="36" cy="36" r="28" stroke="#047857" strokeWidth="5" fill="transparent" strokeDasharray="175.9" strokeDashoffset="14.1" strokeLinecap="round" />
+        <div className="flex items-center gap-4 mt-3 flex-grow">
+          {/* Circle progress - Enlarged & Aligned */}
+          <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
+            <svg width="80" height="80" viewBox="0 0 80 80" className="transform -rotate-90">
+              <circle cx="40" cy="40" r="32" stroke="#10b981" strokeWidth="6.5" strokeOpacity="0.2" fill="transparent" />
+              <circle 
+                cx="40" 
+                cy="40" 
+                r="32" 
+                stroke="#047857" 
+                strokeWidth="6.5" 
+                fill="transparent" 
+                strokeDasharray="201.1" 
+                strokeDashoffset="16.1" 
+                strokeLinecap="round" 
+                className="transition-all duration-1000 ease-out"
+              />
             </svg>
-            <div className="absolute font-extrabold text-[14px] text-[#002fbe]">92%</div>
+            <div className="absolute font-black text-[15px] text-[#002fbe] select-none">92%</div>
           </div>
 
           {/* Stats right */}
-          <div className="flex-1 flex flex-col justify-center leading-none">
-            <div className="font-extrabold text-[22px] text-green-700">92%</div>
-            <div className="text-green-600 text-[11px] font-bold mt-1.5">Excellent</div>
-            <button className="text-[#002fbe] text-[9.5px] font-bold mt-2.5 hover:underline text-left cursor-pointer border border-[#002fbe]/20 rounded px-2.5 py-0.5 bg-blue-50/30 w-fit">
+          <div className="flex-1 flex flex-col justify-center leading-none pl-1">
+            <div>
+              <div className="font-black text-[25px] text-[#002fbe] select-all">92%</div>
+              <div className="text-green-600 text-[12px] font-extrabold mt-1 select-none flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                Excellent
+              </div>
+            </div>
+            <button className="text-[#002fbe] text-[9.5px] font-extrabold mt-2 hover:bg-[#002fbe] hover:text-white transition-all text-center cursor-pointer border border-[#002fbe] rounded-lg px-2.5 py-1 bg-white w-fit shadow-2xs select-none">
               View Details
             </button>
           </div>

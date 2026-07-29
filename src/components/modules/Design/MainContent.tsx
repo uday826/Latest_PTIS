@@ -35,8 +35,9 @@ import {
   FolderOpen,
   SlidersHorizontal
 } from 'lucide-react';
+import ActionViews from './ActionViews';
 
-export default function MainContent() {
+export default function MainContent({ activeAction = null, setActiveAction = () => {} }: { activeAction?: string | null; setActiveAction?: (action: string | null) => void } = {}) {
   const [activeTab, setActiveTab] = useState<'property' | 'kyc' | 'society' | 'building' | 'discount' | 'old'>('property');
   const [selectedTimelineStage, setSelectedTimelineStage] = useState<string | null>(null);
   const [timelinePopupOpen, setTimelinePopupOpen] = useState(false);
@@ -271,10 +272,21 @@ export default function MainContent() {
         }
       `}} />
 
-      <PropertySummary activeTab={activeTab} onHoverImg={(url) => handleHoverImage(url, 'left')} onClickImg={openPreview} />
+      <PropertySummary 
+        activeTab={activeTab} 
+        onHoverImg={(url) => handleHoverImage(url, 'left')} 
+        onClickImg={openPreview} 
+        activeAction={activeAction} 
+        setActiveAction={setActiveAction} 
+      />
 
-      {/* Unified Two-Column Layout (Zero scrolling, tight dimensions for perfect vertical fit) */}
-      <div className="flex-1 min-h-0 flex gap-2.5 overflow-hidden">
+      {activeAction ? (
+        <div className="flex-grow flex-1 min-h-0 bg-white border border-gray-200 rounded-xl p-3.5 shadow-md overflow-hidden relative select-none">
+          <ActionViews activeAction={activeAction} setActiveAction={setActiveAction} />
+        </div>
+      ) : (
+        /* Unified Two-Column Layout (Zero scrolling, tight dimensions for perfect vertical fit) */
+        <div className="flex-1 min-h-0 flex gap-2.5 overflow-hidden">
 
         {/* Left Column: Badges, Tabs, and Tab Content Card */}
         <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
@@ -969,6 +981,7 @@ export default function MainContent() {
           </div>
         </div>
       </div>
+      )}
 
 
       {/* Floating Hover Zoom Portal */}
