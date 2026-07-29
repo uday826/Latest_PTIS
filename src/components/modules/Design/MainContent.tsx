@@ -45,6 +45,42 @@ export default function MainContent() {
   const [timelineError, setTimelineError] = useState<string | null>(null);
   const hasRetriedApproval = React.useRef(false);
 
+  // AI Property Inspector Popups
+  const [aiReportPopupOpen, setAiReportPopupOpen] = useState(false);
+  const [aiReportPopupPosition, setAiReportPopupPosition] = useState<{ top: number; left: number } | null>(null);
+  const [aiReportLoading, setAiReportLoading] = useState(false);
+
+  const handleViewReportClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    let left = rect.left + rect.width / 2 - 180;
+    let top = rect.bottom + 8;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    if (left < 16) left = 16;
+    if (left + 360 > viewportWidth - 16) {
+      left = viewportWidth - 360 - 16;
+    }
+    if (top + 280 > viewportHeight - 16) {
+      top = rect.top - 280 - 8;
+    }
+
+    setAiReportPopupPosition({ top, left });
+    setAiReportPopupOpen(true);
+    setAiReportLoading(true);
+    setTimeout(() => {
+      setAiReportLoading(false);
+    }, 400);
+  };
+
+  const closeAiReport = () => {
+    setAiReportPopupOpen(false);
+    const targetId = activeTab !== 'property' ? 'ai-view-report-btn-full' : 'ai-view-report-btn-half';
+    const btnEl = document.getElementById(targetId);
+    if (btnEl) {
+      btnEl.focus();
+    }
+  };
+
   const loadStageDetails = (stageId: string) => {
     setTimelineLoading(true);
     setTimelineError(null);
@@ -107,15 +143,16 @@ export default function MainContent() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         closeStageDetails();
+        closeAiReport();
       }
     };
-    if (timelinePopupOpen) {
+    if (timelinePopupOpen || aiReportPopupOpen) {
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [timelinePopupOpen, selectedTimelineStage]);
+  }, [timelinePopupOpen, aiReportPopupOpen, selectedTimelineStage]);
 
   const [activeSubTab, setActiveSubTab] = useState<'rateable' | 'capital' | 'dual' | 'reassessment'>('rateable');
   const [selectedImg, setSelectedImg] = useState<string | null>(null);
@@ -781,7 +818,7 @@ export default function MainContent() {
                         </div>
                       </div>
                     </div>
-                    <button className="w-full mt-2 py-1 bg-[#edf2ff] hover:bg-[#dbeafe] border border-[#3b82f6]/20 text-[#3b82f6] font-extrabold text-[8.5px] rounded transition-all text-center cursor-pointer shadow-xs shrink-0">View All Report</button>
+                    <button id="ai-view-report-btn-full" onClick={handleViewReportClick} aria-expanded={aiReportPopupOpen} aria-controls="ai-report-popup" className="w-full mt-2 py-1 bg-[#edf2ff] hover:bg-[#dbeafe] border border-[#3b82f6]/20 text-[#3b82f6] font-extrabold text-[8.5px] rounded transition-all text-center cursor-pointer shadow-xs shrink-0">View All Report</button>
                   </div>
                 ) : (
                   <div className="shrink-0 grid grid-cols-5 gap-3 mt-1 items-stretch">
@@ -810,7 +847,7 @@ export default function MainContent() {
                           </div>
                         </div>
                       </div>
-                      <button className="w-full mt-2 py-1 bg-[#edf2ff] hover:bg-[#dbeafe] border border-[#3b82f6]/20 text-[#3b82f6] font-extrabold text-[8.5px] rounded transition-all text-center cursor-pointer shadow-xs shrink-0">View All Report</button>
+                      <button id="ai-view-report-btn-half" onClick={handleViewReportClick} aria-expanded={aiReportPopupOpen} aria-controls="ai-report-popup" className="w-full mt-2 py-1 bg-[#edf2ff] hover:bg-[#dbeafe] border border-[#3b82f6]/20 text-[#3b82f6] font-extrabold text-[8.5px] rounded transition-all text-center cursor-pointer shadow-xs shrink-0">View All Report</button>
                     </div>
 
                     {/* Validation Status */}
@@ -916,6 +953,122 @@ export default function MainContent() {
             <img src={hoveredImg} className="w-full h-full object-contain" alt="Complete Zoom" />
           </div>
         </div>
+      )}
+
+      {aiReportPopupOpen && (
+        <>
+          {/* Click-outside backdrop overlay */}
+          <div 
+            className="fixed inset-0 z-40 bg-transparent" 
+            onClick={closeAiReport}
+          />
+          
+          {/* Popover Card */}
+          <div
+            id="ai-report-popup"
+            className="fixed z-50 timeline-popup bg-white border border-[#002fbe]/25 rounded-xl shadow-2xl p-3 w-[360px] animate-fadeIn flex flex-col gap-2.5 font-sans"
+            style={{
+              left: aiReportPopupPosition ? `${aiReportPopupPosition.left}px` : '50%',
+              top: aiReportPopupPosition ? `${aiReportPopupPosition.top}px` : '50%',
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ai-popup-title"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100 shrink-0">
+              <span id="ai-popup-title" className="font-extrabold text-[#002fbe] text-[10px] uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                AI Property Inspection Report
+              </span>
+              <button
+                onClick={closeAiReport}
+                className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-700 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#002fbe]"
+                aria-label="Close report details"
+              >
+                <span className="text-[12px] font-bold">×</span>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-grow overflow-y-auto max-h-[220px] pr-0.5 text-[8.5px] no-scrollbar">
+              {aiReportLoading ? (
+                <div className="py-8 flex flex-col items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-[#002fbe] border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-gray-400 font-bold">Generating AI compliance audit...</span>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {/* Status Banner */}
+                  <div className="bg-red-50 border border-red-200 text-red-700 p-1.5 rounded font-black text-center uppercase tracking-wider mb-1 shrink-0 flex items-center justify-center gap-1">
+                    <span>8 Compliance Issues Flagged</span>
+                  </div>
+
+                  {/* Issues */}
+                  <div className="space-y-1.5 text-gray-700 font-medium">
+                    <div className="p-1 border border-red-100/50 bg-red-50/10 rounded flex flex-col gap-0.5">
+                      <div className="flex justify-between items-center">
+                        <span className="font-black text-red-650">Possible Commercial Use</span>
+                        <span className="bg-red-50 text-red-600 border border-red-200 font-extrabold px-1 rounded text-[7px] scale-90">High</span>
+                      </div>
+                      <p className="text-gray-450 leading-tight">Satellite change detection matches garage/shop activities.</p>
+                    </div>
+
+                    <div className="p-1 border border-red-100/50 bg-red-50/10 rounded flex flex-col gap-0.5">
+                      <div className="flex justify-between items-center">
+                        <span className="font-black text-red-650">Area Difference Found</span>
+                        <span className="bg-red-50 text-red-600 border border-red-200 font-extrabold px-1 rounded text-[7px] scale-90">High</span>
+                      </div>
+                      <p className="text-gray-450 leading-tight">Sat footprint shows 440 m² vs 400 m² reported (10% diff).</p>
+                    </div>
+
+                    <div className="p-1 border border-orange-100/50 bg-orange-50/10 rounded flex flex-col gap-0.5">
+                      <div className="flex justify-between items-center">
+                        <span className="font-black text-orange-600">Parking Provision Missing</span>
+                        <span className="bg-orange-50 text-orange-500 border border-orange-200 font-extrabold px-1 rounded text-[7px] scale-90">Medium</span>
+                      </div>
+                      <p className="text-gray-450 leading-tight">Design permits lack ground-floor parking configurations.</p>
+                    </div>
+
+                    <div className="p-1 border border-orange-100/50 bg-orange-50/10 rounded flex flex-col gap-0.5">
+                      <div className="flex justify-between items-center">
+                        <span className="font-black text-orange-600">Fire NOC Expired</span>
+                        <span className="bg-orange-50 text-orange-500 border border-orange-200 font-extrabold px-1 rounded text-[7px] scale-90">Medium</span>
+                      </div>
+                      <p className="text-gray-450 leading-tight">Fire NOC has expired in Dec 2023.</p>
+                    </div>
+
+                    <div className="p-1 border border-blue-100/50 bg-blue-50/10 rounded flex flex-col gap-0.5">
+                      <div className="flex justify-between items-center">
+                        <span className="font-black text-blue-650">Duplicate Water Connection</span>
+                        <span className="bg-blue-50 text-blue-600 border border-blue-200 font-extrabold px-1 rounded text-[7px] scale-90">Low</span>
+                      </div>
+                      <p className="text-gray-450 leading-tight">Tap connection matches another property unit in Wing B.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Actions footer */}
+            {!aiReportLoading && (
+              <div className="pt-1.5 border-t border-gray-100 flex justify-end gap-1.5 shrink-0">
+                <button
+                  onClick={() => alert('Printing full AI audit summary...')}
+                  className="px-2.5 py-1 border border-gray-200 text-gray-600 hover:bg-gray-50 text-[8.5px] font-black rounded cursor-pointer transition-colors focus:outline-none"
+                >
+                  Print
+                </button>
+                <button
+                  onClick={() => alert('Opening full detailed dashboard report...')}
+                  className="flex-1 text-center py-1 bg-blue-50 border border-blue-200 hover:bg-blue-100/75 text-[#002fbe] text-[8.5px] font-black rounded cursor-pointer transition-colors focus:outline-none focus:ring-1 focus:ring-[#002fbe]"
+                >
+                  View Full Audit Details
+                </button>
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {timelinePopupOpen && selectedTimelineStage && (() => {
