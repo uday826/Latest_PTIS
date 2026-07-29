@@ -325,11 +325,24 @@ export default function MainContent({
         }
 
         /* Fluid Typography based on Container Width - Lighter, more compact style matching Image 1 */
+        .summary-card {
+          padding: 11px 12px !important;
+          transition: all 200ms ease;
+        }
+        .summary-card-icon-wrapper {
+          width: 33px !important;
+          height: 33px !important;
+          transition: all 200ms ease;
+        }
+        .summary-card-icon {
+          width: 16px !important;
+          height: 16px !important;
+        }
         .summary-card-title {
           font-size: clamp(11px, 0.75cqw, 13px) !important;
           font-weight: 600 !important;
           color: #002fbe !important;
-          line-height: 1.2;
+          line-height: 1.25 !important;
           word-break: normal;
           overflow-wrap: normal;
           hyphens: none;
@@ -338,17 +351,66 @@ export default function MainContent({
           font-size: clamp(10px, 0.65cqw, 11px) !important;
           font-weight: 500 !important;
           color: #6b7280 !important;
-          line-height: 1.35;
+          line-height: 1.35 !important;
         }
         .summary-card-primary-value {
-          font-size: clamp(13px, 1cqw, 15.5px) !important;
+          font-size: clamp(14px, 1cqw, 16px) !important;
           font-weight: 600 !important;
-          line-height: 1.15;
+          line-height: 1.15 !important;
+        }
+        .summary-card-secondary-value {
+          font-size: clamp(12px, 0.85cqw, 14px) !important;
+          font-weight: 500 !important;
+          line-height: 1.15 !important;
         }
         .summary-card-growth {
-          font-size: clamp(10.5px, 0.7cqw, 12px) !important;
+          font-size: clamp(11px, 0.75cqw, 12px) !important;
+          font-weight: 600 !important;
+          line-height: 1.15 !important;
+        }
+        .summary-card-total-value {
+          font-size: clamp(11px, 0.75cqw, 12px) !important;
+          font-weight: 700 !important;
+          line-height: 1.15 !important;
+        }
+        .summary-card-subtext {
+          font-size: 8.5px !important;
           font-weight: 500 !important;
-          line-height: 1.15;
+          color: #9ca3af !important;
+          line-height: 1.15 !important;
+        }
+
+        /* Sidebar Expanded / Narrow Container Width styles (< 1350px) */
+        @container (max-width: 1350px) {
+          .summary-card {
+            padding: 9px 10px !important;
+          }
+          .summary-card-icon-wrapper {
+            width: 30px !important;
+            height: 30px !important;
+          }
+          .summary-card-icon {
+            width: 15px !important;
+            height: 15px !important;
+          }
+          .summary-card-title {
+            font-size: 11px !important;
+          }
+          .summary-card-primary-value {
+            font-size: 14px !important;
+          }
+          .summary-card-secondary-value {
+            font-size: 12px !important;
+          }
+          .summary-card-growth {
+            font-size: 11px !important;
+          }
+          .summary-card-total-value {
+            font-size: 11px !important;
+          }
+          .timeline-card-wrapper {
+            padding: 8px !important;
+          }
         }
       `}} />
 
@@ -686,16 +748,16 @@ export default function MainContent({
               </div>
                 <div className="summary-timeline-row grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 shrink-0 select-none items-stretch">
                   {/* Card 1: Area Comparison */}
-                  <div className="border border-[#002fbe]/20 rounded-xl p-2 bg-white shadow-sm grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0 h-full">
-                    <div className="bg-[#eff6ff] w-8 h-8 rounded-lg grid place-items-center text-[#002fbe] shrink-0">
-                      <FileText size={15} />
+                  <div className="summary-card border border-[#002fbe]/20 rounded-xl bg-white shadow-sm grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0 h-full">
+                    <div className="summary-card-icon-wrapper bg-[#eff6ff] rounded-lg grid place-items-center text-[#002fbe] shrink-0">
+                      <FileText className="summary-card-icon" size={15} />
                     </div>
                     <div className="leading-tight min-w-0">
-                      <div className="font-semibold text-[#002fbe] mb-0.5 leading-tight summary-card-title">Area Comparison</div>
-                      <div className="space-y-0.5 text-gray-500 font-medium summary-card-label">
-                        <div>OLD: <span className="font-semibold text-gray-700 summary-card-primary-value whitespace-nowrap">400.00 m²</span></div>
-                        <div>NEW: <span className="font-semibold text-[#002fbe] summary-card-primary-value whitespace-nowrap">440.00 m²</span></div>
-                        <div className="text-[#10b981] font-medium summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                      <div className="summary-card-title">Area Comparison</div>
+                      <div className="space-y-0.5 summary-card-label">
+                        <div>OLD: <span className="summary-card-secondary-value text-gray-700 whitespace-nowrap">400.00 m²</span></div>
+                        <div>NEW: <span className="summary-card-primary-value text-[#002fbe] whitespace-nowrap">440.00 m²</span></div>
+                        <div className="summary-card-growth text-[#10b981] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                           <span>↑ 40 m² (10%)</span>
                         </div>
                       </div>
@@ -703,16 +765,16 @@ export default function MainContent({
                   </div>
 
                   {/* Card 2: Rateable Value */}
-                  <div className="border border-[#002fbe]/20 rounded-xl p-2 bg-white shadow-sm grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0 h-full">
-                    <div className="bg-[#f5f3ff] w-8 h-8 rounded-lg grid place-items-center text-[#8b5cf6] shrink-0">
-                      <UserCheck size={15} />
+                  <div className="summary-card border border-[#002fbe]/20 rounded-xl bg-white shadow-sm grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0 h-full">
+                    <div className="summary-card-icon-wrapper bg-[#f5f3ff] rounded-lg grid place-items-center text-[#8b5cf6] shrink-0">
+                      <UserCheck className="summary-card-icon" size={15} />
                     </div>
                     <div className="leading-tight min-w-0">
-                      <div className="font-semibold text-[#002fbe] mb-0.5 leading-tight summary-card-title">Rateable Value (RV)</div>
-                      <div className="space-y-0.5 text-gray-500 font-medium summary-card-label">
-                        <div>OLD: <span className="font-semibold text-gray-700 summary-card-primary-value whitespace-nowrap">₹16,20,000</span></div>
-                        <div>NEW: <span className="font-semibold text-[#002fbe] summary-card-primary-value whitespace-nowrap">₹18,45,000</span></div>
-                        <div className="text-[#10b981] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                      <div className="summary-card-title">Rateable Value (RV)</div>
+                      <div className="space-y-0.5 summary-card-label">
+                        <div>OLD: <span className="summary-card-secondary-value text-gray-700 whitespace-nowrap">₹16,20,000</span></div>
+                        <div>NEW: <span className="summary-card-primary-value text-[#002fbe] whitespace-nowrap">₹18,45,000</span></div>
+                        <div className="summary-card-growth text-[#10b981] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                           <span>↑ 13.89%</span>
                         </div>
                       </div>
@@ -720,16 +782,16 @@ export default function MainContent({
                   </div>
 
                   {/* Card 3: Tax (Current) */}
-                  <div className="border border-[#002fbe]/20 rounded-xl p-2 bg-white shadow-sm grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0 h-full">
-                    <div className="bg-[#ecfdf5] w-8 h-8 rounded-lg grid place-items-center text-[#10b981] shrink-0">
-                      <Percent size={15} />
+                  <div className="summary-card border border-[#002fbe]/20 rounded-xl bg-white shadow-sm grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0 h-full">
+                    <div className="summary-card-icon-wrapper bg-[#ecfdf5] rounded-lg grid place-items-center text-[#10b981] shrink-0">
+                      <Percent className="summary-card-icon" size={15} />
                     </div>
                     <div className="leading-tight min-w-0">
-                      <div className="font-semibold text-[#002fbe] mb-0.5 leading-tight summary-card-title">Tax (Current)</div>
-                      <div className="space-y-0.5 text-gray-500 font-medium summary-card-label">
-                        <div>OLD: <span className="font-semibold text-gray-700 summary-card-primary-value whitespace-nowrap">₹16,500</span></div>
-                        <div>NEW: <span className="font-semibold text-[#002fbe] summary-card-primary-value whitespace-nowrap">₹18,752</span></div>
-                        <div className="text-[#10b981] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                      <div className="summary-card-title">Tax (Current)</div>
+                      <div className="space-y-0.5 summary-card-label">
+                        <div>OLD: <span className="summary-card-secondary-value text-gray-700 whitespace-nowrap">₹16,500</span></div>
+                        <div>NEW: <span className="summary-card-primary-value text-[#002fbe] whitespace-nowrap">₹18,752</span></div>
+                        <div className="summary-card-growth text-[#10b981] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                           <span>↑ 13.65%</span>
                         </div>
                       </div>
@@ -737,16 +799,16 @@ export default function MainContent({
                   </div>
 
                   {/* Card 4: Collection */}
-                  <div className="border border-[#002fbe]/20 rounded-xl p-2 bg-white shadow-sm grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0 h-full">
-                    <div className="bg-[#fef2f2] w-8 h-8 rounded-lg grid place-items-center text-[#ef4444] shrink-0">
-                      <Wallet size={15} />
+                  <div className="summary-card border border-[#002fbe]/20 rounded-xl bg-white shadow-sm grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0 h-full">
+                    <div className="summary-card-icon-wrapper bg-[#fef2f2] rounded-lg grid place-items-center text-[#ef4444] shrink-0">
+                      <Wallet className="summary-card-icon" size={15} />
                     </div>
                     <div className="leading-tight min-w-0">
-                      <div className="font-semibold text-[#002fbe] mb-0.5 leading-tight summary-card-title">Collection</div>
-                      <div className="space-y-0.5 text-gray-500 font-medium summary-card-label">
-                        <div>Paid: <span className="font-semibold text-green-600 summary-card-primary-value whitespace-nowrap">₹12,456</span></div>
-                        <div className="text-red-500">O/S: <span className="font-semibold text-[#ef4444] summary-card-primary-value whitespace-nowrap">₹6,296</span></div>
-                        <div className="text-[#002fbe] font-semibold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                      <div className="summary-card-title">Collection</div>
+                      <div className="space-y-0.5 summary-card-label">
+                        <div>Paid: <span className="summary-card-secondary-value text-green-600 whitespace-nowrap">₹12,456</span></div>
+                        <div>O/s: <span className="summary-card-secondary-value text-red-500 whitespace-nowrap">₹6,296</span></div>
+                        <div className="summary-card-total-value text-[#002fbe] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                           <span>Total: ₹18,752</span>
                         </div>
                       </div>
@@ -754,18 +816,18 @@ export default function MainContent({
                   </div>
 
                   {/* Card 5: Additional Revenue */}
-                  <div className="border border-[#002fbe]/20 rounded-xl p-2 bg-white shadow-sm grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0 h-full">
-                    <div className="bg-[#eff6ff] w-8 h-8 rounded-lg grid place-items-center text-[#002fbe] shrink-0">
-                      <Briefcase size={15} />
+                  <div className="summary-card border border-[#002fbe]/20 rounded-xl bg-white shadow-sm grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0 h-full">
+                    <div className="summary-card-icon-wrapper bg-[#eff6ff] rounded-lg grid place-items-center text-[#002fbe] shrink-0">
+                      <Briefcase className="summary-card-icon" size={15} />
                     </div>
                     <div className="leading-tight min-w-0">
-                      <div className="font-semibold text-[#002fbe] mb-0.5 leading-tight summary-card-title">Additional Revenue</div>
-                      <div className="text-gray-500 font-medium summary-card-label">This Assessment</div>
+                      <div className="summary-card-title">Additional Revenue</div>
+                      <div className="summary-card-label">This Assessment</div>
                       <div className="flex flex-wrap items-baseline gap-1 mt-0.5">
-                        <span className="font-semibold text-[#002fbe] leading-none summary-card-primary-value whitespace-nowrap">₹1,12,892</span>
-                        <span className="text-[#10b981] font-semibold summary-card-growth shrink-0 whitespace-nowrap">↑ 12.4%</span>
+                        <span className="summary-card-primary-value text-[#002fbe] leading-none whitespace-nowrap">₹1,12,892</span>
+                        <span className="summary-card-growth text-[#10b981] shrink-0 whitespace-nowrap">↑ 12.4%</span>
                       </div>
-                      <div className="text-gray-400 font-medium mt-0.5 text-[8px] lg:text-[9px] whitespace-nowrap">(Tax+Pen+Int)</div>
+                      <div className="summary-card-subtext whitespace-nowrap">(Tax+Pen+Int)</div>
                     </div>
                   </div>
 
