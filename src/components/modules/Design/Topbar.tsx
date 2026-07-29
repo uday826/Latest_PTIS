@@ -165,11 +165,11 @@ export default function Topbar({ activeValuationModel, setActiveValuationModel }
               onClick={() => setActiveValuationModel('rv')}
               onMouseEnter={() => setActiveTooltip('rv')}
               onMouseLeave={() => setActiveTooltip(null)}
-              className={`px-3 py-1 text-[11px] lg:text-xs font-semibold rounded-full transition-all duration-200 outline-none cursor-pointer whitespace-nowrap ${
-                activeValuationModel === 'rv'
-                  ? 'bg-[#e1b942] text-[#1e2b58] shadow-md font-bold'
-                  : 'text-gray-200 hover:bg-white/5 hover:text-white'
-              }`}
+              style={{
+                backgroundColor: activeValuationModel === 'rv' ? '#e1b942' : 'transparent',
+                color: activeValuationModel === 'rv' ? '#1e2b58' : '#e5e7eb',
+              }}
+              className="px-3.5 py-1 text-[11px] lg:text-xs font-bold rounded-full transition-all duration-250 outline-none cursor-pointer whitespace-nowrap shadow-xs"
             >
               Rateable Value (RV)
             </button>
@@ -180,11 +180,11 @@ export default function Topbar({ activeValuationModel, setActiveValuationModel }
               onClick={() => setActiveValuationModel('cvm')}
               onMouseEnter={() => setActiveTooltip('cvm')}
               onMouseLeave={() => setActiveTooltip(null)}
-              className={`px-3 py-1 text-[11px] lg:text-xs font-semibold rounded-full transition-all duration-200 outline-none cursor-pointer whitespace-nowrap ${
-                activeValuationModel === 'cvm'
-                  ? 'bg-[#e1b942] text-[#1e2b58] shadow-md font-bold'
-                  : 'text-gray-200 hover:bg-white/5 hover:text-white'
-              }`}
+              style={{
+                backgroundColor: activeValuationModel === 'cvm' ? '#e1b942' : 'transparent',
+                color: activeValuationModel === 'cvm' ? '#1e2b58' : '#e5e7eb',
+              }}
+              className="px-3.5 py-1 text-[11px] lg:text-xs font-bold rounded-full transition-all duration-250 outline-none cursor-pointer whitespace-nowrap shadow-xs"
             >
               Capital Value Method (CVM)
             </button>
@@ -195,11 +195,11 @@ export default function Topbar({ activeValuationModel, setActiveValuationModel }
               onClick={() => setActiveValuationModel('dual')}
               onMouseEnter={() => setActiveTooltip('dual')}
               onMouseLeave={() => setActiveTooltip(null)}
-              className={`px-3 py-1 text-[11px] lg:text-xs font-semibold rounded-full transition-all duration-200 outline-none cursor-pointer whitespace-nowrap ${
-                activeValuationModel === 'dual'
-                  ? 'bg-[#e1b942] text-[#1e2b58] shadow-md font-bold'
-                  : 'text-gray-200 hover:bg-white/5 hover:text-white'
-              }`}
+              style={{
+                backgroundColor: activeValuationModel === 'dual' ? '#e1b942' : 'transparent',
+                color: activeValuationModel === 'dual' ? '#1e2b58' : '#e5e7eb',
+              }}
+              className="px-3.5 py-1 text-[11px] lg:text-xs font-bold rounded-full transition-all duration-250 outline-none cursor-pointer whitespace-nowrap shadow-xs"
             >
               Dual Method View (RV + CVM)
             </button>
@@ -217,15 +217,15 @@ export default function Topbar({ activeValuationModel, setActiveValuationModel }
         {/* Right Side: Search and Actions */}
         <div className="flex items-center justify-between lg:justify-end gap-4 lg:gap-6 w-full lg:w-auto">
           
-          {/* Search Bar & Filter */}
-          <div className="flex-grow lg:flex-grow-0 max-w-md lg:max-w-[280px] xl:max-w-md flex items-center gap-2 relative">
+          {/* Search Bar & Filter - Enlarged for better visibility */}
+          <div className="flex-grow lg:flex-grow-0 max-w-md lg:max-w-[380px] xl:max-w-[480px] flex items-center gap-2 relative">
             <div className="relative flex items-center flex-1 bg-white rounded-md text-gray-800 overflow-hidden shadow-inner border border-gray-200">
               <input
                 type="text"
                 placeholder="Search Property No., Owner, Mobile, UPIC..."
-                className="w-full py-1.5 pl-3 pr-8 text-xs outline-none placeholder-gray-400 font-medium bg-transparent"
+                className="w-full py-2 pl-4 pr-8 text-xs outline-none placeholder-gray-400 font-semibold bg-transparent"
               />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                 <ChevronDown size={14} />
               </div>
             </div>
