@@ -680,9 +680,12 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
                     </div>
                     <div className="flex-grow text-[9px] leading-tight min-w-0">
                       <div className="font-extrabold text-[#002fbe] text-[8.5px] uppercase tracking-wider mb-0.5 leading-tight">Collection</div>
-                      <div className="space-y-0.5 font-bold text-[8px]">
-                        <div className="text-gray-500">Paid: <span className="font-black text-green-600 text-[9.5px] whitespace-nowrap">₹12,456</span></div>
+                      <div className="space-y-0.5 text-gray-500 font-bold text-[8px]">
+                        <div>Paid: <span className="font-black text-green-600 text-[9.5px] whitespace-nowrap">₹12,456</span></div>
                         <div className="text-red-500">O/S: <span className="font-black text-[#ef4444] text-[9.5px] whitespace-nowrap">₹6,296</span></div>
+                        <div className="text-[#002fbe] font-black text-[8.5px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                          <span>Total: ₹18,752</span>
+                        </div>
                       </div>
                     </div>
                   </div>
