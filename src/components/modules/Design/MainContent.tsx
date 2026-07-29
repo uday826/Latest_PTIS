@@ -76,7 +76,7 @@ export default function MainContent() {
         }
       `}} />
 
-      <PropertySummary onHoverImg={(url) => handleHoverImage(url, 'left')} onClickImg={openPreview} />
+      <PropertySummary activeTab={activeTab} onHoverImg={(url) => handleHoverImage(url, 'left')} onClickImg={openPreview} />
 
       {/* Unified Two-Column Layout (Zero scrolling, tight dimensions for perfect vertical fit) */}
       <div className="flex-1 min-h-0 flex gap-2.5 overflow-hidden">
@@ -110,7 +110,7 @@ export default function MainContent() {
           <div className="flex-1 min-h-0 bg-white border border-gray-200 rounded-lg p-2.5 shadow-sm flex flex-col overflow-y-auto no-scrollbar gap-2">
 
             {/* PANEL 1: Property Details */}
-            {activeTab === 'property' && (
+            {(activeTab === 'property' || activeTab === 'kyc' || activeTab === 'society' || activeTab === 'discount' || activeTab === 'old' || activeTab === 'building') && (
               <div className="flex flex-col gap-2 transition-all duration-300 animate-fadeIn">
 
                 {/* Floor / Component Details Header & Buttons */}
@@ -602,7 +602,33 @@ export default function MainContent() {
                 </div>
 
                 {/* Bottom Row Grid (Spans AI Inspector & Validation Status on Left + Service Availability & Timeline on Right) */}
-                <div className="shrink-0 grid grid-cols-5 gap-3 mt-1 items-stretch">
+                {activeTab === 'building' ? (
+                  /* AI Property Inspector full width for Building Permission tab */
+                  <div className="shrink-0 bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md select-none w-full mt-1">
+                    <div>
+                      <div className="flex items-center justify-between border-b border-gray-100 pb-1.5 mb-2 shrink-0">
+                        <h3 className="font-extrabold text-[#002fbe] text-[9.5px] uppercase tracking-wider">AI Property Inspector</h3>
+                        <span className="text-gray-400 text-[8.5px] font-bold">Issues Found (8)</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1.5 text-[8.5px]">
+                        <div className="space-y-1.5 font-bold">
+                          <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><AlertTriangle size={10} className="text-orange-500 fill-orange-50" /><span>Possible Commercial Use</span></span><span className="bg-[#fef2f2] text-[#ef4444] border border-[#ef4444]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">High</span></div>
+                          <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><AlertTriangle size={10} className="text-orange-500 fill-orange-50" /><span>Area Difference Found</span></span><span className="bg-[#fef2f2] text-[#ef4444] border border-[#ef4444]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">High</span></div>
+                          <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><AlertTriangle size={10} className="text-amber-500 fill-amber-50" /><span>Parking Provision Missing</span></span><span className="bg-[#fff7ed] text-[#f97316] border border-[#f97316]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">Medium</span></div>
+                          <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><AlertTriangle size={10} className="text-amber-500 fill-amber-50" /><span>Fire NOC Expired</span></span><span className="bg-[#fff7ed] text-[#f97316] border border-[#f97316]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">Medium</span></div>
+                        </div>
+                        <div className="space-y-1.5 sm:border-l sm:border-gray-100 sm:pl-3 font-bold">
+                          <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><AlertTriangle size={10} className="text-blue-500 fill-blue-50" /><span>Duplicate Water Connection</span></span><span className="bg-[#ecfdf5] text-[#10b981] border border-[#10b981]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">Low</span></div>
+                          <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><AlertTriangle size={10} className="text-blue-500 fill-blue-50" /><span>Occupancy Change Detected</span></span><span className="bg-[#ecfdf5] text-[#10b981] border border-[#10b981]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">Low</span></div>
+                          <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><AlertTriangle size={10} className="text-blue-500 fill-blue-50" /><span>Boundary Wall Missing</span></span><span className="bg-[#ecfdf5] text-[#10b981] border border-[#10b981]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">Low</span></div>
+                          <div className="flex items-center justify-between"><span className="flex items-center gap-1 text-gray-655"><AlertTriangle size={10} className="text-blue-500 fill-blue-50" /><span>Taxpayer Mobile Not Verified</span></span><span className="bg-[#ecfdf5] text-[#10b981] border border-[#10b981]/20 font-bold px-1.5 py-0.5 rounded text-[8px]">Low</span></div>
+                        </div>
+                      </div>
+                    </div>
+                    <button className="w-full mt-2 py-1 bg-[#edf2ff] hover:bg-[#dbeafe] border border-[#3b82f6]/20 text-[#3b82f6] font-extrabold text-[8.5px] rounded transition-all text-center cursor-pointer shadow-xs shrink-0">View All Report</button>
+                  </div>
+                ) : (
+                  <div className="shrink-0 grid grid-cols-5 gap-3 mt-1 items-stretch">
 
                   {/* Left Column (3/5 width): AI Property Inspector & Validation Status */}
                   <div className="col-span-3 grid grid-cols-2 gap-3 overflow-hidden items-stretch">
@@ -683,15 +709,11 @@ export default function MainContent() {
                     </div>
                   </div>
                 </div>
+              )}
               </div>
             )}
 
             {/* Panel 2-6 definitions */}
-            {activeTab === 'kyc' && <div className="p-3 text-xs text-gray-500">KYC Details loaded.</div>}
-            {activeTab === 'society' && <div className="p-3 text-xs text-gray-500">Society Details loaded.</div>}
-            {activeTab === 'building' && <div className="p-3 text-xs text-gray-500">Building Permission loaded.</div>}
-            {activeTab === 'discount' && <div className="p-3 text-xs text-gray-500">Discounts & Social concessions.</div>}
-            {activeTab === 'old' && <div className="p-3 text-xs text-gray-500">Historical records loaded.</div>}
           </div>
         </div>
 
@@ -777,7 +799,11 @@ function Tab({ icon, label, active, onClick }: any) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-4 py-2 rounded-t-lg transition-all cursor-pointer text-[10px] font-bold border-t border-l border-r relative z-10 -mb-[1px] ${active ? 'bg-[#002fbe] text-white border-[#002fbe]' : 'hover:bg-gray-100 bg-white border-gray-200 text-[#002fbe]'}`}
+      className={`flex items-center gap-1.5 px-4 py-2 rounded-t-lg transition-all cursor-pointer text-[10px] font-bold border-t border-l border-r relative z-10 -mb-[1px] ${
+        active 
+          ? 'bg-white text-[#002fbe] border-[#002fbe] border-b-white z-20' 
+          : 'bg-[#002fbe] text-white border-transparent hover:bg-[#002fbe]/90 z-10'
+      }`}
     >
       {icon}
       <span>{label}</span>
