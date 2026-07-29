@@ -248,8 +248,12 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
     }
   };
   return (
-    <div ref={containerRef} className="flex-1 h-full overflow-hidden bg-transparent p-0 font-sans text-gray-800 relative z-10 flex flex-col gap-2">
+    <div ref={containerRef} className="dashboard-content flex-1 h-full overflow-hidden bg-transparent p-0 font-sans text-gray-800 relative z-10 flex flex-col gap-2">
       <style dangerouslySetInnerHTML={{__html: `
+        .dashboard-content {
+          container-type: inline-size;
+          width: 100%;
+        }
         .table-scroll-container::-webkit-scrollbar {
           width: 6px;
           height: 6px;
@@ -264,11 +268,73 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
         .table-scroll-container::-webkit-scrollbar-track {
           background: transparent;
         }
-        @media (min-width: 1024px) {
+        
+        /* Smooth transitions for sidebar toggles */
+        .summary-timeline-row {
+          transition: grid-template-columns 200ms ease, width 200ms ease, gap 200ms ease;
+        }
+
+        /* Container Queries for Summary Card Row */
+        @container (min-width: 1200px) {
           .summary-timeline-row {
             display: grid !important;
-            grid-template-columns: repeat(5, minmax(100px, 1.1fr)) minmax(380px, 3.5fr) !important;
+            grid-template-columns: repeat(5, minmax(150px, 1fr)) minmax(420px, 2.8fr) !important;
+            gap: 10px !important;
           }
+          .timeline-card-wrapper {
+            grid-column: span 1 / span 1 !important;
+          }
+        }
+        @container (min-width: 768px) and (max-width: 1199px) {
+          .summary-timeline-row {
+            display: grid !important;
+            grid-template-columns: repeat(5, minmax(120px, 1fr)) !important;
+            gap: 10px !important;
+          }
+          .timeline-card-wrapper {
+            grid-column: span 5 / span 5 !important;
+          }
+        }
+        @container (min-width: 560px) and (max-width: 767px) {
+          .summary-timeline-row {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(120px, 1fr)) !important;
+            gap: 8px !important;
+          }
+          .timeline-card-wrapper {
+            grid-column: span 3 / span 3 !important;
+          }
+        }
+        @container (max-width: 559px) {
+          .summary-timeline-row {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+          }
+          .timeline-card-wrapper {
+            grid-column: span 1 / span 1 !important;
+          }
+        }
+
+        /* Fluid Typography based on Container Width */
+        .summary-card-title {
+          font-size: clamp(11px, 1cqw, 14px);
+          line-height: 1.2;
+          word-break: normal;
+          overflow-wrap: normal;
+          hyphens: none;
+        }
+        .summary-card-label {
+          font-size: clamp(10px, 0.85cqw, 12px);
+          line-height: 1.25;
+        }
+        .summary-card-primary-value {
+          font-size: clamp(13px, 1.2cqw, 17px);
+          line-height: 1.15;
+        }
+        .summary-card-growth {
+          font-size: clamp(10px, 0.9cqw, 13px);
+          line-height: 1.15;
         }
       `}} />
 
@@ -606,16 +672,16 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
               </div>
                 <div className="summary-timeline-row grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 shrink-0 select-none items-stretch">
                   {/* Card 1: Area Comparison */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-1.5 xl:p-2.5 bg-white shadow-md flex items-center gap-1 xl:gap-2 min-w-0">
-                    <div className="bg-[#eff6ff] w-8 h-8 xl:w-9 h-9 rounded-full flex items-center justify-center text-[#002fbe] shrink-0">
-                      <FileText size={16} />
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md grid grid-cols-[auto_1fr] items-center gap-x-2.5 min-w-0 h-full">
+                    <div className="bg-[#eff6ff] w-9 h-9 rounded-full grid place-items-center text-[#002fbe] shrink-0">
+                      <FileText size={18} />
                     </div>
-                    <div className="flex-grow leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] text-[10px] xl:text-[12px] uppercase tracking-wider mb-0.5 leading-tight truncate">Area Comparison</div>
-                      <div className="space-y-0.5 text-gray-500 font-bold text-[8.5px] xl:text-[10px]">
-                        <div>OLD: <span className="font-extrabold text-gray-800 text-[10px] xl:text-[12px] whitespace-nowrap">400.00 m²</span></div>
-                        <div>NEW: <span className="font-extrabold text-[#002fbe] text-[11px] xl:text-[13px] whitespace-nowrap">440.00 m²</span></div>
-                        <div className="text-[#10b981] font-extrabold text-[9px] xl:text-[11px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                    <div className="leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] uppercase tracking-wider mb-0.5 leading-tight summary-card-title">Area Comparison</div>
+                      <div className="space-y-0.5 text-gray-500 font-bold summary-card-label">
+                        <div>OLD: <span className="font-extrabold text-gray-800 summary-card-primary-value whitespace-nowrap">400.00 m²</span></div>
+                        <div>NEW: <span className="font-extrabold text-[#002fbe] summary-card-primary-value whitespace-nowrap">440.00 m²</span></div>
+                        <div className="text-[#10b981] font-extrabold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                           <span>↑ 40 m² (10%)</span>
                         </div>
                       </div>
@@ -623,16 +689,16 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
                   </div>
 
                   {/* Card 2: Rateable Value */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-1.5 xl:p-2.5 bg-white shadow-md flex items-center gap-1 xl:gap-2 min-w-0">
-                    <div className="bg-[#f5f3ff] w-8 h-8 xl:w-9 h-9 rounded-full flex items-center justify-center text-[#8b5cf6] shrink-0">
-                      <UserCheck size={16} />
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md grid grid-cols-[auto_1fr] items-center gap-x-2.5 min-w-0 h-full">
+                    <div className="bg-[#f5f3ff] w-9 h-9 rounded-full grid place-items-center text-[#8b5cf6] shrink-0">
+                      <UserCheck size={18} />
                     </div>
-                    <div className="flex-grow leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] text-[10px] xl:text-[12px] uppercase tracking-wider mb-0.5 leading-tight truncate">Rateable Value (RV)</div>
-                      <div className="space-y-0.5 text-gray-500 font-bold text-[8.5px] xl:text-[10px]">
-                        <div>OLD: <span className="font-extrabold text-gray-800 text-[10px] xl:text-[12px] whitespace-nowrap">₹16,20,000</span></div>
-                        <div>NEW: <span className="font-extrabold text-[#002fbe] text-[11px] xl:text-[13px] whitespace-nowrap">₹18,45,000</span></div>
-                        <div className="text-[#10b981] font-extrabold text-[9px] xl:text-[11px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                    <div className="leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] uppercase tracking-wider mb-0.5 leading-tight summary-card-title">Rateable Value (RV)</div>
+                      <div className="space-y-0.5 text-gray-500 font-bold summary-card-label">
+                        <div>OLD: <span className="font-extrabold text-gray-800 summary-card-primary-value whitespace-nowrap">₹16,20,000</span></div>
+                        <div>NEW: <span className="font-extrabold text-[#002fbe] summary-card-primary-value whitespace-nowrap">₹18,45,000</span></div>
+                        <div className="text-[#10b981] font-extrabold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                           <span>↑ 13.89%</span>
                         </div>
                       </div>
@@ -640,16 +706,16 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
                   </div>
 
                   {/* Card 3: Tax (Current) */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-1.5 xl:p-2.5 bg-white shadow-md flex items-center gap-1 xl:gap-2 min-w-0">
-                    <div className="bg-[#ecfdf5] w-8 h-8 xl:w-9 h-9 rounded-full flex items-center justify-center text-[#10b981] shrink-0">
-                      <Percent size={16} />
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md grid grid-cols-[auto_1fr] items-center gap-x-2.5 min-w-0 h-full">
+                    <div className="bg-[#ecfdf5] w-9 h-9 rounded-full grid place-items-center text-[#10b981] shrink-0">
+                      <Percent size={18} />
                     </div>
-                    <div className="flex-grow leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] text-[10px] xl:text-[12px] uppercase tracking-wider mb-0.5 leading-tight truncate">Tax (Current)</div>
-                      <div className="space-y-0.5 text-gray-500 font-bold text-[8.5px] xl:text-[10px]">
-                        <div>OLD: <span className="font-extrabold text-gray-800 text-[10px] xl:text-[12px] whitespace-nowrap">₹16,500</span></div>
-                        <div>NEW: <span className="font-extrabold text-[#002fbe] text-[11px] xl:text-[13px] whitespace-nowrap">₹18,752</span></div>
-                        <div className="text-[#10b981] font-extrabold text-[9px] xl:text-[11px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                    <div className="leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] uppercase tracking-wider mb-0.5 leading-tight summary-card-title">Tax (Current)</div>
+                      <div className="space-y-0.5 text-gray-500 font-bold summary-card-label">
+                        <div>OLD: <span className="font-extrabold text-gray-800 summary-card-primary-value whitespace-nowrap">₹16,500</span></div>
+                        <div>NEW: <span className="font-extrabold text-[#002fbe] summary-card-primary-value whitespace-nowrap">₹18,752</span></div>
+                        <div className="text-[#10b981] font-extrabold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                           <span>↑ 13.65%</span>
                         </div>
                       </div>
@@ -657,16 +723,16 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
                   </div>
 
                   {/* Card 4: Collection */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-1.5 xl:p-2.5 bg-white shadow-md flex items-center gap-1 xl:gap-2 min-w-0">
-                    <div className="bg-[#fef2f2] w-8 h-8 xl:w-9 h-9 rounded-full flex items-center justify-center text-[#ef4444] shrink-0">
-                      <Wallet size={16} />
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md grid grid-cols-[auto_1fr] items-center gap-x-2.5 min-w-0 h-full">
+                    <div className="bg-[#fef2f2] w-9 h-9 rounded-full grid place-items-center text-[#ef4444] shrink-0">
+                      <Wallet size={18} />
                     </div>
-                    <div className="flex-grow leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] text-[10px] xl:text-[12px] uppercase tracking-wider mb-0.5 leading-tight truncate">Collection</div>
-                      <div className="space-y-0.5 text-gray-500 font-bold text-[8.5px] xl:text-[10px]">
-                        <div>Paid: <span className="font-extrabold text-green-600 text-[11px] xl:text-[13px] whitespace-nowrap">₹12,456</span></div>
-                        <div className="text-red-500">O/S: <span className="font-extrabold text-[#ef4444] text-[11px] xl:text-[13px] whitespace-nowrap">₹6,296</span></div>
-                        <div className="text-[#002fbe] font-extrabold text-[9px] xl:text-[11px] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                    <div className="leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] uppercase tracking-wider mb-0.5 leading-tight summary-card-title">Collection</div>
+                      <div className="space-y-0.5 text-gray-500 font-bold summary-card-label">
+                        <div>Paid: <span className="font-extrabold text-green-600 summary-card-primary-value whitespace-nowrap">₹12,456</span></div>
+                        <div className="text-red-500">O/S: <span className="font-extrabold text-[#ef4444] summary-card-primary-value whitespace-nowrap">₹6,296</span></div>
+                        <div className="text-[#002fbe] font-extrabold summary-card-growth flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                           <span>Total: ₹18,752</span>
                         </div>
                       </div>
@@ -674,23 +740,23 @@ export default function MainContent({ activeAction = null, setActiveAction = () 
                   </div>
 
                   {/* Card 5: Additional Revenue */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-1.5 xl:p-2.5 bg-white shadow-md flex items-center gap-1 xl:gap-2 min-w-0">
-                    <div className="bg-[#eff6ff] w-8 h-8 xl:w-9 h-9 rounded-full flex items-center justify-center text-[#002fbe] shrink-0">
-                      <Briefcase size={16} />
+                  <div className="border border-[#002fbe]/25 rounded-xl p-2.5 bg-white shadow-md grid grid-cols-[auto_1fr] items-center gap-x-2.5 min-w-0 h-full">
+                    <div className="bg-[#eff6ff] w-9 h-9 rounded-full grid place-items-center text-[#002fbe] shrink-0">
+                      <Briefcase size={18} />
                     </div>
-                    <div className="flex-grow leading-tight min-w-0">
-                      <div className="font-extrabold text-[#002fbe] text-[10px] xl:text-[12px] uppercase tracking-wider mb-0.5 leading-tight truncate">Additional Revenue</div>
-                      <div className="text-gray-500 text-[8.5px] xl:text-[10px] font-bold">This Assessment</div>
-                      <div className="flex items-baseline gap-1 mt-0.5 whitespace-nowrap">
-                        <span className="font-extrabold text-[12px] xl:text-[14px] text-[#002fbe] leading-none">₹1,12,892</span>
-                        <span className="text-[#10b981] font-extrabold text-[9px] xl:text-[11px] shrink-0">↑ 12.4%</span>
+                    <div className="leading-tight min-w-0">
+                      <div className="font-extrabold text-[#002fbe] uppercase tracking-wider mb-0.5 leading-tight summary-card-title">Additional Revenue</div>
+                      <div className="text-gray-500 font-bold summary-card-label">This Assessment</div>
+                      <div className="flex flex-wrap items-baseline gap-1 mt-0.5">
+                        <span className="font-extrabold text-[#002fbe] leading-none summary-card-primary-value whitespace-nowrap">₹1,12,892</span>
+                        <span className="text-[#10b981] font-extrabold summary-card-growth shrink-0 whitespace-nowrap">↑ 12.4%</span>
                       </div>
-                      <div className="text-gray-400 text-[7.5px] xl:text-[8.5px] font-semibold mt-0.5">(Tax+Pen+Int)</div>
+                      <div className="text-gray-400 font-semibold mt-0.5 text-[8px] lg:text-[9px] whitespace-nowrap">(Tax+Pen+Int)</div>
                     </div>
                   </div>
 
                   {/* Card 6: Property Timeline */}
-                  <div className="border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex flex-col justify-between select-none col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-1 min-w-0">
+                  <div className="timeline-card-wrapper border border-[#002fbe]/25 rounded-xl p-2 bg-white shadow-md flex flex-col justify-between select-none col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-1 min-w-0">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-1 shrink-0">
                       <span className="font-extrabold text-[#002fbe] text-[11px] lg:text-[12px] uppercase tracking-wider">Property Timeline</span>
                       <Clock size={12} className="text-[#002fbe]" />
