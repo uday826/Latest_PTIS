@@ -890,42 +890,44 @@ function ViewCollectionView({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <div className="flex flex-col h-full gap-2.5 font-sans animate-fadeIn p-1">
-      <div className="flex items-center justify-between border-b border-gray-100 pb-2 shrink-0 select-none">
-        <div className="flex items-center gap-1.5">
-          <div className="bg-orange-50 text-orange-600 p-1.5 rounded-lg border border-orange-100">
-            <Wallet size={14} />
+    <div className="flex flex-col h-full gap-3 font-sans animate-fadeIn p-1">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-gray-100 pb-2.5 shrink-0 select-none">
+        <div className="flex items-center gap-2">
+          <div className="bg-[#eff6ff] text-[#002fbe] p-2 rounded-xl border border-blue-100 shadow-xs">
+            <Wallet size={16} />
           </div>
           <div>
-            <h2 className="font-extrabold text-[#1e2b58] text-[11px] uppercase tracking-wider leading-none">Property Collection & Payment History</h2>
-            <span className="text-gray-400 text-[8.5px] font-bold mt-1 block leading-none">Property ID: 1290082181</span>
+            <h2 className="font-extrabold text-[#1e2b58] text-xs uppercase tracking-wider leading-none">Property Collection & Payment History</h2>
+            <span className="text-gray-400 text-[9px] font-semibold mt-1 block leading-none">Property ID: 1290082181</span>
           </div>
         </div>
         <button 
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-650 font-extrabold hover:bg-gray-100 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-all"
+          className="text-gray-400 hover:text-gray-600 font-extrabold hover:bg-gray-150 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95"
         >
-          <X size={12} />
+          <X size={14} />
         </button>
       </div>
 
-      <div className="flex gap-2.5 shrink-0 select-none text-[9px] font-bold text-gray-600 bg-gray-50 border border-gray-155 p-3 rounded-xl items-center">
-        <div className="flex-1 flex flex-col gap-1.5">
-          <span>Search Receipt/Txn</span>
+      {/* Filter Bar */}
+      <div className="flex flex-wrap lg:flex-nowrap gap-3 shrink-0 select-none text-[9.5px] font-bold text-gray-550 bg-white border border-gray-200/80 p-3.5 rounded-xl items-center shadow-xs">
+        <div className="flex-1 min-w-[200px] flex flex-col gap-1.5">
+          <span className="text-gray-450 uppercase tracking-wider text-[8px] font-extrabold">Search Receipt/Txn</span>
           <input 
             type="text" 
             placeholder="Search by Receipt or Transaction ID..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="p-1.5 bg-white border border-gray-200 rounded text-[9px] font-bold text-gray-800 outline-none" 
+            className="w-full py-1.5 px-3 bg-gray-50/50 border border-gray-200 focus:border-[#002fbe]/40 rounded-lg text-[10px] font-semibold text-gray-800 outline-none transition-colors" 
           />
         </div>
-        <div className="flex flex-col gap-1.5 w-28">
-          <span>Filter Year</span>
+        <div className="flex flex-col gap-1.5 w-full sm:w-32">
+          <span className="text-gray-455 uppercase tracking-wider text-[8px] font-extrabold">Filter Year</span>
           <select 
             value={selectedYear} 
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="p-1.5 bg-white border border-gray-200 rounded text-[9px] font-bold text-gray-800 outline-none"
+            className="w-full py-1.5 px-2 bg-gray-50/50 border border-gray-200 focus:border-[#002fbe]/40 rounded-lg text-[10px] font-semibold text-gray-800 outline-none transition-colors cursor-pointer"
           >
             <option value="All">All Years</option>
             <option value="2026-27">2026-27</option>
@@ -934,12 +936,12 @@ function ViewCollectionView({ onClose }: { onClose: () => void }) {
             <option value="2023-24">2023-24</option>
           </select>
         </div>
-        <div className="flex flex-col gap-1.5 w-32">
-          <span>Filter Payment Status</span>
+        <div className="flex flex-col gap-1.5 w-full sm:w-36">
+          <span className="text-gray-455 uppercase tracking-wider text-[8px] font-extrabold">Filter Payment Status</span>
           <select 
             value={selectedStatus} 
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="p-1.5 bg-white border border-gray-200 rounded text-[9px] font-bold text-gray-800 outline-none"
+            className="w-full py-1.5 px-2 bg-gray-50/50 border border-gray-200 focus:border-[#002fbe]/40 rounded-lg text-[10px] font-semibold text-gray-800 outline-none transition-colors cursor-pointer"
           >
             <option value="All">All Statuses</option>
             <option value="Completed">Completed</option>
@@ -948,70 +950,72 @@ function ViewCollectionView({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      {/* Expanded Table Scroll Container */}
-      <div className="flex-grow flex-1 min-h-0 overflow-x-auto overflow-y-auto border border-gray-200 rounded-xl relative table-scroll-container">
-        <table className="w-full text-[9px] text-center border-collapse bg-white table-auto">
-          <thead className="bg-gray-50 border-b border-gray-200 font-extrabold whitespace-nowrap sticky top-0 z-20 text-[#1e2b58] uppercase text-[7.5px] tracking-wider">
-            <tr>
-              <th className="py-2.5 px-2 border-r border-gray-150">Receipt No</th>
-              <th className="py-2.5 px-2 border-r border-gray-150">Date</th>
-              <th className="py-2.5 px-2 border-r border-gray-150">FY</th>
-              <th className="py-2.5 px-2 border-r border-gray-150">Mode</th>
-              <th className="py-2.5 px-2 border-r border-gray-150">Txn ID</th>
-              <th className="py-2.5 px-2 border-r border-gray-150">Paid Amount (₹)</th>
-              <th className="py-2.5 px-2 border-r border-gray-150">Status</th>
-              <th className="py-2.5 px-2 border-r border-gray-150">Collector</th>
-              <th className="py-2.5 px-2">Actions</th>
+      {/* Modern Table Container */}
+      <div className="flex-grow flex-1 min-h-[220px] overflow-x-auto overflow-y-auto border border-gray-200 rounded-xl relative shadow-xs bg-white table-scroll-container">
+        <table className="w-full text-[9px] text-center border-collapse table-auto">
+          <thead>
+            <tr className="bg-gray-50/80 border-b border-gray-200 font-extrabold text-[#1e2b58] uppercase text-[7.5px] tracking-wider sticky top-0 z-20 whitespace-nowrap">
+              <th className="py-3 px-3 text-left font-bold border-r border-gray-200/50">Receipt No</th>
+              <th className="py-3 px-3 font-bold border-r border-gray-200/50">Date</th>
+              <th className="py-3 px-3 font-bold border-r border-gray-200/50">FY</th>
+              <th className="py-3 px-3 font-bold border-r border-gray-200/50">Mode</th>
+              <th className="py-3 px-3 font-bold border-r border-gray-200/50">Txn ID</th>
+              <th className="py-3 px-3 font-bold border-r border-gray-200/50">Paid Amount (₹)</th>
+              <th className="py-3 px-3 font-bold border-r border-gray-200/50">Status</th>
+              <th className="py-3 px-3 font-bold border-r border-gray-200/50">Collector</th>
+              <th className="py-3 px-3 font-bold">Actions</th>
             </tr>
           </thead>
           <tbody className="font-semibold text-gray-700 whitespace-nowrap text-[9.5px]">
             {filteredRecords.length === 0 ? (
               <tr>
-                <td colSpan={9} className="py-10 text-center text-gray-400 font-bold">
+                <td colSpan={9} className="py-12 text-center text-gray-400 font-extrabold">
                   No payment collection records found.
                 </td>
               </tr>
             ) : (
               filteredRecords.map((rec, i) => (
-                <tr key={i} className="hover:bg-gray-50/50 border-b border-gray-155">
-                  <td className="py-2.5 px-2 text-[#002fbe] font-black border-r border-gray-150">{rec.receipt}</td>
-                  <td className="py-2.5 px-2 border-r border-gray-150 text-gray-500">{rec.date}</td>
-                  <td className="py-2.5 px-2 border-r border-gray-150 font-bold">{rec.year}</td>
-                  <td className="py-2.5 px-2 border-r border-gray-150 text-gray-500">{rec.mode}</td>
-                  <td className="py-2.5 px-2 border-r border-gray-150 text-gray-655 tabular-nums">{rec.txn}</td>
-                  <td className="py-2.5 px-2 border-r border-gray-150 font-black text-gray-855 tabular-nums">₹{rec.amount}</td>
-                  <td className="py-2.5 px-2 border-r border-gray-150">
-                    <span className={`px-2 py-0.5 border rounded-full text-[8px] font-black ${
+                <tr key={i} className="hover:bg-slate-50/50 border-b border-gray-150 transition-colors">
+                  <td className="py-3 px-3 text-left text-[#002fbe] font-extrabold border-r border-gray-150/40">{rec.receipt}</td>
+                  <td className="py-3 px-3 border-r border-gray-150/40 text-gray-500 font-medium">{rec.date}</td>
+                  <td className="py-3 px-3 border-r border-gray-150/40 font-bold text-slate-800">{rec.year}</td>
+                  <td className="py-3 px-3 border-r border-gray-150/40 text-gray-500 font-medium">{rec.mode}</td>
+                  <td className="py-3 px-3 border-r border-gray-150/40 text-gray-600 font-mono text-[9px]">{rec.txn}</td>
+                  <td className="py-3 px-3 border-r border-gray-150/40 font-bold text-gray-900 tabular-nums text-[10.5px]">₹{rec.amount}</td>
+                  <td className="py-3 px-3 border-r border-gray-150/40">
+                    <span className={`px-2.5 py-0.5 border rounded-full text-[8px] font-bold shadow-xs ${
                       rec.status === 'Completed'
-                        ? 'bg-green-50 text-green-700 border-green-200'
-                        : 'bg-amber-50 text-amber-700 border-amber-200'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50'
+                        : 'bg-amber-50 text-amber-700 border-amber-200/50'
                     }`}>
                       {rec.status}
                     </span>
                   </td>
-                  <td className="py-2.5 px-2 border-r border-gray-150 text-gray-450">{rec.collector}</td>
-                  <td className="py-2.5 px-2 flex justify-center gap-1.5">
-                    <button 
-                      onClick={() => alert(`Viewing receipt: ${rec.receipt}`)}
-                      className="p-1 hover:bg-gray-150 rounded text-[#002fbe] cursor-pointer"
-                      title="View Receipt"
-                    >
-                      <Eye size={12} />
-                    </button>
-                    <button 
-                      onClick={() => alert(`Printing receipt: ${rec.receipt}`)}
-                      className="p-1 hover:bg-gray-150 rounded text-green-600 cursor-pointer"
-                      title="Print Receipt"
-                    >
-                      <Printer size={12} />
-                    </button>
-                    <button 
-                      onClick={() => alert(`Downloading receipt PDF: ${rec.receipt}`)}
-                      className="p-1 hover:bg-gray-150 rounded text-[#3b82f6] cursor-pointer"
-                      title="Download Receipt"
-                    >
-                      <Download size={12} />
-                    </button>
+                  <td className="py-3 px-3 border-r border-gray-150/40 text-gray-500 font-medium">{rec.collector}</td>
+                  <td className="py-3 px-3">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <button 
+                        onClick={() => alert(`Viewing receipt: ${rec.receipt}`)}
+                        className="w-6 h-6 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-xs cursor-pointer active:scale-95"
+                        title="View Receipt"
+                      >
+                        <Eye size={12} />
+                      </button>
+                      <button 
+                        onClick={() => alert(`Printing receipt: ${rec.receipt}`)}
+                        className="w-6 h-6 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-xs cursor-pointer active:scale-95"
+                        title="Print Receipt"
+                      >
+                        <Printer size={12} />
+                      </button>
+                      <button 
+                        onClick={() => alert(`Downloading receipt PDF: ${rec.receipt}`)}
+                        className="w-6 h-6 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-xs cursor-pointer active:scale-95"
+                        title="Download Receipt"
+                      >
+                        <Download size={12} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -1486,12 +1490,12 @@ function DownloadGisView({ onClose }: { onClose: () => void }) {
   const [downloadStates, setDownloadStates] = useState<Record<string, { progress: number; status: string; success: boolean }>>({});
 
   const gisAssets = [
-    { id: 'report', title: 'GIS Summary Report', format: 'PDF', size: '2.4 MB', desc: 'Comprehensive tax parcel report containing area overlays, plot maps, and spatial assessments.', color: 'border-l-4 border-l-[#10b981]' },
-    { id: 'map', title: 'High-Res Satellite Map', format: 'PNG Image', size: '4.8 MB', desc: 'Pre-rendered high resolution image containing spatial polygon boundary lines matching the municipal register.', color: 'border-l-4 border-l-blue-500' },
-    { id: 'geojson', title: 'Boundary GeoJSON', format: 'GEOJSON', size: '150 KB', desc: 'Geospatial database vector nodes coordinates for property GIS borders mapping.', color: 'border-l-4 border-l-purple-500' },
-    { id: 'kml', title: 'Google Earth KML', format: 'KML Vector', size: '180 KB', desc: 'Keyhole Markup Language vector parameters containing coordinate polygons for standard viewer imports.', color: 'border-l-4 border-l-orange-500' },
-    { id: 'coordinates', title: 'Boundary Node Index', format: 'TXT Log', size: '12 KB', desc: 'Tab-delimited text list specifying physical corner coordinates (Latitude, Longitude, Altitude).', color: 'border-l-4 border-l-pink-500' },
-    { id: 'survey', title: 'Survey Inspector Report', format: 'PDF Report', size: '1.2 MB', desc: 'Verified field survey measurements sheet complete with audit parameters.', color: 'border-l-4 border-l-teal-500' }
+    { id: 'report', title: 'GIS Summary Report', format: 'PDF', size: '2.4 MB', desc: 'Comprehensive tax parcel report containing area overlays, plot maps, and spatial assessments.', color: 'border-l-4 border-l-emerald-500 bg-gradient-to-r from-emerald-500/5 to-transparent' },
+    { id: 'map', title: 'High-Res Satellite Map', format: 'PNG Image', size: '4.8 MB', desc: 'Pre-rendered high resolution image containing spatial polygon boundary lines matching the municipal register.', color: 'border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-500/5 to-transparent' },
+    { id: 'geojson', title: 'Boundary GeoJSON', format: 'GEOJSON', size: '150 KB', desc: 'Geospatial database vector nodes coordinates for property GIS borders mapping.', color: 'border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-500/5 to-transparent' },
+    { id: 'kml', title: 'Google Earth KML', format: 'KML Vector', size: '180 KB', desc: 'Keyhole Markup Language vector parameters containing coordinate polygons for standard viewer imports.', color: 'border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-500/5 to-transparent' },
+    { id: 'coordinates', title: 'Boundary Node Index', format: 'TXT Log', size: '12 KB', desc: 'Tab-delimited text list specifying physical corner coordinates (Latitude, Longitude, Altitude).', color: 'border-l-4 border-l-rose-500 bg-gradient-to-r from-rose-500/5 to-transparent' },
+    { id: 'survey', title: 'Survey Inspector Report', format: 'PDF Report', size: '1.2 MB', desc: 'Verified field survey measurements sheet complete with audit parameters.', color: 'border-l-4 border-l-teal-500 bg-gradient-to-r from-teal-500/5 to-transparent' }
   ];
 
   const handleDownload = (id: string, title: string, ext: string) => {
@@ -1532,26 +1536,27 @@ function DownloadGisView({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="flex flex-col h-full gap-3 font-sans animate-fadeIn p-1 select-none">
-      <div className="flex items-center justify-between border-b border-gray-100 pb-2 shrink-0">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-gray-100 pb-2.5 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="bg-green-50 text-[#22c55e] p-1.5 rounded-lg border border-green-100">
-            <Download size={14} />
+          <div className="bg-[#f0fdf4] text-emerald-600 p-2 rounded-xl border border-green-150 shadow-xs animate-pulse">
+            <Download size={16} />
           </div>
           <div>
-            <h2 className="font-extrabold text-[#1e2b58] text-[11px] uppercase tracking-wider leading-none">Download GIS Assets & Spatial Data</h2>
-            <span className="text-gray-400 text-[8.5px] font-bold mt-1 block leading-none">Interactive Export Center • Property ID: 1290082181</span>
+            <h2 className="font-extrabold text-[#1e2b58] text-xs uppercase tracking-wider leading-none">Download GIS Assets & Spatial Data</h2>
+            <span className="text-gray-400 text-[9px] font-semibold mt-1 block leading-none">Interactive Export Center • Property ID: 1290082181</span>
           </div>
         </div>
         <button 
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-655 font-extrabold hover:bg-gray-100 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-all"
+          className="text-gray-400 hover:text-gray-600 font-extrabold hover:bg-gray-150 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95"
         >
-          <X size={12} />
+          <X size={14} />
         </button>
       </div>
 
       {/* Expanded Grid Scrollwrapper */}
-      <div className="flex-grow flex-1 min-h-0 overflow-y-auto grid grid-cols-2 gap-3 p-0.5">
+      <div className="flex-grow flex-1 min-h-[220px] overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-3.5 p-0.5">
         {gisAssets.map((asset) => {
           const state = downloadStates[asset.id] || { progress: 0, status: '', success: false };
           const isDownloading = state.progress > 0 && state.progress < 100;
@@ -1559,14 +1564,14 @@ function DownloadGisView({ onClose }: { onClose: () => void }) {
           return (
             <div 
               key={asset.id} 
-              className={`bg-white border border-gray-200/80 rounded-xl p-3 flex flex-col justify-between gap-3 shadow-sm transition-all hover:shadow-md hover:border-gray-300 relative overflow-hidden ${asset.color}`}
+              className={`bg-white border border-gray-200/80 rounded-2xl p-4 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden ${asset.color}`}
             >
-              <div className="flex flex-col gap-1.5 text-[9px] leading-tight">
-                <div className="flex justify-between items-baseline">
-                  <span className="font-black text-[#1e2b58] text-[10px] uppercase tracking-wider">{asset.title}</span>
-                  <span className="text-gray-400 font-black text-[8px] bg-gray-50 border px-1.5 py-0.5 rounded uppercase">{asset.format} ({asset.size})</span>
+              <div className="flex flex-col gap-2 text-[9px] leading-tight">
+                <div className="flex justify-between items-baseline gap-2">
+                  <span className="font-extrabold text-[#1e2b58] text-[10.5px] uppercase tracking-wider">{asset.title}</span>
+                  <span className="text-[#002fbe] font-extrabold text-[8px] bg-blue-50 border border-blue-200/50 px-2 py-0.5 rounded-lg uppercase whitespace-nowrap shrink-0">{asset.format} ({asset.size})</span>
                 </div>
-                <p className="text-gray-450 font-semibold leading-normal">{asset.desc}</p>
+                <p className="text-gray-500 font-medium leading-normal">{asset.desc}</p>
               </div>
 
               {state.progress > 0 && (
@@ -1575,9 +1580,9 @@ function DownloadGisView({ onClose }: { onClose: () => void }) {
                     <span className="text-blue-600 animate-pulse">{state.status}</span>
                     <span className="tabular-nums font-black text-gray-900">{state.progress}%</span>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden border border-gray-200/50 mt-0.5">
+                  <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden border border-gray-200/50 mt-1">
                     <div 
-                      className={`h-full transition-all duration-305 ${state.success ? 'bg-green-500' : 'bg-blue-600'}`}
+                      className={`h-full transition-all duration-300 ${state.success ? 'bg-green-500' : 'bg-[#002fbe]'}`}
                       style={{ width: `${state.progress}%` }}
                     />
                   </div>
@@ -1586,21 +1591,21 @@ function DownloadGisView({ onClose }: { onClose: () => void }) {
 
               <div className="flex justify-end pt-1">
                 {state.success ? (
-                  <div className="flex items-center gap-1 text-green-700 font-black text-[8px] uppercase tracking-wider bg-green-50 border border-green-200 px-2 py-1 rounded animate-scaleUp">
-                    <CheckCircle2 size={10} />
+                  <div className="flex items-center gap-1.5 text-emerald-700 font-extrabold text-[8.5px] uppercase tracking-wider bg-emerald-50 border border-emerald-200/60 px-3 py-1 rounded-lg animate-scaleUp shadow-2xs">
+                    <CheckCircle2 size={11} className="text-emerald-600" />
                     <span>Download Ready</span>
                   </div>
                 ) : (
                   <button
                     onClick={() => handleDownload(asset.id, asset.title, asset.format.toLowerCase())}
                     disabled={isDownloading}
-                    className={`flex items-center gap-1.5 px-3 py-1 text-[9px] font-black rounded-lg cursor-pointer border transition-all ${
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 text-[9px] font-bold rounded-lg cursor-pointer border transition-all active:scale-[0.97] ${
                       isDownloading
-                        ? 'bg-gray-100 text-gray-400 border-gray-200/80'
-                        : 'bg-[#22c55e] hover:bg-green-600 text-white border-green-600 shadow-xs'
+                        ? 'bg-gray-100 text-gray-400 border-gray-200/80 cursor-not-allowed'
+                        : 'bg-[#002fbe] hover:bg-[#002598] text-white border-blue-650 shadow-xs'
                     }`}
                   >
-                    <Download size={10} />
+                    <Download size={11} />
                     <span>{isDownloading ? 'Processing...' : 'Export Asset'}</span>
                   </button>
                 )}
@@ -1629,8 +1634,8 @@ function MoreActionsView({ onClose }: { onClose: () => void }) {
     { id: 'merge', title: 'Registry Merging', icon: <Merge size={14} />, desc: 'Combine this property record with adjacent registers to construct a unified UPIC.', color: 'hover:border-indigo-500/50 hover:bg-indigo-50/10' },
     { id: 'disputed', title: 'Disputed Registry Flag', icon: <AlertTriangle size={14} />, desc: 'Flag this property registry record under active legal case or tax dispute.', color: 'hover:border-amber-500/50 hover:bg-amber-50/10' },
     { id: 'exempted', title: 'Exemption Assessment Class', icon: <ShieldCheck size={14} />, desc: 'Apply statutory property tax exemption classes (religious, public, charitable).', color: 'hover:border-teal-500/50 hover:bg-teal-50/10' },
-    { id: 'deactivate', title: 'Deactivate Property Record', icon: <Lock size={14} className="text-red-500" />, desc: 'Permanently deactivate property ID registration to halt tax cycles.', color: 'hover:border-red-500/50 hover:bg-red-50/10' },
-    { id: 'archive', title: 'Archive Property Record', icon: <Archive size={14} className="text-red-650" />, desc: 'Archive registry data file records from the active search databases.', color: 'hover:border-rose-500/50 hover:bg-rose-50/10' },
+    { id: 'deactivate', title: 'Deactivate Property Record', icon: <Lock size={14} />, desc: 'Permanently deactivate property ID registration to halt tax cycles.', color: 'hover:border-red-500/50 hover:bg-red-50/10' },
+    { id: 'archive', title: 'Archive Property Record', icon: <Archive size={14} />, desc: 'Archive registry data file records from the active search databases.', color: 'hover:border-rose-500/50 hover:bg-rose-50/10' },
     { id: 'audit-log', title: 'Database Audit Trails', icon: <FileSpreadsheet size={14} />, desc: 'Retrieve system query audit lists detailing data updates and history logs.', color: 'hover:border-gray-500/50 hover:bg-gray-50/10' }
   ];
 
@@ -1669,47 +1674,56 @@ function MoreActionsView({ onClose }: { onClose: () => void }) {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-100 pb-2 shrink-0">
+      <div className="flex items-center justify-between border-b border-gray-100 pb-2.5 shrink-0">
         <div className="flex items-center gap-2">
           {selectedWorkflow ? (
             <button 
               onClick={() => { setSelectedWorkflow(null); setReasonText(''); setSecondaryField(''); }}
-              className="p-1 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-700 cursor-pointer flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider border border-gray-200 bg-white"
+              className="p-1 px-2.5 rounded-lg text-gray-500 hover:text-[#002fbe] hover:bg-blue-50 cursor-pointer flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider border border-gray-250 bg-white transition-all shadow-2xs"
             >
               <ChevronLeft size={12} />
               <span>Back</span>
             </button>
           ) : (
-            <div className="bg-gray-800 text-white p-1.5 rounded-lg">
-              <Settings size={14} />
+            <div className="bg-[#1e2b58] text-white p-2 rounded-xl shadow-xs">
+              <Settings size={16} />
             </div>
           )}
           <div>
-            <h2 className="font-extrabold text-[#1e2b58] text-[11px] uppercase tracking-wider leading-none">
+            <h2 className="font-extrabold text-[#1e2b58] text-xs uppercase tracking-wider leading-none">
               {selectedWorkflow ? `Workflow: ${adminActions.find(a => a.id === selectedWorkflow)?.title}` : 'Administrative Registry Operations'}
             </h2>
-            <span className="text-gray-400 text-[8.5px] font-bold mt-1 block leading-none">Nagpur Municipal Corporation • Property ID: 1290082181</span>
+            <span className="text-gray-400 text-[9px] font-semibold mt-1 block leading-none">Nagpur Municipal Corporation • Property ID: 1290082181</span>
           </div>
         </div>
         <button 
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-655 font-extrabold hover:bg-gray-100 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-all"
+          className="text-gray-400 hover:text-gray-655 font-extrabold hover:bg-gray-150 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95"
         >
-          <X size={12} />
+          <X size={14} />
         </button>
       </div>
 
       {/* Main Switch Area - Expanded */}
       <div className="flex-grow flex-1 min-h-0 overflow-y-auto pr-0.5">
         {!selectedWorkflow ? (
-          <div className="grid grid-cols-2 gap-2.5 p-0.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-0.5">
             {adminActions.map((action) => (
               <button
                 key={action.id}
                 onClick={() => setSelectedWorkflow(action.id)}
-                className={`bg-white border border-gray-200/90 rounded-xl p-3 text-left flex items-start gap-3 shadow-sm transition-all hover:shadow-md hover:scale-[1.01] cursor-pointer ${action.color}`}
+                className={`bg-white border border-gray-200/90 rounded-2xl p-4 text-left flex items-start gap-3.5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer ${action.color}`}
               >
-                <div className="p-2 bg-gray-50 rounded-lg border border-gray-100 text-[#1e2b58] mt-0.5 transition-colors">
+                <div className={`p-2.5 rounded-xl border mt-0.5 transition-colors shrink-0 ${
+                  action.id === 'transfer' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                  action.id === 'split' ? 'bg-purple-50 text-purple-650 border-purple-100' :
+                  action.id === 'merge' ? 'bg-indigo-50 text-indigo-650 border-indigo-100' :
+                  action.id === 'disputed' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                  action.id === 'exempted' ? 'bg-teal-50 text-teal-650 border-teal-100' :
+                  action.id === 'deactivate' ? 'bg-red-50 text-red-500 border-red-100' :
+                  action.id === 'archive' ? 'bg-rose-50 text-rose-500 border-rose-100' :
+                  'bg-gray-50 text-gray-600 border-gray-150'
+                }`}>
                   {action.icon}
                 </div>
                 <div className="flex flex-col gap-0.5 text-[9px] leading-tight">
