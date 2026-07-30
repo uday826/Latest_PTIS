@@ -8,6 +8,7 @@ import DashboardContent from '@/components/modules/Design/DashboardContent';
 import SearchContent from '@/components/modules/Design/SearchContent';
 import PlaceholderContent from '@/components/modules/Design/PlaceholderContent';
 import FooterActionBar from '@/components/modules/Design/FooterActionBar';
+import ApartmentContent from '@/components/modules/Apartment_design/ApartmentContent';
 
 export default function PropertyDetailsPage() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -42,9 +43,22 @@ export default function PropertyDetailsPage() {
             </div>
           </div>
         )}
+        {activeMenu === 'apartment-management' && (
+          <div className="flex-1 min-h-0 flex flex-col p-2.5 gap-2 overflow-hidden">
+            <div className="flex-1 min-h-0">
+              <ApartmentContent 
+                activeAction={activeAction} 
+                setActiveAction={setActiveAction} 
+              />
+            </div>
+            <div className="shrink-0 select-none">
+              <FooterActionBar activeAction={activeAction} setActiveAction={setActiveAction} />
+            </div>
+          </div>
+        )}
         {activeMenu === 'dashboard' && <DashboardContent />}
         {activeMenu === 'property-search' && <SearchContent />}
-        {!['property-details', 'dashboard', 'property-search'].includes(activeMenu) && (
+        {!['property-details', 'dashboard', 'property-search', 'apartment-management'].includes(activeMenu) && (
           <PlaceholderContent title={activeMenu} />
         )}
       </div>
