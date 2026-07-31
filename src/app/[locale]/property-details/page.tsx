@@ -9,6 +9,7 @@ import SearchContent from '@/components/modules/Design/SearchContent';
 import PlaceholderContent from '@/components/modules/Design/PlaceholderContent';
 import FooterActionBar from '@/components/modules/Design/FooterActionBar';
 import ApartmentContent from '@/components/modules/Apartment_design/ApartmentContent';
+import ActionViews from '@/components/modules/Design/ActionViews';
 
 export default function PropertyDetailsPage() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -29,37 +30,55 @@ export default function PropertyDetailsPage() {
           activeMenu={activeMenu}
           setActiveMenu={setActiveMenu}
         />
-        {activeMenu === 'property-details' && (
-          <div className="flex-1 min-h-0 flex flex-col p-2.5 gap-2 overflow-hidden">
-            <div className="flex-1 min-h-0">
-              <MainContent 
-                activeAction={activeAction} 
-                setActiveAction={setActiveAction} 
-                activeValuationModel={activeValuationModel} 
-              />
+        {activeAction ? (
+          <div className="flex-1 min-h-0 flex flex-col p-2.5 gap-2 overflow-hidden bg-[#f0f2f5]">
+            <div className="flex-grow flex-1 min-h-0 bg-white border border-gray-200 rounded-xl p-3.5 shadow-md overflow-hidden relative select-none">
+              <ActionViews activeAction={activeAction} setActiveAction={setActiveAction} />
             </div>
             <div className="shrink-0 select-none">
               <FooterActionBar activeAction={activeAction} setActiveAction={setActiveAction} />
             </div>
           </div>
-        )}
-        {activeMenu === 'apartment-management' && (
+        ) : (
           <div className="flex-1 min-h-0 flex flex-col p-2.5 gap-2 overflow-hidden">
             <div className="flex-1 min-h-0">
-              <ApartmentContent 
-                activeAction={activeAction} 
-                setActiveAction={setActiveAction} 
-              />
+              {activeMenu === 'property-details' && (
+                <MainContent 
+                  activeAction={activeAction} 
+                  setActiveAction={setActiveAction} 
+                  activeValuationModel={activeValuationModel} 
+                />
+              )}
+              {activeMenu === 'apartment-management' && (
+                <ApartmentContent 
+                  activeAction={activeAction} 
+                  setActiveAction={setActiveAction} 
+                />
+              )}
+              {activeMenu === 'dashboard' && (
+                <DashboardContent 
+                  activeAction={activeAction} 
+                  setActiveAction={setActiveAction} 
+                />
+              )}
+              {activeMenu === 'property-search' && (
+                <SearchContent 
+                  activeAction={activeAction} 
+                  setActiveAction={setActiveAction} 
+                />
+              )}
+              {!['property-details', 'dashboard', 'property-search', 'apartment-management'].includes(activeMenu) && (
+                <PlaceholderContent 
+                  title={activeMenu} 
+                  activeAction={activeAction} 
+                  setActiveAction={setActiveAction} 
+                />
+              )}
             </div>
             <div className="shrink-0 select-none">
               <FooterActionBar activeAction={activeAction} setActiveAction={setActiveAction} />
             </div>
           </div>
-        )}
-        {activeMenu === 'dashboard' && <DashboardContent />}
-        {activeMenu === 'property-search' && <SearchContent />}
-        {!['property-details', 'dashboard', 'property-search', 'apartment-management'].includes(activeMenu) && (
-          <PlaceholderContent title={activeMenu} />
         )}
       </div>
     </div>

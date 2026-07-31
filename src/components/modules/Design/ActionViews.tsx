@@ -605,19 +605,17 @@ function PrintCardView({ onClose }: { onClose: () => void }) {
         >
           <div className="absolute inset-0 bg-transparent flex items-center justify-center pointer-events-none opacity-[0.03]">
             <img src="/ulb_logo.png" alt="ULB Logo Watermark" className="w-48 h-48 object-contain" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
-          </div>
-
-          <div className="flex justify-between items-start border-b border-gray-300 pb-2.5">
+          </div>          <div className="flex justify-between items-start border-b border-gray-300 pb-2.5">
             <div className="flex gap-2.5 items-center">
               <div className="w-12 h-12 bg-blue-50 border border-blue-100 rounded-full flex items-center justify-center font-black text-[#002fbe] text-[18px]">
                 N
               </div>
               <div>
                 <h1 className="font-extrabold text-[#1e2b58] text-[13px] uppercase tracking-wider leading-tight">Nagpur Municipal Corporation</h1>
-                <p className="text-gray-505 font-bold text-[9px] mt-0.5 uppercase tracking-wider">Property Tax Assessment Department</p>
+                <p className="text-[#002fbe] font-extrabold text-[9px] mt-0.5 uppercase tracking-wider">Property Tax Assessment Department</p>
               </div>
             </div>
-            <div className="text-right text-[8.5px] font-bold text-gray-500 leading-tight">
+            <div className="text-right text-[8.5px] font-black text-slate-700 leading-tight">
               <p>DATE: {new Date().toLocaleDateString('en-GB')}</p>
               <p>REF NO: NMC-PT-2026-908A</p>
             </div>
@@ -629,61 +627,61 @@ function PrintCardView({ onClose }: { onClose: () => void }) {
 
           <div className="grid grid-cols-3 gap-x-5 gap-y-3 border-b border-gray-150 pb-4">
             <div>
-              <span className="text-gray-400 font-bold block mb-0.5 uppercase text-[8.5px]">Property ID / UPIC</span>
+              <span className="text-slate-700 font-extrabold block mb-0.5 uppercase text-[8.5px]">Property ID / UPIC</span>
               <span className="font-black text-[#002fbe] text-[11.5px]">1290082181</span>
             </div>
             <div>
-              <span className="text-gray-400 font-bold block mb-0.5 uppercase text-[8.5px]">Tax Zone</span>
+              <span className="text-slate-700 font-extrabold block mb-0.5 uppercase text-[8.5px]">Tax Zone</span>
               <span className="font-black text-gray-900 text-[10px]">Zone-A (Nishigandha)</span>
             </div>
             <div>
-              <span className="text-gray-400 font-bold block mb-0.5 uppercase text-[8.5px]">Ward & Mouja</span>
+              <span className="text-slate-700 font-extrabold block mb-0.5 uppercase text-[8.5px]">Ward & Mouja</span>
               <span className="font-black text-gray-900 text-[10px]">Ward-04, Mouja A</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-5 border-b border-gray-150 pb-4">
             <div>
-              <h3 className="font-extrabold text-[#1e2b58] mb-2 uppercase text-[9px] tracking-wider">Owner Details</h3>
-              <div className="space-y-1.5 font-semibold text-gray-650 text-[10px]">
-                <p>NAME: <span className="font-black text-gray-800">Shri Balasaheb Thackeray</span></p>
-                <p>RELATION: <span className="font-bold text-gray-700">Self (Holder)</span></p>
-                <p>AADHAAR: <span className="font-bold text-gray-700">**** **** 9081</span></p>
+              <h3 className="font-black text-[#1e2b58] mb-2 uppercase text-[9px] tracking-wider">Owner Details</h3>
+              <div className="space-y-1.5 font-bold text-slate-800 text-[10px]">
+                <p>NAME: <span className="font-black text-slate-900">Shri Balasaheb Thackeray</span></p>
+                <p>RELATION: <span className="font-extrabold text-slate-800">Self (Holder)</span></p>
+                <p>AADHAAR: <span className="font-extrabold text-slate-800">**** **** 9081</span></p>
               </div>
             </div>
             <div>
-              <h3 className="font-extrabold text-[#1e2b58] mb-2 uppercase text-[9px] tracking-wider">Property Location</h3>
-              <div className="space-y-1.5 font-semibold text-gray-655 text-[10px]">
-                <p>PLOT NO: <span className="font-bold text-gray-750">Plot No. 129</span></p>
-                <p>BUILDING: <span className="font-bold text-gray-750">Wing B, Flat 101</span></p>
-                <p>SOCIETY: <span className="font-bold text-gray-750">Gokuldham Co-op Society</span></p>
+              <h3 className="font-black text-[#1e2b58] mb-2 uppercase text-[9px] tracking-wider">Property Location</h3>
+              <div className="space-y-1.5 font-bold text-slate-800 text-[10px]">
+                <p>PLOT NO: <span className="font-extrabold text-slate-800">Plot No. 129</span></p>
+                <p>BUILDING: <span className="font-extrabold text-slate-800">Wing B, Flat 101</span></p>
+                <p>SOCIETY: <span className="font-extrabold text-slate-800">Gokuldham Co-op Society</span></p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-x-5 gap-y-3 border-b border-gray-150 pb-4">
             <div>
-              <span className="text-gray-400 font-bold block mb-0.5 uppercase text-[8.5px]">Property Usage</span>
+              <span className="text-slate-700 font-extrabold block mb-0.5 uppercase text-[8.5px]">Property Usage</span>
               <span className="font-black text-gray-900 text-[10.5px]">निवासी (Residential)</span>
             </div>
             <div>
-              <span className="text-gray-400 font-bold block mb-0.5 uppercase text-[8.5px]">Built-up Area</span>
+              <span className="text-slate-700 font-extrabold block mb-0.5 uppercase text-[8.5px]">Built-up Area</span>
               <span className="font-black text-gray-900 text-[10.5px]">440.00 m²</span>
             </div>
             <div>
-              <span className="text-gray-400 font-bold block mb-0.5 uppercase text-[8.5px]">Carpet Area</span>
+              <span className="text-slate-700 font-extrabold block mb-0.5 uppercase text-[8.5px]">Carpet Area</span>
               <span className="font-black text-gray-900 text-[10.5px]">400.00 m²</span>
             </div>
             <div>
-              <span className="text-gray-400 font-bold block mb-0.5 uppercase text-[8.5px]">Rateable Value (RV)</span>
+              <span className="text-slate-700 font-extrabold block mb-0.5 uppercase text-[8.5px]">Rateable Value (RV)</span>
               <span className="font-black text-[#002fbe] text-[11.5px]">₹18,45,000</span>
             </div>
             <div>
-              <span className="text-gray-400 font-bold block mb-0.5 uppercase text-[8.5px]">Capital Value (CV)</span>
+              <span className="text-slate-700 font-extrabold block mb-0.5 uppercase text-[8.5px]">Capital Value (CV)</span>
               <span className="font-black text-[#002fbe] text-[11.5px]">₹36,90,000</span>
             </div>
             <div>
-              <span className="text-gray-400 font-bold block mb-0.5 uppercase text-[8.5px]">Annual Tax (Current)</span>
+              <span className="text-slate-700 font-extrabold block mb-0.5 uppercase text-[8.5px]">Annual Tax (Current)</span>
               <span className="font-black text-green-700 text-[11.5px]">₹18,752</span>
             </div>
           </div>
@@ -800,21 +798,21 @@ function ViewDemandView({ onClose }: { onClose: () => void }) {
       <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-4">
         <div className="grid grid-cols-4 gap-2.5 shrink-0 select-none">
           <div className="bg-white border border-[#8b5cf6]/25 rounded-lg p-3.5 flex flex-col gap-0.5 shadow-sm text-center">
-            <span className="text-gray-450 font-extrabold text-[8px] uppercase tracking-wider">Current Demand</span>
+            <span className="text-slate-700 font-black text-[8px] uppercase tracking-wider">Current Demand</span>
             <span className="font-black text-[#1e2b58] text-[15px] tabular-nums mt-0.5">₹{activeDemand.values.current}</span>
           </div>
           <div className="bg-white border border-[#8b5cf6]/25 rounded-lg p-3.5 flex flex-col gap-0.5 shadow-sm text-center">
-            <span className="text-gray-455 font-extrabold text-[8px] uppercase tracking-wider">Arrears Pending</span>
+            <span className="text-slate-700 font-black text-[8px] uppercase tracking-wider">Arrears Pending</span>
             <span className={`font-black text-[15px] tabular-nums mt-0.5 ${
-              activeDemand.values.arrears !== '0' ? 'text-red-650' : 'text-gray-800'
+              activeDemand.values.arrears !== '0' ? 'text-red-650' : 'text-slate-900'
             }`}>₹{activeDemand.values.arrears}</span>
           </div>
           <div className="bg-[#8b5cf6]/5 border border-[#8b5cf6]/20 rounded-lg p-3.5 flex flex-col gap-0.5 shadow-sm text-center">
-            <span className="text-[#8b5cf6] font-extrabold text-[8px] uppercase tracking-wider">Total Payable</span>
+            <span className="text-[#8b5cf6] font-black text-[8px] uppercase tracking-wider">Total Payable</span>
             <span className="font-black text-[#8b5cf6] text-[16px] tabular-nums mt-0.5">₹{activeDemand.values.total}</span>
           </div>
           <div className="bg-white border border-[#8b5cf6]/25 rounded-lg p-3.5 flex flex-col justify-center items-center gap-1.5 shadow-sm">
-            <span className="text-gray-455 font-extrabold text-[8px] uppercase tracking-wider leading-none">Demand Status</span>
+            <span className="text-slate-700 font-black text-[8px] uppercase tracking-wider leading-none">Demand Status</span>
             <span className={`px-3 py-1 rounded-full border text-[8.5px] font-extrabold leading-none ${activeDemand.statusColor}`}>
               {activeDemand.status}
             </span>
@@ -828,34 +826,34 @@ function ViewDemandView({ onClose }: { onClose: () => void }) {
           </div>
           <div className="p-4 text-[9.5px] leading-relaxed space-y-2 flex-grow flex flex-col justify-between font-bold text-gray-700">
             <div className="flex justify-between border-b border-gray-100 pb-1.5">
-              <span className="text-gray-400">General Tax (सामान्य कर)</span>
-              <span className="text-gray-900 tabular-nums">₹{activeDemand.values.general}</span>
+              <span className="text-[#1e2b58] font-black">General Tax (सामान्य कर)</span>
+              <span className="text-gray-900 font-black tabular-nums">₹{activeDemand.values.general}</span>
             </div>
             <div className="flex justify-between border-b border-gray-100 pb-1.5">
-              <span className="text-gray-400">Water Tax (जल पट्टी)</span>
-              <span className="text-gray-900 tabular-nums">₹{activeDemand.values.water}</span>
+              <span className="text-blue-700 font-black">Water Tax (जल पट्टी)</span>
+              <span className="text-gray-900 font-black tabular-nums">₹{activeDemand.values.water}</span>
             </div>
             <div className="flex justify-between border-b border-gray-100 pb-1.5">
-              <span className="text-gray-400">Education Tax (शिक्षण कर)</span>
-              <span className="text-gray-900 tabular-nums">₹{activeDemand.values.education}</span>
+              <span className="text-purple-700 font-black">Education Tax (शिक्षण कर)</span>
+              <span className="text-gray-900 font-black tabular-nums">₹{activeDemand.values.education}</span>
             </div>
             <div className="flex justify-between border-b border-gray-100 pb-1.5">
-              <span className="text-gray-400">Fire Tax (अग्निशमन कर)</span>
-              <span className="text-gray-900 tabular-nums">₹{activeDemand.values.fire}</span>
+              <span className="text-red-700 font-black">Fire Tax (अग्निशमन कर)</span>
+              <span className="text-gray-900 font-black tabular-nums">₹{activeDemand.values.fire}</span>
             </div>
             <div className="flex justify-between border-b border-gray-100 pb-1.5">
-              <span className="text-gray-400">Other Tax Components</span>
-              <span className="text-gray-900 tabular-nums">₹{activeDemand.values.other}</span>
+              <span className="text-orange-700 font-black">Other Tax Components</span>
+              <span className="text-gray-900 font-black tabular-nums">₹{activeDemand.values.other}</span>
             </div>
             <div className="flex justify-between border-b border-gray-100 pb-1.5">
-              <span className="text-gray-400">Penalty & Interest</span>
-              <span className="text-red-500 tabular-nums">+ ₹{activeDemand.values.penalty}</span>
+              <span className="text-amber-700 font-black">Penalty & Interest</span>
+              <span className="text-red-600 font-black tabular-nums">+ ₹{activeDemand.values.penalty}</span>
             </div>
             <div className="flex justify-between border-b border-gray-100 pb-1.5">
-              <span className="text-gray-400">Early Bird Discount / Exemption</span>
-              <span className="text-green-600 tabular-nums">- ₹{activeDemand.values.discount}</span>
+              <span className="text-green-700 font-black">Early Bird Discount / Exemption</span>
+              <span className="text-green-600 font-black tabular-nums">- ₹{activeDemand.values.discount}</span>
             </div>
-            <div className="flex justify-between text-[11px] font-black text-gray-950 pt-1.5 uppercase tracking-wider">
+            <div className="flex justify-between text-[11px] font-black text-gray-955 pt-1.5 uppercase tracking-wider">
               <span>Total Calculated Demand</span>
               <span className="text-[#8b5cf6]">₹{activeDemand.values.total}</span>
             </div>
@@ -954,44 +952,44 @@ function ViewCollectionView({ onClose }: { onClose: () => void }) {
       <div className="flex-grow flex-1 min-h-[220px] overflow-x-auto overflow-y-auto border border-gray-200 rounded-xl relative shadow-xs bg-white table-scroll-container">
         <table className="w-full text-[9px] text-center border-collapse table-auto">
           <thead>
-            <tr className="bg-gray-50/80 border-b border-gray-200 font-extrabold text-[#1e2b58] uppercase text-[7.5px] tracking-wider sticky top-0 z-20 whitespace-nowrap">
-              <th className="py-3 px-3 text-left font-bold border-r border-gray-200/50">Receipt No</th>
-              <th className="py-3 px-3 font-bold border-r border-gray-200/50">Date</th>
-              <th className="py-3 px-3 font-bold border-r border-gray-200/50">FY</th>
-              <th className="py-3 px-3 font-bold border-r border-gray-200/50">Mode</th>
-              <th className="py-3 px-3 font-bold border-r border-gray-200/50">Txn ID</th>
-              <th className="py-3 px-3 font-bold border-r border-gray-200/50">Paid Amount (₹)</th>
-              <th className="py-3 px-3 font-bold border-r border-gray-200/50">Status</th>
-              <th className="py-3 px-3 font-bold border-r border-gray-200/50">Collector</th>
-              <th className="py-3 px-3 font-bold">Actions</th>
+            <tr className="bg-[#1e2b58] text-white font-extrabold uppercase text-[8px] tracking-wider sticky top-0 z-20 whitespace-nowrap">
+              <th className="py-3 px-3 text-left font-black border-r border-white/10">Receipt No</th>
+              <th className="py-3 px-3 font-black border-r border-white/10">Date</th>
+              <th className="py-3 px-3 font-black border-r border-white/10">FY</th>
+              <th className="py-3 px-3 font-black border-r border-white/10">Mode</th>
+              <th className="py-3 px-3 font-black border-r border-white/10">Txn ID</th>
+              <th className="py-3 px-3 font-black border-r border-white/10">Paid Amount (₹)</th>
+              <th className="py-3 px-3 font-black border-r border-white/10">Status</th>
+              <th className="py-3 px-3 font-black border-r border-white/10">Collector</th>
+              <th className="py-3 px-3 font-black">Actions</th>
             </tr>
           </thead>
-          <tbody className="font-semibold text-gray-700 whitespace-nowrap text-[9.5px]">
+          <tbody className="font-extrabold text-slate-800 whitespace-nowrap text-[9.5px]">
             {filteredRecords.length === 0 ? (
               <tr>
-                <td colSpan={9} className="py-12 text-center text-gray-400 font-extrabold">
+                <td colSpan={9} className="py-12 text-center text-slate-500 font-extrabold">
                   No payment collection records found.
                 </td>
               </tr>
             ) : (
               filteredRecords.map((rec, i) => (
                 <tr key={i} className="hover:bg-slate-50/50 border-b border-gray-150 transition-colors">
-                  <td className="py-3 px-3 text-left text-[#002fbe] font-extrabold border-r border-gray-150/40">{rec.receipt}</td>
-                  <td className="py-3 px-3 border-r border-gray-150/40 text-gray-500 font-medium">{rec.date}</td>
-                  <td className="py-3 px-3 border-r border-gray-150/40 font-bold text-slate-800">{rec.year}</td>
-                  <td className="py-3 px-3 border-r border-gray-150/40 text-gray-500 font-medium">{rec.mode}</td>
-                  <td className="py-3 px-3 border-r border-gray-150/40 text-gray-600 font-mono text-[9px]">{rec.txn}</td>
-                  <td className="py-3 px-3 border-r border-gray-150/40 font-bold text-gray-900 tabular-nums text-[10.5px]">₹{rec.amount}</td>
+                  <td className="py-3 px-3 text-left text-blue-700 font-black border-r border-gray-150/40">{rec.receipt}</td>
+                  <td className="py-3 px-3 border-r border-gray-150/40 text-slate-700 font-extrabold">{rec.date}</td>
+                  <td className="py-3 px-3 border-r border-gray-150/40 font-black text-slate-900">{rec.year}</td>
+                  <td className="py-3 px-3 border-r border-gray-150/40 text-slate-700 font-extrabold">{rec.mode}</td>
+                  <td className="py-3 px-3 border-r border-gray-150/40 text-slate-800 font-mono font-bold text-[9.5px]">{rec.txn}</td>
+                  <td className="py-3 px-3 border-r border-gray-150/40 font-black text-slate-900 tabular-nums text-[10.5px]">₹{rec.amount}</td>
                   <td className="py-3 px-3 border-r border-gray-150/40">
-                    <span className={`px-2.5 py-0.5 border rounded-full text-[8px] font-bold shadow-xs ${
+                    <span className={`px-2.5 py-0.5 border rounded-full text-[9.5px] font-black shadow-xs ${
                       rec.status === 'Completed'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50'
-                        : 'bg-amber-50 text-amber-700 border-amber-200/50'
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200/50'
+                        : 'bg-amber-50 text-amber-800 border-amber-200/50'
                     }`}>
                       {rec.status}
                     </span>
                   </td>
-                  <td className="py-3 px-3 border-r border-gray-150/40 text-gray-500 font-medium">{rec.collector}</td>
+                  <td className="py-3 px-3 border-r border-gray-150/40 text-slate-700 font-extrabold">{rec.collector}</td>
                   <td className="py-3 px-3">
                     <div className="flex items-center justify-center gap-1.5">
                       <button 
@@ -1116,13 +1114,13 @@ function GenerateNoticeView({ onClose }: { onClose: () => void }) {
       {/* Expanded Split Viewport Panel */}
       <div className="flex-1 min-h-0 overflow-hidden flex gap-4">
         {/* Parameters Form */}
-        <div className="w-[200px] shrink-0 overflow-y-auto pr-1.5 flex flex-col gap-3 text-[9px] font-bold text-gray-500 select-none">
+        <div className="w-[200px] shrink-0 overflow-y-auto pr-1.5 flex flex-col gap-3 text-[10px] font-black text-slate-800 uppercase tracking-wider select-none">
           <div className="flex flex-col gap-1">
-            <label>Notice Type</label>
+            <label className="text-blue-900 font-extrabold">Notice Type</label>
             <select 
               value={formData.noticeType} 
               onChange={(e) => setFormData(prev => ({ ...prev, noticeType: e.target.value }))}
-              className="p-1.5 bg-white border border-gray-250 rounded font-bold text-gray-800 outline-none text-[9px]"
+              className="p-1.5 bg-white border border-gray-300 rounded font-extrabold text-slate-900 outline-none text-[9.5px]"
             >
               <option value="Tax Demand Notice (Form-G)">Tax Demand Notice (Form-G)</option>
               <option value="Arrears Demarcation Warning">Arrears Demarcation Warning</option>
@@ -1130,11 +1128,11 @@ function GenerateNoticeView({ onClose }: { onClose: () => void }) {
             </select>
           </div>
           <div className="flex flex-col gap-1">
-            <label>Language</label>
+            <label className="text-blue-900 font-extrabold">Language</label>
             <select 
               value={formData.noticeLang} 
               onChange={(e) => setFormData(prev => ({ ...prev, noticeLang: e.target.value }))}
-              className="p-1.5 bg-white border border-gray-255 rounded font-bold text-gray-800 outline-none text-[9px]"
+              className="p-1.5 bg-white border border-gray-300 rounded font-extrabold text-slate-900 outline-none text-[9.5px]"
             >
               <option value="Marathi">Marathi (मराठी)</option>
               <option value="English">English</option>
@@ -1142,52 +1140,52 @@ function GenerateNoticeView({ onClose }: { onClose: () => void }) {
             </select>
           </div>
           <div className="flex flex-col gap-1">
-            <label>Financial Year</label>
+            <label className="text-blue-900 font-extrabold">Financial Year</label>
             <input 
               type="text" 
               value={formData.financialYear} 
               onChange={(e) => setFormData(prev => ({ ...prev, financialYear: e.target.value }))}
-              className="p-1.5 bg-white border border-gray-255 rounded font-bold text-gray-800 outline-none text-[9px]" 
+              className="p-1.5 bg-white border border-gray-300 rounded font-extrabold text-slate-900 outline-none text-[9.5px]" 
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label>Due Date</label>
+            <label className="text-blue-900 font-extrabold">Due Date</label>
             <input 
               type="text" 
               value={formData.dueDate} 
               onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
-              className="p-1.5 bg-white border border-gray-255 rounded font-bold text-gray-800 outline-none text-[9px]" 
+              className="p-1.5 bg-white border border-gray-300 rounded font-extrabold text-slate-900 outline-none text-[9.5px]" 
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label>Demand Amount (₹)</label>
+            <label className="text-blue-900 font-extrabold">Demand Amount (₹)</label>
             <input 
               type="text" 
               value={formData.demandAmount} 
               onChange={(e) => setFormData(prev => ({ ...prev, demandAmount: e.target.value }))}
-              className="p-1.5 bg-white border border-gray-255 rounded font-bold text-gray-800 outline-none text-[9px] tabular-nums" 
+              className="p-1.5 bg-white border border-gray-300 rounded font-extrabold text-slate-900 outline-none text-[9.5px] tabular-nums" 
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label>Remarks</label>
+            <label className="text-blue-900 font-extrabold">Remarks</label>
             <textarea 
               rows={3} 
               value={formData.remarks} 
               onChange={(e) => setFormData(prev => ({ ...prev, remarks: e.target.value }))}
-              className="p-1.5 bg-white border border-gray-255 rounded font-bold text-gray-800 outline-none text-[9px] resize-none" 
+              className="p-1.5 bg-white border border-gray-300 rounded font-extrabold text-slate-900 outline-none text-[9.5px] resize-none" 
             />
           </div>
         </div>
 
         {/* Live Preview Paper Card - Expanded width and zoom text */}
-        <div className="flex-1 border border-gray-255 rounded-xl bg-gray-150 p-4 overflow-y-auto relative shadow-inner flex justify-center">
+        <div className="flex-1 border border-slate-300 rounded-xl bg-slate-200 p-4 overflow-y-auto relative shadow-inner flex justify-center">
           <div className="bg-white border border-gray-300 shadow p-6 font-sans text-gray-800 flex flex-col gap-4 text-[10px] w-full max-w-[580px] min-h-[380px] select-none">
             <div className="flex justify-between items-start border-b border-gray-200 pb-2">
               <div className="font-extrabold text-[#1e2b58] uppercase text-[9px] leading-tight">
                 NAGPUR MUNICIPAL CORPORATION
-                <p className="text-gray-400 font-bold text-[7px] mt-0.5">Assessment & Collection Cell</p>
+                <p className="text-slate-600 font-bold text-[7px] mt-0.5">Assessment & Collection Cell</p>
               </div>
-              <div className="text-right text-gray-400 text-[8px] leading-normal">
+              <div className="text-right text-slate-700 text-[8px] leading-normal font-bold">
                 <p>DATE: {formData.noticeDate}</p>
                 <p>FORM-G REGISTRY</p>
               </div>
@@ -1210,7 +1208,7 @@ function GenerateNoticeView({ onClose }: { onClose: () => void }) {
                 )}
               </p>
               
-              <p className="text-gray-455 border-t border-gray-150 pt-2 italic font-bold">
+              <p className="text-slate-700 border-t border-gray-150 pt-2 italic font-black">
                 REMARKS: {formData.remarks}
               </p>
             </div>
@@ -1679,7 +1677,7 @@ function MoreActionsView({ onClose }: { onClose: () => void }) {
           {selectedWorkflow ? (
             <button 
               onClick={() => { setSelectedWorkflow(null); setReasonText(''); setSecondaryField(''); }}
-              className="p-1 px-2.5 rounded-lg text-gray-500 hover:text-[#002fbe] hover:bg-blue-50 cursor-pointer flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider border border-gray-250 bg-white transition-all shadow-2xs"
+              className="p-1 px-2.5 rounded-lg text-slate-600 hover:text-[#002fbe] hover:bg-blue-50 cursor-pointer flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider border border-gray-200 bg-white transition-all shadow-2xs"
             >
               <ChevronLeft size={12} />
               <span>Back</span>
@@ -1693,12 +1691,12 @@ function MoreActionsView({ onClose }: { onClose: () => void }) {
             <h2 className="font-extrabold text-[#1e2b58] text-xs uppercase tracking-wider leading-none">
               {selectedWorkflow ? `Workflow: ${adminActions.find(a => a.id === selectedWorkflow)?.title}` : 'Administrative Registry Operations'}
             </h2>
-            <span className="text-gray-400 text-[9px] font-semibold mt-1 block leading-none">Nagpur Municipal Corporation • Property ID: 1290082181</span>
+            <span className="text-slate-600 text-[9px] font-bold mt-1 block leading-none">Nagpur Municipal Corporation • Property ID: 1290082181</span>
           </div>
         </div>
         <button 
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-655 font-extrabold hover:bg-gray-150 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95"
+          className="text-slate-500 hover:text-slate-800 font-extrabold hover:bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95"
         >
           <X size={14} />
         </button>
@@ -1712,23 +1710,23 @@ function MoreActionsView({ onClose }: { onClose: () => void }) {
               <button
                 key={action.id}
                 onClick={() => setSelectedWorkflow(action.id)}
-                className={`bg-white border border-gray-200/90 rounded-2xl p-4 text-left flex items-start gap-3.5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer ${action.color}`}
+                className={`bg-white border border-gray-250 rounded-2xl p-4 text-left flex items-start gap-3.5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer ${action.color}`}
               >
                 <div className={`p-2.5 rounded-xl border mt-0.5 transition-colors shrink-0 ${
                   action.id === 'transfer' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                  action.id === 'split' ? 'bg-purple-50 text-purple-650 border-purple-100' :
-                  action.id === 'merge' ? 'bg-indigo-50 text-indigo-650 border-indigo-100' :
+                  action.id === 'split' ? 'bg-purple-50 text-purple-700 border-purple-100' :
+                  action.id === 'merge' ? 'bg-indigo-50 text-indigo-700 border-indigo-100' :
                   action.id === 'disputed' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                  action.id === 'exempted' ? 'bg-teal-50 text-teal-650 border-teal-100' :
-                  action.id === 'deactivate' ? 'bg-red-50 text-red-500 border-red-100' :
-                  action.id === 'archive' ? 'bg-rose-50 text-rose-500 border-rose-100' :
-                  'bg-gray-50 text-gray-600 border-gray-150'
+                  action.id === 'exempted' ? 'bg-teal-50 text-teal-700 border-teal-100' :
+                  action.id === 'deactivate' ? 'bg-red-50 text-red-600 border-red-100' :
+                  action.id === 'archive' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                  'bg-gray-50 text-slate-600 border-gray-200'
                 }`}>
                   {action.icon}
                 </div>
-                <div className="flex flex-col gap-0.5 text-[9px] leading-tight">
-                  <span className="font-black text-[#1e2b58] uppercase tracking-wider text-[9.5px]">{action.title}</span>
-                  <p className="text-gray-450 font-semibold leading-normal">{action.desc}</p>
+                <div className="flex flex-col gap-1 text-[9.5px] leading-snug flex-1">
+                  <span className="font-black text-[#1e2b58] uppercase tracking-wider text-[10px]">{action.title}</span>
+                  <p className="text-slate-700 font-extrabold leading-normal">{action.desc}</p>
                 </div>
               </button>
             ))}
@@ -1737,43 +1735,43 @@ function MoreActionsView({ onClose }: { onClose: () => void }) {
           <div className="flex flex-col gap-3">
             <div className="bg-gray-55 border border-gray-200 rounded-xl overflow-hidden shadow-sm flex-1 min-h-[160px]">
               <table className="w-full text-[9px] text-center border-collapse bg-white">
-                <thead className="bg-gray-100 border-b border-gray-200 font-extrabold text-[#1e2b58] uppercase text-[7.5px] tracking-wider sticky top-0">
+                <thead className="bg-[#1e2b58] text-white font-extrabold uppercase text-[8px] tracking-wider sticky top-0">
                   <tr>
-                    <th className="py-2.5 px-1 border-r border-gray-150">Log ID</th>
-                    <th className="py-2.5 px-1 border-r border-gray-150">Operator</th>
-                    <th className="py-2.5 px-1 border-r border-gray-150">Action Logged</th>
-                    <th className="py-2.5 px-1 border-r border-gray-150">Timestamp</th>
+                    <th className="py-2.5 px-1 border-r border-white/10">Log ID</th>
+                    <th className="py-2.5 px-1 border-r border-white/10">Operator</th>
+                    <th className="py-2.5 px-1 border-r border-white/10">Action Logged</th>
+                    <th className="py-2.5 px-1 border-r border-white/10">Timestamp</th>
                     <th className="py-2.5 px-1">Source IP</th>
                   </tr>
                 </thead>
-                <tbody className="font-semibold text-gray-700">
+                <tbody className="font-extrabold text-slate-800">
                   <tr className="border-b border-gray-150 hover:bg-gray-50/20">
-                    <td className="py-2.5 px-1 text-blue-600 font-mono">#AUD-9921</td>
-                    <td className="py-2.5 px-1 font-bold">Manoj Shinde</td>
-                    <td className="py-2.5 px-1">Updated mobile contact</td>
-                    <td className="py-2.5 px-1 text-gray-400">29-Jul-2026 12:00</td>
-                    <td className="py-2.5 px-1 font-mono text-gray-455">192.168.1.104</td>
+                    <td className="py-2.5 px-1 text-blue-700 font-black font-mono">#AUD-9921</td>
+                    <td className="py-2.5 px-1 font-black">Manoj Shinde</td>
+                    <td className="py-2.5 px-1 text-slate-700 font-extrabold">Updated mobile contact</td>
+                    <td className="py-2.5 px-1 text-slate-700 font-extrabold">29-Jul-2026 12:00</td>
+                    <td className="py-2.5 px-1 font-mono text-slate-800 font-black">192.168.1.104</td>
                   </tr>
                   <tr className="border-b border-gray-150 hover:bg-gray-50/20">
-                    <td className="py-2.5 px-1 text-blue-600 font-mono">#AUD-9854</td>
-                    <td className="py-2.5 px-1 font-bold">Officer Joshi</td>
-                    <td className="py-2.5 px-1">Reassessment verification completed</td>
-                    <td className="py-2.5 px-1 text-gray-400">20-Apr-2024 10:45</td>
-                    <td className="py-2.5 px-1 font-mono text-gray-455">10.0.12.89</td>
+                    <td className="py-2.5 px-1 text-blue-700 font-black font-mono">#AUD-9854</td>
+                    <td className="py-2.5 px-1 font-black">Officer Joshi</td>
+                    <td className="py-2.5 px-1 text-slate-700 font-extrabold">Reassessment verification completed</td>
+                    <td className="py-2.5 px-1 text-slate-700 font-extrabold">20-Apr-2024 10:45</td>
+                    <td className="py-2.5 px-1 font-mono text-slate-800 font-black">10.0.12.89</td>
                   </tr>
                   <tr className="border-b border-gray-150 hover:bg-gray-50/20">
-                    <td className="py-2.5 px-1 text-blue-600 font-mono">#AUD-9721</td>
-                    <td className="py-2.5 px-1 font-bold">Surveyor Verma</td>
-                    <td className="py-2.5 px-1">Field measurements check saved</td>
-                    <td className="py-2.5 px-1 text-gray-400">10-Feb-2024 14:15</td>
-                    <td className="py-2.5 px-1 font-mono text-gray-455">10.0.15.11</td>
+                    <td className="py-2.5 px-1 text-blue-700 font-black font-mono">#AUD-9721</td>
+                    <td className="py-2.5 px-1 font-black">Surveyor Verma</td>
+                    <td className="py-2.5 px-1 text-slate-700 font-extrabold">Field measurements check saved</td>
+                    <td className="py-2.5 px-1 text-slate-700 font-extrabold">10-Feb-2024 14:15</td>
+                    <td className="py-2.5 px-1 font-mono text-slate-800 font-black">10.0.15.11</td>
                   </tr>
                   <tr className="hover:bg-gray-50/20">
-                    <td className="py-2.5 px-1 text-blue-600 font-mono">#AUD-9510</td>
-                    <td className="py-2.5 px-1 font-bold">System Daemon</td>
-                    <td className="py-2.5 px-1">GIS polygon verified</td>
-                    <td className="py-2.5 px-1 text-gray-400">15-Jan-2024 16:30</td>
-                    <td className="py-2.5 px-1 font-mono text-gray-455">localhost</td>
+                    <td className="py-2.5 px-1 text-blue-700 font-black font-mono">#AUD-9510</td>
+                    <td className="py-2.5 px-1 font-black">System Daemon</td>
+                    <td className="py-2.5 px-1 text-slate-700 font-extrabold">GIS polygon verified</td>
+                    <td className="py-2.5 px-1 text-slate-700 font-extrabold">15-Jan-2024 16:30</td>
+                    <td className="py-2.5 px-1 font-mono text-slate-800 font-black">localhost</td>
                   </tr>
                 </tbody>
               </table>

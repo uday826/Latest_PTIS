@@ -15,6 +15,7 @@ import {
   Wallet, 
   Plus, 
   ChevronRight, 
+  ChevronLeft,
   Search, 
   Filter, 
   Download, 
@@ -35,6 +36,7 @@ import {
   Trash2,
   ChevronUp
 } from 'lucide-react';
+import ActionViews from '../Design/ActionViews';
 
 export default function ApartmentContent({
   activeAction,
@@ -908,18 +910,26 @@ export default function ApartmentContent({
   ];
 
   return (
-    <div className="flex-grow flex-1 min-h-0 bg-[#f0f2f5] p-3 font-sans text-gray-850 animate-fadeIn relative">
+    <div className="flex-grow flex-1 min-h-0 bg-[#f0f2f5] p-2.5 font-sans text-gray-855 animate-fadeIn relative flex flex-col h-full overflow-hidden">
       {/* 1. Header Overview Sections */}
-      <div className="flex flex-wrap xl:flex-nowrap items-stretch gap-3 w-full font-sans mb-3">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 w-full shrink-0 select-none mb-2.5">
         {/* Card 1: Main Property Info & Details */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3.5 flex flex-grow flex-wrap xl:flex-nowrap items-center gap-5 relative overflow-visible z-20">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2.5 flex flex-wrap xl:flex-nowrap items-center gap-4 relative overflow-visible z-20 xl:col-span-9 xl:h-[185px] shrink-0">
           {/* Background visual accent */}
           <div className="absolute top-0 left-0 w-1.5 h-full bg-[#002fbe] rounded-l-xl pointer-events-none" />
 
           {/* Left building img */}
-          <div className="relative w-36 h-28 shrink-0 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:border-blue-300 bg-gray-50 transition-all">
+          <div 
+            onMouseEnter={() => handleHoverImage("/apartment_image.jpg", "right")} 
+            onMouseLeave={() => handleHoverImage(null)}
+            onClick={() => {
+              setSelectedImg("/apartment_image.jpg");
+              setSelectedImgTitle("Apartment Image - Shree Sai Residency");
+            }}
+            className="relative w-[165px] h-[130px] shrink-0 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:border-blue-300 bg-gray-50 transition-all self-center"
+          >
             <img 
-              src="/municipal_building_front.png" 
+              src="/apartment_image.jpg" 
               alt="Shree Sai Residency" 
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 cursor-zoom-in"
             />
@@ -929,143 +939,143 @@ export default function ApartmentContent({
           </div>
 
           {/* Details column */}
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4">
-            <div className="md:col-span-5 flex flex-col justify-between">
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 h-full">
+            <div className="md:col-span-5 flex flex-col justify-between py-0.5">
               <div>
-                <div className="text-[10px] text-[#1749b5] uppercase tracking-wider font-extrabold">Apartment / Society</div>
-                <div className="flex items-center gap-1.5 mt-0.5 relative">
-                  <h2 className="text-[15px] font-black text-[#002a8f] tracking-wide select-all">SHREE SAI RESIDENCY CHS LTD</h2>
-                  <button className="p-1 hover:bg-gray-150 rounded text-gray-400 hover:text-blue-600 transition-colors cursor-pointer">
-                    <Share2 size={13} />
+                <div className="text-[9px] text-[#1749b5] uppercase tracking-wider font-extrabold">Apartment / Society</div>
+                <div className="flex items-center gap-1 mt-0.25 relative">
+                  <h2 className="text-[13.5px] font-black text-[#002a8f] tracking-wide select-all leading-tight">SHREE SAI RESIDENCY CHS LTD</h2>
+                  <button className="p-0.5 hover:bg-gray-150 rounded text-gray-400 hover:text-blue-600 transition-colors cursor-pointer">
+                    <Share2 size={11} />
                   </button>
                 </div>
-                <span className="bg-green-50 text-green-700 border border-green-200 text-[9px] px-2 py-0.5 rounded font-extrabold uppercase tracking-wider flex items-center gap-1 w-fit mt-1">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Active Property
+                <span className="bg-green-50 text-green-700 border border-green-200 text-[8.5px] px-1.5 py-0.25 rounded font-extrabold uppercase tracking-wider flex items-center gap-1 w-fit mt-0.5">
+                  <span className="w-1 h-1 bg-green-500 rounded-full" /> Active Property
                 </span>
               </div>
 
-              <div className="space-y-1 text-[11px] leading-tight mt-2.5">
+              <div className="space-y-0.5 text-[10px] leading-tight mt-1">
                 <div className="flex items-start">
-                  <span className="font-bold text-[#1749b5] w-[110px] uppercase text-[9px] tracking-wider shrink-0 mt-0.5">Address</span>
-                  <span className="font-bold text-[#1749b5] mr-2 shrink-0">:</span>
-                  <span className="font-extrabold text-[#002a8f] text-left break-words max-w-[220px]">1A, Sai Baba Nagar, Thane (W) - 400601</span>
+                  <span className="font-bold text-[#1749b5] w-[95px] uppercase text-[8.5px] tracking-wider shrink-0 mt-0.5">Address</span>
+                  <span className="font-bold text-[#1749b5] mr-1.5 shrink-0">:</span>
+                  <span className="font-extrabold text-[#002a8f] text-left break-words max-w-[190px]">1A, Sai Baba Nagar, Thane (W) - 400601</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="font-bold text-[#1749b5] w-[110px] uppercase text-[9px] tracking-wider shrink-0">Property Type</span>
-                  <span className="font-bold text-[#1749b5] mr-2 shrink-0">:</span>
+                  <span className="font-bold text-[#1749b5] w-[95px] uppercase text-[8.5px] tracking-wider shrink-0">Property Type</span>
+                  <span className="font-bold text-[#1749b5] mr-1.5 shrink-0">:</span>
                   <span className="font-extrabold text-[#002a8f]">Multi Wing Building</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="font-bold text-[#1749b5] w-[110px] uppercase text-[9px] tracking-wider shrink-0">Society Reg. No.</span>
-                  <span className="font-bold text-[#1749b5] mr-2 shrink-0">:</span>
+                  <span className="font-bold text-[#1749b5] w-[95px] uppercase text-[8.5px] tracking-wider shrink-0">Society Reg. No.</span>
+                  <span className="font-bold text-[#1749b5] mr-1.5 shrink-0">:</span>
                   <span className="font-extrabold text-[#002a8f] uppercase">TMC/CHS/1234/2018</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="font-bold text-[#1749b5] w-[110px] uppercase text-[9px] tracking-wider shrink-0">Construction Type</span>
-                  <span className="font-bold text-[#1749b5] mr-2 shrink-0">:</span>
+                  <span className="font-bold text-[#1749b5] w-[95px] uppercase text-[8.5px] tracking-wider shrink-0">Construction Type</span>
+                  <span className="font-bold text-[#1749b5] mr-1.5 shrink-0">:</span>
                   <span className="font-extrabold text-[#002a8f]">RCC Framed Structure</span>
                 </div>
               </div>
             </div>
 
             {/* Central property metadata */}
-            <div className="md:col-span-4 border-l border-gray-150 pl-4 text-[10px] flex flex-col justify-between">
-              <div className="grid grid-cols-1 gap-y-2.5">
+            <div className="md:col-span-4 border-l border-gray-150 pl-3 text-[9.5px] flex flex-col justify-between py-0.5">
+              <div className="grid grid-cols-1 gap-y-1.5">
                 <div>
-                  <div className="text-[#1749b5] font-extrabold uppercase tracking-wider text-[8.5px]">Property ID / UPIC</div>
-                  <div className="flex items-center gap-1.5 mt-0.5 relative">
-                    <span className="font-extrabold text-[#002a8f] text-[11px] tracking-wide select-all">UPIC-270465-APT-000567</span>
+                  <div className="text-[#1749b5] font-extrabold uppercase tracking-wider text-[8px]">Property ID / UPIC</div>
+                  <div className="flex items-center gap-1 mt-0.25 relative">
+                    <span className="font-extrabold text-[#002a8f] text-[10.5px] tracking-wide select-all">UPIC-270465-APT-000567</span>
                     <button
                       onClick={handleCopyUpic}
                       className={`p-0.5 hover:bg-gray-150 rounded transition-colors cursor-pointer ${copiedUpic ? 'text-green-600' : 'text-[#1749b5]'}`}
                       title="Copy UPIC"
                     >
-                      {copiedUpic ? <Check size={11} /> : <Copy size={11} />}
+                      {copiedUpic ? <Check size={10} /> : <Copy size={10} />}
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-x-2 gap-y-2.5">
+                <div className="grid grid-cols-2 gap-x-1.5 gap-y-1.5">
                   <div>
-                    <div className="text-[#1749b5] font-extrabold uppercase tracking-wider text-[8.5px]">Survey No.</div>
-                    <div className="font-extrabold text-[#002a8f] text-[11px] mt-0.5">CSN005A</div>
+                    <div className="text-[#1749b5] font-extrabold uppercase tracking-wider text-[8px]">Survey No.</div>
+                    <div className="font-extrabold text-[#002a8f] text-[10.5px] mt-0.25">CSN005A</div>
                   </div>
                   <div>
-                    <div className="text-[#1749b5] font-extrabold uppercase tracking-wider text-[8.5px]">Plot No.</div>
-                    <div className="font-extrabold text-[#002a8f] text-[11px] mt-0.5">55</div>
+                    <div className="text-[#1749b5] font-extrabold uppercase tracking-wider text-[8px]">Plot No.</div>
+                    <div className="font-extrabold text-[#002a8f] text-[10.5px] mt-0.25">55</div>
                   </div>
                   <div>
-                    <div className="text-[#1749b5] font-extrabold uppercase tracking-wider text-[8.5px]">SubZone No.</div>
-                    <div className="font-extrabold text-[#002a8f] text-[11px] mt-0.5">A</div>
+                    <div className="text-[#1749b5] font-extrabold uppercase tracking-wider text-[8px]">SubZone No.</div>
+                    <div className="font-extrabold text-[#002a8f] text-[10.5px] mt-0.25">A</div>
                   </div>
                   <div>
-                    <div className="text-[#1749b5] font-extrabold uppercase tracking-wider text-[8.5px]">No. of Wings</div>
-                    <div className="font-extrabold text-[#002a8f] text-[11px] mt-0.5">A - D (4 Wings)</div>
+                    <div className="text-[#1749b5] font-extrabold uppercase tracking-wider text-[8px]">No. of Wings</div>
+                    <div className="font-extrabold text-[#002a8f] text-[10.5px] mt-0.25">A - D (4 Wings)</div>
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-[#1749b5] font-extrabold uppercase tracking-wider text-[8.5px]">Ward</div>
-                  <div className="font-extrabold text-[#002a8f] text-[11px] mt-0.5">W-12 (Manpada)</div>
+                  <div className="text-[#1749b5] font-extrabold uppercase tracking-wider text-[8px]">Ward</div>
+                  <div className="font-extrabold text-[#002a8f] text-[10.5px] mt-0.25">W-12 (Manpada)</div>
                 </div>
               </div>
             </div>
 
             {/* Area Stats */}
-            <div className="md:col-span-3 border-l border-gray-150 pl-4 text-[10px] flex flex-col justify-between">
-              <div className="min-w-[190px] shrink-0 space-y-2">
+            <div className="md:col-span-3 border-l border-gray-150 pl-3 text-[9.5px] flex flex-col justify-between py-0.5">
+              <div className="min-w-[170px] shrink-0 space-y-1">
                 {/* Carpet Area */}
-                <div className="flex items-center gap-2 group relative">
-                  <div className="bg-blue-50 p-1 rounded-md shrink-0 border border-blue-100/55">
-                    <Ruler size={12} className="text-[#1749b5]" />
+                <div className="flex items-center gap-1.5 group relative">
+                  <div className="bg-blue-50 p-0.5 rounded-md shrink-0 border border-blue-100/55">
+                    <Ruler size={10.5} className="text-[#1749b5]" />
                   </div>
                   <div>
-                    <div className="text-[8px] text-[#1749b5] font-extrabold uppercase tracking-wider">Total Carpet Area</div>
-                    <div className="font-extrabold text-[10.5px] text-[#002a8f] mt-0.5">24,850.50 ft²</div>
+                    <div className="text-[7.5px] text-[#1749b5] font-extrabold uppercase tracking-wider">Total Carpet Area</div>
+                    <div className="font-extrabold text-[10px] text-[#002a8f] mt-0.25">24,850.50 ft²</div>
                   </div>
                 </div>
 
                 {/* Built-up Area */}
-                <div className="flex items-center gap-2 group relative">
-                  <div className="bg-blue-50 p-1 rounded-md shrink-0 border border-blue-100/55">
-                    <Layers size={12} className="text-[#1749b5]" />
+                <div className="flex items-center gap-1.5 group relative">
+                  <div className="bg-blue-50 p-0.5 rounded-md shrink-0 border border-blue-100/55">
+                    <Layers size={10.5} className="text-[#1749b5]" />
                   </div>
                   <div>
-                    <div className="text-[8px] text-[#1749b5] font-extrabold uppercase tracking-wider">Total Built-up Area</div>
-                    <div className="font-extrabold text-[10.5px] text-[#002a8f] mt-0.5">33,450.75 ft²</div>
+                    <div className="text-[7.5px] text-[#1749b5] font-extrabold uppercase tracking-wider">Total Built-up Area</div>
+                    <div className="font-extrabold text-[10px] text-[#002a8f] mt-0.25">33,450.75 ft²</div>
                   </div>
                 </div>
 
                 {/* Residential Units */}
-                <div className="flex items-center gap-2 group relative">
-                  <div className="bg-blue-50 p-1 rounded-md shrink-0 border border-blue-100/55">
-                    <Home size={12} className="text-[#1749b5]" />
+                <div className="flex items-center gap-1.5 group relative">
+                  <div className="bg-blue-50 p-0.5 rounded-md shrink-0 border border-blue-100/55">
+                    <Home size={10.5} className="text-[#1749b5]" />
                   </div>
                   <div>
-                    <div className="text-[8px] text-[#1749b5] font-extrabold uppercase tracking-wider">Residential Units</div>
-                    <div className="font-extrabold text-[10.5px] text-[#002a8f] mt-0.5">40</div>
+                    <div className="text-[7.5px] text-[#1749b5] font-extrabold uppercase tracking-wider">Residential Units</div>
+                    <div className="font-extrabold text-[10px] text-[#002a8f] mt-0.25">40</div>
                   </div>
                 </div>
 
                 {/* Commercial Units */}
-                <div className="flex items-center gap-2 group relative">
-                  <div className="bg-blue-50 p-1 rounded-md shrink-0 border border-blue-100/55">
-                    <Briefcase size={12} className="text-[#1749b5]" />
+                <div className="flex items-center gap-1.5 group relative">
+                  <div className="bg-blue-50 p-0.5 rounded-md shrink-0 border border-blue-100/55">
+                    <Briefcase size={10.5} className="text-[#1749b5]" />
                   </div>
                   <div>
-                    <div className="text-[8px] text-[#1749b5] font-extrabold uppercase tracking-wider">Commercial Units</div>
-                    <div className="font-extrabold text-[10.5px] text-[#002a8f] mt-0.5">6</div>
+                    <div className="text-[7.5px] text-[#1749b5] font-extrabold uppercase tracking-wider">Commercial Units</div>
+                    <div className="font-extrabold text-[10px] text-[#002a8f] mt-0.25">6</div>
                   </div>
                 </div>
 
                 {/* Other Units */}
-                <div className="flex items-center gap-2 group relative">
-                  <div className="bg-blue-50 p-1 rounded-md shrink-0 border border-blue-100/55">
-                    <Star size={12} className="text-[#1749b5]" />
+                <div className="flex items-center gap-1.5 group relative">
+                  <div className="bg-blue-50 p-0.5 rounded-md shrink-0 border border-blue-100/55">
+                    <Star size={10.5} className="text-[#1749b5]" />
                   </div>
                   <div>
-                    <div className="text-[8px] text-[#1749b5] font-extrabold uppercase tracking-wider">Other Units</div>
-                    <div className="font-extrabold text-[10.5px] text-[#002a8f] mt-0.5">2</div>
+                    <div className="text-[7.5px] text-[#1749b5] font-extrabold uppercase tracking-wider">Other Units</div>
+                    <div className="font-extrabold text-[10px] text-[#002a8f] mt-0.25">2</div>
                   </div>
                 </div>
               </div>
@@ -1074,7 +1084,7 @@ export default function ApartmentContent({
         </div>
 
         {/* Unified Card 2: Property Performance Summary */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3.5 flex flex-col justify-between w-full sm:w-[450px] shrink-0 relative group">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2.5 flex flex-col justify-between xl:col-span-3 w-full relative group xl:h-[185px] shrink-0">
           {/* local linear gradient definition for half star */}
           <svg width="0" height="0" className="absolute">
             <defs>
@@ -1086,78 +1096,78 @@ export default function ApartmentContent({
           </svg>
 
           {/* Card Title */}
-          <div className="text-[13.5px] text-[#002fbe] font-bold select-none leading-none mb-2.5 border-b border-gray-100 pb-2">
+          <div className="text-[12.5px] text-[#002fbe] font-extrabold select-none leading-none mb-2 border-b border-gray-100 pb-1.5">
             PROPERTY PERFORMANCE SUMMARY
           </div>
 
           {/* Two Columns Grid/Flexbox Layout */}
-          <div className="flex flex-col sm:flex-row items-stretch gap-4 flex-grow">
+          <div className="flex flex-col sm:flex-row items-stretch gap-3 flex-grow min-h-0">
             {/* Left Column: Property Grade */}
-            <div className="w-full sm:w-[48%] flex flex-col justify-between pr-2.5 sm:border-r sm:border-gray-200">
+            <div className="w-full sm:w-[48%] flex flex-col justify-between pr-2 sm:border-r sm:border-gray-200 py-0.5">
               <div>
-                <div className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider leading-none">
+                <div className="text-[10px] text-gray-500 font-extrabold uppercase tracking-wider leading-none">
                   Property Grade
                 </div>
-                <div className="flex text-orange-500 gap-0.5 mt-2 justify-start">
-                  <Star size={14} fill="#f97316" className="stroke-orange-500" />
-                  <Star size={14} fill="#f97316" className="stroke-orange-500" />
-                  <Star size={14} fill="#f97316" className="stroke-orange-500" />
-                  <Star size={14} fill="#f97316" className="stroke-orange-500" />
-                  <Star size={14} fill="url(#star-half-orange)" className="stroke-orange-500" />
-                  <Star size={14} fill="transparent" className="stroke-gray-300" />
+                <div className="flex text-orange-500 gap-0.5 mt-1.5 justify-start">
+                  <Star size={13.5} fill="#f97316" className="stroke-orange-500" />
+                  <Star size={13.5} fill="#f97316" className="stroke-orange-500" />
+                  <Star size={13.5} fill="#f97316" className="stroke-orange-500" />
+                  <Star size={13.5} fill="#f97316" className="stroke-orange-500" />
+                  <Star size={13.5} fill="url(#star-half-orange)" className="stroke-orange-500" />
+                  <Star size={13.5} fill="transparent" className="stroke-gray-300" />
                 </div>
-                <div className="text-[#002a8f] font-extrabold text-[26px] flex items-baseline leading-none mt-2 select-all font-sans">
+                <div className="text-[#002a8f] font-black text-[23px] flex items-baseline leading-none mt-1.5 select-all font-sans">
                   <span>6.2</span>
-                  <span className="text-[13px] text-[#1749b5] font-semibold ml-1">/ 7</span>
+                  <span className="text-[12px] text-[#1749b5] font-extrabold ml-0.5">/ 7</span>
                 </div>
               </div>
-              <div className="mt-2.5">
-                <div className="text-green-600 text-[12px] font-bold leading-tight">
+              <div>
+                <div className="text-green-600 text-[12px] font-black leading-tight">
                   A+ Grade
                 </div>
-                <div className="text-gray-500 text-[10.5px] font-medium leading-tight mt-0.5">
+                <div className="text-gray-500 text-[10px] font-bold leading-tight mt-0.5">
                   Excellent Property
                 </div>
               </div>
             </div>
 
             {/* Right Column: Health Score */}
-            <div className="w-full sm:w-[52%] flex flex-col justify-between pl-0 sm:pl-1">
-              <div className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider leading-none">
+            <div className="w-full sm:w-[52%] flex flex-col justify-between pl-0 sm:pl-1 py-0.5">
+              <div className="text-[10px] text-gray-500 font-extrabold uppercase tracking-wider leading-none">
                 Health Score
               </div>
               
-              <div className="flex items-center gap-3.5 mt-1.5 flex-grow">
+              <div className="flex items-center gap-2.5 mt-1 flex-grow">
                 {/* Circle progress - Compact */}
-                <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
-                  <svg width="64" height="64" viewBox="0 0 64 64" className="transform -rotate-90">
-                    <circle cx="32" cy="32" r="25" stroke="#10b981" strokeWidth="5" strokeOpacity="0.2" fill="transparent" />
+                <div className="relative w-14 h-14 flex items-center justify-center shrink-0">
+                  <svg width="56" height="56" viewBox="0 0 56 56" className="transform -rotate-90">
+                    <circle cx="28" cy="28" r="22" stroke="#10b981" strokeWidth="4.5" strokeOpacity="0.2" fill="transparent" />
                     <circle 
-                      cx="32" 
-                      cy="32" 
-                      r="25" 
+                      cx="28" 
+                      cy="28" 
+                      r="22" 
                       stroke="#047857" 
-                      strokeWidth="5" 
+                      strokeWidth="4.5" 
                       fill="transparent" 
-                      strokeDasharray="157.1" 
-                      strokeDashoffset="12.6" 
+                      strokeDasharray="138.2" 
+                      strokeDashoffset="11.0" 
                       strokeLinecap="round" 
                       className="transition-all duration-1000 ease-out"
                     />
                   </svg>
-                  <div className="absolute font-black text-[13px] text-[#002a8f] select-none">92%</div>
+                  <div className="absolute font-black text-[12px] text-[#002a8f] select-none">92%</div>
                 </div>
 
                 {/* Stats right */}
                 <div className="flex-1 flex flex-col justify-center leading-none">
                   <div>
-                    <div className="font-extrabold text-[24px] text-[#002a8f] select-all">92%</div>
-                    <div className="text-green-600 text-[11px] font-bold mt-1.5 select-none flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                    <div className="font-black text-[22px] text-[#002a8f] select-all">92%</div>
+                    <div className="text-green-600 text-[11px] font-black mt-1 select-none flex items-center gap-1">
+                      <span className="w-1 h-1 bg-green-500 rounded-full" />
                       Excellent
                     </div>
                   </div>
-                  <button className="text-[#002fbe] text-[9.5px] font-bold mt-2.5 hover:bg-[#002fbe] hover:text-white border border-[#002fbe] rounded-lg px-2 py-0.5 bg-white w-fit shadow-2xs cursor-pointer select-none transition-all">
+                  <button className="text-[#002fbe] text-[9.5px] font-extrabold mt-2 hover:bg-[#002fbe] hover:text-white border border-[#002fbe] rounded-lg px-2 py-0.5 bg-white w-fit shadow-2xs cursor-pointer select-none transition-all">
                     Details
                   </button>
                 </div>
@@ -1168,84 +1178,87 @@ export default function ApartmentContent({
       </div>
 
       {/* 2. Verification Badges Row */}
-      <div className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm text-xs flex flex-wrap items-center justify-between gap-y-1.5 shrink-0 select-none mb-3">
-        <StatusBadge icon={<CheckCircle2 size={13} className="text-green-600" />} title="GIS Verified" status="Verified" statusColor="text-green-600" />
-        <StatusBadge icon={<CheckCircle2 size={13} className="text-green-600" />} title="Assessment" status="Approved" statusColor="text-green-600" />
-        <StatusBadge icon={<Wallet size={13} className="text-green-600" />} title="Collection Status" status="Paid" statusColor="text-green-600" />
-        <StatusBadge icon={<UserCheck size={13} className="text-green-600" />} title="KYC Status" status="Verified" statusColor="text-green-600" />
-        <StatusBadge icon={<Droplet size={13} className="text-blue-600" />} title="Water Connection" status="Active" statusColor="text-green-600" isBlue />
-        <StatusBadge icon={<ShieldCheck size={13} className="text-green-600" />} title="Fire NOC" status="Valid" statusColor="text-green-600" />
-        <StatusBadge icon={<Briefcase size={13} className="text-green-600" />} title="Trade License" status="Active" statusColor="text-green-600" />
-        <StatusBadge icon={<Link2 size={13} className="text-green-600" />} title="BPMS Linked" status="Yes" statusColor="text-green-600" />
+      <div className="bg-white px-2.5 py-1 rounded-lg border border-gray-200 shadow-sm text-[10px] flex items-center justify-between gap-x-1.5 shrink-0 select-none mb-2.5 h-[40px] xl:h-[42px] overflow-x-auto no-scrollbar whitespace-nowrap">
+        <StatusBadge icon={<CheckCircle2 size={12} className="text-green-600" />} title="GIS Verified" status="Verified" statusColor="text-green-600" />
+        <StatusBadge icon={<CheckCircle2 size={12} className="text-green-600" />} title="Assessment" status="Approved" statusColor="text-green-600" />
+        <StatusBadge icon={<Wallet size={12} className="text-green-600" />} title="Collection Status" status="Paid" statusColor="text-green-600" />
+        <StatusBadge icon={<UserCheck size={12} className="text-green-600" />} title="KYC Status" status="Verified" statusColor="text-green-600" />
+        <StatusBadge icon={<Droplet size={12} className="text-blue-600" />} title="Water Connection" status="Active" statusColor="text-green-600" isBlue />
+        <StatusBadge icon={<ShieldCheck size={12} className="text-green-600" />} title="Fire NOC" status="Valid" statusColor="text-green-600" />
+        <StatusBadge icon={<Briefcase size={12} className="text-green-600" />} title="Trade License" status="Active" statusColor="text-green-600" />
+        <StatusBadge icon={<Link2 size={12} className="text-green-600" />} title="BPMS Linked" status="Yes" statusColor="text-green-600" />
       </div>
 
       {/* Main Split Layout Grid */}
-      <div className="flex flex-col lg:flex-row gap-3 items-start flex-1 min-h-0 w-full">
+      <div className="flex flex-col lg:flex-row gap-3 items-stretch flex-1 min-h-0 w-full overflow-hidden">
         {/* Left Column: Wing Summary, Table, Metrics */}
-        <div className="flex-1 flex flex-col gap-3 min-h-0 w-full lg:w-0">
+        <div className="flex-1 flex flex-col gap-3 min-h-0 w-full lg:w-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pr-1.5">
           
           {/* 3. Wing Summary Mini-Dashboard Grid */}
-          <div ref={summaryRef} className="bg-white border border-gray-200 rounded-xl p-3.5 shadow-xs relative overflow-visible">
+          <div ref={summaryRef} className="bg-white border border-gray-200 rounded-xl p-3 shadow-xs relative shrink-0">
             {/* Section Title & Legend Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-3 px-1 gap-2 select-none">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-2 px-1 gap-2 select-none">
               <div className="flex items-baseline gap-1.5">
-                <h3 className="text-[12.5px] font-black text-[#1e2b58] tracking-tight uppercase">Wing Summary</h3>
-                <span className="text-[9.5px] text-gray-450 font-bold">(Mini Dashboard)</span>
+                <h3 className="text-[12px] font-black text-[#1e2b58] tracking-tight uppercase">Wing Summary</h3>
+                <span className="text-[9px] text-gray-455 font-bold">(Mini Dashboard)</span>
               </div>
               
               {/* Legend Row */}
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9.5px] font-bold text-gray-500/90">
+              <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[9px] font-bold text-gray-500/90">
                 <span className="flex items-center gap-1">
-                  <span className="text-green-600 font-black text-[10px]">A+</span>
-                  <span className="text-gray-450">: Excellent (90%+)</span>
+                  <span className="text-green-600 font-black text-[9.5px]">A+</span>
+                  <span className="text-gray-455 text-[8.5px]">: Excellent (90%+)</span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="text-green-500 font-black text-[10px]">A</span>
-                  <span className="text-gray-450">: Good (75-90%)</span>
+                  <span className="text-green-500 font-black text-[9.5px]">A</span>
+                  <span className="text-gray-455 text-[8.5px]">: Good (75-90%)</span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="text-orange-500 font-black text-[10px]">B</span>
-                  <span className="text-gray-450">: Average (50-75%)</span>
+                  <span className="text-orange-500 font-black text-[9.5px]">B</span>
+                  <span className="text-gray-455 text-[8.5px]">: Average (50-75%)</span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="text-amber-500 font-black text-[10px]">C</span>
-                  <span className="text-gray-450">: Poor (&lt;50%)</span>
+                  <span className="text-amber-500 font-black text-[9.5px]">C</span>
+                  <span className="text-gray-455 text-[8.5px]">: Poor (&lt;50%)</span>
                 </span>
               </div>
             </div>
 
             {/* Horizontal row of Wing cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2.5">
+            <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
               {wings.map((wing) => (
-                <WingCard 
-                  key={wing.wing}
-                  wing={wing}
-                  activeMetric={activeMetrics[wing.id] || 'discount'}
-                  onMetricClick={handleMetricClick}
-                  onDeleteClick={handleDeleteWing}
-                />
+                <div key={wing.wing} className="flex-grow flex-shrink-0 flex-1 min-w-[190px] max-w-[245px]">
+                  <WingCard 
+                    wing={wing}
+                    activeMetric={activeMetrics[wing.id] || 'discount'}
+                    onMetricClick={handleMetricClick}
+                    onDeleteClick={handleDeleteWing}
+                  />
+                </div>
               ))}
               
               {/* Add Wing Card */}
-              <button 
-                onClick={() => {
-                  setFormErrors({});
-                  setSubmitSuccess(false);
-                  setAddWingModalOpen(true);
-                }}
-                className="flex flex-col justify-center items-center bg-white border border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50/10 cursor-pointer transition-all p-2.5 h-full focus:ring-1 focus:ring-blue-500 outline-none w-full"
-                aria-label="Add new Wing"
-              >
-                <div className="w-7 h-7 rounded-full bg-gray-50 flex items-center justify-center border border-gray-200 text-[#3b82f6]">
-                  <Plus size={15} />
-                </div>
-                <span className="text-[10px] font-black text-[#3b82f6] mt-2 uppercase tracking-wider">Add Wing</span>
-              </button>
+              <div className="flex-grow flex-shrink-0 flex-1 min-w-[190px] max-w-[245px]">
+                <button 
+                  onClick={() => {
+                    setFormErrors({});
+                    setSubmitSuccess(false);
+                    setAddWingModalOpen(true);
+                  }}
+                  className="flex flex-col justify-center items-center bg-white border border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50/10 cursor-pointer transition-all p-2.5 h-full min-h-[185px] focus:ring-1 focus:ring-blue-500 outline-none w-full"
+                  aria-label="Add new Wing"
+                >
+                  <div className="w-7 h-7 rounded-full bg-gray-50 flex items-center justify-center border border-gray-200 text-[#3b82f6]">
+                    <Plus size={15} />
+                  </div>
+                  <span className="text-[10px] font-black text-[#3b82f6] mt-2 uppercase tracking-wider">Add Wing</span>
+                </button>
+              </div>
             </div>
           </div>
 
           {/* 4. Tabs & Sub-Filter Bar */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm mb-1">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm mb-1 shrink-0">
             {/* Navigation Tabs */}
             <div className="flex flex-wrap items-center justify-between border-b border-gray-150 px-4 py-2 gap-2">
               <div className="flex flex-wrap gap-1 text-[11px] font-extrabold text-gray-500">
@@ -1344,11 +1357,11 @@ export default function ApartmentContent({
           </div>
 
           {/* 5. Main Comparison Table Container (Independent Horizontal Scroll) */}
-          <div className="w-full flex flex-col border border-gray-200 rounded-xl shadow-xs overflow-hidden bg-white select-none">
+          <div className="w-full flex flex-col border border-gray-200 rounded-xl shadow-xs overflow-hidden bg-white select-none shrink-0">
             <div className="w-full flex divide-x divide-gray-200">
             
             {/* LEFT TABLE: Existing Assessment (Previous) */}
-            <div className="w-[41%] shrink-0 flex flex-col overflow-hidden bg-white">
+            <div className="w-[41%] shrink-0 flex flex-col bg-white">
               {/* Header block with green tint gradient */}
               <div className="bg-[#edf7f4] border-b border-gray-200 px-3 py-1.5 flex items-center justify-between h-[34px] shrink-0">
                 <div className="flex items-center gap-1 select-none">
@@ -1450,7 +1463,7 @@ export default function ApartmentContent({
             </div>
 
             {/* MIDDLE COLUMN: Difference Engine */}
-            <div className="w-[18%] shrink-0 flex flex-col overflow-hidden bg-[#fffdf5] border-l border-r border-gray-200">
+            <div className="w-[18%] shrink-0 flex flex-col bg-[#fffdf5] border-l border-r border-gray-200">
               {/* Header block with yellow tint gradient */}
               <div className="bg-[#fdf8e2] border-b border-amber-250/60 px-3 py-1.5 flex items-center justify-between h-[34px] shrink-0">
                 <span className="text-[10px] font-black text-[#8a6d1c] uppercase tracking-tight">Difference Engine</span>
@@ -1459,7 +1472,7 @@ export default function ApartmentContent({
                 </button>
               </div>
               
-              <div className="w-full overflow-x-auto no-scrollbar">
+              <div className="w-full overflow-x-auto scrollbar-thin">
                 <table className="min-w-[420px] text-left border-collapse text-[10px] w-full">
                   <thead>
                     <tr className="bg-[#fdf8e2]/60 border-b border-amber-200 text-[#8a6d1c] font-black uppercase h-[32px]">
@@ -1518,7 +1531,7 @@ export default function ApartmentContent({
             </div>
 
             {/* RIGHT TABLE: New Survey (Current) */}
-            <div className="w-[41%] shrink-0 flex flex-col overflow-hidden bg-white">
+            <div className="w-[41%] shrink-0 flex flex-col bg-white">
               {/* Header block with blue tint gradient */}
               <div className="bg-[#edf2ff] border-b border-gray-200 px-3 py-1.5 flex items-center justify-between h-[34px] shrink-0">
                 <div className="flex items-center gap-1 select-none">
@@ -1650,7 +1663,7 @@ export default function ApartmentContent({
           </div>
 
           {/* 6. Bottom Dashboard Metrics Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3 shrink-0">
             {/* Area Comparison */}
             <div className="bg-white border border-gray-200 rounded-xl p-3.5 shadow-sm flex flex-col justify-between">
               <span className="text-[10px] font-extrabold text-gray-400 uppercase">Area Comparison</span>
@@ -1793,10 +1806,10 @@ export default function ApartmentContent({
         </div>
 
         {/* Right Column: Town All Wings + Media Stack */}
-        <div className="w-full lg:w-[280px] shrink-0 flex flex-col gap-3.5 h-full select-none">
+        <div className="w-full lg:w-[280px] shrink-0 flex flex-col gap-3 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pr-1.5 select-none">
           
           {/* Town All Wings Summary Panel */}
-          <div className="bg-white border border-gray-200 rounded-xl p-3 flex flex-col justify-between shadow-sm">
+          <div className="bg-white border border-gray-200 rounded-xl p-2.5 flex flex-col justify-between shadow-sm h-[155px] shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1 text-gray-500">
                 <Building2 size={12} className="text-[#3b82f6]" />
@@ -1805,22 +1818,22 @@ export default function ApartmentContent({
               <span className="text-[15px] font-black text-[#1e2b58]">48</span>
             </div>
 
-            <div className="space-y-1.5 my-2">
+            <div className="space-y-1 my-1">
               <ProgressRow dotColor="bg-green-500" label="Matched" val="28" pct="58.33%" />
               <ProgressRow dotColor="bg-[#f97316]" label="Modified" val="12" pct="25.00%" />
               <ProgressRow dotColor="bg-blue-500" label="New" val="4" pct="8.33%" />
               <ProgressRow dotColor="bg-red-500" label="Missing" val="4" pct="8.33%" />
             </div>
 
-            <div className="pt-2 border-t border-gray-150">
-              <div className="flex justify-between items-center text-[9px] font-extrabold text-gray-400">
+            <div className="pt-1.5 border-t border-gray-150">
+              <div className="flex justify-between items-center text-[9px] font-extrabold text-gray-400 leading-none">
                 <span>Comparison Completion</span>
+                <span className="text-green-600 font-extrabold text-[10px] leading-none">85%</span>
               </div>
               <div className="flex items-center gap-2 mt-1">
                 <div className="flex-1 bg-gray-100 h-1.5 rounded-full overflow-hidden">
                   <div className="bg-green-500 h-full rounded-full" style={{ width: '85%' }}></div>
                 </div>
-                <span className="text-green-600 font-extrabold text-[10px]">85%</span>
               </div>
             </div>
           </div>
@@ -1848,7 +1861,7 @@ export default function ApartmentContent({
               <span className="text-[9.5px] font-black text-[#1e2b58] uppercase tracking-wider">Building Plan <span className="text-[8px] text-gray-400 lowercase font-medium">(Typical Floor)</span></span>
               <Maximize2 size={10} className="text-gray-400 group-hover:text-[#002fbe] transition-colors" />
             </div>
-            <div className="overflow-hidden rounded-lg w-full h-[105px] bg-gray-50 flex items-center justify-center border border-dashed border-gray-200">
+            <div className="overflow-hidden rounded-lg w-full h-[125px] bg-gray-50 flex items-center justify-center border border-dashed border-gray-200">
               <img src="/blueprint_plan.png" className="w-full h-full object-contain rounded" alt="Building Plan" />
             </div>
           </div>
@@ -1870,9 +1883,9 @@ export default function ApartmentContent({
           <div className="flex flex-col">
             <MapBox 
               title="Street View" 
-              imgUrl="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=400&auto=format&fit=crop" 
+              imgUrl="/street_view.jpg" 
               onZoom={() => {
-                setSelectedImg("https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=800&auto=format&fit=crop");
+                setSelectedImg("/street_view.jpg");
                 setSelectedImgTitle("Street View");
               }}
               onHover={(url: string | null) => handleHoverImage(url, "left")}
@@ -2550,13 +2563,13 @@ function getStatusBadgeClass(status: string) {
 function StatusBadge({ icon, title, status, statusColor, isBlue }: any) {
   const bgClass = isBlue ? 'bg-blue-50 text-blue-650' : 'bg-green-50 text-green-650';
   return (
-    <div className="flex items-center gap-2 pr-4 border-r border-gray-200 last:border-0 last:pr-0 shrink-0 flex-1 justify-center">
-      <div className={`p-1.5 rounded-full flex items-center justify-center ${bgClass} w-7 h-7`}>
+    <div className="flex items-center gap-1.5 pr-2.5 border-r border-gray-200 last:border-0 last:pr-0 shrink-0 flex-1 justify-center">
+      <div className={`p-1 rounded-full flex items-center justify-center ${bgClass} w-[22px] h-[22px]`}>
         {icon}
       </div>
       <div>
-        <div className="text-[9px] text-[#002fbe] font-bold leading-none">{title}</div>
-        <div className={`text-[9.5px] font-extrabold mt-0.5 leading-none ${statusColor || 'text-green-600'}`}>{status}</div>
+        <div className="text-[8.5px] text-[#002fbe] font-bold leading-none">{title}</div>
+        <div className={`text-[9px] font-black mt-0.5 leading-none ${statusColor || 'text-green-600'}`}>{status}</div>
       </div>
     </div>
   );
@@ -2565,7 +2578,7 @@ function StatusBadge({ icon, title, status, statusColor, isBlue }: any) {
 function MapBox({ title, imgUrl, onZoom, onHover }: any) {
   return (
     <div 
-      className="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col group shadow-xs hover:shadow-md hover:border-blue-500 transition-all cursor-pointer transform hover:-translate-y-0.5"
+      className="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col group shadow-xs hover:shadow-md hover:border-blue-500 transition-all cursor-pointer transform hover:-translate-y-0.5 shrink-0"
       onClick={onZoom}
       onMouseEnter={() => onHover && onHover(imgUrl)}
       onMouseLeave={() => onHover && onHover(null)}
@@ -2582,7 +2595,7 @@ function MapBox({ title, imgUrl, onZoom, onHover }: any) {
         <span>{title}</span>
         <Maximize2 size={10} className="text-gray-400 group-hover:text-[#002fbe] transition-colors" />
       </div>
-      <div className="w-full h-[105px] bg-gray-200 relative overflow-hidden">
+      <div className="w-full h-[125px] bg-gray-200 relative overflow-hidden">
         <img
           src={imgUrl}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -2618,7 +2631,7 @@ function ChangeDetectionBox({ title, beforeImg, afterImg, beforeImgZoom, afterIm
 
   return (
     <div 
-      className={`bg-white border rounded-xl overflow-hidden flex flex-col group transition-all relative ${
+      className={`bg-white border rounded-xl overflow-hidden flex flex-col group transition-all relative shrink-0 ${
         isEnlarged 
           ? 'border-gray-200 w-full h-full animate-scaleIn' 
           : 'border-gray-200 hover:border-blue-500 hover:shadow-md cursor-pointer transform hover:-translate-y-0.5 shadow-xs'
@@ -2647,7 +2660,7 @@ function ChangeDetectionBox({ title, beforeImg, afterImg, beforeImgZoom, afterIm
         )}
       </div>
 
-      <div className={`w-full relative overflow-hidden select-none bg-gray-100 ${isEnlarged ? 'flex-1 min-h-0' : 'h-[105px]'}`}>
+      <div className={`w-full relative overflow-hidden select-none bg-gray-100 ${isEnlarged ? 'flex-1 min-h-0' : 'h-[125px]'}`}>
         {/* Before Image */}
         <img
           src={beforeImg}
@@ -2660,7 +2673,7 @@ function ChangeDetectionBox({ title, beforeImg, afterImg, beforeImgZoom, afterIm
           <img
             src={afterImg}
             className="absolute inset-0 object-cover max-w-none pointer-events-none"
-            style={{ width: isEnlarged ? '600px' : '268px', height: '100%' }}
+            style={{ width: isEnlarged ? '600px' : '270px', height: '100%' }}
             alt="After"
           />
         </div>

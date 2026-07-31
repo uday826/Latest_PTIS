@@ -2,6 +2,7 @@ import React from 'react';
 import { ShieldAlert, Compass } from 'lucide-react';
 
 export default function PlaceholderContent({ title }: { title: string }) {
+
   // Format the slug title to human readable
   const formatTitle = (slug: string) => {
     return slug
