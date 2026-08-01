@@ -11,7 +11,7 @@ export default function PropertySummary({
   setActiveAction = () => {}
 }: {
   activeTab?: string;
-  onHoverImg?: (url: string | null) => void;
+  onHoverImg?: (url: string | null, position?: 'left' | 'right' | 'property') => void;
   onClickImg?: (url: string) => void;
   activeAction?: string | null;
   setActiveAction?: (action: string | null) => void;
@@ -46,7 +46,7 @@ export default function PropertySummary({
 
         {/* 1. Image Section */}
         <div
-          onMouseEnter={() => onHoverImg && onHoverImg("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")}
+          onMouseEnter={() => onHoverImg && onHoverImg("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop", "property")}
           onMouseLeave={() => onHoverImg && onHoverImg(null)}
           onClick={() => onClickImg && onClickImg("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop")}
           className={`relative w-36 h-24 shrink-0 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:border-blue-300 transition-colors bg-gray-50 transition-all ${
