@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Maximize2 } from 'lucide-react';
 
 interface ChangeDetectionBoxProps {
@@ -23,6 +23,20 @@ export default function ChangeDetectionBox({
   isEnlarged
 }: ChangeDetectionBoxProps) {
   const [sliderPos, setSliderPos] = useState(50);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(270);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isEnlarged) return;
@@ -73,7 +87,7 @@ export default function ChangeDetectionBox({
         )}
       </div>
 
-      <div className={`w-full relative overflow-hidden select-none bg-gray-100 ${isEnlarged ? 'flex-1 min-h-0' : 'h-[125px]'}`}>
+      <div ref={containerRef} className={`w-full relative overflow-hidden select-none bg-gray-100 ${isEnlarged ? 'flex-1 min-h-0' : 'h-[125px]'}`}>
         {/* Before Image */}
         <img
           src={beforeImg}
@@ -86,7 +100,7 @@ export default function ChangeDetectionBox({
           <img
             src={afterImg}
             className="absolute inset-0 object-cover max-w-none pointer-events-none"
-            style={{ width: isEnlarged ? '600px' : '270px', height: '100%' }}
+            style={{ width: `${containerWidth}px`, height: '100%' }}
             alt="After"
           />
         </div>

@@ -37,7 +37,7 @@ export default function TimelinePopup({
       {/* Popover Card */}
       <div
         id={`timeline-popup-${selectedTimelineStage}`}
-        className="absolute z-50 timeline-popup bg-white border border-[#002fbe]/25 rounded-xl shadow-2xl p-3 w-[360px] animate-fadeIn flex flex-col gap-2.5 font-sans"
+        className="absolute z-50 timeline-popup bg-white border border-[#002fbe]/25 rounded-xl shadow-2xl p-3 w-[360px] max-w-[calc(100vw-24px)] animate-fadeIn flex flex-col gap-2.5 font-sans"
         style={{
           left: popupPosition ? `${popupPosition.left}px` : '50%',
           top: popupPosition ? `${popupPosition.top}px` : '50%',

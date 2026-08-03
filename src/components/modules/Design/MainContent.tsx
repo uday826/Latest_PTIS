@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import ActionViews from './ActionViews';
 import { Tab, StatusBadge } from './DesignComponents';
+import { initialComplianceIssues, ComplianceIssue } from './aiReportData';
 import FloorComponentDetailsTable from './FloorComponentDetailsTable';
 import TimelineAndMetricsRow from './TimelineAndMetricsRow';
 import TaxesComparisonCard from './TaxesComparisonCard';
@@ -26,6 +27,10 @@ import BottomValidationPanel from './BottomValidationPanel';
 import AiReportPopup from './AiReportPopup';
 import TimelinePopup from './TimelinePopup';
 import DesignRightPanel from './DesignRightPanel';
+import KycDetailsTab from './KycDetailsTab';
+import SocietyDetailsTab from './SocietyDetailsTab';
+import OldDetailsTab from './OldDetailsTab';
+import PlaceholderContent from './PlaceholderContent';
 
 export default function MainContent({ 
   activeAction = null, 
@@ -54,6 +59,28 @@ export default function MainContent({
   const [selectedImg, setSelectedImg] = useState<string | null>(null);
   const [hoveredImg, setHoveredImg] = useState<string | null>(null);
   const [hoverPosition, setHoverPosition] = useState<'left' | 'right' | 'property'>('right');
+
+  const [issues, setIssues] = useState<ComplianceIssue[]>(initialComplianceIssues);
+
+  const handleResolveIssue = (id: string) => {
+    setIssues(prev => prev.map(issue => issue.id === id ? { ...issue, status: 'Resolved' } : issue));
+  };
+
+  const handleOverrideIssue = (id: string) => {
+    setIssues(prev => prev.map(issue => issue.id === id ? { ...issue, status: 'Overridden' } : issue));
+  };
+
+  const handleReopenIssue = (id: string) => {
+    setIssues(prev => prev.map(issue => issue.id === id ? { ...issue, status: 'Open' } : issue));
+  };
+
+  const getIssueStatus = (id: string) => {
+    return issues.find(i => i.id === id)?.status || 'Open';
+  };
+
+  const isFireNocValid = getIssueStatus('fire-noc') !== 'Open';
+  const isWaterLinked = getIssueStatus('water-dup') !== 'Open';
+  const isMobileVerified = getIssueStatus('mobile-verify') !== 'Open';
 
   const handleViewReportClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -151,17 +178,17 @@ export default function MainContent({
           <ActionViews activeAction={activeAction} setActiveAction={setActiveAction} />
         </div>
       ) : (
-        <div className="flex-1 min-h-0 flex gap-2.5 overflow-hidden">
-          <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-2.5 overflow-hidden">
+          <div className="flex-grow flex-1 min-h-0 flex flex-col gap-2 overflow-hidden w-full lg:w-0">
             
             {/* Status Badges Row */}
             <div className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm text-xs flex flex-wrap items-center justify-between gap-y-1.5 shrink-0 select-none">
               <StatusBadge icon={<Map size={13} className="text-green-600" />} title="GIS Verified" status="Verified" statusColor="text-green-600" />
               <StatusBadge icon={<FileText size={13} className="text-green-600" />} title="Assessment" status="Approved" statusColor="text-green-600" />
               <StatusBadge icon={<Wallet size={13} className="text-green-600" />} title="Collection Status" status="Paid" statusColor="text-green-600" />
-              <StatusBadge icon={<UserCheck size={13} className="text-green-600" />} title="KYC Status" status="Verified" statusColor="text-green-600" />
-              <StatusBadge icon={<Droplet size={13} className="text-blue-600" />} title="Water Connection" status="Active" statusColor="text-green-600" isBlue />
-              <StatusBadge icon={<ShieldCheck size={13} className="text-green-600" />} title="Fire NOC" status="Valid" statusColor="text-green-600" />
+              <StatusBadge icon={<UserCheck size={13} className={isMobileVerified ? "text-green-600" : "text-orange-500"} />} title="KYC Status" status={isMobileVerified ? "Verified" : "Unverified"} statusColor={isMobileVerified ? "text-green-600" : "text-orange-500"} />
+              <StatusBadge icon={<Droplet size={13} className={isWaterLinked ? "text-blue-600" : "text-orange-500"} />} title="Water Connection" status={isWaterLinked ? "Active" : "Not Linked"} statusColor={isWaterLinked ? "text-green-600" : "text-orange-500"} isBlue={isWaterLinked} />
+              <StatusBadge icon={<ShieldCheck size={13} className={isFireNocValid ? "text-green-600" : "text-red-500"} />} title="Fire NOC" status={isFireNocValid ? "Valid" : "Expired"} statusColor={isFireNocValid ? "text-green-600" : "text-red-500"} />
               <StatusBadge icon={<Briefcase size={13} className="text-green-600" />} title="Trade License" status="Active" statusColor="text-green-600" />
               <StatusBadge icon={<Link2 size={13} className="text-green-600" />} title="BPMS Linked" status="Yes" statusColor="text-green-600" />
             </div>
@@ -178,26 +205,39 @@ export default function MainContent({
 
             {/* Tab Panel Content */}
             <div className="flex-1 min-h-0 bg-white border border-gray-200 rounded-lg p-2.5 shadow-sm flex flex-col overflow-y-auto no-scrollbar gap-2">
-              <div className="flex flex-col gap-2 transition-all duration-300 animate-fadeIn">
-                <div className="flex items-center justify-between pb-1 shrink-0 select-none">
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="font-extrabold text-[#002fbe] text-[11px] uppercase tracking-wider">Floor / Component Details</h3>
-                    <span className="text-gray-400 text-[10px] font-semibold">(6 Components)</span>
-                  </div>
-                </div>
+                {activeTab === 'property' && (
+                  <>
+                    <div className="flex items-center justify-between pb-1 shrink-0 select-none">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="font-extrabold text-[#002fbe] text-[11px] uppercase tracking-wider">Floor / Component Details</h3>
+                        <span className="text-gray-400 text-[10px] font-semibold">(6 Components)</span>
+                      </div>
+                    </div>
 
-                <FloorComponentDetailsTable activeSubTab={activeSubTab} />
-                <TimelineAndMetricsRow 
-                  selectedTimelineStage={selectedTimelineStage}
-                  onTimelineNodeClick={handleTimelineNodeClick}
-                />
-                <TaxesComparisonCard />
-                <BottomValidationPanel 
-                  activeTab={activeTab}
-                  aiReportPopupOpen={aiReportPopupOpen}
-                  onViewReportClick={handleViewReportClick}
-                />
-              </div>
+                    <FloorComponentDetailsTable activeSubTab={activeSubTab} />
+                    <TimelineAndMetricsRow 
+                      selectedTimelineStage={selectedTimelineStage}
+                      onTimelineNodeClick={handleTimelineNodeClick}
+                    />
+                    <TaxesComparisonCard />
+                    <BottomValidationPanel 
+                      activeTab={activeTab}
+                      aiReportPopupOpen={aiReportPopupOpen}
+                      onViewReportClick={handleViewReportClick}
+                      issues={issues}
+                    />
+                  </>
+                )}
+
+                {activeTab === 'kyc' && <KycDetailsTab />}
+
+                {activeTab === 'society' && <SocietyDetailsTab />}
+
+                {activeTab === 'old' && <OldDetailsTab />}
+
+                {activeTab !== 'property' && activeTab !== 'kyc' && activeTab !== 'society' && activeTab !== 'old' && (
+                  <PlaceholderContent title={activeTab} />
+                )}
             </div>
           </div>
 
@@ -233,6 +273,10 @@ export default function MainContent({
         aiReportPopupPosition={aiReportPopupPosition}
         aiReportLoading={aiReportLoading}
         closeAiReport={closeAiReport}
+        issues={issues}
+        onResolve={handleResolveIssue}
+        onOverride={handleOverrideIssue}
+        onReopen={handleReopenIssue}
       />
 
       <TimelinePopup 

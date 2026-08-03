@@ -11,7 +11,7 @@ export default function DesignRightPanel({
   openPreview
 }: DesignRightPanelProps) {
   return (
-    <div className="w-[270px] shrink-0 flex flex-col gap-2.5 h-full">
+    <div className="w-full lg:w-[270px] shrink-0 flex flex-col gap-2.5 h-full lg:overflow-y-auto overflow-visible scrollbar-thin pr-1 select-none">
       <div 
         onMouseEnter={() => handleHoverImage("/blueprint_plan.png", "left")} 
         onMouseLeave={() => handleHoverImage(null)} 
