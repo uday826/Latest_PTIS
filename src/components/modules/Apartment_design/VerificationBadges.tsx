@@ -9,7 +9,7 @@ import {
   Link2,
   BarChart3
 } from 'lucide-react';
-import StatusBadge from './StatusBadge';
+import StatusBadge from '../shared/StatusBadge';
 
 export default function VerificationBadges() {
   return (

@@ -28,7 +28,6 @@ const extraServerActionOrigins = [
 ];
 
 const nextConfig: NextConfig = {
-  distDir: "dist",
   experimental: {
     serverActions: {
       allowedOrigins: extraServerActionOrigins,
@@ -67,9 +66,6 @@ const nextConfig: NextConfig = {
   // Ignore TypeScript and ESLint build errors to allow production builds to succeed
   typescript: {
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
 };
 

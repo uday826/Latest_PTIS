@@ -53,7 +53,7 @@ export default function MainContent({
   const [activeSubTab, setActiveSubTab] = useState<'rateable' | 'capital' | 'dual' | 'reassessment'>('rateable');
   const [selectedImg, setSelectedImg] = useState<string | null>(null);
   const [hoveredImg, setHoveredImg] = useState<string | null>(null);
-  const [hoverPosition, setHoverPosition] = useState<'left' | 'right'>('right');
+  const [hoverPosition, setHoverPosition] = useState<'left' | 'right' | 'property'>('right');
 
   const handleViewReportClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -147,7 +147,7 @@ export default function MainContent({
       />
 
       {activeAction ? (
-        <div className="flex-grow flex-1 min-h-0 bg-white border border-gray-200 rounded-xl p-3.5 shadow-md overflow-hidden relative select-none">
+        <div className="flex-grow flex-1 min-h-0 bg-white border border-gray-200 rounded-xl p-3.5 shadow-md overflow-hidden relative">
           <ActionViews activeAction={activeAction} setActiveAction={setActiveAction} />
         </div>
       ) : (

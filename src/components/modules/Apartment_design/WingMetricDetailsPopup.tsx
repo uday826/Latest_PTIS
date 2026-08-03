@@ -22,7 +22,7 @@ export default function WingMetricDetailsPopup({ popupData, onClose }: WingMetri
       />
       
       <div 
-        className="absolute z-40 w-[295px] bg-white border border-blue-200 rounded-xl shadow-xl p-3.5 font-sans animate-scaleIn select-none"
+        className="absolute z-40 w-[295px] bg-white border border-blue-200 rounded-xl shadow-xl p-3.5 font-sans animate-scaleIn"
         style={{
           top: `${popupData.top}px`,
           left: `${popupData.left}px`,

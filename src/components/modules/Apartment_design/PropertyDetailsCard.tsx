@@ -13,7 +13,7 @@ import {
 interface PropertyDetailsCardProps {
   copiedUpic: boolean;
   onCopyUpic: (text: string) => void;
-  onHoverImage: (imgUrl: string | null, position: 'left' | 'right') => void;
+  onHoverImage: (imgUrl: string | null, position?: 'left' | 'right') => void;
   onSelectImage: (imgUrl: string, title: string) => void;
 }
 

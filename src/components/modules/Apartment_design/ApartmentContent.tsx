@@ -20,7 +20,7 @@ import ComparisonTable from './ComparisonTable';
 import BottomMetrics from './BottomMetrics';
 import RightPanel from './RightPanel';
 import WingMetricDetailsPopup from './WingMetricDetailsPopup';
-import ChangeDetectionBox from './ChangeDetectionBox';
+import ChangeDetectionBox from '../shared/ChangeDetectionBox';
 
 function TabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
@@ -114,9 +114,9 @@ export default function ApartmentContent({
     setTimeout(() => setCopiedUpic(false), 2000);
   };
 
-  if (activeAction) {
+  if (activeAction && setActiveAction) {
     return (
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-white select-none">
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-white">
         <ActionViews activeAction={activeAction} setActiveAction={setActiveAction} />
       </div>
     );
@@ -125,7 +125,7 @@ export default function ApartmentContent({
   return (
     <div className="flex-grow flex-1 min-h-0 bg-[#f0f2f5] p-2.5 font-sans text-gray-855 animate-fadeIn relative flex flex-col h-full overflow-hidden">
       {/* 1. Header Overview Sections */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 w-full shrink-0 select-none mb-2.5">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 w-full shrink-0 mb-2.5">
         <PropertyDetailsCard 
           copiedUpic={copiedUpic}
           onCopyUpic={copyToClipboard}
@@ -235,7 +235,7 @@ export default function ApartmentContent({
             </div>
           </div>
 
-          <ComparisonTable />
+          <ComparisonTable selectedWing={selectedWing} />
           <BottomMetrics />
         </div>
         

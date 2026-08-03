@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Building2, Maximize2, ChevronLeft, ChevronRight } from 'lucide-react';
-import MapBox from './MapBox';
-import ChangeDetectionBox from './ChangeDetectionBox';
+import MapBox from '../shared/MapBox';
+import ChangeDetectionBox from '../shared/ChangeDetectionBox';
 
 interface RightPanelProps {
   onHoverImage: (url: string | null, position?: 'left' | 'right') => void;

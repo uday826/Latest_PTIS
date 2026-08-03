@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function TaxesComparisonCard() {
   return (
-    <div className="bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col shrink-0 select-none mt-1 shadow-md relative">
+    <div className="bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col shrink-0 mt-1 shadow-md relative">
       <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-gray-150 h-[34px] shrink-0">
         <div className="flex items-center gap-1.5">
           <h3 className="font-extrabold text-[#1e2b58] text-[10px] uppercase tracking-wider leading-none">Headwise Taxes Comparison</h3>

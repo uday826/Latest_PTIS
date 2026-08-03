@@ -42,7 +42,7 @@ export default function WingCard({
   };
 
   return (
-    <div className={`bg-white rounded-xl p-2.5 shadow-xs hover:shadow-md transition-all relative flex flex-col justify-between h-full min-h-[195px] select-none ${cardBorderAndShadow()}`}>
+    <div className={`bg-white rounded-xl p-2.5 shadow-xs hover:shadow-md transition-all relative flex flex-col justify-between h-full min-h-[195px] ${cardBorderAndShadow()}`}>
       {/* Top row */}
       <div className="flex items-center justify-between pb-0.5">
         <div className="flex items-center gap-1">
@@ -70,7 +70,7 @@ export default function WingCard({
       </div>
 
       {/* Floors and Units Row */}
-      <div className="flex justify-between items-center text-[9px] font-bold text-gray-700 mt-1 px-0.5 select-none">
+      <div className="flex justify-between items-center text-[9px] font-bold text-gray-700 mt-1 px-0.5">
         <span>{wing.floors} Floors</span>
         <span>{wing.units} Units</span>
       </div>

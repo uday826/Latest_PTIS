@@ -26,7 +26,7 @@ export default function BottomValidationPanel({
   if (activeTab !== 'property') {
     /* AI Property Inspector full width for Building Permission tab */
     return (
-      <div className="shrink-0 bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md select-none w-full mt-1">
+      <div className="shrink-0 bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md w-full mt-1">
         <div>
           <div className="flex items-center justify-between border-b border-gray-100 pb-1.5 mb-2 shrink-0">
             <h3 className="font-extrabold text-[#002fbe] text-[9.5px] uppercase tracking-wider">AI Property Inspector</h3>
@@ -57,7 +57,7 @@ export default function BottomValidationPanel({
       {/* Left Column (3/5 width): AI Property Inspector & Validation Status */}
       <div className="col-span-3 grid grid-cols-2 gap-3 overflow-hidden items-stretch">
         {/* AI Property Inspector */}
-        <div className="bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md select-none h-full">
+        <div className="bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md h-full">
           <div>
             <div className="flex items-center justify-between border-b border-gray-100 pb-1.5 mb-2 shrink-0">
               <h3 className="font-extrabold text-[#002fbe] text-[9.5px] uppercase tracking-wider">AI Property Inspector</h3>
@@ -82,7 +82,7 @@ export default function BottomValidationPanel({
         </div>
 
         {/* Validation Status */}
-        <div className="bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md select-none h-full">
+        <div className="bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md h-full">
           <div>
             <div className="flex items-center justify-between border-b border-gray-100 pb-1.5 mb-2 shrink-0">
               <h3 className="font-extrabold text-[#002fbe] text-[9.5px] uppercase tracking-wider">Validation Status</h3>
@@ -111,7 +111,7 @@ export default function BottomValidationPanel({
 
       {/* Right Column (2/5 width): Service & Facility Availability */}
       <div className="col-span-2 flex flex-col items-stretch overflow-hidden">
-        <div className="flex-grow bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md select-none h-full">
+        <div className="flex-grow bg-white border border-[#002fbe]/25 rounded-lg p-2.5 flex flex-col justify-between shadow-md h-full">
           <div className="flex items-center justify-between border-b border-gray-100 pb-1.5 mb-2 shrink-0">
             <h3 className="font-extrabold text-[#002fbe] text-[9.5px] uppercase tracking-wider">Service & Facility Availability</h3>
             <span className="text-gray-400 text-[8.5px] font-bold">(7/8)</span>
