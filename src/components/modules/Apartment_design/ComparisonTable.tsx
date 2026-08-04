@@ -880,17 +880,6 @@ export default function ComparisonTable({
                 <span className="text-[10px] font-black text-[#006a4e] uppercase tracking-tight">Existing Assessment</span>
                 <span className="text-[9.5px] text-[#006a4e]/75 font-semibold">(Previous)</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <button className="text-[8.5px] font-bold text-blue-600 bg-white border border-gray-200 hover:bg-gray-50 rounded px-1.5 py-0.5 shadow-2xs leading-none">
-                  View Grouped
-                </button>
-                <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
-                  <ChevronUp size={11} />
-                </button>
-                <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
-                  <Plus size={11} className="rotate-45" />
-                </button>
-              </div>
             </div>
             
             <PreviousAssessmentTable 
@@ -981,17 +970,6 @@ export default function ComparisonTable({
               <div className="flex items-center gap-1 select-none">
                 <span className="text-[10px] font-black text-[#1e40af] uppercase tracking-tight">New Survey</span>
                 <span className="text-[9.5px] text-[#1e40af]/75 font-semibold">(Current)</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button className="text-[8.5px] font-bold text-blue-600 bg-white border border-gray-200 hover:bg-gray-50 rounded px-1.5 py-0.5 shadow-2xs leading-none">
-                  View Grouped
-                </button>
-                <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
-                  <ChevronUp size={11} />
-                </button>
-                <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
-                  <Plus size={11} className="rotate-45" />
-                </button>
               </div>
             </div>
             
