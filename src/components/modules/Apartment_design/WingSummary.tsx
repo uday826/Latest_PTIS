@@ -70,13 +70,13 @@ export default function WingSummary({
         <div className="flex-grow flex-shrink-0 flex-1 min-w-[190px] max-w-[245px]">
           <button 
             onClick={onAddWingClick}
-            className="flex flex-col justify-center items-center bg-white border border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50/10 cursor-pointer transition-all p-2.5 h-full min-h-[185px] focus:ring-1 focus:ring-blue-500 outline-none w-full"
+            className="flex flex-col justify-center items-center bg-white border border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50/10 cursor-pointer transition-all p-2 h-full min-h-[125px] focus:ring-1 focus:ring-blue-500 outline-none w-full"
             aria-label="Add new Wing"
           >
-            <div className="w-7 h-7 rounded-full bg-gray-50 flex items-center justify-center border border-gray-200 text-[#3b82f6]">
-              <Plus size={15} />
+            <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center border border-gray-200 text-[#3b82f6]">
+              <Plus size={13} />
             </div>
-            <span className="text-[10px] font-black text-[#3b82f6] mt-2 uppercase tracking-wider">Add Wing</span>
+            <span className="text-[10px] font-black text-[#3b82f6] mt-1.5 uppercase tracking-wider">Add Wing</span>
           </button>
         </div>
       </div>

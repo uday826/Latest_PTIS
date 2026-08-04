@@ -130,9 +130,9 @@ export default function ApartmentContent({
   }
 
   return (
-    <div className="flex-grow flex-1 min-h-0 bg-[#f0f2f5] p-2.5 font-sans text-gray-855 animate-fadeIn relative flex flex-col h-full overflow-hidden">
+    <div className="flex-grow flex-1 min-h-0 bg-[#f0f2f5] p-1.5 font-sans text-gray-855 animate-fadeIn relative flex flex-col h-full overflow-hidden">
       {/* 1. Header Overview Sections */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 w-full shrink-0 mb-2.5">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-1.5 w-full shrink-0 mb-1.5">
         <PropertyDetailsCard 
           copiedUpic={copiedUpic}
           onCopyUpic={copyToClipboard}
@@ -145,12 +145,10 @@ export default function ApartmentContent({
          <PerformanceSummaryCard role={role} />
       </div>
 
-
-
       {/* Main Split Layout Grid */}
-      <div className="flex flex-col lg:flex-row gap-3 items-stretch flex-1 min-h-0 w-full overflow-hidden">
+      <div className="flex flex-col lg:flex-row gap-1.5 items-stretch flex-1 min-h-0 w-full overflow-hidden">
         {/* Left Column: Wing Summary, Table, Metrics */}
-        <div className="flex-grow flex-1 flex flex-col gap-3 min-h-0 w-full lg:w-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pr-1.5">
+        <div className="flex-grow flex-1 flex flex-col gap-1 min-h-0 w-full lg:w-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pr-1.5">
           {/* Verification Badges Row - same width as Wing Summary */}
           <VerificationBadges />
 
@@ -184,6 +182,7 @@ export default function ApartmentContent({
                 <TabButton label="Discount & Exemption" active={activeTab === 'discount-exemption'} onClick={() => setActiveTab('discount-exemption')} />
                 <TabButton label="Reports" active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} />
                 <TabButton label="Old Details" active={activeTab === 'old-details'} onClick={() => setActiveTab('old-details')} />
+                <TabButton label="Apply OC" active={activeTab === 'apply-oc'} onClick={() => setActiveTab('apply-oc')} />
               </div>
               <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#edf2ff] text-[#3b82f6] rounded-lg text-[10px] font-extrabold border border-[#3b82f6]/10 hover:bg-[#dbeafe] transition cursor-pointer" type="button">
                 <Layers size={12} />

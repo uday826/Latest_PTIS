@@ -41,7 +41,7 @@ export default function PropertyDetailsPage() {
           setActiveMenu={setActiveMenu}
         />
         {activeAction ? (
-          <div className="flex-1 min-h-0 flex flex-col p-2.5 gap-2 overflow-hidden bg-[#f0f2f5]">
+          <div className="flex-1 min-h-0 flex flex-col p-1 gap-1 overflow-hidden bg-[#f0f2f5]">
             <div className="flex-grow flex-1 min-h-0 bg-white border border-gray-200 rounded-xl p-3.5 shadow-md overflow-hidden relative select-none">
               <ActionViews activeAction={activeAction} setActiveAction={setActiveAction} />
             </div>
@@ -50,14 +50,13 @@ export default function PropertyDetailsPage() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 min-h-0 flex flex-col p-2.5 gap-2 overflow-hidden">
+          <div className="flex-1 min-h-0 flex flex-col p-1 gap-1 overflow-hidden">
             <div className="flex-1 min-h-0">
               {activeMenu === 'property-details' && (
                 <MainContent 
                   activeAction={activeAction} 
                   setActiveAction={setActiveAction} 
                   activeValuationModel={activeValuationModel} 
-                  role={role}
                 />
               )}
               {activeMenu === 'apartment-management' && (
@@ -75,10 +74,7 @@ export default function PropertyDetailsPage() {
                 />
               )}
               {activeMenu === 'property-search' && (
-                <SearchContent 
-                  activeAction={activeAction} 
-                  setActiveAction={setActiveAction} 
-                />
+                <SearchContent />
               )}
               {activeMenu === 'user-action-view' && (
                 <div className="flex-1 min-h-0 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md flex flex-col h-full">
@@ -90,8 +86,6 @@ export default function PropertyDetailsPage() {
               {!['property-details', 'dashboard', 'property-search', 'apartment-management', 'user-action-view'].includes(activeMenu) && (
                 <PlaceholderContent 
                   title={activeMenu} 
-                  activeAction={activeAction} 
-                  setActiveAction={setActiveAction} 
                 />
               )}
             </div>

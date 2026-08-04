@@ -46,7 +46,7 @@ export default function WingCard({
   return (
     <div 
       onClick={onClick}
-      className={`bg-white rounded-xl p-2.5 shadow-xs hover:shadow-md transition-all relative flex flex-col justify-between h-full min-h-[195px] cursor-pointer ${cardBorderAndShadow()}`}
+      className={`bg-white rounded-xl p-1.5 shadow-xs hover:shadow-md transition-all relative flex flex-col justify-between h-full min-h-[135px] cursor-pointer ${cardBorderAndShadow()}`}
     >
       {/* Top row */}
       <div className="flex items-center justify-between pb-0.5">
@@ -60,18 +60,6 @@ export default function WingCard({
           </div>
         </div>
         <div className="flex items-center gap-1 select-none">
-          {/* Apply OC button */}
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              alert(`OC status successfully applied wing-wide to all units of ${wing.wing}!`);
-            }}
-            className="px-1.5 py-0.5 rounded bg-blue-55 text-blue-600 hover:bg-blue-100 border border-blue-200 text-[8px] font-black tracking-wider cursor-pointer uppercase leading-none transition-colors"
-            title="Apply OC to all units in this wing"
-          >
-            Apply OC
-          </button>
-
           <button 
             onClick={(e) => {
               e.stopPropagation();
@@ -90,20 +78,20 @@ export default function WingCard({
       </div>
 
       {/* Floors and Units Row */}
-      <div className="flex justify-between items-center text-[9px] font-bold text-gray-700 mt-1 px-0.5">
+      <div className="flex justify-between items-center text-[9px] font-bold text-gray-700 mt-0.5 px-0.5">
         <span>{wing.floors} Floors</span>
         <span>{wing.units} Units</span>
       </div>
 
       {/* Wing Totals Panel: Area, RV, Tax */}
-      <div className="bg-[#eff6ff] rounded-md p-1 mt-1 text-[8.5px] font-extrabold text-[#1e2b58] border border-blue-100 flex justify-between select-none leading-none">
+      <div className="bg-[#eff6ff] rounded-md p-0.5 mt-0.5 text-[8.5px] font-extrabold text-[#1e2b58] border border-blue-100 flex justify-between select-none leading-none">
         <div>Area: <span className="text-blue-700">{wing.id === 'A' ? '12,456' : wing.id === 'B' ? '11,920' : wing.id === 'C' ? '9,850' : '8,400'} sqft</span></div>
-        <div>RV: <span className="text-blue-700">{wing.id === 'A' ? '₹4.39L' : wing.id === 'B' ? '₹4.12L' : wing.id === 'C' ? '₹3.22L' : '₹2.88L'}</span></div>
+        <div>RV: <span className="text-[#9333ea]">{wing.id === 'A' ? '₹4.30L' : wing.id === 'B' ? '₹4.12L' : wing.id === 'C' ? '₹3.22L' : '₹2.88L'}</span></div>
         <div>Tax: <span className="text-blue-700">{wing.id === 'A' ? '₹68,850' : wing.id === 'B' ? '₹64,240' : wing.id === 'C' ? '₹48,560' : '₹42,390'}</span></div>
       </div>
 
       {/* Usage Categories Row */}
-      <div className="bg-[#f8fafc] border-t border-b border-gray-150 py-1 px-1 my-1 flex divide-x divide-gray-200 rounded-md">
+      <div className="bg-[#f8fafc] border-t border-b border-gray-150 py-0.5 px-1 my-0.5 flex divide-x divide-gray-200 rounded-md">
         <div className="flex items-center justify-center gap-1 flex-1 text-[8.5px] font-extrabold text-gray-700">
           <Home size={9} className="text-[#3b82f6] shrink-0" />
           <span>Res {wing.res}</span>
@@ -119,36 +107,36 @@ export default function WingCard({
       </div>
 
       {/* Demands Grid */}
-      <div className="grid grid-cols-2 divide-x divide-gray-150 py-0.5 my-1 text-center bg-gray-50/50 rounded-md border border-gray-100">
+      <div className="grid grid-cols-2 divide-x divide-gray-150 py-0 my-0.5 text-center bg-gray-50/50 rounded-md border border-gray-100">
         <div className="pr-0.5 text-center flex flex-col justify-center">
           <span className="text-gray-500 font-semibold text-[8px] uppercase tracking-wider block">New Demand</span>
-          <span className="font-extrabold text-[#1e2b58] text-[11px] mt-0.5 block">₹{wing.newDem}</span>
+          <span className="font-extrabold text-[#1e2b58] text-[11px] block">₹{wing.newDem}</span>
         </div>
         <div className="pl-0.5 text-center flex flex-col justify-center">
           <span className="text-gray-500 font-semibold text-[8px] uppercase tracking-wider block">Retro Demand</span>
-          <span className="font-extrabold text-[#1e2b58] text-[11px] mt-0.5 block">₹{wing.retroDem}</span>
+          <span className="font-extrabold text-[#1e2b58] text-[11px] block">₹{wing.retroDem}</span>
         </div>
       </div>
 
       {/* Collection & Outstanding Row */}
-      <div className="grid grid-cols-3 divide-x divide-gray-150 py-0.5 my-0.5 text-center bg-gray-50/50 rounded-md border border-gray-100">
+      <div className="grid grid-cols-3 divide-x divide-gray-150 py-0 my-0 text-center bg-gray-50/50 rounded-md border border-gray-100">
         <div className="flex flex-col justify-center">
           <span className="text-gray-500 font-semibold text-[7px] uppercase tracking-wider block">Collection</span>
-          <span className="font-extrabold text-green-600 text-[9.5px] mt-0.5 block">{wing.collection}</span>
+          <span className="font-extrabold text-green-600 text-[9.5px] block">{wing.collection}</span>
           <span className="text-[7px] text-gray-400 font-bold">({wing.collectionPct})</span>
         </div>
         <div className="flex flex-col justify-center">
           <span className="text-gray-500 font-semibold text-[7px] uppercase tracking-wider block">Outstanding</span>
-          <span className="font-extrabold text-red-500 text-[9.5px] mt-0.5 block">{wing.outstanding}</span>
+          <span className="font-extrabold text-red-500 text-[9.5px] block">{wing.outstanding}</span>
         </div>
         <div className="flex flex-col justify-center">
           <span className="text-gray-500 font-semibold text-[7px] uppercase tracking-wider block">Addl. Revenue</span>
-          <span className="font-extrabold text-[#002fbe] text-[9.5px] mt-0.5 block">{wing.additionalRevenue}</span>
+          <span className="font-extrabold text-[#002fbe] text-[9.5px] block">{wing.additionalRevenue}</span>
         </div>
       </div>
 
       {/* Bottom Metrics Row (Interactive Mini-Tabs) */}
-      <div className="grid grid-cols-3 gap-0.5 border-t border-gray-100 pt-1.5 mt-1 text-[8px] leading-tight">
+      <div className="grid grid-cols-3 gap-0.5 border-t border-gray-100 pt-1 mt-0.5 text-[8px] leading-tight">
         {/* Discount */}
         <button 
           onClick={(e) => {
@@ -217,7 +205,7 @@ export default function WingCard({
       </div>
 
       {/* Mods Row */}
-      <div className="flex items-center justify-between text-[7.5px] font-bold text-gray-500 mt-1 pt-1 border-t border-gray-100">
+      <div className="flex items-center justify-between text-[7.5px] font-bold text-gray-500 mt-0.5 pt-0.5 border-t border-gray-100">
         <span>Mods <span className="text-gray-700 font-extrabold">{wing.mods.matched}</span></span>
         <span className="text-red-500">Missing <span className="font-extrabold">{wing.mods.missing}</span></span>
         <span className="text-blue-500">New <span className="font-extrabold">{wing.mods.newCount}</span></span>
