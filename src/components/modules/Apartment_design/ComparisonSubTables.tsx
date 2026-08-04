@@ -1,6 +1,13 @@
 import React from 'react';
 import { Eye, Image as ImageIcon } from 'lucide-react';
 
+const parseNumber = (val: any): number => {
+  if (typeof val === 'number') return val;
+  if (!val || val === '-') return 0;
+  const cleaned = val.toString().replace(/[^\d.-]/g, '');
+  return parseFloat(cleaned) || 0;
+};
+
 interface SubTableProps {
   rows: any[];
   onOpenRules: (row: any) => void;
@@ -11,6 +18,14 @@ interface SubTableProps {
 }
 
 export function PreviousAssessmentTable({ rows, onOpenRules, getStatusBgClass, getStatusBadgeClass, scrollContainerRef, isAllWingsSelected }: SubTableProps) {
+  const totalCpt = rows.reduce((sum, r) => sum + (r.prevCarpet || 0), 0);
+  const totalBua = rows.reduce((sum, r) => sum + (r.prevBua || 0), 0);
+  const totalRvVal = rows.reduce((sum, r) => sum + parseNumber(r.prevRv), 0);
+  const totalCvVal = totalCpt * 60;
+  const totalTaxVal = rows.reduce((sum, r) => sum + parseNumber(r.prevTax), 0);
+  const totalRtTxVal = rows.reduce((sum, r) => sum + parseNumber(r.prevRtTax), 0);
+  const totalPenVal = rows.reduce((sum, r) => sum + parseNumber(r.prevPen), 0);
+
   return (
     <div ref={scrollContainerRef} className={`w-full scrollbar-thin ${isAllWingsSelected ? "overflow-auto h-[400px]" : "overflow-x-auto"}`}>
       <table className="w-max text-left border-collapse text-[10px]">
@@ -44,7 +59,7 @@ export function PreviousAssessmentTable({ rows, onOpenRules, getStatusBgClass, g
             <th className="py-2 px-3 whitespace-nowrap">Rntr</th>
             <th className="py-2 px-3 whitespace-nowrap">Shop</th>
             <th className="py-2 px-3 whitespace-nowrap">Mob</th>
-            <th className="py-2 px-3 whitespace-nowrap">Email</th>
+            <th className="py-2 px-3 whitespace-nowrap text-center">Email</th>
             <th className="py-2 px-3 text-center whitespace-nowrap">Img</th>
             <th className="py-2 px-3 text-center whitespace-nowrap border-l border-gray-200/50">Plan</th>
             <th className="py-2 px-3 text-center whitespace-nowrap border-l border-gray-200/50">Rules</th>
@@ -80,7 +95,7 @@ export function PreviousAssessmentTable({ rows, onOpenRules, getStatusBgClass, g
                 <td className="py-1 px-3 text-gray-500 whitespace-nowrap">{row.exmp}</td>
                 <td className="py-1 px-3 text-gray-500 whitespace-nowrap">{row.disc}</td>
                 <td className="py-1 px-3 font-bold whitespace-nowrap text-gray-600">{row.owner}</td>
-                <td className="py-1 px-3 text-gray-550 whitespace-nowrap">{row.ocpr}</td>
+                <td className="py-1 px-3 text-gray-555 whitespace-nowrap">{row.ocpr}</td>
                 <td className="py-1 px-3 text-gray-555 whitespace-nowrap">{row.rntr}</td>
                 <td className="py-1 px-3 text-gray-555 whitespace-nowrap">{row.shop}</td>
                 <td className="py-1 px-3 text-gray-500 whitespace-nowrap">{row.mob}</td>
@@ -117,16 +132,17 @@ export function PreviousAssessmentTable({ rows, onOpenRules, getStatusBgClass, g
           })}
           
           <tr className="h-[32px] bg-gray-50 font-black border-t border-gray-250 text-slate-800">
-            <td colSpan={9} className="py-2 px-3 uppercase text-[9px] tracking-wider select-none">Total (10 Units)</td>
-            <td className="py-2 px-3 text-right whitespace-nowrap">4,456</td>
-            <td className="py-2 px-3 text-right whitespace-nowrap">5,570</td>
-            <td colSpan={7} className="whitespace-nowrap"></td>
-            <td className="py-2 px-3 text-right text-[#006a4e] whitespace-nowrap">83,479</td>
-            <td className="py-2 px-3 text-right text-[#006a4e] whitespace-nowrap">2,10,039</td>
-            <td className="py-2 px-3 text-right text-[#006a4e]/85 whitespace-nowrap">2,10,039</td>
-            <td className="py-2 px-3 text-right text-red-500 whitespace-nowrap">3,360</td>
-            <td colSpan={8} className="whitespace-nowrap"></td>
-            <td colSpan={4} className="bg-gray-50 border-l border-gray-200/50"></td>
+            <td colSpan={9} className="py-2 px-3 uppercase text-[9px] tracking-wider select-none">Total ({rows.length} Units)</td>
+            <td className="py-2 px-3 text-right whitespace-nowrap">{totalCpt.toLocaleString()}</td>
+            <td className="py-2 px-3 text-right whitespace-nowrap">{totalBua.toLocaleString()}</td>
+            <td colSpan={4} className="whitespace-nowrap"></td>
+            <td className="py-2 px-3 text-right font-extrabold whitespace-nowrap text-gray-800">{totalRvVal !== 0 ? totalRvVal.toLocaleString() : "-"}</td>
+            <td className="py-2 px-3 text-right font-extrabold whitespace-nowrap text-gray-800">{totalCvVal !== 0 ? `₹${totalCvVal.toLocaleString()} L` : "-"}</td>
+            <td className="py-2 px-3 text-right text-[#006a4e] font-extrabold whitespace-nowrap">{totalTaxVal !== 0 ? totalTaxVal.toLocaleString() : "-"}</td>
+            <td className="py-2 px-3 text-center whitespace-nowrap"></td>
+            <td className="py-2 px-3 text-right text-[#006a4e]/85 font-extrabold whitespace-nowrap">{totalRtTxVal !== 0 ? totalRtTxVal.toLocaleString() : "-"}</td>
+            <td className="py-2 px-3 text-right text-red-500 font-extrabold whitespace-nowrap">{totalPenVal !== 0 ? totalPenVal.toLocaleString() : "0"}</td>
+            <td colSpan={12} className="whitespace-nowrap bg-gray-50 border-l border-gray-200/50"></td>
           </tr>
         </tbody>
       </table>
@@ -135,6 +151,14 @@ export function PreviousAssessmentTable({ rows, onOpenRules, getStatusBgClass, g
 }
 
 export function CurrentSurveyTable({ rows, onOpenRules, getStatusBgClass, getStatusBadgeClass, scrollContainerRef, isAllWingsSelected }: SubTableProps) {
+  const totalCpt = rows.reduce((sum, r) => sum + (r.currCarpet || 0), 0);
+  const totalBua = rows.reduce((sum, r) => sum + (r.currBua || 0), 0);
+  const totalRvVal = rows.reduce((sum, r) => sum + parseNumber(r.currRv), 0);
+  const totalCvVal = totalCpt * 60;
+  const totalTaxVal = rows.reduce((sum, r) => sum + parseNumber(r.currTax), 0);
+  const totalRtTxVal = rows.reduce((sum, r) => sum + parseNumber(r.currRtTax), 0);
+  const totalPenVal = rows.reduce((sum, r) => sum + parseNumber(r.currPen), 0);
+
   return (
     <div ref={scrollContainerRef} className={`w-full scrollbar-thin ${isAllWingsSelected ? "overflow-auto h-[400px]" : "overflow-x-auto"}`}>
       <table className="w-max text-left border-collapse text-[10px]">
@@ -168,7 +192,7 @@ export function CurrentSurveyTable({ rows, onOpenRules, getStatusBgClass, getSta
             <th className="py-2 px-3 whitespace-nowrap">Rntr</th>
             <th className="py-2 px-3 whitespace-nowrap">Shop</th>
             <th className="py-2 px-3 whitespace-nowrap">Mob</th>
-            <th className="py-2 px-3 whitespace-nowrap">Email</th>
+            <th className="py-2 px-3 whitespace-nowrap text-center">Email</th>
             <th className="py-2 px-3 text-center whitespace-nowrap">Img</th>
             <th className="py-2 px-3 text-center whitespace-nowrap border-l border-gray-200/50">Plan</th>
             <th className="py-2 px-3 text-center whitespace-nowrap border-l border-gray-200/50">Rules</th>
@@ -241,14 +265,17 @@ export function CurrentSurveyTable({ rows, onOpenRules, getStatusBgClass, getSta
           })}
           
           <tr className="h-[32px] bg-gray-50 font-black border-t border-gray-250 text-slate-800">
-            <td colSpan={8} className="py-2 px-3 uppercase text-[9px] tracking-wider select-none">Total</td>
-            <td className="py-2 px-3 text-right whitespace-nowrap">4,580</td>
-            <td className="py-2 px-3 text-right whitespace-nowrap">5,770</td>
-            <td colSpan={7} className="whitespace-nowrap"></td>
-            <td className="py-2 px-3 text-right text-[#1e40af] whitespace-nowrap">86,396</td>
-            <td className="py-2 px-3 text-right text-[#1e40af] whitespace-nowrap">2,21,719</td>
-            <td colSpan={9} className="whitespace-nowrap"></td>
-            <td colSpan={4} className="bg-gray-50 border-l border-gray-200/50"></td>
+            <td colSpan={9} className="py-2 px-3 uppercase text-[9px] tracking-wider select-none">Total ({rows.length} Units)</td>
+            <td className="py-2 px-3 text-right whitespace-nowrap">{totalCpt.toLocaleString()}</td>
+            <td className="py-2 px-3 text-right whitespace-nowrap">{totalBua.toLocaleString()}</td>
+            <td colSpan={4} className="whitespace-nowrap"></td>
+            <td className="py-2 px-3 text-right font-extrabold whitespace-nowrap text-gray-800">{totalRvVal !== 0 ? totalRvVal.toLocaleString() : "-"}</td>
+            <td className="py-2 px-3 text-right font-extrabold whitespace-nowrap text-gray-800">{totalCvVal !== 0 ? `₹${totalCvVal.toLocaleString()} L` : "-"}</td>
+            <td className="py-2 px-3 text-right text-[#1e40af] font-extrabold whitespace-nowrap">{totalTaxVal !== 0 ? totalTaxVal.toLocaleString() : "-"}</td>
+            <td className="py-2 px-3 text-center whitespace-nowrap"></td>
+            <td className="py-2 px-3 text-right text-[#1e40af]/85 font-extrabold whitespace-nowrap">{totalRtTxVal !== 0 ? totalRtTxVal.toLocaleString() : "-"}</td>
+            <td className="py-2 px-3 text-right text-red-500 font-extrabold whitespace-nowrap">{totalPenVal !== 0 ? totalPenVal.toLocaleString() : "0"}</td>
+            <td colSpan={12} className="whitespace-nowrap bg-gray-50 border-l border-gray-200/50"></td>
           </tr>
         </tbody>
       </table>

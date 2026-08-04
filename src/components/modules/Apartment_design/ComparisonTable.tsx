@@ -71,7 +71,6 @@ export default function ComparisonTable({
   const rightTableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (selectedWing !== "All Wings") return;
 
     const leftEl = leftTableRef.current;
     const middleEl = middleTableRef.current;
@@ -129,7 +128,7 @@ export default function ComparisonTable({
       rightEl.removeEventListener('scroll', onRightScroll);
       middleEl.removeEventListener('scroll', onMiddleScroll);
     };
-  }, [selectedWing, selectedFloor, areaPolicyThreshold, diffFilter]);
+  }, [selectedWing, selectedFloor, areaPolicyThreshold, diffFilter, activeTab]);
 
   let activeRows = [];
   const wingLetter = selectedWing && selectedWing !== "All Wings" ? selectedWing.charAt(0) : 'B';
