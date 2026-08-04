@@ -1,7 +1,118 @@
 import React from 'react';
-import { Wallet, Users, FileText, TrendingUp } from 'lucide-react';
+import { Wallet, Users, FileText, TrendingUp, CheckCircle, AlertTriangle, ShieldCheck, FileCheck } from 'lucide-react';
 
-export default function DashboardContent() {
+interface DashboardContentProps {
+  activeAction?: string | null;
+  setActiveAction?: (action: string | null) => void;
+  role?: 'surveyor' | 'qc' | 'final';
+}
+
+export default function DashboardContent({ role = 'surveyor' }: DashboardContentProps) {
+  if (role === 'qc') {
+    return (
+      <div className="flex-1 overflow-y-auto no-scrollbar bg-gray-50/50 p-6 font-sans text-gray-800 animate-fadeIn">
+        {/* Title */}
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-[#8a6d1c]">TMC QC Auditor Dashboard Overview</h2>
+          <p className="text-xs text-gray-500 mt-1">Real-time statistics of quality checks and validation audits of TMC Property Tax records.</p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard icon={<AlertTriangle className="text-amber-500" size={24} />} title="Pending Verification" value="14 Units" change="Queue Level: Medium" />
+          <StatCard icon={<CheckCircle className="text-green-500" size={24} />} title="Validation Health Score" value="80%" change="SLA Limit: 24 Hours" />
+          <StatCard icon={<FileText className="text-blue-500" size={24} />} title="Approved Items" value="12 Units" change="Validated this cycle" />
+          <StatCard icon={<AlertTriangle className="text-red-500" size={24} />} title="Rejected Items" value="2 Units" change="Escalated for re-survey" />
+        </div>
+
+        {/* Mock Analytics Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Daily Verification Trends Card */}
+          <div className="bg-white border border-gray-150 rounded-xl p-5 shadow-sm">
+            <h3 className="font-bold text-sm text-[#8a6d1c] mb-4">Daily Verification Trends (Last 6 Days)</h3>
+            <div className="h-64 flex items-end gap-3 pt-6 border-b border-gray-100 px-4 justify-between">
+              <Bar height="h-32" month="Day 1" val="8 Units" />
+              <Bar height="h-40" month="Day 2" val="10 Units" />
+              <Bar height="h-56" month="Day 3" val="14 Units" />
+              <Bar height="h-44" month="Day 4" val="11 Units" />
+              <Bar height="h-48" month="Day 5" val="12 Units" active />
+              <Bar height="h-24" month="Day 6" val="6 Units" />
+            </div>
+          </div>
+
+          {/* Discrepancy Breakdown Card */}
+          <div className="bg-white border border-gray-150 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="font-bold text-sm text-[#8a6d1c] mb-4">Discrepancy Breakdown by Type</h3>
+              <div className="space-y-4">
+                <ProgressLine label="Carpet Area Deviation (>5%)" percent="75%" count="9 units" color="bg-amber-500" />
+                <ProgressLine label="Use Category Mismatch (Res vs Com)" percent="50%" count="6 units" color="bg-orange-500" />
+                <ProgressLine label="Built-up Area (BUA) Mismatch" percent="33%" count="4 units" color="bg-yellow-500" />
+                <ProgressLine label="Exemption Claim Discrepancies" percent="16%" count="2 units" color="bg-red-500" />
+              </div>
+            </div>
+            <div className="text-center pt-4 border-t border-gray-50 mt-4">
+              <a href="#" className="text-amber-700 font-semibold text-xs hover:underline">View Verification Queue Registry</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (role === 'final') {
+    return (
+      <div className="flex-1 overflow-y-auto no-scrollbar bg-gray-50/50 p-6 font-sans text-gray-800 animate-fadeIn">
+        {/* Title */}
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-[#006a4e]">TMC Final Approver Dashboard Overview</h2>
+          <p className="text-xs text-gray-500 mt-1">Municipal ledger lockouts, sign-off compliance, and executive approval registry.</p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard icon={<Wallet className="text-[#006a4e]" size={24} />} title="Assessed Demand Lockups" value="₹1.53 Cr" change="Ready for ledger lock" />
+          <StatCard icon={<ShieldCheck className="text-green-600" size={24} />} title="Sign-off Ratio" value="95%" change="4 pending approvals" />
+          <StatCard icon={<FileCheck className="text-blue-600" size={24} />} title="Locked Ledgers" value="38 Wards" change="Synced with main database" />
+          <StatCard icon={<AlertTriangle className="text-orange-600" size={24} />} title="Escalated Disputes" value="4 Units" change="Under executive review" />
+        </div>
+
+        {/* Mock Analytics Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Monthly Demand Approved Card */}
+          <div className="bg-white border border-gray-150 rounded-xl p-5 shadow-sm">
+            <h3 className="font-bold text-sm text-[#006a4e] mb-4">Monthly Demand Approved (FY 2025-2026)</h3>
+            <div className="h-64 flex items-end gap-3 pt-6 border-b border-gray-100 px-4 justify-between">
+              <Bar height="h-20" month="Apr" val="₹15L" />
+              <Bar height="h-28" month="May" val="₹25L" />
+              <Bar height="h-48" month="Jun" val="₹45L" />
+              <Bar height="h-56" month="Jul" val="₹60L" active />
+              <Bar height="h-36" month="Aug" val="₹35L" />
+              <Bar height="h-44" month="Sep" val="₹40L" />
+            </div>
+          </div>
+
+          {/* Approval Compliance by Ward Card */}
+          <div className="bg-white border border-gray-150 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="font-bold text-sm text-[#006a4e] mb-4">Approval Compliance by Ward</h3>
+              <div className="space-y-4">
+                <ProgressLine label="Ward A1 (Krishna Block area)" percent="95%" count="38 locked, 2 pending" color="bg-[#006a4e]" />
+                <ProgressLine label="Ward A2 (Sai Block area)" percent="90%" count="36 locked, 4 pending" color="bg-green-600" />
+                <ProgressLine label="Ward B1 (Ganesh Block area)" percent="85%" count="28 locked, 5 pending" color="bg-teal-600" />
+                <ProgressLine label="Ward C2 (Lotus Block area)" percent="70%" count="21 locked, 9 pending" color="bg-emerald-600" />
+              </div>
+            </div>
+            <div className="text-center pt-4 border-t border-gray-50 mt-4">
+              <a href="#" className="text-[#006a4e] font-semibold text-xs hover:underline">View Approvals Registry Log</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Surveyor View (default)
   return (
     <div className="flex-1 overflow-y-auto no-scrollbar bg-gray-50/50 p-6 font-sans text-gray-800 animate-fadeIn">
       {/* Title */}

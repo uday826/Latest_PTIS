@@ -6,11 +6,13 @@ interface SubTableProps {
   onOpenRules: (row: any) => void;
   getStatusBgClass: (status: string) => string;
   getStatusBadgeClass: (status: string) => string;
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
+  isAllWingsSelected?: boolean;
 }
 
-export function PreviousAssessmentTable({ rows, onOpenRules, getStatusBgClass, getStatusBadgeClass }: SubTableProps) {
+export function PreviousAssessmentTable({ rows, onOpenRules, getStatusBgClass, getStatusBadgeClass, scrollContainerRef, isAllWingsSelected }: SubTableProps) {
   return (
-    <div className="overflow-x-auto w-full scrollbar-thin">
+    <div ref={scrollContainerRef} className={`w-full scrollbar-thin ${isAllWingsSelected ? "overflow-auto h-[400px]" : "overflow-x-auto"}`}>
       <table className="w-max text-left border-collapse text-[10px]">
         <thead>
           <tr className="bg-[#edf7f4]/45 border-b border-gray-250 text-[#006a4e] font-black uppercase h-[32px]">
@@ -54,7 +56,7 @@ export function PreviousAssessmentTable({ rows, onOpenRules, getStatusBgClass, g
             const bgClass = getStatusBgClass(row.diffStatus);
             return (
               <tr key={index} className={`h-[36px] text-gray-700 hover:bg-gray-50/50 ${bgClass}`}>
-                <td className="py-1 px-3 text-center font-extrabold text-gray-400 whitespace-nowrap">{row.prevNo}</td>
+                <td className="py-1 px-3 text-center font-extrabold text-gray-400 whitespace-nowrap">{index + 1}</td>
                 <td className="py-1 px-3 font-bold whitespace-nowrap">{row.prevNo !== "-" ? row.currProp : "-"}</td>
                 <td className="py-1 px-3 font-bold text-[#002fbe] whitespace-nowrap">{row.prevWing}</td>
                 <td className="py-1 px-3 font-bold whitespace-nowrap">{row.prevType}</td>
@@ -132,9 +134,9 @@ export function PreviousAssessmentTable({ rows, onOpenRules, getStatusBgClass, g
   );
 }
 
-export function CurrentSurveyTable({ rows, onOpenRules, getStatusBgClass, getStatusBadgeClass }: SubTableProps) {
+export function CurrentSurveyTable({ rows, onOpenRules, getStatusBgClass, getStatusBadgeClass, scrollContainerRef, isAllWingsSelected }: SubTableProps) {
   return (
-    <div className="overflow-x-auto w-full scrollbar-thin">
+    <div ref={scrollContainerRef} className={`w-full scrollbar-thin ${isAllWingsSelected ? "overflow-auto h-[400px]" : "overflow-x-auto"}`}>
       <table className="w-max text-left border-collapse text-[10px]">
         <thead>
           <tr className="bg-[#edf2ff]/45 border-b border-gray-250 text-[#1e40af] font-black uppercase h-[32px]">
@@ -178,7 +180,7 @@ export function CurrentSurveyTable({ rows, onOpenRules, getStatusBgClass, getSta
             const bgClass = getStatusBgClass(row.diffStatus);
             return (
               <tr key={index} className={`h-[36px] text-gray-700 hover:bg-gray-50/50 ${bgClass}`}>
-                <td className="py-1 px-3 text-center font-extrabold text-gray-400 whitespace-nowrap">{row.prevNo}</td>
+                <td className="py-1 px-3 text-center font-extrabold text-gray-400 whitespace-nowrap">{index + 1}</td>
                 <td className="py-1 px-3 font-bold whitespace-nowrap">{row.currProp}</td>
                 <td className="py-1 px-3 font-bold text-gray-700 whitespace-nowrap">{row.currWing}</td>
                 <td className="py-1 px-3 font-bold whitespace-nowrap">{row.currType}</td>

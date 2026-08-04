@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronUp, Plus, Layers } from 'lucide-react';
 import { comparisonRows } from './mockData';
 import TaxRulesModal from './TaxRulesModal';
@@ -65,6 +65,71 @@ export default function ComparisonTable({
   activeTab = 'floor-comparison'
 }: ComparisonTableProps) {
   const [selectedRowForRules, setSelectedRowForRules] = useState<any | null>(null);
+
+  const leftTableRef = useRef<HTMLDivElement>(null);
+  const middleTableRef = useRef<HTMLDivElement>(null);
+  const rightTableRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selectedWing !== "All Wings") return;
+
+    const leftEl = leftTableRef.current;
+    const middleEl = middleTableRef.current;
+    const rightEl = rightTableRef.current;
+    if (!leftEl || !middleEl || !rightEl) return;
+
+    let activeScrollSource: HTMLDivElement | null = null;
+
+    const syncScroll = (source: HTMLDivElement, targets: { el: HTMLDivElement; syncX: boolean; syncY: boolean }[]) => {
+      targets.forEach(({ el, syncX, syncY }) => {
+        if (syncX && el.scrollLeft !== source.scrollLeft) {
+          el.scrollLeft = source.scrollLeft;
+        }
+        if (syncY && el.scrollTop !== source.scrollTop) {
+          el.scrollTop = source.scrollTop;
+        }
+      });
+    };
+
+    const createScrollHandler = (source: HTMLDivElement, targets: { el: HTMLDivElement; syncX: boolean; syncY: boolean }[]) => {
+      return () => {
+        if (activeScrollSource && activeScrollSource !== source) return;
+        activeScrollSource = source;
+        syncScroll(source, targets);
+        
+        // Clear active source when scrolling stops
+        clearTimeout((source as any)._scrollTimeout);
+        (source as any)._scrollTimeout = setTimeout(() => {
+          activeScrollSource = null;
+        }, 50);
+      };
+    };
+
+    const onLeftScroll = createScrollHandler(leftEl, [
+      { el: rightEl, syncX: true, syncY: true },
+      { el: middleEl, syncX: false, syncY: true }
+    ]);
+
+    const onRightScroll = createScrollHandler(rightEl, [
+      { el: leftEl, syncX: true, syncY: true },
+      { el: middleEl, syncX: false, syncY: true }
+    ]);
+
+    const onMiddleScroll = createScrollHandler(middleEl, [
+      { el: leftEl, syncX: false, syncY: true },
+      { el: rightEl, syncX: false, syncY: true }
+    ]);
+
+    leftEl.addEventListener('scroll', onLeftScroll);
+    rightEl.addEventListener('scroll', onRightScroll);
+    middleEl.addEventListener('scroll', onMiddleScroll);
+
+    return () => {
+      leftEl.removeEventListener('scroll', onLeftScroll);
+      rightEl.removeEventListener('scroll', onRightScroll);
+      middleEl.removeEventListener('scroll', onMiddleScroll);
+    };
+  }, [selectedWing, selectedFloor, areaPolicyThreshold, diffFilter]);
 
   let activeRows = [];
   const wingLetter = selectedWing && selectedWing !== "All Wings" ? selectedWing.charAt(0) : 'B';
@@ -580,10 +645,10 @@ export default function ComparisonTable({
                 <button className="text-[8.5px] font-bold text-blue-600 bg-white border border-gray-200 hover:bg-gray-50 rounded px-1.5 py-0.5 shadow-2xs leading-none">
                   View Grouped
                 </button>
-                <button className="text-gray-400 hover:text-gray-655 cursor-pointer">
+                <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
                   <ChevronUp size={11} />
                 </button>
-                <button className="text-gray-400 hover:text-gray-655 cursor-pointer">
+                <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
                   <Plus size={11} className="rotate-45" />
                 </button>
               </div>
@@ -594,6 +659,8 @@ export default function ComparisonTable({
               onOpenRules={setSelectedRowForRules} 
               getStatusBgClass={getStatusBgClass} 
               getStatusBadgeClass={getStatusBadgeClass} 
+              scrollContainerRef={leftTableRef}
+              isAllWingsSelected={selectedWing === "All Wings"}
             />
           </div>
 
@@ -606,7 +673,10 @@ export default function ComparisonTable({
               </button>
             </div>
             
-            <div className="w-full overflow-x-auto scrollbar-thin">
+            <div 
+              ref={middleTableRef} 
+              className={`w-full scrollbar-thin ${selectedWing === "All Wings" ? "overflow-auto h-[400px]" : "overflow-x-auto"}`}
+            >
               <table className="min-w-[420px] text-left border-collapse text-[10px] w-full">
                 <thead>
                   <tr className="bg-[#fdf8e2]/60 border-b border-amber-200 text-[#8a6d1c] font-black uppercase h-[32px]">
@@ -635,8 +705,8 @@ export default function ComparisonTable({
                         <td className={`py-1 px-1.5 text-right whitespace-nowrap ${row.diffTax > 0 ? 'text-red-500 font-extrabold' : 'text-gray-400 font-normal'}`}>
                           {row.diffTax > 0 ? `+${row.diffTax.toLocaleString()}` : '0'}
                         </td>
-                        <td className="py-1 px-1.5 text-right text-gray-450 font-normal whitespace-nowrap">0</td>
-                        <td className="py-1 px-1.5 text-right text-gray-455 font-normal whitespace-nowrap">0</td>
+                        <td className="py-1 px-1.5 text-right text-gray-400 font-normal whitespace-nowrap">0</td>
+                        <td className="py-1 px-1.5 text-right text-gray-400 font-normal whitespace-nowrap">0</td>
                         <td className="py-1 px-1 text-center whitespace-nowrap select-none">
                           {row.diffSuggestion !== "-" ? (
                             <span className={`text-[8.5px] font-black px-1.5 py-0.5 rounded border leading-none ${
@@ -677,10 +747,10 @@ export default function ComparisonTable({
                 <button className="text-[8.5px] font-bold text-blue-600 bg-white border border-gray-200 hover:bg-gray-50 rounded px-1.5 py-0.5 shadow-2xs leading-none">
                   View Grouped
                 </button>
-                <button className="text-gray-400 hover:text-gray-655 cursor-pointer">
+                <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
                   <ChevronUp size={11} />
                 </button>
-                <button className="text-gray-400 hover:text-gray-655 cursor-pointer">
+                <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
                   <Plus size={11} className="rotate-45" />
                 </button>
               </div>
@@ -691,6 +761,8 @@ export default function ComparisonTable({
               onOpenRules={setSelectedRowForRules} 
               getStatusBgClass={getStatusBgClass} 
               getStatusBadgeClass={getStatusBadgeClass} 
+              scrollContainerRef={rightTableRef}
+              isAllWingsSelected={selectedWing === "All Wings"}
             />
           </div>
         </div>

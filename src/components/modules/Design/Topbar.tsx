@@ -12,7 +12,7 @@ interface TopbarProps {
 }
 
 export default function Topbar({ activeValuationModel, setActiveValuationModel, role, setRole }: TopbarProps) {
-  const [activeDropdown, setActiveDropdown] = useState<'redBell' | 'greenBell' | 'profile' | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<'redBell' | 'greenBell' | 'profile' | 'access' | null>(null);
   const [activeTooltip, setActiveTooltip] = useState<'rv' | 'cvm' | 'dual' | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [appliedFiltersCount, setAppliedFiltersCount] = useState(0);
@@ -90,7 +90,7 @@ export default function Topbar({ activeValuationModel, setActiveValuationModel, 
     }
   };
 
-  const toggleDropdown = (type: 'redBell' | 'greenBell' | 'profile') => {
+  const toggleDropdown = (type: 'redBell' | 'greenBell' | 'profile' | 'access') => {
     setActiveDropdown(activeDropdown === type ? null : type);
   };
 
@@ -300,17 +300,55 @@ export default function Topbar({ activeValuationModel, setActiveValuationModel, 
             </div>
 
             {/* Role Switcher Selector */}
-            <div className="flex items-center gap-2 bg-[#172246] px-3 py-1.5 rounded-lg border border-white/10 select-none shadow-inner shrink-0">
-              <span className="text-[9px] font-extrabold text-[#e1b942] uppercase tracking-wider">Access:</span>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as any)}
-                className="bg-transparent text-white font-bold text-[10.5px] outline-none cursor-pointer border-none pr-1 focus:ring-0"
+            <div className="relative shrink-0 select-none">
+              <div
+                onClick={() => toggleDropdown('access')}
+                className="flex items-center gap-2 bg-[#172246] hover:bg-[#202e5c] px-3 py-1.5 rounded-lg border border-white/10 cursor-pointer shadow-inner transition-colors duration-150"
               >
-                <option value="surveyor" className="bg-[#1e2b58] text-white font-semibold">Surveyor View</option>
-                <option value="qc" className="bg-[#1e2b58] text-white font-semibold">QC Auditor View</option>
-                <option value="final" className="bg-[#1e2b58] text-white font-semibold">Final Approver</option>
-              </select>
+                <span className="text-[9px] font-extrabold text-[#e1b942] uppercase tracking-wider">Access:</span>
+                <span className="text-white font-bold text-[10.5px]">
+                  {role === 'surveyor' ? 'Surveyor View' : role === 'qc' ? 'QC Auditor View' : 'Final Approver'}
+                </span>
+                <ChevronDown size={12} className={`text-white transition-transform duration-200 ${activeDropdown === 'access' ? 'rotate-180' : ''}`} />
+              </div>
+
+              {activeDropdown === 'access' && (
+                <div className="absolute right-0 top-full mt-1.5 w-44 bg-[#1e2b58] border border-white/15 rounded-lg shadow-xl py-1 z-55 animate-fadeIn">
+                  <button
+                    onClick={() => {
+                      setRole('surveyor');
+                      setActiveDropdown(null);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-[10.5px] font-semibold transition-colors flex items-center gap-1.5 cursor-pointer ${
+                      role === 'surveyor' ? 'bg-[#2563eb] text-white' : 'text-gray-200 hover:bg-white/5'
+                    }`}
+                  >
+                    Surveyor View
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRole('qc');
+                      setActiveDropdown(null);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-[10.5px] font-semibold transition-colors flex items-center gap-1.5 cursor-pointer ${
+                      role === 'qc' ? 'bg-[#2563eb] text-white' : 'text-gray-200 hover:bg-white/5'
+                    }`}
+                  >
+                    QC Auditor View
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRole('final');
+                      setActiveDropdown(null);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-[10.5px] font-semibold transition-colors flex items-center gap-1.5 cursor-pointer ${
+                      role === 'final' ? 'bg-[#2563eb] text-white' : 'text-gray-200 hover:bg-white/5'
+                    }`}
+                  >
+                    Final Approver
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Profile User Button */}

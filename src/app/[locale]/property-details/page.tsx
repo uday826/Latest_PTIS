@@ -10,6 +10,7 @@ import PlaceholderContent from '@/components/modules/Design/PlaceholderContent';
 import FooterActionBar from '@/components/modules/Design/FooterActionBar';
 import ApartmentContent from '@/components/modules/Apartment_design/ApartmentContent';
 import ActionViews from '@/components/modules/Design/ActionViews';
+import { SurveyorActionView, QcActionView, FinalActionView } from '@/components/modules/Design/UserActionViews';
 
 export default function PropertyDetailsPage() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -21,7 +22,15 @@ export default function PropertyDetailsPage() {
   return (
     <div className="flex flex-col h-screen bg-[#f0f2f5] overflow-hidden font-sans">
       {/* Topbar at the top, full-width */}
-      <Topbar activeValuationModel={activeValuationModel} setActiveValuationModel={setActiveValuationModel} role={role} setRole={setRole} />
+      <Topbar 
+        activeValuationModel={activeValuationModel} 
+        setActiveValuationModel={setActiveValuationModel} 
+        role={role} 
+        setRole={(newRole) => {
+          setRole(newRole);
+          setActiveMenu('user-action-view');
+        }} 
+      />
 
       {/* Sidebar + MainContent below */}
       <div className="flex flex-1 overflow-hidden">
@@ -62,6 +71,7 @@ export default function PropertyDetailsPage() {
                 <DashboardContent 
                   activeAction={activeAction} 
                   setActiveAction={setActiveAction} 
+                  role={role}
                 />
               )}
               {activeMenu === 'property-search' && (
@@ -70,7 +80,14 @@ export default function PropertyDetailsPage() {
                   setActiveAction={setActiveAction} 
                 />
               )}
-              {!['property-details', 'dashboard', 'property-search', 'apartment-management'].includes(activeMenu) && (
+              {activeMenu === 'user-action-view' && (
+                <div className="flex-1 min-h-0 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md flex flex-col h-full">
+                  {role === 'surveyor' && <SurveyorActionView />}
+                  {role === 'qc' && <QcActionView />}
+                  {role === 'final' && <FinalActionView />}
+                </div>
+              )}
+              {!['property-details', 'dashboard', 'property-search', 'apartment-management', 'user-action-view'].includes(activeMenu) && (
                 <PlaceholderContent 
                   title={activeMenu} 
                   activeAction={activeAction} 
