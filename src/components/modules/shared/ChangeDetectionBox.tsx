@@ -56,12 +56,11 @@ export default function ChangeDetectionBox({
   };
 
   return (
-    <div 
-      className={`bg-white border rounded-xl overflow-hidden flex flex-col group transition-all relative shrink-0 flex-1 min-h-0 ${
-        isEnlarged 
-          ? 'border-gray-200 w-full h-full animate-scaleIn' 
-          : 'border-gray-200 hover:border-blue-500 hover:shadow-md cursor-pointer transform hover:-translate-y-0.5 shadow-xs'
-      }`}
+    <div
+      className={`bg-white border rounded-xl overflow-hidden flex flex-col group transition-all relative shrink-0 flex-1 min-h-0 ${isEnlarged
+        ? 'border-gray-200 w-full h-full animate-scaleIn'
+        : 'border-gray-200 hover:border-blue-500 hover:shadow-md cursor-pointer transform hover:-translate-y-0.5 shadow-xs'
+        }`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={isEnlarged ? undefined : onZoom}

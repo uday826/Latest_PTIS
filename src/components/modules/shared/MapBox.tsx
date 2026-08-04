@@ -11,7 +11,7 @@ interface MapBoxProps {
 export default function MapBox({ title, imgUrl, onZoom, onHover }: MapBoxProps) {
   return (
     <div 
-      className="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col group shadow-xs hover:shadow-md hover:border-blue-500 transition-all cursor-pointer transform hover:-translate-y-0.5 shrink-0 flex-1 min-h-0"
+      className="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col group shadow-xs hover:shadow-md hover:border-blue-500 transition-all cursor-pointer transform hover:-translate-y-0.5 shrink-0"
       onClick={onZoom}
       onMouseEnter={() => onHover && onHover(imgUrl)}
       onMouseLeave={() => onHover && onHover(null)}
@@ -29,7 +29,7 @@ export default function MapBox({ title, imgUrl, onZoom, onHover }: MapBoxProps) 
         <span>{title}</span>
         <Maximize2 size={10} className="text-gray-400 group-hover:text-[#002fbe] transition-colors" />
       </div>
-      <div className="w-full h-[125px] bg-gray-200 relative overflow-hidden flex-1 min-h-0">
+      <div className="w-full h-[125px] bg-gray-200 relative overflow-hidden">
         <img
           src={imgUrl}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

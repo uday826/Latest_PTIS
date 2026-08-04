@@ -16,13 +16,15 @@ interface WingCardProps {
   activeMetric: 'discount' | 'exemptions' | 'rvImpact';
   onMetricClick: (e: React.MouseEvent<HTMLButtonElement>, wing: WingDetails, metricType: 'discount' | 'exemptions' | 'rvImpact') => void;
   onDeleteClick: (e: React.MouseEvent<HTMLButtonElement>, wingId: string) => void;
+  onClick?: () => void;
 }
 
 export default function WingCard({ 
   wing, 
   activeMetric, 
   onMetricClick,
-  onDeleteClick
+  onDeleteClick,
+  onClick
 }: WingCardProps) {
   const getSubMetricIconColor = (type: 'discount' | 'exemptions' | 'rvImpact') => {
     if (activeMetric === type) {
@@ -42,7 +44,10 @@ export default function WingCard({
   };
 
   return (
-    <div className={`bg-white rounded-xl p-2.5 shadow-xs hover:shadow-md transition-all relative flex flex-col justify-between h-full min-h-[195px] ${cardBorderAndShadow()}`}>
+    <div 
+      onClick={onClick}
+      className={`bg-white rounded-xl p-2.5 shadow-xs hover:shadow-md transition-all relative flex flex-col justify-between h-full min-h-[195px] cursor-pointer ${cardBorderAndShadow()}`}
+    >
       {/* Top row */}
       <div className="flex items-center justify-between pb-0.5">
         <div className="flex items-center gap-1">
@@ -55,8 +60,23 @@ export default function WingCard({
           </div>
         </div>
         <div className="flex items-center gap-1 select-none">
+          {/* Apply OC button */}
           <button 
-            onClick={(e) => onDeleteClick(e, wing.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              alert(`OC status successfully applied wing-wide to all units of ${wing.wing}!`);
+            }}
+            className="px-1.5 py-0.5 rounded bg-blue-55 text-blue-600 hover:bg-blue-100 border border-blue-200 text-[8px] font-black tracking-wider cursor-pointer uppercase leading-none transition-colors"
+            title="Apply OC to all units in this wing"
+          >
+            Apply OC
+          </button>
+
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteClick(e, wing.id);
+            }}
             className="w-5 h-5 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 flex items-center justify-center cursor-pointer transition-colors focus:ring-1 focus:ring-red-400 outline-none"
             title={`Delete ${wing.wing}`}
             aria-label={`Delete ${wing.wing}`}
@@ -73,6 +93,13 @@ export default function WingCard({
       <div className="flex justify-between items-center text-[9px] font-bold text-gray-700 mt-1 px-0.5">
         <span>{wing.floors} Floors</span>
         <span>{wing.units} Units</span>
+      </div>
+
+      {/* Wing Totals Panel: Area, RV, Tax */}
+      <div className="bg-[#eff6ff] rounded-md p-1 mt-1 text-[8.5px] font-extrabold text-[#1e2b58] border border-blue-100 flex justify-between select-none leading-none">
+        <div>Area: <span className="text-blue-700">{wing.id === 'A' ? '12,456' : wing.id === 'B' ? '11,920' : wing.id === 'C' ? '9,850' : '8,400'} sqft</span></div>
+        <div>RV: <span className="text-blue-700">{wing.id === 'A' ? '₹4.39L' : wing.id === 'B' ? '₹4.12L' : wing.id === 'C' ? '₹3.22L' : '₹2.88L'}</span></div>
+        <div>Tax: <span className="text-blue-700">{wing.id === 'A' ? '₹68,850' : wing.id === 'B' ? '₹64,240' : wing.id === 'C' ? '₹48,560' : '₹42,390'}</span></div>
       </div>
 
       {/* Usage Categories Row */}
@@ -124,7 +151,10 @@ export default function WingCard({
       <div className="grid grid-cols-3 gap-0.5 border-t border-gray-100 pt-1.5 mt-1 text-[8px] leading-tight">
         {/* Discount */}
         <button 
-          onClick={(e) => onMetricClick(e, wing, 'discount')}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMetricClick(e, wing, 'discount');
+          }}
           className={`flex flex-col items-center justify-center p-1 rounded-md border transition-all cursor-pointer focus:ring-1 focus:ring-blue-500 outline-none ${
             activeMetric === 'discount' 
               ? 'bg-green-50/90 border-green-300 text-green-700 shadow-xs border-b-2 border-b-green-500 font-extrabold' 
@@ -143,7 +173,10 @@ export default function WingCard({
 
         {/* Exemptions */}
         <button 
-          onClick={(e) => onMetricClick(e, wing, 'exemptions')}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMetricClick(e, wing, 'exemptions');
+          }}
           className={`flex flex-col items-center justify-center p-1 rounded-md border transition-all cursor-pointer focus:ring-1 focus:ring-blue-500 outline-none ${
             activeMetric === 'exemptions' 
               ? 'bg-purple-50/90 border-purple-300 text-purple-700 shadow-xs border-b-2 border-b-purple-500 font-extrabold' 
@@ -162,7 +195,10 @@ export default function WingCard({
 
         {/* REV Impact */}
         <button 
-          onClick={(e) => onMetricClick(e, wing, 'rvImpact')}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMetricClick(e, wing, 'rvImpact');
+          }}
           className={`flex flex-col items-center justify-center p-1 rounded-md border transition-all cursor-pointer focus:ring-1 focus:ring-blue-500 outline-none ${
             activeMetric === 'rvImpact' 
               ? 'bg-green-50/90 border-green-300 text-green-700 shadow-xs border-b-2 border-b-green-500 font-extrabold' 

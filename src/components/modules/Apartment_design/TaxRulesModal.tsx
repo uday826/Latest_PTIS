@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, X } from 'lucide-react';
-import { RulesPanel, DiscountsPanel } from './TaxRulesSubPanels';
+import { RulesPanel, DiscountsPanel, RetrospectivePanel } from './TaxRulesSubPanels';
 
 interface TaxRulesModalProps {
   onClose: () => void;
@@ -12,7 +12,7 @@ interface TaxRulesModalProps {
 }
 
 export default function TaxRulesModal({ onClose, wing, unit, use, owner, tax }: TaxRulesModalProps) {
-  const [activeTab, setActiveTab] = useState<'rules' | 'discounts'>('rules');
+  const [activeTab, setActiveTab] = useState<'rules' | 'discounts' | 'retrospective'>('rules');
 
   const taxBefore = parseFloat(tax.replace(/[^\d]/g, '')) || 3825;
 
@@ -81,6 +81,17 @@ export default function TaxRulesModal({ onClose, wing, unit, use, owner, tax }: 
               >
                 Discounts Applied <span className="ml-1 text-[9px] bg-white border border-[#065f46]/20 px-1 py-0.25 rounded font-black">4/8</span>
               </button>
+              <button 
+                onClick={() => setActiveTab('retrospective')}
+                className={`px-4 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all border cursor-pointer ${
+                  activeTab === 'retrospective' 
+                    ? 'bg-[#fef3c7] text-[#92400e] border-[#f59e0b] shadow-xs' 
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-transparent'
+                }`}
+                type="button"
+              >
+                Retrospective Tax Calc <span className="ml-1 text-[9px] bg-white border border-[#92400e]/20 px-1 py-0.25 rounded font-black">3 Yrs</span>
+              </button>
             </div>
             <span className="text-[10px] font-bold text-slate-400">Unit-level view</span>
           </div>
@@ -89,8 +100,10 @@ export default function TaxRulesModal({ onClose, wing, unit, use, owner, tax }: 
           <div className="flex-grow flex flex-col p-6 overflow-y-auto min-h-0">
             {activeTab === 'rules' ? (
               <RulesPanel taxBefore={taxBefore} />
-            ) : (
+            ) : activeTab === 'discounts' ? (
               <DiscountsPanel taxBefore={taxBefore} />
+            ) : (
+              <RetrospectivePanel taxBefore={taxBefore} />
             )}
           </div>
 

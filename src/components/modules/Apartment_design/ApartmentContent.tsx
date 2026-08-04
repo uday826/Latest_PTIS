@@ -5,7 +5,9 @@ import {
   ChevronDown, 
   SlidersHorizontal,
   Download,
-  Layers
+  Layers,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import ActionViews from '../Design/ActionViews';
 
@@ -48,14 +50,19 @@ function LegendItem({ color, label }: { color: string; label: string }) {
 
 export default function ApartmentContent({
   activeAction,
-  setActiveAction
+  setActiveAction,
+  role = 'surveyor'
 }: {
   activeAction?: string | null;
   setActiveAction?: (action: string | null) => void;
+  role?: 'surveyor' | 'qc' | 'final';
 }) {
   const [activeTab, setActiveTab] = useState('floor-comparison');
   const [selectedWing, setSelectedWing] = useState('B Wing (19)');
   const [selectedFloor, setSelectedFloor] = useState('All Floors');
+  const [areaPolicyThreshold, setAreaPolicyThreshold] = useState<string>('all');
+  const [diffFilter, setDiffFilter] = useState<string>('all');
+  const [isDashboardExpanded, setIsDashboardExpanded] = useState<boolean>(false);
   const [copiedUpic, setCopiedUpic] = useState(false);
 
   // States for right column media preview & hover zoom
@@ -135,7 +142,7 @@ export default function ApartmentContent({
             setSelectedImgTitle(title);
           }}
         />
-        <PerformanceSummaryCard />
+         <PerformanceSummaryCard role={role} />
       </div>
 
 
@@ -154,6 +161,14 @@ export default function ApartmentContent({
             handleMetricClick={handleMetricClick}
             handleDeleteWing={handleDeleteWing}
             onAddWingClick={() => setAddWingModalOpen(true)}
+            onWingCardClick={(wingName) => {
+              let val = "All Wings";
+              if (wingName.includes("A")) val = "A Wing (19)";
+              else if (wingName.includes("B")) val = "B Wing (19)";
+              else if (wingName.includes("C")) val = "C Wing (15)";
+              else if (wingName.includes("D")) val = "D Wing (14)";
+              setSelectedWing(val);
+            }}
           />
 
           {/* Tabs & Sub-Filter Bar */}
@@ -176,44 +191,107 @@ export default function ApartmentContent({
               </button>
             </div>
 
-            <div className="flex flex-col lg:flex-row items-center justify-between p-3 gap-3 bg-gray-50/50 rounded-b-xl">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-slate-600 font-extrabold uppercase">Select Wing</span>
-                  <div className="relative">
-                    <select 
-                      value={selectedWing} 
-                      onChange={(e) => setSelectedWing(e.target.value)}
-                      className="appearance-none bg-white border border-gray-250 rounded-lg pl-3 pr-8 py-1 text-[11px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer"
-                    >
-                      <option>B Wing (19)</option>
-                      <option>A Wing (19)</option>
-                      <option>C Wing (15)</option>
-                      <option>D Wing (14)</option>
-                    </select>
-                    <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+            <div className="flex flex-col gap-2.5 p-3 bg-gray-50/50 rounded-b-xl border-t border-gray-150">
+              {/* Row 1: Filters on Left, Actions on Right */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 w-full">
+                {/* 4 Dropdowns in one line */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[9.5px] text-slate-600 font-extrabold uppercase whitespace-nowrap">Select Wing</span>
+                    <div className="relative">
+                      <select 
+                        value={selectedWing} 
+                        onChange={(e) => setSelectedWing(e.target.value)}
+                        className="appearance-none bg-white border border-gray-250 rounded-lg pl-2.5 pr-7 py-1 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
+                      >
+                        <option value="All Wings">All Wings (67)</option>
+                        <option>B Wing (19)</option>
+                        <option>A Wing (19)</option>
+                        <option>C Wing (15)</option>
+                        <option>D Wing (14)</option>
+                      </select>
+                      <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[9.5px] text-slate-600 font-extrabold uppercase whitespace-nowrap">Select Floor</span>
+                    <div className="relative">
+                      <select 
+                        value={selectedFloor} 
+                        onChange={(e) => setSelectedFloor(e.target.value)}
+                        className="appearance-none bg-white border border-gray-250 rounded-lg pl-2.5 pr-7 py-1 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
+                      >
+                        <option>All Floors</option>
+                        <option>Ground Floor</option>
+                        <option>1st Floor</option>
+                        <option>2nd Floor</option>
+                      </select>
+                      <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  {/* Policy Area Deviation Filter */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[9.5px] text-slate-600 font-extrabold uppercase whitespace-nowrap">Policy Area Δ</span>
+                    <div className="relative">
+                      <select 
+                        value={areaPolicyThreshold} 
+                        onChange={(e) => setAreaPolicyThreshold(e.target.value)}
+                        className="appearance-none bg-white border border-gray-250 rounded-lg pl-2.5 pr-7 py-1 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
+                      >
+                        <option value="all">All Deviations</option>
+                        <option value="5">&gt; 5% Area Diff</option>
+                        <option value="10">&gt; 10% Area Diff</option>
+                        <option value="20">&gt; 20% Area Diff</option>
+                      </select>
+                      <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  {/* Diff Category Filter */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[9.5px] text-slate-600 font-extrabold uppercase whitespace-nowrap">Filter Diff</span>
+                    <div className="relative">
+                      <select 
+                        value={diffFilter} 
+                        onChange={(e) => setDiffFilter(e.target.value)}
+                        className="appearance-none bg-white border border-gray-250 rounded-lg pl-2.5 pr-7 py-1 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
+                      >
+                        <option value="all">All Differences</option>
+                        <option value="carpet">Carpet Diff Only</option>
+                        <option value="bua">BUA Diff Only</option>
+                        <option value="rv">RV Diff Only</option>
+                        <option value="tax">Tax Diff Only</option>
+                      </select>
+                      <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-slate-600 font-extrabold uppercase">Select Floor</span>
-                  <div className="relative">
-                    <select 
-                      value={selectedFloor} 
-                      onChange={(e) => setSelectedFloor(e.target.value)}
-                      className="appearance-none bg-white border border-gray-250 rounded-lg pl-3 pr-8 py-1 text-[11px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer"
-                    >
-                      <option>All Floors</option>
-                      <option>Ground Floor</option>
-                      <option>1st Floor</option>
-                      <option>2nd Floor</option>
-                    </select>
-                    <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                  </div>
+                {/* Actions on Right */}
+                <div className="flex items-center gap-2 select-none shrink-0 lg:ml-auto">
+                  <button className="flex items-center gap-1.5 px-3 py-1 border border-gray-255 bg-white rounded-lg text-[10px] font-extrabold text-gray-700 hover:bg-gray-50 cursor-pointer" type="button">
+                    <SlidersHorizontal size={12} />
+                    <span>Filters</span>
+                  </button>
+                  <button className="flex items-center gap-1.5 px-3 py-1 border border-gray-255 bg-white rounded-lg text-[10px] font-extrabold text-gray-700 hover:bg-gray-50 cursor-pointer" type="button">
+                    <Download size={12} />
+                    <span>Export</span>
+                  </button>
+                  <button 
+                    onClick={() => setIsDashboardExpanded(!isDashboardExpanded)}
+                    className="flex items-center gap-1.5 px-3 py-1 border border-[#3b82f6]/20 bg-[#edf2ff] rounded-lg text-[10px] font-extrabold text-[#3b82f6] hover:bg-[#dbeafe] cursor-pointer" 
+                    type="button"
+                  >
+                    {isDashboardExpanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+                    <span>{isDashboardExpanded ? 'Collapse' : 'Expand'}</span>
+                  </button>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[9px] font-extrabold text-slate-700 uppercase tracking-wide select-none">
+              {/* Row 2: Legend Indicators in one line */}
+              <div className="flex items-center gap-x-4 border-t border-gray-200/60 pt-2 text-[9px] font-extrabold text-slate-700 uppercase tracking-wide select-none whitespace-nowrap overflow-x-auto no-scrollbar w-full">
                 <LegendItem color="bg-green-500" label="Matched" />
                 <LegendItem color="bg-amber-500" label="Modified" />
                 <LegendItem color="bg-blue-500" label="New" />
@@ -221,31 +299,29 @@ export default function ApartmentContent({
                 <LegendItem color="bg-purple-500" label="Eligible for Discount" />
                 <LegendItem color="bg-teal-500" label="Exempted" />
               </div>
-
-              <div className="flex items-center gap-2 select-none">
-                <button className="flex items-center gap-1.5 px-3 py-1 border border-gray-255 bg-white rounded-lg text-[10px] font-extrabold text-gray-700 hover:bg-gray-50 cursor-pointer" type="button">
-                  <SlidersHorizontal size={12} />
-                  <span>Filters</span>
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-1 border border-gray-255 bg-white rounded-lg text-[10px] font-extrabold text-gray-700 hover:bg-gray-50 cursor-pointer" type="button">
-                  <Download size={12} />
-                  <span>Export</span>
-                </button>
-              </div>
             </div>
           </div>
 
-          <ComparisonTable selectedWing={selectedWing} />
+          <ComparisonTable 
+            selectedWing={selectedWing} 
+            selectedFloor={selectedFloor}
+            areaPolicyThreshold={areaPolicyThreshold}
+            diffFilter={diffFilter}
+            activeTab={activeTab}
+          />
           <BottomMetrics />
         </div>
         
-        <RightPanel 
-          onHoverImage={handleHoverImage}
-          onSelectImage={(url, title) => {
-            setSelectedImg(url);
-            setSelectedImgTitle(title);
-          }}
-        />
+        {!isDashboardExpanded && (
+          <RightPanel 
+            onHoverImage={handleHoverImage}
+            onSelectImage={(url, title) => {
+              setSelectedImg(url);
+              setSelectedImgTitle(title);
+            }}
+            role={role}
+          />
+        )}
       </div>
 
       {/* Floating Hover Zoom Portal */}

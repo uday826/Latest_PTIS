@@ -7,9 +7,11 @@ import { RedBellDropdown, GreenBellDropdown, ProfileDropdown, SearchFilterDropdo
 interface TopbarProps {
   activeValuationModel: 'rv' | 'cvm' | 'dual';
   setActiveValuationModel: (model: 'rv' | 'cvm' | 'dual') => void;
+  role: 'surveyor' | 'qc' | 'final';
+  setRole: (role: 'surveyor' | 'qc' | 'final') => void;
 }
 
-export default function Topbar({ activeValuationModel, setActiveValuationModel }: TopbarProps) {
+export default function Topbar({ activeValuationModel, setActiveValuationModel, role, setRole }: TopbarProps) {
   const [activeDropdown, setActiveDropdown] = useState<'redBell' | 'greenBell' | 'profile' | null>(null);
   const [activeTooltip, setActiveTooltip] = useState<'rv' | 'cvm' | 'dual' | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -295,6 +297,20 @@ export default function Topbar({ activeValuationModel, setActiveValuationModel }
 
               {/* Green Bell Dropdown */}
               {activeDropdown === 'greenBell' && <GreenBellDropdown />}
+            </div>
+
+            {/* Role Switcher Selector */}
+            <div className="flex items-center gap-2 bg-[#172246] px-3 py-1.5 rounded-lg border border-white/10 select-none shadow-inner shrink-0">
+              <span className="text-[9px] font-extrabold text-[#e1b942] uppercase tracking-wider">Access:</span>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as any)}
+                className="bg-transparent text-white font-bold text-[10.5px] outline-none cursor-pointer border-none pr-1 focus:ring-0"
+              >
+                <option value="surveyor" className="bg-[#1e2b58] text-white font-semibold">Surveyor View</option>
+                <option value="qc" className="bg-[#1e2b58] text-white font-semibold">QC Auditor View</option>
+                <option value="final" className="bg-[#1e2b58] text-white font-semibold">Final Approver</option>
+              </select>
             </div>
 
             {/* Profile User Button */}

@@ -16,11 +16,12 @@ export default function PropertyDetailsPage() {
   const [activeMenu, setActiveMenu] = useState('property-details');
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [activeValuationModel, setActiveValuationModel] = useState<'rv' | 'cvm' | 'dual'>('rv');
+  const [role, setRole] = useState<'surveyor' | 'qc' | 'final'>('surveyor');
 
   return (
     <div className="flex flex-col h-screen bg-[#f0f2f5] overflow-hidden font-sans">
       {/* Topbar at the top, full-width */}
-      <Topbar activeValuationModel={activeValuationModel} setActiveValuationModel={setActiveValuationModel} />
+      <Topbar activeValuationModel={activeValuationModel} setActiveValuationModel={setActiveValuationModel} role={role} setRole={setRole} />
 
       {/* Sidebar + MainContent below */}
       <div className="flex flex-1 overflow-hidden">
@@ -47,12 +48,14 @@ export default function PropertyDetailsPage() {
                   activeAction={activeAction} 
                   setActiveAction={setActiveAction} 
                   activeValuationModel={activeValuationModel} 
+                  role={role}
                 />
               )}
               {activeMenu === 'apartment-management' && (
                 <ApartmentContent 
                   activeAction={activeAction} 
                   setActiveAction={setActiveAction} 
+                  role={role}
                 />
               )}
               {activeMenu === 'dashboard' && (

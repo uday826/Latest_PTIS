@@ -10,6 +10,7 @@ interface WingSummaryProps {
   handleMetricClick: (e: React.MouseEvent<HTMLButtonElement>, wing: WingDetails, metricType: 'discount' | 'exemptions' | 'rvImpact') => void;
   handleDeleteWing: (e: React.MouseEvent<HTMLButtonElement>, wingId: string) => void;
   onAddWingClick: () => void;
+  onWingCardClick: (wingName: string) => void;
 }
 
 export default function WingSummary({
@@ -18,7 +19,8 @@ export default function WingSummary({
   activeMetrics,
   handleMetricClick,
   handleDeleteWing,
-  onAddWingClick
+  onAddWingClick,
+  onWingCardClick
 }: WingSummaryProps) {
   return (
     <div ref={summaryRef} className="bg-white border border-gray-200 rounded-xl p-3 shadow-xs relative shrink-0">
@@ -59,6 +61,7 @@ export default function WingSummary({
               activeMetric={activeMetrics[wing.id] || 'discount'}
               onMetricClick={handleMetricClick}
               onDeleteClick={handleDeleteWing}
+              onClick={() => onWingCardClick(wing.wing)}
             />
           </div>
         ))}
