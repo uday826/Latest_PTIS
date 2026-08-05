@@ -79,6 +79,7 @@ export default function ApartmentContent({
   const [popupData, setPopupData] = useState<any | null>(null);
   const [addWingModalOpen, setAddWingModalOpen] = useState(false);
   const summaryRef = React.useRef<HTMLDivElement>(null);
+  const comparisonTableRef = React.useRef<HTMLDivElement>(null);
 
   const handleMetricClick = (e: React.MouseEvent<HTMLButtonElement>, wing: WingDetails, metricType: 'discount' | 'exemptions' | 'rvImpact') => {
     e.stopPropagation();
@@ -166,6 +167,11 @@ export default function ApartmentContent({
               else if (wingName.includes("C")) val = "C Wing (15)";
               else if (wingName.includes("D")) val = "D Wing (14)";
               setSelectedWing(val);
+
+              // Smoothly scroll the comparison table area into view
+              setTimeout(() => {
+                comparisonTableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 100);
             }}
           />
 
@@ -177,19 +183,11 @@ export default function ApartmentContent({
                 <TabButton label="Floor / Unit Comparison" active={activeTab === 'floor-comparison'} onClick={() => setActiveTab('floor-comparison')} />
                 <TabButton label="Headwise Tax Comparison" active={activeTab === 'tax-comparison'} onClick={() => setActiveTab('tax-comparison')} />
                 <TabButton label="Assessment Comparison" active={activeTab === 'assessment-comparison'} onClick={() => setActiveTab('assessment-comparison')} />
-                <TabButton label="Society Details" active={activeTab === 'society-details'} onClick={() => setActiveTab('society-details')} />
-                <TabButton label="Documents" active={activeTab === 'documents'} onClick={() => setActiveTab('documents')} />
                 <TabButton label="Discount & Exemption" active={activeTab === 'discount-exemption'} onClick={() => setActiveTab('discount-exemption')} />
                 <TabButton label="Reports" active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} />
                 <TabButton label="Old Details" active={activeTab === 'old-details'} onClick={() => setActiveTab('old-details')} />
-                <TabButton label="Apply OC" active={activeTab === 'apply-oc'} onClick={() => setActiveTab('apply-oc')} />
               </div>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#edf2ff] text-[#3b82f6] rounded-lg text-[10px] font-extrabold border border-[#3b82f6]/10 hover:bg-[#dbeafe] transition cursor-pointer" type="button">
-                <Layers size={12} />
-                <span>Comparison Summary</span>
-              </button>
             </div>
-
             {activeTab === 'floor-comparison' && (
               <div className="flex flex-col gap-2.5 p-3 bg-gray-50/50 rounded-b-xl border-t border-gray-150">
                 {/* Row 1: Filters on Left, Actions on Right */}
@@ -303,13 +301,15 @@ export default function ApartmentContent({
             )}
           </div>
 
-          <ComparisonTable 
-            selectedWing={selectedWing} 
-            selectedFloor={selectedFloor}
-            areaPolicyThreshold={areaPolicyThreshold}
-            diffFilter={diffFilter}
-            activeTab={activeTab}
-          />
+          <div ref={comparisonTableRef} className="scroll-mt-4">
+            <ComparisonTable 
+              selectedWing={selectedWing} 
+              selectedFloor={selectedFloor}
+              areaPolicyThreshold={areaPolicyThreshold}
+              diffFilter={diffFilter}
+              activeTab={activeTab}
+            />
+          </div>
           <BottomMetrics />
         </div>
         

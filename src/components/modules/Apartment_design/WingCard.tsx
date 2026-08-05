@@ -38,9 +38,7 @@ export default function WingCard({
   };
 
   const cardBorderAndShadow = () => {
-    if (wing.themeColor === 'purple') return 'border-2 border-purple-200 hover:border-purple-400 hover:shadow-purple-50/40';
-    if (wing.themeColor === 'orange') return 'border-2 border-orange-200 hover:border-orange-400 hover:shadow-orange-50/40';
-    return 'border-2 border-green-200 hover:border-green-400 hover:shadow-green-50/40';
+    return 'border border-gray-200 hover:border-gray-400 hover:shadow-gray-100/50';
   };
 
   return (
@@ -84,10 +82,10 @@ export default function WingCard({
       </div>
 
       {/* Wing Totals Panel: Area, RV, Tax */}
-      <div className="bg-[#eff6ff] rounded-md p-0.5 mt-0.5 text-[8.5px] font-extrabold text-[#1e2b58] border border-blue-100 flex justify-between select-none leading-none">
-        <div>Area: <span className="text-blue-700">{wing.id === 'A' ? '12,456' : wing.id === 'B' ? '11,920' : wing.id === 'C' ? '9,850' : '8,400'} sqft</span></div>
-        <div>RV: <span className="text-[#9333ea]">{wing.id === 'A' ? '₹4.30L' : wing.id === 'B' ? '₹4.12L' : wing.id === 'C' ? '₹3.22L' : '₹2.88L'}</span></div>
-        <div>Tax: <span className="text-blue-700">{wing.id === 'A' ? '₹68,850' : wing.id === 'B' ? '₹64,240' : wing.id === 'C' ? '₹48,560' : '₹42,390'}</span></div>
+      <div className="bg-gray-50 rounded-md p-1 mt-0.5 text-[8.5px] font-extrabold text-gray-700 border border-gray-200 flex justify-between select-none leading-none">
+        <div>Area: <span className="text-gray-900 font-bold">{wing.id === 'A' ? '12,456' : wing.id === 'B' ? '11,920' : wing.id === 'C' ? '9,850' : '8,400'} sqft</span></div>
+        <div>RV: <span className="text-gray-900 font-bold">{wing.id === 'A' ? '₹4.30L' : wing.id === 'B' ? '₹4.12L' : wing.id === 'C' ? '₹3.22L' : '₹2.88L'}</span></div>
+        <div>Tax: <span className="text-gray-900 font-bold">{wing.id === 'A' ? '₹68,850' : wing.id === 'B' ? '₹64,240' : wing.id === 'C' ? '₹48,560' : '₹42,390'}</span></div>
       </div>
 
       {/* Usage Categories Row */}
@@ -145,17 +143,17 @@ export default function WingCard({
           }}
           className={`flex flex-col items-center justify-center p-1 rounded-md border transition-all cursor-pointer focus:ring-1 focus:ring-blue-500 outline-none ${
             activeMetric === 'discount' 
-              ? 'bg-green-50/90 border-green-300 text-green-700 shadow-xs border-b-2 border-b-green-500 font-extrabold' 
-              : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50/60 hover:border-gray-250 font-bold'
+              ? 'bg-white border-gray-200 text-gray-900 font-extrabold' 
+              : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50/60 hover:border-gray-200 font-bold'
           }`}
           aria-expanded={activeMetric === 'discount'}
           aria-label={`View ${wing.wing} Discount details`}
         >
           <div className="flex items-center gap-0.5">
-            <Percent size={8} className={getSubMetricIconColor('discount')} />
+            <Percent size={8} className="text-gray-600" />
             <span className="text-[7.5px] uppercase tracking-wider">Discount</span>
           </div>
-          <span className="text-[10px] mt-0.5">{wing.discount}</span>
+          <span className="text-[10px] mt-0.5 text-gray-900 font-bold">{wing.discount}</span>
           <span className="text-[7.5px] text-gray-550 font-bold">({wing.discLabel})</span>
         </button>
 
@@ -167,17 +165,17 @@ export default function WingCard({
           }}
           className={`flex flex-col items-center justify-center p-1 rounded-md border transition-all cursor-pointer focus:ring-1 focus:ring-blue-500 outline-none ${
             activeMetric === 'exemptions' 
-              ? 'bg-purple-50/90 border-purple-300 text-purple-700 shadow-xs border-b-2 border-b-purple-500 font-extrabold' 
-              : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50/60 hover:border-gray-250 font-bold'
+              ? 'bg-white border-gray-200 text-gray-900 font-extrabold' 
+              : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50/60 hover:border-gray-200 font-bold'
           }`}
           aria-expanded={activeMetric === 'exemptions'}
           aria-label={`View ${wing.wing} Exemptions details`}
         >
           <div className="flex items-center gap-0.5">
-            <FileText size={8} className={getSubMetricIconColor('exemptions')} />
+            <FileText size={8} className="text-gray-600" />
             <span className="text-[7.5px] uppercase tracking-wider">Exempt</span>
           </div>
-          <span className="text-[10px] mt-0.5">{wing.exemp}</span>
+          <span className="text-[10px] mt-0.5 text-gray-900 font-bold">{wing.exemp}</span>
           <span className="text-[7.5px] text-gray-550 font-bold truncate max-w-full" title={wing.exempLabel}>({wing.exempLabel})</span>
         </button>
 
@@ -189,18 +187,18 @@ export default function WingCard({
           }}
           className={`flex flex-col items-center justify-center p-1 rounded-md border transition-all cursor-pointer focus:ring-1 focus:ring-blue-500 outline-none ${
             activeMetric === 'rvImpact' 
-              ? 'bg-green-50/90 border-green-300 text-green-700 shadow-xs border-b-2 border-b-green-500 font-extrabold' 
-              : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50/60 hover:border-gray-250 font-bold'
+              ? 'bg-white border-gray-200 text-gray-900 font-extrabold' 
+              : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50/60 hover:border-gray-200 font-bold'
           }`}
           aria-expanded={activeMetric === 'rvImpact'}
           aria-label={`View ${wing.wing} REV Impact details`}
         >
           <div className="flex items-center gap-0.5">
-            <TrendingUp size={8} className={getSubMetricIconColor('rvImpact')} />
+            <TrendingUp size={8} className="text-gray-600" />
             <span className="text-[7.5px] uppercase tracking-wider">REV</span>
           </div>
-          <span className="text-[10px] mt-0.5">{wing.rvImpact}</span>
-          <span className="text-[7.5px] text-green-600 font-bold">({wing.rvLabel})</span>
+          <span className="text-[10px] mt-0.5 text-gray-900 font-bold">{wing.rvImpact}</span>
+          <span className="text-[7.5px] text-gray-600 font-bold">({wing.rvLabel})</span>
         </button>
       </div>
 

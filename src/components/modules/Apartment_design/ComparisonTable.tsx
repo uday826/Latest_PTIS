@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronUp, Plus, Layers, Building2, Check } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { ChevronUp, Plus, Layers, Building2, Check, GripVertical } from 'lucide-react';
 import { comparisonRows } from './mockData';
 import TaxRulesModal from './TaxRulesModal';
 import { PreviousAssessmentTable, CurrentSurveyTable } from './ComparisonSubTables';
@@ -307,6 +307,79 @@ export default function ComparisonTable({
   const leftTableRef = useRef<HTMLDivElement>(null);
   const middleTableRef = useRef<HTMLDivElement>(null);
   const rightTableRef = useRef<HTMLDivElement>(null);
+
+  // Resizable panel state (percentages out of 100)
+  const DEFAULT_LEFT = 33.33;
+  const DEFAULT_MIDDLE = 33.34;
+  const DEFAULT_RIGHT = 33.33;
+  const MIN_PANEL = 8; // minimum panel width in %
+  const MIN_MIDDLE = 8; // minimum for difference engine
+
+  const [panelWidths, setPanelWidths] = useState({ left: DEFAULT_LEFT, middle: DEFAULT_MIDDLE, right: DEFAULT_RIGHT });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef<'left' | 'right' | null>(null);
+  const dragStartX = useRef(0);
+  const dragStartWidths = useRef({ left: DEFAULT_LEFT, middle: DEFAULT_MIDDLE, right: DEFAULT_RIGHT });
+
+  const handleMouseDown = useCallback((divider: 'left' | 'right', e: React.MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = divider;
+    dragStartX.current = e.clientX;
+    dragStartWidths.current = { ...panelWidths };
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }, [panelWidths]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging.current || !containerRef.current) return;
+    const containerWidth = containerRef.current.getBoundingClientRect().width;
+    const deltaX = e.clientX - dragStartX.current;
+    const deltaPct = (deltaX / containerWidth) * 100;
+    const start = dragStartWidths.current;
+
+    if (isDragging.current === 'left') {
+      // Dragging the left divider: affects left and middle panels
+      let newLeft = start.left + deltaPct;
+      let newMiddle = start.middle - deltaPct;
+      // Clamp
+      if (newLeft < MIN_PANEL) { newMiddle += (newLeft - MIN_PANEL); newLeft = MIN_PANEL; }
+      if (newMiddle < MIN_MIDDLE) { newLeft += (newMiddle - MIN_MIDDLE); newMiddle = MIN_MIDDLE; }
+      // Final safety clamp
+      newLeft = Math.max(MIN_PANEL, Math.min(newLeft, 100 - MIN_MIDDLE - MIN_PANEL));
+      newMiddle = Math.max(MIN_MIDDLE, Math.min(newMiddle, 100 - MIN_PANEL - MIN_PANEL));
+      setPanelWidths({ left: newLeft, middle: newMiddle, right: start.right });
+    } else {
+      // Dragging the right divider: affects middle and right panels
+      let newMiddle = start.middle + deltaPct;
+      let newRight = start.right - deltaPct;
+      // Clamp
+      if (newMiddle < MIN_MIDDLE) { newRight += (newMiddle - MIN_MIDDLE); newMiddle = MIN_MIDDLE; }
+      if (newRight < MIN_PANEL) { newMiddle += (newRight - MIN_PANEL); newRight = MIN_PANEL; }
+      // Final safety clamp
+      newMiddle = Math.max(MIN_MIDDLE, Math.min(newMiddle, 100 - MIN_PANEL - MIN_PANEL));
+      newRight = Math.max(MIN_PANEL, Math.min(newRight, 100 - MIN_PANEL - MIN_MIDDLE));
+      setPanelWidths({ left: start.left, middle: newMiddle, right: newRight });
+    }
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    isDragging.current = null;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  }, []);
+
+  const resetPanelWidths = useCallback(() => {
+    setPanelWidths({ left: DEFAULT_LEFT, middle: DEFAULT_MIDDLE, right: DEFAULT_RIGHT });
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [handleMouseMove, handleMouseUp]);
 
   useEffect(() => {
 
@@ -872,14 +945,15 @@ export default function ComparisonTable({
           </div>
         </div>
       ) : (
-        <div className="w-full flex divide-x divide-gray-200">
+        <div ref={containerRef} className="w-full flex overflow-hidden relative" style={{ minHeight: 0 }}>
           {/* LEFT TABLE: Existing Assessment (Previous) */}
-          <div className="w-[37%] shrink-0 flex flex-col bg-[#f5f8fc]">
-            <div className="bg-[#edf7f4] border-b border-gray-200 px-3 py-1.5 flex items-center justify-between h-[34px] shrink-0">
-              <div className="flex items-center gap-1 select-none">
+          <div className="flex flex-col bg-[#f5f8fc] overflow-hidden" style={{ width: `${panelWidths.left}%` }}>
+            <div className="bg-[#edf7f4] border-b border-gray-200 px-3 py-1.5 flex items-center justify-center h-[34px] shrink-0 relative">
+              <div className="flex items-center gap-1 select-none justify-center">
                 <span className="text-[10px] font-black text-[#006a4e] uppercase tracking-tight">Existing Assessment</span>
                 <span className="text-[9.5px] text-[#006a4e]/75 font-semibold">(Previous)</span>
               </div>
+              <span className="text-[8px] font-bold text-gray-400 select-none tabular-nums absolute right-3 top-1/2 -translate-y-1/2">{Math.round(panelWidths.left)}%</span>
             </div>
             
             <PreviousAssessmentTable 
@@ -892,29 +966,42 @@ export default function ComparisonTable({
             />
           </div>
 
+          {/* LEFT DIVIDER HANDLE */}
+          <div
+            className="shrink-0 w-[7px] flex flex-col items-center justify-center bg-gray-100 border-x border-gray-200 cursor-col-resize hover:bg-blue-100 active:bg-blue-200 transition-colors group select-none z-10"
+            onMouseDown={(e) => handleMouseDown('left', e)}
+            onDoubleClick={resetPanelWidths}
+            title="Drag to resize · Double-click to reset"
+          >
+            <GripVertical size={10} className="text-gray-400 group-hover:text-blue-500 group-active:text-blue-600 transition-colors" />
+          </div>
+
           {/* MIDDLE COLUMN: Difference Engine */}
-          <div className="w-[26%] shrink-0 flex flex-col bg-[#f5f8fc] border-l border-r border-gray-200">
-            <div className="bg-[#fdf8e2] border-b border-amber-250/60 px-3 py-1.5 flex items-center justify-between h-[34px] shrink-0">
-              <span className="text-[10px] font-black text-[#8a6d1c] uppercase tracking-tight">Difference Engine</span>
-              <button className="text-[8.5px] font-bold text-blue-600 bg-white border border-gray-200 hover:bg-gray-50 rounded px-1.5 py-0.5 shadow-2xs leading-none">
-                AI Status
-              </button>
+          <div className="flex flex-col bg-[#f5f8fc] overflow-hidden" style={{ width: `${panelWidths.middle}%` }}>
+            <div className="bg-[#fdf8e2] border-b border-amber-250/60 px-3 py-1.5 flex items-center justify-center h-[34px] shrink-0 relative">
+              <span className="text-[10px] font-black text-[#8a6d1c] uppercase tracking-tight text-center">Difference Engine</span>
+              <div className="flex items-center gap-1.5 absolute right-3 top-1/2 -translate-y-1/2">
+                <span className="text-[8px] font-bold text-gray-400 select-none tabular-nums">{Math.round(panelWidths.middle)}%</span>
+                <button className="text-[8.5px] font-bold text-blue-600 bg-white border border-gray-200 hover:bg-gray-50 rounded px-1.5 py-0.5 shadow-2xs leading-none">
+                  AI Status
+                </button>
+              </div>
             </div>
             
             <div 
               ref={middleTableRef} 
               className={`w-full scrollbar-thin ${selectedWing === "All Wings" ? "overflow-auto h-[400px]" : "overflow-x-auto"}`}
             >
-              <table className="min-w-[420px] text-left border-collapse text-[10px] w-full">
+              <table className="min-w-[280px] text-left border-collapse text-[10px] w-full">
                 <thead>
-                  <tr className="bg-[#fdf8e2]/60 border-b border-amber-200 text-[#8a6d1c] font-black uppercase h-[32px]">
-                    <th className="py-2 px-1.5 text-right whitespace-nowrap">Carpet Δ</th>
-                    <th className="py-2 px-1.5 text-right whitespace-nowrap">BUA Δ</th>
-                    <th className="py-2 px-1.5 text-right whitespace-nowrap">RV Δ (₹)</th>
-                    <th className="py-2 px-1.5 text-right whitespace-nowrap">Tax Δ (₹)</th>
-                    <th className="py-2 px-1.5 text-right whitespace-nowrap">Rt Tax Δ</th>
-                    <th className="py-2 px-1.5 text-right whitespace-nowrap">Pen Δ</th>
-                    <th className="py-2 px-1.5 text-center whitespace-nowrap">Suggestion</th>
+                  <tr className="bg-[#fdf8e2]/60 border-b border-amber-200 text-[#8a6d1c] font-black uppercase h-[32px] align-middle">
+                    <th className="px-1.5 text-right align-middle whitespace-nowrap">Carpet Δ</th>
+                    <th className="px-1.5 text-right align-middle whitespace-nowrap">BUA Δ</th>
+                    <th className="px-1.5 text-right align-middle whitespace-nowrap">RV Δ (₹)</th>
+                    <th className="px-1.5 text-right align-middle whitespace-nowrap">Tax Δ (₹)</th>
+                    <th className="px-1.5 text-right align-middle whitespace-nowrap">Rt Tax Δ</th>
+                    <th className="px-1.5 text-right align-middle whitespace-nowrap">Pen Δ</th>
+                    <th className="px-1.5 text-center align-middle whitespace-nowrap">Suggestion</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-150">
@@ -964,13 +1051,24 @@ export default function ComparisonTable({
             </div>
           </div>
 
+          {/* RIGHT DIVIDER HANDLE */}
+          <div
+            className="shrink-0 w-[7px] flex flex-col items-center justify-center bg-gray-100 border-x border-gray-200 cursor-col-resize hover:bg-blue-100 active:bg-blue-200 transition-colors group select-none z-10"
+            onMouseDown={(e) => handleMouseDown('right', e)}
+            onDoubleClick={resetPanelWidths}
+            title="Drag to resize · Double-click to reset"
+          >
+            <GripVertical size={10} className="text-gray-400 group-hover:text-blue-500 group-active:text-blue-600 transition-colors" />
+          </div>
+
           {/* RIGHT TABLE: New Survey (Current) */}
-          <div className="w-[37%] shrink-0 flex flex-col bg-[#f5f8fc]">
-            <div className="bg-[#edf2ff] border-b border-gray-200 px-3 py-1.5 flex items-center justify-between h-[34px] shrink-0">
-              <div className="flex items-center gap-1 select-none">
+          <div className="flex flex-col bg-[#f5f8fc] overflow-hidden" style={{ width: `${panelWidths.right}%` }}>
+            <div className="bg-[#edf2ff] border-b border-gray-200 px-3 py-1.5 flex items-center justify-center h-[34px] shrink-0 relative">
+              <div className="flex items-center gap-1 select-none justify-center">
                 <span className="text-[10px] font-black text-[#1e40af] uppercase tracking-tight">New Survey</span>
                 <span className="text-[9.5px] text-[#1e40af]/75 font-semibold">(Current)</span>
               </div>
+              <span className="text-[8px] font-bold text-gray-400 select-none tabular-nums absolute right-3 top-1/2 -translate-y-1/2">{Math.round(panelWidths.right)}%</span>
             </div>
             
             <CurrentSurveyTable 

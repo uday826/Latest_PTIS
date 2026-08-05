@@ -7,7 +7,8 @@ import ViewDemandView from './ViewDemandView';
 import ViewCollectionView from './ViewCollectionView';
 import GenerateNoticeView from './GenerateNoticeView';
 import PropertyHistoryView from './PropertyHistoryView';
-import DownloadGisView from './DownloadGisView';
+import DocumentsView from './DocumentsView';
+import ApplyOcView from './ApplyOcView';
 import MoreActionsView from './MoreActionsView';
 
 interface ActionViewsProps {
@@ -31,8 +32,10 @@ export default function ActionViews({ activeAction, setActiveAction }: ActionVie
       return <GenerateNoticeView onClose={onClose} />;
     case 'property-history':
       return <PropertyHistoryView onClose={onClose} />;
-    case 'download-gis':
-      return <DownloadGisView onClose={onClose} />;
+    case 'documents':
+      return <DocumentsView onClose={onClose} />;
+    case 'apply-oc':
+      return <ApplyOcView onClose={onClose} />;
     case 'more-actions':
       return <MoreActionsView onClose={onClose} />;
     default:

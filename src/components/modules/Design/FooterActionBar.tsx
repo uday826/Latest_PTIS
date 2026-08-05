@@ -8,7 +8,8 @@ import {
   Wallet, 
   History, 
   Download, 
-  ChevronDown 
+  ChevronDown,
+  Building2
 } from 'lucide-react';
 
 interface FooterActionBarProps {
@@ -98,17 +99,30 @@ export default function FooterActionBar({ activeAction, setActiveAction }: Foote
         <span className="truncate">Property History</span>
       </button>
 
-      {/* Button 7: Download GIS (Interactive Page Tab) */}
+      {/* Button 7: Documents (Interactive Page Tab) */}
       <button 
-        onClick={() => setActiveAction(activeAction === 'download-gis' ? null : 'download-gis')}
+        onClick={() => setActiveAction(activeAction === 'documents' ? null : 'documents')}
         className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer shadow-sm flex-1 truncate ${
-          activeAction === 'download-gis'
+          activeAction === 'documents'
             ? 'bg-[#22c55e] text-white border-2 border-green-600 scale-[1.02]'
             : 'bg-[#f0fdf4] text-[#22c55e] border border-[#22c55e]/20 hover:bg-[#dcfce7]'
         }`}
       >
-        <Download size={14} className={activeAction === 'download-gis' ? 'text-white shrink-0' : 'text-[#22c55e] shrink-0'} />
-        <span className="truncate">Download GIS</span>
+        <FileText size={14} className={activeAction === 'documents' ? 'text-white shrink-0' : 'text-[#22c55e] shrink-0'} />
+        <span className="truncate">Documents</span>
+      </button>
+
+      {/* Button 7.5: Apply OC (Interactive Page Tab) */}
+      <button 
+        onClick={() => setActiveAction(activeAction === 'apply-oc' ? null : 'apply-oc')}
+        className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer shadow-sm flex-1 truncate ${
+          activeAction === 'apply-oc'
+            ? 'bg-[#2563eb] text-white border-2 border-blue-700 scale-[1.02]'
+            : 'bg-[#eff6ff] text-[#3b82f6] border border-[#3b82f6]/20 hover:bg-[#dbeafe]'
+        }`}
+      >
+        <Building2 size={14} className={activeAction === 'apply-oc' ? 'text-white shrink-0' : 'text-[#3b82f6] shrink-0'} />
+        <span className="truncate">Apply OC</span>
       </button>
 
       {/* Button 8: More Actions (Interactive Page Tab) */}

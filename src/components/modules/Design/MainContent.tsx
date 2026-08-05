@@ -186,7 +186,6 @@ export default function MainContent({
               <StatusBadge icon={<Map size={13} className="text-green-600" />} title="GIS Verified" status="Verified" statusColor="text-green-600" />
               <StatusBadge icon={<FileText size={13} className="text-green-600" />} title="Assessment" status="Approved" statusColor="text-green-600" />
               <StatusBadge icon={<Wallet size={13} className="text-green-600" />} title="Collection Status" status="Paid" statusColor="text-green-600" />
-              <StatusBadge icon={<UserCheck size={13} className={isMobileVerified ? "text-green-600" : "text-orange-500"} />} title="KYC Status" status={isMobileVerified ? "Verified" : "Unverified"} statusColor={isMobileVerified ? "text-green-600" : "text-orange-500"} />
               <StatusBadge icon={<Droplet size={13} className={isWaterLinked ? "text-blue-600" : "text-orange-500"} />} title="Water Connection" status={isWaterLinked ? "Active" : "Not Linked"} statusColor={isWaterLinked ? "text-green-600" : "text-orange-500"} isBlue={isWaterLinked} />
               <StatusBadge icon={<ShieldCheck size={13} className={isFireNocValid ? "text-green-600" : "text-red-500"} />} title="Fire NOC" status={isFireNocValid ? "Valid" : "Expired"} statusColor={isFireNocValid ? "text-green-600" : "text-red-500"} />
               <StatusBadge icon={<Briefcase size={13} className="text-green-600" />} title="Trade License" status="Active" statusColor="text-green-600" />

@@ -30,7 +30,7 @@ export function PreviousAssessmentTable({ rows, onOpenRules, getStatusBgClass, g
     <div ref={scrollContainerRef} className={`w-full scrollbar-thin ${isAllWingsSelected ? "overflow-auto h-[400px]" : "overflow-x-auto"}`}>
       <table className="w-max text-left border-collapse text-[10px]">
         <thead>
-          <tr className="bg-[#edf7f4]/45 border-b border-gray-250 text-[#006a4e] font-black uppercase h-[32px]">
+          <tr className="bg-[#edf7f4]/45 border-b border-gray-250 text-[#006a4e] font-black uppercase h-[32px] align-middle [&>th]:align-middle [&>th]:py-0">
             <th className="py-2 px-3 text-center whitespace-nowrap">#</th>
             <th className="py-2 px-3 whitespace-nowrap">Prop</th>
             <th className="py-2 px-3 whitespace-nowrap">Wg/Fl</th>
@@ -163,7 +163,7 @@ export function CurrentSurveyTable({ rows, onOpenRules, getStatusBgClass, getSta
     <div ref={scrollContainerRef} className={`w-full scrollbar-thin ${isAllWingsSelected ? "overflow-auto h-[400px]" : "overflow-x-auto"}`}>
       <table className="w-max text-left border-collapse text-[10px]">
         <thead>
-          <tr className="bg-[#edf2ff]/45 border-b border-gray-250 text-[#1e40af] font-black uppercase h-[32px]">
+          <tr className="bg-[#edf2ff]/45 border-b border-gray-250 text-[#1e40af] font-black uppercase h-[32px] align-middle [&>th]:align-middle [&>th]:py-0">
             <th className="py-2 px-3 text-center whitespace-nowrap">#</th>
             <th className="py-2 px-3 whitespace-nowrap">Prop</th>
             <th className="py-2 px-3 whitespace-nowrap">Wg/Fl</th>
