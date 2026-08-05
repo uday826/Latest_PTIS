@@ -135,7 +135,7 @@ export default function PropertyDetailsCard({
               </div>
               <div>
                 <div className="text-[7.5px] text-[#1749b5] font-extrabold uppercase tracking-wider">Total Carpet Area</div>
-                <div className="font-extrabold text-[10px] text-[#002a8f] mt-0.25">24,850.50 ft²</div>
+                <div className="font-extrabold text-[10px] text-slate-800 mt-0.25">24,850.50 ft²</div>
               </div>
             </div>
 
@@ -146,7 +146,7 @@ export default function PropertyDetailsCard({
               </div>
               <div>
                 <div className="text-[7.5px] text-[#1749b5] font-extrabold uppercase tracking-wider">Total Built-Up Area</div>
-                <div className="font-extrabold text-[10px] text-[#002a8f] mt-0.25">33,450.75 ft²</div>
+                <div className="font-extrabold text-[10px] text-slate-800 mt-0.25">33,450.75 ft²</div>
               </div>
             </div>
 
@@ -159,7 +159,7 @@ export default function PropertyDetailsCard({
                 </div>
                 <div>
                   <div className="text-[7.5px] text-[#1749b5] font-extrabold uppercase tracking-wider">Residential Units</div>
-                  <div className="font-extrabold text-[10px] text-[#002a8f] mt-0.25">40</div>
+                  <div className="font-extrabold text-[10px] text-slate-800 mt-0.25">40</div>
                 </div>
               </div>
 
@@ -170,7 +170,7 @@ export default function PropertyDetailsCard({
                 </div>
                 <div>
                   <div className="text-[7.5px] text-[#1749b5] font-extrabold uppercase tracking-wider">Commercial Units</div>
-                  <div className="font-extrabold text-[10px] text-[#002a8f] mt-0.25">6</div>
+                  <div className="font-extrabold text-[10px] text-slate-800 mt-0.25">6</div>
                 </div>
               </div>
 
@@ -181,7 +181,7 @@ export default function PropertyDetailsCard({
                 </div>
                 <div>
                   <div className="text-[7.5px] text-[#1749b5] font-extrabold uppercase tracking-wider">Other Units</div>
-                  <div className="font-extrabold text-[10px] text-[#002a8f] mt-0.25">2</div>
+                  <div className="font-extrabold text-[10px] text-slate-800 mt-0.25">2</div>
                 </div>
               </div>
             </div>
