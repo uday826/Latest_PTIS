@@ -24,7 +24,7 @@ export default function PropertyDetailsCard({
   onSelectImage
 }: PropertyDetailsCardProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2.5 flex flex-wrap xl:flex-nowrap items-center gap-4 relative overflow-visible z-20 xl:col-span-9 xl:h-[185px] shrink-0 w-full">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2.5 flex flex-wrap xl:flex-nowrap items-center gap-4 relative overflow-visible z-20 xl:col-span-9 xl:h-[148px] shrink-0 w-full">
       {/* Background visual accent */}
       <div className="absolute top-0 left-0 w-1.5 h-full bg-[#002fbe] rounded-l-xl pointer-events-none" />
 
@@ -33,7 +33,7 @@ export default function PropertyDetailsCard({
         onMouseEnter={() => onHoverImage("/apartment_image.jpg", "right")} 
         onMouseLeave={() => onHoverImage(null)}
         onClick={() => onSelectImage("/apartment_image.jpg", "Apartment Image - Shree Sai Residency")}
-        className="relative w-[165px] h-[130px] shrink-0 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:border-blue-300 bg-gray-50 transition-all self-center"
+        className="relative w-[150px] h-[115px] shrink-0 rounded-lg overflow-hidden border border-gray-250 group cursor-pointer hover:border-blue-300 bg-gray-50 transition-all self-center"
       >
         <img 
           src="/apartment_image.jpg" 
@@ -47,7 +47,7 @@ export default function PropertyDetailsCard({
 
       {/* Details column */}
       <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 h-full">
-        <div className="md:col-span-5 flex flex-col justify-between py-0.5">
+        <div className="md:col-span-5 flex flex-col justify-start gap-1.5 py-0.5">
           <div>
             <div className="text-[9px] text-[#1749b5] uppercase tracking-wider font-extrabold">Apartment / Society</div>
             <div className="flex items-center gap-1 mt-0.25 relative">
@@ -84,7 +84,7 @@ export default function PropertyDetailsCard({
         </div>
 
         {/* Mid Column: UPIC / Registry details */}
-        <div className="md:col-span-4 border-l border-gray-150 pl-3 text-[9.5px] flex flex-col justify-between py-0.5">
+        <div className="md:col-span-4 border-l border-gray-150 pl-3 text-[9.5px] flex flex-col justify-start gap-1.5 py-0.5">
           <div>
             <span className="text-gray-400 font-extrabold uppercase text-[8px] tracking-wide block">Property ID / UPIC</span>
             <div className="flex items-center gap-1.5 mt-0.5">
@@ -126,7 +126,7 @@ export default function PropertyDetailsCard({
         </div>
 
         {/* Right column: Area metrics summary */}
-        <div className="md:col-span-3 border-l border-gray-150 pl-3 text-[9.5px] flex flex-col justify-between py-0.5">
+        <div className="md:col-span-3 border-l border-gray-150 pl-3 text-[9.5px] flex flex-col justify-start gap-1 py-0.5">
           <div className="min-w-[170px] shrink-0 space-y-1">
             {/* Total Carpet */}
             <div className="flex items-center gap-1.5 group relative">

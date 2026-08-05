@@ -41,9 +41,9 @@ function TabButton({ label, active, onClick }: { label: string; active: boolean;
 
 function LegendItem({ color, label }: { color: string; label: string }) {
   return (
-    <div className="flex items-center gap-1.5 leading-none">
-      <div className={`w-2 h-2 rounded-full ${color}`}></div>
-      <span>{label}</span>
+    <div className="flex items-center gap-1 leading-none shrink-0">
+      <div className={`w-1.5 h-1.5 rounded-full ${color} shrink-0`}></div>
+      <span className="text-[8px] font-black text-slate-700 uppercase tracking-wider">{label}</span>
     </div>
   );
 }
@@ -193,14 +193,14 @@ export default function ApartmentContent({
                 {/* Row 1: Filters on Left, Actions on Right */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 w-full">
                   {/* 4 Dropdowns in one line */}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[9.5px] text-slate-600 font-extrabold uppercase whitespace-nowrap">Select Wing</span>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="text-[8.5px] text-slate-500 font-extrabold uppercase whitespace-nowrap">Select Wing</span>
                       <div className="relative">
                         <select 
                           value={selectedWing} 
                           onChange={(e) => setSelectedWing(e.target.value)}
-                          className="appearance-none bg-white border border-gray-250 rounded-lg pl-2.5 pr-7 py-1 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
+                          className="appearance-none bg-white border border-gray-250 rounded-lg pl-2 pr-6 py-0.5 text-[9.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
                         >
                           <option value="All Wings">All Wings (67)</option>
                           <option>B Wing (19)</option>
@@ -208,53 +208,53 @@ export default function ApartmentContent({
                           <option>C Wing (15)</option>
                           <option>D Wing (14)</option>
                         </select>
-                        <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                        <ChevronDown size={11} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[9.5px] text-slate-600 font-extrabold uppercase whitespace-nowrap">Select Floor</span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="text-[8.5px] text-slate-500 font-extrabold uppercase whitespace-nowrap">Select Floor</span>
                       <div className="relative">
                         <select 
                           value={selectedFloor} 
                           onChange={(e) => setSelectedFloor(e.target.value)}
-                          className="appearance-none bg-white border border-gray-250 rounded-lg pl-2.5 pr-7 py-1 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
+                          className="appearance-none bg-white border border-gray-250 rounded-lg pl-2 pr-6 py-0.5 text-[9.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
                         >
                           <option>All Floors</option>
                           <option>Ground Floor</option>
                           <option>1st Floor</option>
                           <option>2nd Floor</option>
                         </select>
-                        <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                        <ChevronDown size={11} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                       </div>
                     </div>
 
                     {/* Policy Area Deviation Filter */}
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[9.5px] text-slate-600 font-extrabold uppercase whitespace-nowrap">Policy Area Δ</span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="text-[8.5px] text-slate-500 font-extrabold uppercase whitespace-nowrap">Policy Area Δ</span>
                       <div className="relative">
                         <select 
                           value={areaPolicyThreshold} 
                           onChange={(e) => setAreaPolicyThreshold(e.target.value)}
-                          className="appearance-none bg-white border border-gray-250 rounded-lg pl-2.5 pr-7 py-1 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
+                          className="appearance-none bg-white border border-gray-250 rounded-lg pl-2 pr-6 py-0.5 text-[9.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
                         >
                           <option value="all">All Deviations</option>
                           <option value="5">&gt; 5% Area Diff</option>
                           <option value="10">&gt; 10% Area Diff</option>
                           <option value="20">&gt; 20% Area Diff</option>
                         </select>
-                        <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                        <ChevronDown size={11} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                       </div>
                     </div>
 
                     {/* Diff Category Filter */}
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[9.5px] text-slate-600 font-extrabold uppercase whitespace-nowrap">Filter Diff</span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="text-[8.5px] text-slate-500 font-extrabold uppercase whitespace-nowrap">Filter Diff</span>
                       <div className="relative">
                         <select 
                           value={diffFilter} 
                           onChange={(e) => setDiffFilter(e.target.value)}
-                          className="appearance-none bg-white border border-gray-250 rounded-lg pl-2.5 pr-7 py-1 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
+                          className="appearance-none bg-white border border-gray-250 rounded-lg pl-2 pr-6 py-0.5 text-[9.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
                         >
                           <option value="all">All Differences</option>
                           <option value="carpet">Carpet Diff Only</option>
@@ -262,8 +262,19 @@ export default function ApartmentContent({
                           <option value="rv">RV Diff Only</option>
                           <option value="tax">Tax Diff Only</option>
                         </select>
-                        <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                        <ChevronDown size={11} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                       </div>
+                    </div>
+
+                    {/* Legend Items */}
+                    <div className="h-3.5 w-px bg-gray-250 mx-1 shrink-0 hidden xl:block" />
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 select-none">
+                      <LegendItem color="bg-green-500" label="Matched" />
+                      <LegendItem color="bg-amber-500" label="Modified" />
+                      <LegendItem color="bg-blue-500" label="New" />
+                      <LegendItem color="bg-red-500" label="Missing" />
+                      <LegendItem color="bg-purple-500" label="Eligible for Discount" />
+                      <LegendItem color="bg-teal-500" label="Exempted" />
                     </div>
                   </div>
 
@@ -286,16 +297,6 @@ export default function ApartmentContent({
                       <span>{isDashboardExpanded ? 'Collapse' : 'Expand'}</span>
                     </button>
                   </div>
-                </div>
-
-                {/* Row 2: Legend Indicators in one line */}
-                <div className="flex items-center gap-x-4 border-t border-gray-200/60 pt-2 text-[9px] font-extrabold text-slate-700 uppercase tracking-wide select-none whitespace-nowrap overflow-x-auto no-scrollbar w-full">
-                  <LegendItem color="bg-green-500" label="Matched" />
-                  <LegendItem color="bg-amber-500" label="Modified" />
-                  <LegendItem color="bg-blue-500" label="New" />
-                  <LegendItem color="bg-red-500" label="Missing" />
-                  <LegendItem color="bg-purple-500" label="Eligible for Discount" />
-                  <LegendItem color="bg-teal-500" label="Exempted" />
                 </div>
               </div>
             )}
@@ -320,6 +321,7 @@ export default function ApartmentContent({
               setSelectedImg(url);
               setSelectedImgTitle(title);
             }}
+            selectedWing={selectedWing}
             role={role}
           />
         )}
