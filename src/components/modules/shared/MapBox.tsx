@@ -6,9 +6,10 @@ interface MapBoxProps {
   imgUrl: string;
   onZoom: () => void;
   onHover?: (url: string | null) => void;
+  height?: string;
 }
 
-export default function MapBox({ title, imgUrl, onZoom, onHover }: MapBoxProps) {
+export default function MapBox({ title, imgUrl, onZoom, onHover, height = 'h-[125px]' }: MapBoxProps) {
   return (
     <div 
       className="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col group shadow-xs hover:shadow-md hover:border-blue-500 transition-all cursor-pointer transform hover:-translate-y-0.5 shrink-0"
@@ -29,7 +30,7 @@ export default function MapBox({ title, imgUrl, onZoom, onHover }: MapBoxProps) 
         <span>{title}</span>
         <Maximize2 size={10} className="text-gray-400 group-hover:text-[#002fbe] transition-colors" />
       </div>
-      <div className="w-full h-[125px] bg-gray-200 relative overflow-hidden">
+      <div className={`w-full bg-gray-200 relative overflow-hidden ${height}`}>
         <img
           src={imgUrl}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

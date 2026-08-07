@@ -3,6 +3,7 @@ import { ChevronUp, Plus, Layers, Building2, Check, GripVertical } from 'lucide-
 import { comparisonRows } from './mockData';
 import TaxRulesModal from './TaxRulesModal';
 import { PreviousAssessmentTable, CurrentSurveyTable } from './ComparisonSubTables';
+import { Input, Select, Checkbox, Button } from '@/components/common';
 
 function getStatusBgClass(status: string) {
   return '';
@@ -137,71 +138,64 @@ function ApplyOcPanel() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-1">
-              <div className="flex flex-col gap-1">
-                <span className="text-[9px] text-slate-500 font-extrabold uppercase tracking-wide">OC Docket / Cert Number *</span>
-                <input 
-                  type="text" 
-                  required
-                  value={docketNum}
-                  onChange={(e) => setDocketNum(e.target.value)}
-                  className="bg-white border border-gray-250 rounded-lg px-3 py-1.5 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 shadow-3xs"
-                  placeholder="e.g. OC-TMC-2026-904"
-                />
-              </div>
+              <Input
+                label="OC Docket / Cert Number"
+                required
+                value={docketNum}
+                onChange={(e) => setDocketNum(e.target.value)}
+                placeholder="e.g. OC-TMC-2026-904"
+                className="font-bold text-[10.5px] px-3 py-1.5 border-gray-250 h-8"
+              />
 
-              <div className="flex flex-col gap-1">
-                <span className="text-[9px] text-slate-500 font-extrabold uppercase tracking-wide">Date of Certificate Issuance *</span>
-                <input 
-                  type="date" 
-                  required
-                  value={issueDate}
-                  onChange={(e) => setIssueDate(e.target.value)}
-                  className="bg-white border border-gray-250 rounded-lg px-3 py-1.5 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 shadow-3xs"
-                />
-              </div>
+              <Input
+                label="Date of Certificate Issuance"
+                type="date"
+                required
+                value={issueDate}
+                onChange={(e) => setIssueDate(e.target.value)}
+                className="font-bold text-[10.5px] px-3 py-1.5 border-gray-250 h-8"
+              />
 
               {activeMode === 'wing' && (
-                <div className="flex flex-col gap-1 sm:col-span-2">
-                  <span className="text-[9px] text-slate-500 font-extrabold uppercase tracking-wide">Select Target Wing *</span>
-                  <select 
-                    value={selectedWing}
-                    onChange={(e) => setSelectedWing(e.target.value)}
-                    className="bg-white border border-gray-250 rounded-lg px-3 py-1.5 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
-                  >
-                    <option>A Wing</option>
-                    <option>B Wing</option>
-                    <option>C Wing</option>
-                    <option>D Wing</option>
-                  </select>
-                </div>
+                <Select
+                  label="Select Target Wing"
+                  required
+                  value={selectedWing}
+                  onChange={(e, val) => setSelectedWing(val)}
+                  options={[
+                    { label: 'A Wing', value: 'A Wing' },
+                    { label: 'B Wing', value: 'B Wing' },
+                    { label: 'C Wing', value: 'C Wing' },
+                    { label: 'D Wing', value: 'D Wing' }
+                  ]}
+                  selectSize="sm"
+                  className="sm:col-span-2"
+                />
               )}
 
               {activeMode === 'flat' && (
                 <>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[9px] text-slate-500 font-extrabold uppercase tracking-wide">Select Target Wing *</span>
-                    <select 
-                      value={selectedWing}
-                      onChange={(e) => setSelectedWing(e.target.value)}
-                      className="bg-white border border-gray-250 rounded-lg px-3 py-1.5 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 cursor-pointer shadow-3xs"
-                    >
-                      <option>A Wing</option>
-                      <option>B Wing</option>
-                      <option>C Wing</option>
-                      <option>D Wing</option>
-                    </select>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[9px] text-slate-500 font-extrabold uppercase tracking-wide">Flat / Shop Number *</span>
-                    <input 
-                      type="text" 
-                      required
-                      value={flatNum}
-                      onChange={(e) => setFlatNum(e.target.value)}
-                      className="bg-white border border-gray-250 rounded-lg px-3 py-1.5 text-[10.5px] font-bold text-gray-700 outline-none focus:border-blue-500 shadow-3xs"
-                      placeholder="e.g. 103"
-                    />
-                  </div>
+                  <Select
+                    label="Select Target Wing"
+                    required
+                    value={selectedWing}
+                    onChange={(e, val) => setSelectedWing(val)}
+                    options={[
+                      { label: 'A Wing', value: 'A Wing' },
+                      { label: 'B Wing', value: 'B Wing' },
+                      { label: 'C Wing', value: 'C Wing' },
+                      { label: 'D Wing', value: 'D Wing' }
+                    ]}
+                    selectSize="sm"
+                  />
+                  <Input
+                    label="Flat / Shop Number"
+                    required
+                    value={flatNum}
+                    onChange={(e) => setFlatNum(e.target.value)}
+                    placeholder="e.g. 103"
+                    className="font-bold text-[10.5px] px-3 py-1.5 border-gray-250 h-8"
+                  />
                 </>
               )}
             </div>
@@ -209,41 +203,30 @@ function ApplyOcPanel() {
             {/* Checkbox checks */}
             <div className="flex flex-col gap-2 mt-2 bg-slate-50/50 p-3 rounded-xl border border-gray-150 text-[10px] font-semibold text-slate-700">
               <span className="text-[8.5px] text-slate-400 font-black uppercase tracking-wider mb-1 block">Compliance Checklist</span>
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={fireCompliant}
-                  onChange={(e) => setFireCompliant(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500"
-                />
-                <span>Fire safety compliance audit signed-off by chief fire officer</span>
-              </label>
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={waterAttached}
-                  onChange={(e) => setWaterAttached(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500"
-                />
-                <span>Municipal water and sewerage blueprint links verified</span>
-              </label>
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={drainageCert}
-                  onChange={(e) => setDrainageCert(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500"
-                />
-                <span>Environmental clearance certificate & structural stability certificate attached</span>
-              </label>
+              <Checkbox
+                label="Fire safety compliance audit signed-off by chief fire officer"
+                checked={fireCompliant}
+                onCheckedChange={(checked) => setFireCompliant(checked)}
+              />
+              <Checkbox
+                label="Municipal water and sewerage blueprint links verified"
+                checked={waterAttached}
+                onCheckedChange={(checked) => setWaterAttached(checked)}
+              />
+              <Checkbox
+                label="Environmental clearance certificate & structural stability certificate attached"
+                checked={drainageCert}
+                onCheckedChange={(checked) => setDrainageCert(checked)}
+              />
             </div>
 
-            <button 
+            <Button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[10.5px] py-2 px-4 rounded-lg cursor-pointer transition uppercase text-center tracking-wider shadow-3xs mt-3.5"
+              variant="primary"
+              className="mt-3.5 w-full text-[10.5px] tracking-wider uppercase font-extrabold h-8"
             >
               Submit & Apply Occupancy Certificate
-            </button>
+            </Button>
           </form>
 
           {/* Info Panel / Preview Area (5 cols) */}

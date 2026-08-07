@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { FileText, X } from 'lucide-react';
-import { RulesPanel, DiscountsPanel, RetrospectivePanel } from './TaxRulesSubPanels';
+import { RulesPanel } from './RulesPanel';
+import { DiscountsPanel } from './DiscountsPanel';
+import { RetrospectivePanel } from './RetrospectivePanel';
 
 interface TaxRulesModalProps {
   onClose: () => void;

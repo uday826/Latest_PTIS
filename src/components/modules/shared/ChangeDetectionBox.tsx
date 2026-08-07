@@ -10,6 +10,7 @@ interface ChangeDetectionBoxProps {
   onHover: (url: string | null) => void;
   onZoom: () => void;
   isEnlarged?: boolean;
+  height?: string;
 }
 
 export default function ChangeDetectionBox({
@@ -20,7 +21,8 @@ export default function ChangeDetectionBox({
   afterImgZoom,
   onHover,
   onZoom,
-  isEnlarged
+  isEnlarged,
+  height = 'h-[125px]'
 }: ChangeDetectionBoxProps) {
   const [sliderPos, setSliderPos] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -86,7 +88,7 @@ export default function ChangeDetectionBox({
         )}
       </div>
 
-      <div ref={containerRef} className={`w-full relative overflow-hidden select-none bg-gray-100 ${isEnlarged ? 'flex-1 min-h-0' : 'h-[125px]'}`}>
+      <div ref={containerRef} className={`w-full relative overflow-hidden select-none bg-gray-100 ${isEnlarged ? 'flex-1 min-h-0' : height}`}>
         {/* Before Image */}
         <img
           src={beforeImg}
